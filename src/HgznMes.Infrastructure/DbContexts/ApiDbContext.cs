@@ -2,7 +2,7 @@
 using HgznMes.Domain.Entities.Base;
 using Microsoft.EntityFrameworkCore;
 using CaseExtensions;
-using HgznMes.Domain.Entities.Login;
+using HgznMes.Domain.Entities.Account;
 using HgznMes.Domain.Entities.Authority;
 
 namespace HgznMes.Infrastructure.DbContexts

@@ -1,4 +1,4 @@
-﻿using HgznMes.Domain.Entities.Login;
+﻿using HgznMes.Domain.Entities.Account;
 
 namespace HgznMes.Domain.Services
 {

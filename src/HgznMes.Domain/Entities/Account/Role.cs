@@ -1,12 +1,23 @@
 ﻿using HgznMes.Domain.Entities.Base;
 using HgznMes.Domain.Entities.Authority;
 
-namespace HgznMes.Domain.Entities.Login
+namespace HgznMes.Domain.Entities.Account
 {
     public class Role : UniversalEntity, ISoftDelete
     {
         public string Name { get; set; } = null!;
+
         public string Description { get; set; } = null!;
+
+        /// <summary>
+        /// 排序
+        /// </summary>
+        public int OrderNum { get; set; } = 0;
+
+        /// <summary>
+        /// 状态
+        /// </summary>
+        public bool State { get; set; } = true;
 
         #region navigation
 

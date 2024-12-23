@@ -1,6 +1,6 @@
 ﻿using HgznMes.Domain.Entities.Base;
 
-namespace HgznMes.Domain.Entities.Login
+namespace HgznMes.Domain.Entities.Account
 {
     public class Captcha : UniversalEntity
     {

@@ -12,7 +12,7 @@ using HgznMes.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using HgznMes.Infrastructure.DbContexts;
-using HgznMes.Domain.Entities.Login;
+using HgznMes.Domain.Entities.Account;
 
 namespace HgznMes.Application.Services
 {
@@ -98,7 +98,7 @@ namespace HgznMes.Application.Services
         {
             var users = await _apiDbContext.Users
                 .Where(u => string.IsNullOrEmpty(name) || u.Username.Contains(name) ||
-                u.DisplayName == null || u.DisplayName.Contains(name))
+                u.Nick == null || u.Nick.Contains(name))
                 .Include(u => u.Role)
                 .ToArrayAsync();
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
@@ -126,8 +126,8 @@ namespace HgznMes.Application.Services
             var captcha = builder.WithGenOption(new CaptchaGenOptions
             {
                 FontFamily = "consolas",
-                Height = 80,
-                Width = 200,
+                Height = 40,
+                Width = 120,
             }).WithNoise().WithLines().WithCircles().Build();
             await _userDomainService.CacheCaptchaAnswerAsync(captcha, 180);
             return Mapper.Map<CaptchaReadDto>(captcha);

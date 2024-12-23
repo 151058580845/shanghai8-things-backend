@@ -1,5 +1,5 @@
 ﻿using HgznMes.Domain.Shared;
-using HgznMes.Domain.Entities.Login;
+using HgznMes.Domain.Entities.Account;
 using HgznMes.Domain.Services;
 using HgznMes.Domain.Utilities;
 using StackExchange.Redis;

@@ -2,7 +2,7 @@
 using HgznMes.Application.Dtos;
 using HgznMes.Domain.Shared;
 using HgznMes.Domain.Entities;
-using HgznMes.Domain.Entities.Login;
+using HgznMes.Domain.Entities.Account;
 
 namespace HgznMes.Application.Utilities.MapperProfiles.DtoProfiles
 {

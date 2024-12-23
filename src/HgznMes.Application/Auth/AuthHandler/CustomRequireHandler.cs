@@ -3,7 +3,7 @@ using HgznMes.Application.Services.Base;
 using HgznMes.Domain.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
-using HgznMes.Domain.Entities.Login;
+using HgznMes.Domain.Entities.Account;
 
 
 namespace BcsJiaer.Application.Auth.AuthHandler

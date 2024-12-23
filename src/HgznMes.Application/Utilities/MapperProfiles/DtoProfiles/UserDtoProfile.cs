@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using HgznMes.Application.Dtos;
-using HgznMes.Domain.Entities.Login;
+using HgznMes.Domain.Entities.Account;
 using HgznMes.Domain.Utilities;
 using HgznMes.Domain.ValueObjects.UserValue;
 

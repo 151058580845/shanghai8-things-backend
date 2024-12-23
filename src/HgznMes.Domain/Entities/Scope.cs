@@ -1,6 +1,6 @@
 ﻿using HgznMes.Application.Auth;
 using HgznMes.Domain.Entities.Base;
-using HgznMes.Domain.Entities.Login;
+using HgznMes.Domain.Entities.Account;
 using HgznMes.Domain.Utilities;
 
 namespace HgznMes.Domain.Entities
