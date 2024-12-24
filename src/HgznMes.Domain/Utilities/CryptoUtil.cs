@@ -31,6 +31,10 @@ namespace HgznMes.Domain.Utilities
                 ecdsa.GenerateKey(ECCurve.NamedCurves.nistP256);
                 var privatePem = ecdsa.ExportECPrivateKeyPem();
                 var publicPem = ecdsa.ExportSubjectPublicKeyInfoPem();
+                if (!Directory.Exists(keyFolder))
+                {
+                    Directory.CreateDirectory(keyFolder);
+                } 
                 File.WriteAllText(privateKeyPath, privatePem);
                 File.WriteAllText(publicKeyPath, publicPem);
             }

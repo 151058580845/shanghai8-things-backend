@@ -20,7 +20,7 @@ namespace BcsJiaer.Application.Auth.AuthHandler
         }
 
         private readonly IRoleService _roleService;
-        private readonly ILogger _logger;
+        private readonly ILogger<CustomRequireHandler> _logger;
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, CustomRequireScope requirement)
         {
