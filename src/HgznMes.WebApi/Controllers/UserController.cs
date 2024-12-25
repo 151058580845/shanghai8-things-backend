@@ -76,15 +76,15 @@ namespace HgznMes.WebApi.Controllers
         ///     auth: super
         /// </summary>
         /// <param name="userId">用户guid</param>
-        /// <param name="roleId">角色guid</param>
+        /// <param name="roleIds">角色guid</param>
         /// <returns>用户更改后的详情</returns>
         [HttpPost]
-        [Route("{userId:guid}/role/{roleId:guid}")]
+        [Route("{userId:guid}/role")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Put}.Role")]
-        public async Task<ResponseWrapper<UserReadDto?>> ModifyRole(Guid userId, Guid roleId) =>
-            (await _userService.ChangeRoleAsync(userId, roleId)).Wrap();
+        public async Task<ResponseWrapper<UserReadDto?>> ModifyRole(Guid userId, IEnumerable<Guid> roleIds) =>
+            (await _userService.ChangeRoleAsync(userId, roleIds)).Wrap();
 
         /// <summary>
         ///     更换自己的密码

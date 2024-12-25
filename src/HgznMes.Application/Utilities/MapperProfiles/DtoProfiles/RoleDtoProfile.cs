@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using HgznMes.Application.Dtos;
 using HgznMes.Domain.Shared;
-using HgznMes.Domain.Entities;
 using HgznMes.Domain.Entities.Account;
+using HgznMes.Domain.ValueObjects;
 
 namespace HgznMes.Application.Utilities.MapperProfiles.DtoProfiles
 {
@@ -11,10 +11,9 @@ namespace HgznMes.Application.Utilities.MapperProfiles.DtoProfiles
         public RoleDtoProfile()
         {
             CreateMap(typeof(PaginatedList<>), typeof(PaginatedList<>)).ConvertUsing(typeof(PaginatedListConverter<,>));
-            CreateMap<RoleCreateDto, Role>()
-                .ForMember(dest => dest.Scopes, opt => opt.Ignore());
+            CreateMap<RoleCreateDto, Role>();
             CreateMap<Role, RoleReadDto>();
-            CreateMap<Scope, RoleScopeReadDto>();
+            CreateMap<ScopeDefinition, ScopeDefReadDto>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using HgznMes.Application.Dtos;
+using HgznMes.Domain.Shared;
 
 namespace HgznMes.Application.Services.Base
 {
@@ -10,8 +11,10 @@ namespace HgznMes.Application.Services.Base
 
         public Task<RoleReadDto?> CreateRoleAsync(RoleCreateDto roleDto);
 
-        public Task<int> ModifyRoleScopeAsync(Guid roleId, List<string> scopeName);
+        public Task<int> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds);
 
-        public IEnumerable<RoleScopeReadDto> GetScopes();
+        public IEnumerable<ScopeDefReadDto> GetScopes();
+
+        public Task<PaginatedList<UserReadDto>> GetRoleUsersAsync(Guid roleId, UserQueryDto dto);
     }
 }

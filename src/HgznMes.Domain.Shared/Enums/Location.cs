@@ -7,7 +7,7 @@ public enum Location
     
 }
 
-public enum RoomPurposeEnum
+public enum RoomPurpose
 {
     [Description("试验室")]
     Laboratory,

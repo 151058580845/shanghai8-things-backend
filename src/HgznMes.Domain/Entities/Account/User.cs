@@ -3,7 +3,7 @@ using HgznMes.Domain.ValueObjects.UserValue;
 
 namespace HgznMes.Domain.Entities.Account
 {
-    public class User : UniversalEntity, ISoftDelete
+    public class User : UniversalEntity, ISoftDelete, IState
     {
         /// <summary>
         /// 用户名
@@ -29,10 +29,11 @@ namespace HgznMes.Domain.Entities.Account
         /// </summary>
         public DateTime? BirthDate { get; set; }
 
+        public bool State { get; set; }
+
         #region navigation
 
-        public Guid RoleId { get; set; }
-        public virtual Role Role { get; set; } = null!;
+        public virtual ICollection<Role> Roles { get; set; } = null!;
 
         #endregion navigation
 
@@ -43,6 +44,15 @@ namespace HgznMes.Domain.Entities.Account
 
         #endregion delete filter
 
+        #region audit
+
+        public Guid? CreatorId { get; set; }
+        public DateTime CreationTime { get; set; }
+        public Guid? LastModifierId { get; set; }
+        public DateTime? LastModificationTime { get; set; }
+
+        #endregion
+
         public static readonly User DevUser = new()
         {
             Username = "developer",
@@ -52,7 +62,6 @@ namespace HgznMes.Domain.Entities.Account
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
-            RoleId = Role.DevRole.Id,
         };
 
         public static readonly User SuperUser = new()
@@ -64,7 +73,6 @@ namespace HgznMes.Domain.Entities.Account
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
-            RoleId = Role.SuperRole.Id,
         };
 
         public static readonly User AdminUser = new()
@@ -76,12 +84,11 @@ namespace HgznMes.Domain.Entities.Account
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
-            RoleId = Role.AdminRole.Id,
         };
 
-        public static User[] Seeds { get; } = new User[]
-        {
+        public static User[] Seeds { get; } =
+        [
             DevUser, SuperUser, AdminUser
-        };
+        ];
     }
 }

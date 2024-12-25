@@ -5,6 +5,7 @@ namespace HgznMes.Application.Dtos
     public class MenuReadDto : ReadDto
     {
         public Guid Id { get; set; }
+
         public string Name { get; set; } = null!;
 
         public string Code { get; set; } = null!;
@@ -15,19 +16,32 @@ namespace HgznMes.Application.Dtos
 
         public int Type { get; set; }
 
-        public int Order { get; set; }
+        public int Order { get; set; } = -1;
 
         public int Level { get; set; }
 
         public string Path { get; set; } = null!;
 
-        public string IconUrl { get; set; } = null!;
+        /// <summary>
+        ///    菜单图标 
+        /// </summary>
+        public string? IconUrl { get; set; }
 
-        public string Route { get; set; } = null!;
+        /// <summary>
+        /// 是否为外部链接 
+        ///</summary>
+        public bool IsLink { get; set; }
 
-        public bool Visible { get; set; }
+        /// <summary>
+        ///     路由名称
+        /// </summary>
+        public string? Route { get; set; }
 
-        public bool Favorite { get; set; }
+        public string? ScopeCode { get; set; }
+
+        public bool Visible { get; set; } = true;
+
+        public bool Favorite { get; set; } = false;
 
         public IEnumerable<MenuReadDto>? Children { get; set; }
     }
@@ -44,16 +58,76 @@ namespace HgznMes.Application.Dtos
 
         public int Type { get; set; }
 
-        public int Order { get; set; }
+        public int Order { get; set; } = -1;
+
+        public int Level { get; set; }
 
         public string Path { get; set; } = null!;
 
-        public string IconUrl { get; set; } = null!;
+        /// <summary>
+        ///    菜单图标 
+        /// </summary>
+        public string? IconUrl { get; set; }
 
-        public string Route { get; set; } = null!;
+        /// <summary>
+        /// 是否为外部链接 
+        ///</summary>
+        public bool IsLink { get; set; }
 
-        public bool Visible { get; set; }
+        /// <summary>
+        ///     路由名称
+        /// </summary>
+        public string? Route { get; set; }
 
-        public bool Favorite { get; set; }
+        public string? ScopeCode { get; set; }
+
+        public bool Visible { get; set; } = true;
+
+        public bool Favorite { get; set; } = false;
+
+    }
+
+    public class MenuUpdateDto : UpdateDto
+    {
+        public string Name { get; set; } = null!;
+
+        public string? Description { get; set; }
+
+        public Guid? ParentId { get; set; }
+
+        public int Type { get; set; }
+
+        public int Order { get; set; } = -1;
+
+        public int Level { get; set; }
+
+        public string Path { get; set; } = null!;
+
+        /// <summary>
+        ///    菜单图标 
+        /// </summary>
+        public string? IconUrl { get; set; }
+
+        /// <summary>
+        /// 是否为外部链接 
+        ///</summary>
+        public bool IsLink { get; set; }
+
+        /// <summary>
+        ///     路由名称
+        /// </summary>
+        public string? Route { get; set; }
+
+        public string? ScopeCode { get; set; }
+
+        public bool Visible { get; set; } = true;
+
+        public bool Favorite { get; set; } = false;
+    }
+
+    public class QueryMenuDto : PaginatedQueryDto
+    {
+        public bool? State { get; set; }
+        public string? Filter { get; set; }
     }
 }

@@ -1,17 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using HgznMes.Domain.Entities.Base;
+using HgznMes.Domain.Entities.Base.Audited;
 using Microsoft.EntityFrameworkCore;
 
 namespace HgznMes.Domain.Entities.Location;
 
-[Table("Floor")]
-public class FloorEntity : IAggregateRoot
+public class Floor : UniversalEntity, IOrder, IAudited
 {
-    [Key]
-    public Guid Id { get; protected set; }
-
-    [ForeignKey("BuildingAggregateRoot")]  // 外键设置到 BuildingAggregateRoot
+    [ForeignKey("Building")]  // 外键设置到 BuildingAggregateRoot
     public Guid ParentId { get; set; }  // 对应建筑物的ID
 
     [Comment("楼层名称")]
@@ -26,9 +22,9 @@ public class FloorEntity : IAggregateRoot
     [Comment("房间数量")]
     public int? NumberOfRooms { get; set; }
 
-    public List<RoomEntity> Rooms { get; set; }  // 楼层和房间是 1 对多关系
+    public ICollection<Room>? Rooms { get; set; } // 楼层和房间是 1 对多关系
     
-    public BuildingAggregateRoot? Building { get; set; }  // 每个 FloorEntity 关联一个 BuildingAggregateRoot
+    public Building? Building { get; set; }  // 每个 FloorEntity 关联一个 BuildingAggregateRoot
 
     public DateTime CreationTime { get; set; }
 

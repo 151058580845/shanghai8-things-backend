@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace HgznMes.Domain.Shared.Enum;
+namespace HgznMes.Domain.Shared.Enums;
 
 public enum Notice
 {
@@ -9,7 +9,7 @@ public enum Notice
 /// <summary>
 /// 通知显示
 /// </summary>
-public enum NoticeShowEnum
+public enum NoticeShow
 {
     [Description("走马灯")] MerryGoRound = 0,
     [Description("提示弹窗")] Popup = 1
@@ -18,7 +18,7 @@ public enum NoticeShowEnum
 /// <summary>
 /// 通知类型
 /// </summary>
-public enum NoticeTypeEnum
+public enum NoticeType
 {
     [Description("普通公告")] MerryGoRound = 0,
 
@@ -28,7 +28,7 @@ public enum NoticeTypeEnum
 // <summary>
 /// 通知时间类型
 /// </summary>
-public enum NoticeTimeTypeEnum
+public enum NoticeTimeType
 {
     [Description("立即发送")] Now = 0,
 
@@ -50,7 +50,7 @@ public enum NoticeTimeTypeEnum
 /// <summary>
 /// 优先级
 /// </summary>
-public enum PriorityEnum
+public enum Priority
 {
     [Description("低优先级")] Low = 0, // 低优先级，表示相对不紧急的任务或通知
     [Description("普通优先级")] Normal = 1, // 普通优先级，表示默认的优先级
@@ -68,7 +68,7 @@ public enum PriorityEnum
     已发布（Published） → 管理员决定撤销公告 → 已撤销（Revoked）。
     已发布（Published） → 公告有效期结束 → 过期（Expired）。
  */
-public enum NoticeStatusEnum
+public enum NoticeStatus
 {
     [Description("草稿状态")] Draft = 0, // 草稿状态，表示通知尚未完成并保存为草稿
     [Description("审核中")] Review = 1, // 审核中，表示通知已完成编辑，正在等待审核
@@ -82,7 +82,7 @@ public enum NoticeStatusEnum
 /// <summary>
 /// 通知目标
 /// </summary>
-public enum NoticeTargetEnum
+public enum NoticeTargetType
 {
     [Description("个人用户")] User = 0, // 个人用户
     [Description("角色")] Role = 1, // 角色，例如管理员、审核员

@@ -9,7 +9,7 @@ namespace HgznMes.Application.Dtos
         public string Password { get; set; } = null!;
         public string DisplayName { get; set; } = null!;
         public string Email { get; set; } = null!;
-        public string TelephoneNumber { get; set; } = null!;
+        public string Phone { get; set; } = null!;
         public DateTime RegisterTime { get; set; }
     }
 
@@ -19,7 +19,7 @@ namespace HgznMes.Application.Dtos
         public string Username { get; set; } = null!;
         public string DisplayName { get; set; } = null!;
         public string Email { get; set; } = null!;
-        public string TelephoneNumber { get; set; } = null!;
+        public string Phone { get; set; } = null!;
         public RoleReadDto Role { get; set; } = null!;
         public DateTime RegisterTime { get; set; }
         public UserSettingReadDto? Settings { get; set; }
@@ -65,5 +65,11 @@ namespace HgznMes.Application.Dtos
         public string OldPassword { get; set; } = null!;
         public string NewPassword { get; set; } = null!;
         public CaptchaAnswerDto? Captcha { get; set; }
+    }
+
+    public class UserQueryDto : PaginatedQueryDto
+    {
+        public bool? State { get; set; }
+        public string? Filter { get; set; }
     }
 }

@@ -6,7 +6,7 @@ namespace HgznMes.Application.Dtos
     {
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
-        public IEnumerable<string> ScopeNames { get; set; } = null!;
+        public IEnumerable<string> MenuIds { get; set; } = null!;
     }
 
     public class RoleReadDto : ReadDto
@@ -14,17 +14,6 @@ namespace HgznMes.Application.Dtos
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
-        public IEnumerable<RoleScopeReadDto> Scopes { get; set; } = null!;
-    }
-
-    public class RoleScopeReadDto : ReadDto
-    {
-        public string Name { get; set; } = null!;
-        public string? Description { get; set; }
-    }
-
-    public class RoleScopeModifyDto : UpdateDto
-    {
-        public string Name { get; set; } = null!;
+        public IEnumerable<MenuReadDto> Menus { get; set; } = null!;
     }
 }

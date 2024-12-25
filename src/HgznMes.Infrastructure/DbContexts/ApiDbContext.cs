@@ -25,12 +25,11 @@ namespace HgznMes.Infrastructure.DbContexts
 
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
-        public DbSet<Scope> Scopes { get; set; } = null!;
         public DbSet<Menu> Menus { get; set; } = null!;
         
-        public DbSet<BuildingAggregateRoot> Building { get; set; } = null!;
-        public DbSet<RoomEntity> Rooms { get; set; } = null!;
-        public DbSet<FloorEntity> Floors { get; set; } = null!;
+        public DbSet<Building> Building { get; set; } = null!;
+        public DbSet<Room> Rooms { get; set; } = null!;
+        public DbSet<Floor> Floors { get; set; } = null!;
 
         #endregion dbsets
 
@@ -99,15 +98,9 @@ namespace HgznMes.Infrastructure.DbContexts
                 .IsUnique();
 
             modelBuilder.Entity<Role>()
-                .HasMany(r => r.Scopes)
-                .WithOne(s => s.Role)
-                .IsRequired(false)
-                .HasForeignKey(s => s.RoleId);
-
-            modelBuilder.Entity<Role>()
                 .HasMany(u => u.Users)
-                .WithOne(b => b.Role)
-                .HasForeignKey(b => b.RoleId);
+                .WithMany()
+                .UsingEntity<UserRole>();
 
             modelBuilder.Entity<Role>()
                 .HasMany(r => r.Menus)
@@ -118,8 +111,8 @@ namespace HgznMes.Infrastructure.DbContexts
 
             #region scope
 
-            modelBuilder.Entity<Scope>()
-                .HasData(Scope.Seeds);
+            modelBuilder.Entity<RoleMenu>()
+                .HasData(Menu.Seeds);
 
             #endregion scope
 
@@ -146,7 +139,7 @@ namespace HgznMes.Infrastructure.DbContexts
             #region menu
 
             modelBuilder.Entity<Menu>()
-                .HasIndex(m => m.Order);
+                .HasIndex(m => m.OrderNum);
 
             modelBuilder.Entity<Menu>()
                 .HasOne(m => m.Parent)
@@ -175,25 +168,25 @@ namespace HgznMes.Infrastructure.DbContexts
 
             #region Location
 
-            modelBuilder.Entity<BuildingAggregateRoot>()
+            modelBuilder.Entity<Building>()
                 .HasMany(f => f.Floors)
                 .WithOne(f => f.Building)
                 .HasForeignKey(f => f.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<FloorEntity>()
+            modelBuilder.Entity<Floor>()
                 .HasOne(t => t.Building)
                 .WithMany()
                 .HasForeignKey(t => t.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<FloorEntity>()
+            modelBuilder.Entity<Floor>()
                 .HasMany(t => t.Rooms)
                 .WithOne(r => r.Floor)
                 .HasForeignKey(r => r.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            modelBuilder.Entity<RoomEntity>()
+            modelBuilder.Entity<Room>()
                 .HasOne(t => t.Floor)
                 .WithMany()
                 .HasForeignKey(t => t.ParentId)

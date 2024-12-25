@@ -1,17 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using HgznMes.Domain.Entities.Base;
+﻿using HgznMes.Domain.Entities.Base;
+using HgznMes.Domain.Entities.Base.Audited;
 using HgznMes.Domain.Shared.Enum;
 using Microsoft.EntityFrameworkCore;
 
 namespace HgznMes.Domain.Entities.Location;
 
-[Table("Room")]
-public class RoomEntity : IAggregateRoot
+public class Room : UniversalEntity, IAggregateRoot, IOrder ,IAudited
 {
-    [Key]
-    public Guid Id { get; set; }
-
     public Guid ParentId { get; set; }  // 外键，关联 FloorEntity
 
     [Comment("房间名称")]
@@ -30,13 +25,13 @@ public class RoomEntity : IAggregateRoot
     public double Height { get; set; }
 
     [Comment("房间用途")]
-    public RoomPurposeEnum Purpose { get; set; }
+    public RoomPurpose Purpose { get; set; }
 
     [Comment("属于同一个房间组")]
     public Guid GroupId { get; set; }
 
     // One-to-one relationship with FloorEntity
-    public FloorEntity? Floor { get; set; }  // 房间对应的楼层
+    public Floor? Floor { get; set; }  // 房间对应的楼层
 
     public DateTime CreationTime { get; set; }
 
@@ -46,5 +41,8 @@ public class RoomEntity : IAggregateRoot
 
     public Guid? LastModifierId { get; set; }
 
-    public int OrderNum { get; set; }  // 排序字段
+    /// <summary>
+    /// 排序字段
+    /// </summary>
+    public int OrderNum { get; set; }
 }

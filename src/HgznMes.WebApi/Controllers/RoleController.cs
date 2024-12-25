@@ -73,15 +73,15 @@ namespace HgznMes.WebApi.Controllers
         ///     auth: super
         /// </summary>
         /// <param name="roleId">角色id</param>
-        /// <param name="scopes">权限列表</param>
+        /// <param name="menus">权限列表</param>
         /// <returns>已编辑权限数</returns>
         [HttpPut]
-        [Route("{roleId:guid}/scopes")]
+        [Route("{roleId:guid}/menus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Put}.Scopes")]
-        public async Task<ResponseWrapper<int>> ModifyRoleScopeAsync(Guid roleId, List<string> scopes) =>
-            (await _roleService.ModifyRoleScopeAsync(roleId, scopes)).Wrap();
+        public async Task<ResponseWrapper<int>> ModifyRoleMenu(Guid roleId, List<Guid> menus) =>
+            (await _roleService.ModifyRoleMenuAsync(roleId, menus)).Wrap();
 
         /// <summary>
         ///     获取支持的权限范围
@@ -93,7 +93,7 @@ namespace HgznMes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Get}.Scopes")]
-        public ResponseWrapper<IEnumerable<RoleScopeReadDto>> GetSupportedScopes() =>
+        public ResponseWrapper<IEnumerable<ScopeDefReadDto>> GetSupportedScopes() =>
             _roleService.GetScopes().Wrap();
     }
 }

@@ -6,6 +6,8 @@ using HgznMes.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;
 using HgznMes.Infrastructure.DbContexts;
 using HgznMes.Domain.Entities.Account;
+using HgznMes.Domain.Entities.Authority;
+using HgznMes.Domain.Shared;
 
 namespace HgznMes.Application.Services
 {
@@ -23,7 +25,7 @@ namespace HgznMes.Application.Services
         [ScopeDefinition("create a role", $"{ManagedResource.Role}.{ManagedAction.Add}.New")]
         public async Task<RoleReadDto?> CreateRoleAsync(RoleCreateDto roleDto)
         {
-            if (!RequireScopeUtil.Scopes.Any(s => !roleDto.ScopeNames.Contains(s.Name)))
+            if (!RequireScopeUtil.Scopes.Any(s => !roleDto.MenuIds.Contains(s.Name)))
             {
                 throw new NotAcceptableException("unsupported scope find");
             }
@@ -38,7 +40,7 @@ namespace HgznMes.Application.Services
         {
             var role = await _apiDbContext.Roles
                 .Where(r => r.Id == id)
-                .Include(r => r.Scopes)
+                .Include(r => r.Menus)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
             return Mapper.Map<RoleReadDto>(role);
@@ -48,35 +50,45 @@ namespace HgznMes.Application.Services
         public async Task<IEnumerable<RoleReadDto>> GetRolesAsync()
         {
             var roles = await _apiDbContext.Roles
-                .Include(r => r.Scopes)
+                .Include(r => r.Menus)
                 .AsNoTracking()
                 .ToArrayAsync();
             return Mapper.Map<IEnumerable<RoleReadDto>>(roles);
         }
 
         [ScopeDefinition("change role manage scope", $"{ManagedResource.Role}.{ManagedAction.Put}.Scopes")]
-        public async Task<int> ModifyRoleScopeAsync(Guid roleId, List<string> scopeNames)
+        public async Task<int> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds)
         {
-            if (!RequireScopeUtil.Scopes.Any(s => !scopeNames.Contains(s.Name)))
+            var roleMenuns = menuIds.Select(m => new RoleMenu
             {
-                throw new NotAcceptableException("unsupported scope find");
-            }
+                RoleId = roleId,
+                MenuId = m
+            });
             var role = (await _apiDbContext.Roles.FindAsync(roleId)) ??
                 throw new NotFoundException("role is not exist");
-            var scopes = await _apiDbContext.Scopes
-                .Where(s => s.RoleId == roleId).ToArrayAsync();
-            _apiDbContext.Scopes.RemoveRange(scopes);
-            var targets = await _apiDbContext.Scopes
-                .Where(s => scopeNames.Contains(s.Name))
-                .ToArrayAsync();
-            role.Scopes = targets;
-            _apiDbContext.Roles.Update(role);
+            await _apiDbContext.Set<RoleMenu>().Where(s => s.RoleId == roleId).ExecuteDeleteAsync();
+            await _apiDbContext.Set<RoleMenu>().AddRangeAsync(roleMenuns);
             var result = await _apiDbContext.SaveChangesAsync();
             return result;
         }
 
         [ScopeDefinition("get all supported scopes", $"{ManagedResource.Role}.{ManagedAction.Get}.Scopes")]
-        public IEnumerable<RoleScopeReadDto> GetScopes() =>
-            Mapper.Map<IEnumerable<RoleScopeReadDto>>(RequireScopeUtil.Scopes);
+        public IEnumerable<ScopeDefReadDto> GetScopes() =>
+            Mapper.Map<IEnumerable<ScopeDefReadDto>>(RequireScopeUtil.Scopes);
+
+        public async Task<PaginatedList<UserReadDto>> GetRoleUsersAsync(Guid roleId, UserQueryDto query)
+        {
+            var users = await _apiDbContext.Roles
+                .Where(r => r.Id == roleId)
+                .Include(r => r.Users == null ? null : r.Users
+                    .Where(u => query.Filter == null ||
+                    (u.Phone != null && u.Phone.Contains(query.Filter)) ||
+                    u.Username.Contains(query.Filter) ||
+                    (u.Nick != null && u.Nick.Contains(query.Filter)))
+                    .Where(u => query == null || u.State == query.State ))
+                .SelectMany(r => r.Users ?? Array.Empty<User>())
+                .ToArrayAsync();
+            return Mapper.Map<PaginatedList<UserReadDto>>(users);
+        }
     }
 }

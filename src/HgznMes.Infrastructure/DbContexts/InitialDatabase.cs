@@ -25,20 +25,20 @@ namespace HgznMes.Infrastructure.DbContexts
                 _logger.LogInformation("database already created");
                 //await _apiDbContext.Database.MigrateAsync();
             }
-            var scopes = await _apiDbContext.Scopes
-                .ToArrayAsync();
+            //var scopes = await _apiDbContext.Scopes
+            //    .ToArrayAsync();
             var transaction = await _apiDbContext.Database.BeginTransactionAsync();
             try
             {
-                if (scopes.Length != Scope.Seeds.Length || scopes.Any(ss => Scope.Seeds.Contains(ss)))
-                {
-                    _apiDbContext.Scopes.RemoveRange(scopes);
-                    await _apiDbContext.SaveChangesAsync();
-                    await _apiDbContext.AddRangeAsync(Scope.Seeds);
-                }
-                var count = await _apiDbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
-                _logger.LogInformation($"scope table generate succeed, with {count} new scopes");
+                //if (scopes.Length != Scope.Seeds.Length || scopes.Any(ss => Scope.Seeds.Contains(ss)))
+                //{
+                //    _apiDbContext.Scopes.RemoveRange(scopes);
+                //    await _apiDbContext.SaveChangesAsync();
+                //    await _apiDbContext.AddRangeAsync(Scope.Seeds);
+                //}
+                //var count = await _apiDbContext.SaveChangesAsync();
+                //await transaction.CommitAsync();
+                //_logger.LogInformation($"scope table generate succeed, with {count} new scopes");
             }
             catch
             {

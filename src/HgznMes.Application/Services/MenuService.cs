@@ -3,6 +3,9 @@ using HgznMes.Application.Dtos;
 using HgznMes.Application.Services.Base;
 using HgznMes.Domain.Shared.Exceptions;
 using HgznMes.Infrastructure.DbContexts;
+using HgznMes.Infrastructure.Utilities;
+using HgznMes.Domain.Shared;
+using HgznMes.Domain.Entities.Authority;
 
 namespace HgznMes.Application.Services
 {
@@ -16,9 +19,14 @@ namespace HgznMes.Application.Services
 
         private readonly ApiDbContext _dbContext;
 
-        public Task<IEnumerable<MenuReadDto>> GetAllMenusAsync()
+        public async Task<PaginatedList<MenuReadDto>> QueryMenusAsync(QueryMenuDto query)
         {
-            throw new NotImplementedException();
+            var entities = await _dbContext.Menus
+                .Where(m => query.State == null || query.State == m.State)
+                .Where(m => query.Filter == null || m.Code.Contains(query.Filter) || m.Name.Contains(query.Filter))
+                .OrderByDescending(m => m.OrderNum)
+                .ToPaginatedListAsync(query.PageIndex, query.PageSize);
+            return Mapper.Map<PaginatedList<MenuReadDto>>(entities);
         }
 
         public async Task<IEnumerable<MenuReadDto>> GetRootMenusAsTreeAsync()
@@ -63,9 +71,25 @@ namespace HgznMes.Application.Services
             return count;
         }
 
-        public Task<MenuReadDto> CreateMenuAsync(MenuCreateDto dto)
+        public async Task<MenuReadDto> CreateMenuAsync(MenuCreateDto dto)
         {
-            throw new NotImplementedException();
+            var entity = Mapper.Map<Menu>(dto);
+            await _dbContext.Menus.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+            return Mapper.Map<MenuReadDto>(dto);
+        }
+
+        public async Task<MenuReadDto> UpdateMenuAsync(Guid id, MenuUpdateDto dto)
+        { 
+            var target = await _dbContext.Menus.FindAsync(id);
+            if(target is null)
+            {
+                throw new NotFoundException("menu not exsit");
+            }
+            Mapper.Map(dto, target);
+            _dbContext.Menus.Update(target);
+            await _dbContext.SaveChangesAsync();
+            return Mapper.Map<MenuReadDto>(dto);
         }
     }
 }

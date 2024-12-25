@@ -1,13 +1,16 @@
 ﻿using HgznMes.Domain.Entities.Base;
 using HgznMes.Domain.Entities.Authority;
+using HgznMes.Domain.Entities.Base.Audited;
 
 namespace HgznMes.Domain.Entities.Account
 {
-    public class Role : UniversalEntity, ISoftDelete
+    public class Role : UniversalEntity, ISoftDelete, IAudited, IState, IOrder
     {
         public string Name { get; set; } = null!;
 
         public string Description { get; set; } = null!;
+
+        public string RoleCode { get; set; } = null!;
 
         /// <summary>
         /// 排序
@@ -21,7 +24,6 @@ namespace HgznMes.Domain.Entities.Account
 
         #region navigation
 
-        public virtual ICollection<Scope>? Scopes { get; set; }
         public virtual ICollection<User>? Users { get; set; }
 
         public ICollection<Menu>? Menus { get; set; }
@@ -34,6 +36,15 @@ namespace HgznMes.Domain.Entities.Account
         public DateTime? DeleteTime { get; set; } = null;
 
         #endregion delete filter
+
+        #region audit
+
+        public Guid? CreatorId { get; set; }
+        public DateTime CreationTime { get; set; }
+        public Guid? LastModifierId { get; set; }
+        public DateTime? LastModificationTime { get; set; }
+
+        #endregion
 
         #region static roles
 

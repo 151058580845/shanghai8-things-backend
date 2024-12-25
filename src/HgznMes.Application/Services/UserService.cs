@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using HgznMes.Infrastructure.DbContexts;
 using HgznMes.Domain.Entities.Account;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace HgznMes.Application.Services
 {
@@ -48,7 +49,7 @@ namespace HgznMes.Application.Services
             {
                 throw new NotAcceptableException("captcha not found or not correct");
             }
-            var user = await _apiDbContext.Users.Include(u => u.Role)
+            var user = await _apiDbContext.Users.Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Username == credential.Username);
             var bytes = Convert.FromBase64String(credential.Password);
 
@@ -56,8 +57,9 @@ namespace HgznMes.Application.Services
             {
                 throw new NotAcceptableException("user not found or password error");
             }
+            var roleIds = string.Join(",", user.Roles.Select(r => r.Id));
             var token = JwtTokenUtil.GenerateJwtToken(SettingUtil.Jwt.Issuer, SettingUtil.Jwt.Audience, SettingUtil.Jwt.ExpireMin,
-                new Claim(CustomClaimsType.UserId, user.Id.ToString()), new Claim(CustomClaimsType.RoleId, user.Role.Id.ToString())) ??
+                new Claim(CustomClaimsType.UserId, user.Id.ToString()), new Claim(CustomClaimsType.RoleId, roleIds)) ??
                 throw new Exception("generate jwt token error");
 
             if (!await _userDomainService.VerifyTokenAsync(user.Id, token))
@@ -88,30 +90,31 @@ namespace HgznMes.Application.Services
         {
             var user = await _apiDbContext.Users
                 .Where(u => u.Id == id)
-                .Include(u => u.Role)
+                .Include(u => u.Roles)
                 .FirstOrDefaultAsync();
             return Mapper.Map<UserReadDto>(user);
         }
 
         [ScopeDefinition("get users where", $"{ManagedResource.User}.{ManagedAction.Get}.Query")]
-        public async Task<IEnumerable<UserReadDto>> GetUsersWhereAsync(string? name = null)
+        public async Task<IEnumerable<UserReadDto>> GetUsersWhereAsync(UserQueryDto query)
         {
             var users = await _apiDbContext.Users
-                .Where(u => string.IsNullOrEmpty(name) || u.Username.Contains(name) ||
-                u.Nick == null || u.Nick.Contains(name))
-                .Include(u => u.Role)
+                .Where(u => query.Filter == null ||
+                (u.Phone != null && u.Phone.Contains(query.Filter)) ||
+                u.Username.Contains(query.Filter) ||
+                        (u.Nick != null && u.Nick.Contains(query.Filter)))
+                .Where(u => query == null || u.State == query.State)
+                .Include(u => u.Roles)
                 .ToArrayAsync();
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
         }
 
         [ScopeDefinition("change user role", $"{ManagedResource.User}.{ManagedAction.Put}.Role")]
-        public async Task<UserReadDto?> ChangeRoleAsync(Guid userId, Guid roleId)
+        public async Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds)
         {
             var user = (await _apiDbContext.Users.FindAsync(userId)) ??
                 throw new NotFoundException("user not found");
-            if (await _apiDbContext.Roles.FindAsync(roleId) is null)
-                throw new NotFoundException("role not found");
-            user.RoleId = roleId;
+            user.Roles = roleIds.Select(id => new Role { Id = id}).ToArray();
             _apiDbContext.Users.Update(user);
             var count = await _apiDbContext.SaveChangesAsync();
             return count == 0 ? null : Mapper.Map<UserReadDto>(user);

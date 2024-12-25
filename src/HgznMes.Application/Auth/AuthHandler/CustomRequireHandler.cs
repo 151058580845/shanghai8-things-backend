@@ -49,7 +49,7 @@ namespace BcsJiaer.Application.Auth.AuthHandler
                 return;
             }
 
-            if (role.Scopes.Any(s => requirement.Scope.Contains(s.Name)))
+            if (role.Menus.Any(s => requirement.Scope.Contains(s.Name)))
             {
                 _logger.LogTrace("scope match success");
                 context.Succeed(requirement);

@@ -1,20 +1,14 @@
-﻿
-
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using HgznMes.Domain.Entities.Base;
+using HgznMes.Domain.Entities.Base.Audited;
 using Microsoft.EntityFrameworkCore;
 
 namespace HgznMes.Domain.Entities.Location;
 
-[Table("Build")]  // 设置表名为 Build
-public class BuildingAggregateRoot :IAggregateRoot
+public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
 {
-    [Key]
-    public Guid Id { get; protected set; }
-
     [Comment("建筑物名称")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     
     [Column(TypeName = "nvarchar(50)")]
     [Comment("建筑物编号")]
@@ -33,7 +27,7 @@ public class BuildingAggregateRoot :IAggregateRoot
     [Comment("建造日期")] 
     public DateTime? ConstructionDate { get; set; }
 
-    public List<FloorEntity> Floors { get; set; }
+    public ICollection<Floor>? Floors { get; set; } 
 
     public DateTime CreationTime { get; set; }
 
@@ -44,5 +38,12 @@ public class BuildingAggregateRoot :IAggregateRoot
     public Guid? LastModifierId { get; set; }
 
     public int OrderNum { get; set; } = 100;
-    
+
+    #region delete filter
+
+    public bool SoftDeleted { get; set; } = false;
+    public DateTime? DeleteTime { get; set; } = null;
+
+    #endregion delete filter
+
 }

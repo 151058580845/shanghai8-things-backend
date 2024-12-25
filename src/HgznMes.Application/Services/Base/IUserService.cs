@@ -15,9 +15,9 @@ namespace HgznMes.Application.Services.Base
 
         public Task<UserReadDto?> GetUserAsync(Guid id);
 
-        public Task<IEnumerable<UserReadDto>> GetUsersWhereAsync(string? username = null);
+        public Task<IEnumerable<UserReadDto>> GetUsersWhereAsync(UserQueryDto query);
 
-        public Task<UserReadDto?> ChangeRoleAsync(Guid userId, Guid roleId);
+        public Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds);
 
         public Task<CaptchaReadDto> GenerateCaptchaAsync();
 
