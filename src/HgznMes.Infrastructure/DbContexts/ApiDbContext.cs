@@ -13,10 +13,10 @@ namespace HgznMes.Infrastructure.DbContexts
 {
     public class ApiDbContext : DbContext
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
         public ApiDbContext(
             DbContextOptions<ApiDbContext> options,
-            IHttpContextAccessor httpContextAccessor) : base(options)
+            IHttpContextAccessor? httpContextAccessor) : base(options)
         {
             _httpContextAccessor = httpContextAccessor;
         }
