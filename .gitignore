@@ -38,7 +38,10 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-# sercurty keys
+# ef migrations
+Migrations/
+
+# security keys
 [Kk]eys
 
 # Visual Studio 2015/2017 cache/options directory
