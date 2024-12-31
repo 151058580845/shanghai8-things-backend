@@ -25,7 +25,19 @@ namespace HgznMes.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("tree")]
+        [Route("tree/curr-user")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetCurrentUserMenusAsTree() =>
+            (await _menuService.GetCurrentUserMenusAsTreeAsync(HttpContext.User.Claims)).Wrap();
+
+        /// <summary>
+        ///     获取树形菜单
+        ///     auth: anonymous
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("tree/all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetRootMenusAsTree() =>

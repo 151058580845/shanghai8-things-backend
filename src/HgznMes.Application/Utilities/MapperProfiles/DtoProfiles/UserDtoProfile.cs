@@ -11,6 +11,10 @@ namespace HgznMes.Application.Utilities.MapperProfiles.DtoProfiles
         public UserDtoProfile()
         {
             CreateMap<User, UserReadDto>();
+            CreateMap<User, UserScopeReadDto>()
+                .ForMember(dest => dest.RoleCodes, opts => opts.MapFrom(src => src.Roles.Select(r => r.Code)))
+                .ForMember(dest => dest.ScopeCodes, opts => opts.MapFrom(
+                    src => src.Roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!.Select(m => m.ScopeCode))));
             CreateMap<UserRegisterDto, User>()
                 .AfterMap((src, dest) =>
                 {

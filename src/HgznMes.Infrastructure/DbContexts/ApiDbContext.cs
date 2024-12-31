@@ -97,9 +97,9 @@ namespace HgznMes.Infrastructure.DbContexts
                 .HasIndex(r => new { r.Name, r.SoftDeleted })
                 .IsUnique();
 
-            modelBuilder.Entity<Role>()
-                .HasMany(u => u.Users)
-                .WithMany()
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Roles)
+                .WithMany(r => r.Users)
                 .UsingEntity<UserRole>();
 
             modelBuilder.Entity<Role>()
@@ -109,12 +109,12 @@ namespace HgznMes.Infrastructure.DbContexts
 
             #endregion role
 
-            #region scope
+            #region menu
 
             modelBuilder.Entity<RoleMenu>()
-                .HasData(Menu.Seeds);
+                .HasData(RoleMenu.Seeds);
 
-            #endregion scope
+            #endregion menu
 
             #region user
 
@@ -133,6 +133,9 @@ namespace HgznMes.Infrastructure.DbContexts
 
             modelBuilder.Entity<User>()
                 .OwnsOne(u => u.Detail);
+
+            modelBuilder.Entity<UserRole>()
+                .HasData(UserRole.Seeds);
 
             #endregion user
 
@@ -153,16 +156,6 @@ namespace HgznMes.Infrastructure.DbContexts
             modelBuilder.Entity<Menu>()
                 .HasIndex(m => m.Code)
                 .IsUnique();
-
-            modelBuilder.Entity<RoleMenu>()
-                .HasOne(rm => rm.Menu)
-                .WithMany()
-                .HasForeignKey(rm => rm.MenuId);
-
-            modelBuilder.Entity<RoleMenu>()
-                .HasOne(rm => rm.Role)
-                .WithMany()
-                .HasForeignKey(rm => rm.RoleId);
             
             #endregion
 

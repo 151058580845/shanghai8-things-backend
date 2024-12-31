@@ -29,6 +29,19 @@ namespace HgznMes.WebApi.Controllers
         private readonly IUserService _userService;
 
         /// <summary>
+        ///     获取当前的用户
+        ///     auth: super
+        /// </summary>
+        /// <returns>用户详情</returns>
+        [HttpGet]
+        [Authorize]
+        [Route("")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ResponseWrapper<UserScopeReadDto?>> GetCurrentUser() =>
+            (await _userService.GetCurrentUserAsync(HttpContext.User.Claims)).Wrap();
+
+        /// <summary>
         ///     获取指定Id的用户
         ///     auth: super
         /// </summary>
@@ -47,15 +60,15 @@ namespace HgznMes.WebApi.Controllers
         ///     模糊匹配用户名和昵称
         ///     auth: super
         /// </summary>
-        /// <param name="name">用户名或昵称</param>
+        /// <param name="dto">用户名，昵称手机号</param>
         /// <returns>匹配的用户列表</returns>
         [HttpGet]
         [Route("where")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Get}.Query")]
-        public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUsers(string? name = null) =>
-            (await _userService.GetUsersWhereAsync(name)).Wrap();
+        public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUsers(UserQueryDto dto) =>
+            (await _userService.GetUsersWhereAsync(dto)).Wrap();
 
         /// <summary>
         ///     删除用户

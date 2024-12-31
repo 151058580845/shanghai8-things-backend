@@ -5,24 +5,26 @@ namespace HgznMes.Application.Services.Base
 {
     public interface IUserService : IBaseService
     {
-        public Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto);
+        Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto);
 
-        public Task<string> LoginAsync(UserLoginDto credential);
+        Task<string> LoginAsync(UserLoginDto credential);
 
-        public Task LogoutAsync(IEnumerable<Claim> claims);
+        Task LogoutAsync(IEnumerable<Claim> claims);
 
-        public Task<int> DeleteAsync(Guid id);
+        Task<int> DeleteAsync(Guid id);
 
-        public Task<UserReadDto?> GetUserAsync(Guid id);
+        Task<UserReadDto?> GetUserAsync(Guid id);
 
-        public Task<IEnumerable<UserReadDto>> GetUsersWhereAsync(UserQueryDto query);
+        Task<UserScopeReadDto?> GetCurrentUserAsync(IEnumerable<Claim> claims);
 
-        public Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds);
+        Task<IEnumerable<UserReadDto>> GetUsersWhereAsync(UserQueryDto query);
 
-        public Task<CaptchaReadDto> GenerateCaptchaAsync();
+        Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds);
 
-        public Task<int> ChangePasswordAsync(ChangePasswordDto passwordDto);
+        Task<CaptchaReadDto> GenerateCaptchaAsync();
 
-        public Task<int> ResetPasswordAsync(Guid userId);
+        Task<int> ChangePasswordAsync(ChangePasswordDto passwordDto);
+
+        Task<int> ResetPasswordAsync(Guid userId);
     }
 }

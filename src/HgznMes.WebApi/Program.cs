@@ -117,16 +117,12 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-//// Add dbContext pool
-//builder.Services.AddDbContextPool<ApiDbContext>(options => {
-//    options.UseNpgsql(new NpgsqlDataSourceBuilder(
-//        builder.Configuration.GetConnectionString("Postgres")).Build()
-//        ).EnableDetailedErrors();
-//    options.UseSnakeCaseNamingConvention();
-//});
-
-builder.Services.AddDbContextPool<ApiDbContext>(options => {
-    options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
+// Add dbContext pool
+builder.Services.AddDbContextPool<ApiDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
+    //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
+    //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
     options.UseSnakeCaseNamingConvention();
 });
 

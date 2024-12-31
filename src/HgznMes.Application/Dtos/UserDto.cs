@@ -7,22 +7,65 @@ namespace HgznMes.Application.Dtos
     {
         public string Username { get; set; } = null!;
         public string Password { get; set; } = null!;
-        public string DisplayName { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public string Phone { get; set; } = null!;
+        /// <summary>
+        /// 姓名
+        /// </summary>s
+        public string? Name { get; set; }
+        public string Salt { get; set; } = null!;
+        public string? Nick { get; set; }
+        public string? Icon { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
         public DateTime RegisterTime { get; set; }
     }
 
     public class UserReadDto : ReadDto
     {
         public Guid Id { get; set; }
+
         public string Username { get; set; } = null!;
         public string DisplayName { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string Phone { get; set; } = null!;
         public RoleReadDto Role { get; set; } = null!;
         public DateTime RegisterTime { get; set; }
+
         public UserSettingReadDto? Settings { get; set; }
+
+        public UserDetailReadDto? Detail { get; set; }
+    }
+
+    public class UserScopeReadDto : ReadDto
+    {
+        public Guid Id { get; set; }
+
+        public string Username { get; set; } = null!;
+
+        /// <summary>
+        /// 姓名
+        /// </summary>s
+        public string? Name { get; set; }
+
+        public string Salt { get; set; } = null!;
+
+        public string? Nick { get; set; }
+
+        public string? Icon { get; set; }
+
+        public string? Email { get; set; }
+
+        public string? Phone { get; set; }
+
+        //public RoleReadDto Role { get; set; } = null!;
+
+        public IEnumerable<string> RoleCodes { get; set; } = null!;
+
+        public IEnumerable<string> ScopeCodes { get; set; } = null!;
+
+        public DateTime RegisterTime { get; set; }
+
+        public UserSettingReadDto? Settings { get; set; }
+
         public UserDetailReadDto? Detail { get; set; }
     }
 

@@ -1,4 +1,5 @@
-﻿using HgznMes.Domain.Entities.Base;
+﻿using HgznMes.Domain.Entities.Authority;
+using HgznMes.Domain.Entities.Base;
 
 namespace HgznMes.Domain.Entities.Account
 {
@@ -9,10 +10,13 @@ namespace HgznMes.Domain.Entities.Account
     {
         public Guid UserId { get; set; }
 
-        public User User { get; set; } = null!;
-
         public Guid RoleId { get; set; }
 
-        public Role Role { get; set; } = null!;
+        public static IEnumerable<UserRole> Seeds { get; set; } =
+        [
+            new UserRole { Id = 1, UserId = User.DevUser.Id, RoleId = Role.DevRole.Id},
+            new UserRole { Id = 2, UserId = User.AdminUser.Id, RoleId = Role.AdminRole.Id}
+        ];
+
     }
 }

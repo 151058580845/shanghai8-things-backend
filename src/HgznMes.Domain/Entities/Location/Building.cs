@@ -10,11 +10,11 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
     [Comment("建筑物名称")]
     public string Name { get; set; } = null!;
     
-    [Column(TypeName = "nvarchar(50)")]
+    [Column(TypeName = "varchar(50)")]
     [Comment("建筑物编号")]
     public string? Code { get; set; }
 
-    [Column(TypeName = "nvarchar(255)")]
+    [Column(TypeName = "varchar(255)")]
     [Comment("地址")]
     public string? Address { get; set; }
 

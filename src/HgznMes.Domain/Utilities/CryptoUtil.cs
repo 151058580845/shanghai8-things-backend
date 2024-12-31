@@ -1,4 +1,5 @@
 ﻿using HgznMes.Domain.Entities.Account;
+using HgznMes.Domain.Shared.Utilities;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -11,16 +12,18 @@ namespace HgznMes.Domain.Utilities
 
         public static void Initialize(string keyFolder)
         {
-#if TEST
-            var password = "dev@233";
-            var secret = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-            var base64 = Convert.ToBase64String(secret);
-            //------ to backend -------//
-            var pass = Salt(secret, out var salt);
-            var store = Convert.ToBase64String(pass);
-            var salt64 = Convert.ToBase64String(salt);
-            var isPass = User.DevUser.Verify(secret);
-#endif
+            //if (SettingUtil.IsDevelopment)
+            //{
+            //    //var password = "dev@2024";
+            //    var password = "admin@2024";
+            //    var secret = SHA256.HashData(Encoding.UTF8.GetBytes(password));
+            //    var base64 = Convert.ToBase64String(secret);
+            //    //------ to backend -------//
+            //    var pass = Salt(secret, out var salt);
+            //    var pass64 = Convert.ToBase64String(pass);
+            //    var salt64 = Convert.ToBase64String(salt);
+            //    var isPass = User.DevUser.Verify(secret);
+            //}
 
             var privateKeyPath = Path.Combine(keyFolder, "private-key.pem");
             var publicKeyPath = Path.Combine(keyFolder, "public-key.pem");

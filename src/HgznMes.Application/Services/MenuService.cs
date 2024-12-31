@@ -6,6 +6,7 @@ using HgznMes.Infrastructure.DbContexts;
 using HgznMes.Infrastructure.Utilities;
 using HgznMes.Domain.Shared;
 using HgznMes.Domain.Entities.Authority;
+using System.Security.Claims;
 
 namespace HgznMes.Application.Services
 {
@@ -27,6 +28,30 @@ namespace HgznMes.Application.Services
                 .OrderByDescending(m => m.OrderNum)
                 .ToPaginatedListAsync(query.PageIndex, query.PageSize);
             return Mapper.Map<PaginatedList<MenuReadDto>>(entities);
+        }
+
+        public async Task<IEnumerable<MenuReadDto>> GetCurrentUserMenusAsTreeAsync(IEnumerable<Claim> claims)
+        {
+            var roleId = Guid.Parse(claims.FirstOrDefault(c => c.Type == CustomClaimsType.RoleId)!.Value);
+
+            var roles = await _dbContext.Roles
+                .Where(r => r.Id == roleId)
+                .Include(r => r.Menus)
+                .ToArrayAsync();
+            var targets = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
+            var menus = Mapper.Map<IEnumerable<MenuReadDto>>(targets);
+            var root = AsTree(menus.Single(m => m.ParentId == null));
+            return root.Children!;
+
+            MenuReadDto AsTree(MenuReadDto parent)
+            {
+                parent.Children = menus
+                    .Where(m => m.ParentId == parent.Id)
+                    .OrderBy(m => m.Order)
+                    .ThenBy(m => m.Level)
+                    .Select(m => AsTree(m));
+                return parent;
+            }
         }
 
         public async Task<IEnumerable<MenuReadDto>> GetRootMenusAsTreeAsync()

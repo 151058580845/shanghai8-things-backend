@@ -31,7 +31,7 @@ namespace HgznMes.Domain.Entities.Notice
         /// <summary>
         /// 内容
         /// </summary>
-        [Column(TypeName = "nvarchar(max)")]
+        [Column(TypeName = "varchar(max)")]
         public string Content { get; set; } = null!;
 
         /// <summary>

@@ -16,10 +16,10 @@ namespace HgznMes.Domain.Entities.Account
         /// </summary>s
         public string? Name { get; set; }
         public string Salt { get; set; } = null!;
-        public string? Nick { get; set; } = null!;
+        public string? Nick { get; set; }
         public string? Icon { get; set; }
-        public string? Email { get; set; } = null!;
-        public string? Phone { get; set; } = null!;
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
         public DateTime RegisterTime { get; set; }
         public Setting? Settings { get; set; }
         public Detail? Detail { get; set; }
@@ -56,20 +56,9 @@ namespace HgznMes.Domain.Entities.Account
         public static readonly User DevUser = new()
         {
             Username = "developer",
-            Passphrase = "Uh+8E9ft9jptdMzAVRKo0UYQtqn5epsbJUZQGbL/Xhk=",
-            Salt = "5+fPPv0FShtKo3ed746TiuNojEZsxuPkhbU+YvF5DuQ=",
+            Passphrase = "ZLdMAg0N2xN8NbXr5wsoevc/bBay/lJT4sLFbUClwTI=",
+            Salt = "ue9OQmiW1aH5gzkFKXEB84ToTcHjuroMdzDxymov0CA=",
             Nick = "initial-developer",
-            Email = "unknow",
-            Phone = "unknow",
-            RegisterTime = DateTime.UnixEpoch,
-        };
-
-        public static readonly User SuperUser = new()
-        {
-            Username = "super",
-            Passphrase = "WSAcdSAvzQFUq3iXLWXLmcuPmWHIjE8ffSBTVjJVBPQ=",
-            Salt = "aY68cuKZh+LNfYczaGclgtTOYy34yvl1O/H9IX3bBtU=",
-            Nick = "initial-super",
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
@@ -78,8 +67,8 @@ namespace HgznMes.Domain.Entities.Account
         public static readonly User AdminUser = new()
         {
             Username = "admin",
-            Passphrase = "Lc8DL5jIpDxDfsDp6gYk2HjVIEzXZ30MJc5eW6OU6ko=",
-            Salt = "JO3wh7gOTUQ5cBydCoQqnazvw5dgRoVQkNpdrIAvVgI=",
+            Passphrase = "qLGu+48XZDn5UC5TmgIgwb+29lIXYVA1i1vjPAjSY1A=",
+            Salt = "hxF4RZh/IdmJmTuzjBChb1d5vdotQmESgTkxJ1Yede0=",
             Nick = "initial-admin",
             Email = "unknow",
             Phone = "unknow",
@@ -88,7 +77,7 @@ namespace HgznMes.Domain.Entities.Account
 
         public static User[] Seeds { get; } =
         [
-            DevUser, SuperUser, AdminUser
+            DevUser, AdminUser
         ];
     }
 }

@@ -35,7 +35,7 @@ namespace BcsJiaer.Application.Auth.AuthHandler
             var userId = Guid.Parse(uId);
             var roleId = Guid.Parse(rId);
 
-            if (roleId == Role.SuperRole.Id)
+            if (roleId == Role.SuperRole.Id || roleId == Role.DevRole.Id)
             {
                 context.Succeed(requirement);
                 return;

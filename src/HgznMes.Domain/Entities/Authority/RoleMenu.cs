@@ -10,18 +10,12 @@ namespace HgznMes.Domain.Entities.Authority
     {
         public Guid MenuId { get; set; }
 
-        public Menu Menu { get; set; } = null!;
-
         public Guid RoleId { get; set; }
-
-        public Role Role { get; set; } = null!;
 
         public static IEnumerable<RoleMenu> Seeds { get; set; } =
         [
-            new RoleMenu{ },
-            new RoleMenu{ },
-            new RoleMenu{ },
-            new RoleMenu{ },
+            new RoleMenu { Id = 1, MenuId = Menu.Root.Id, RoleId = Role.DevRole.Id},
+            new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.SuperRole.Id}
         ];
 
     }

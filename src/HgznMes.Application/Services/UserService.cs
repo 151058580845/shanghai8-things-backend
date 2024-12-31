@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using HgznMes.Infrastructure.DbContexts;
 using HgznMes.Domain.Entities.Account;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.Extensions.Logging;
 
 namespace HgznMes.Application.Services
 {
@@ -22,15 +22,18 @@ namespace HgznMes.Application.Services
     {
         public UserService(
             ApiDbContext pgDbContext,
-            IUserDomainService userDomainService
+            IUserDomainService userDomainService,
+            ILogger<UserService> logger
             )
         {
             _userDomainService = userDomainService;
             _apiDbContext = pgDbContext;
+            _logger = logger;
         }
         
         private readonly ApiDbContext _apiDbContext;
         private readonly IUserDomainService _userDomainService;
+        private readonly ILogger<UserService> _logger;
 
         public async Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto)
         {
@@ -64,7 +67,8 @@ namespace HgznMes.Application.Services
 
             if (!await _userDomainService.VerifyTokenAsync(user.Id, token))
             {
-                throw new ForbiddenException("user was logged in elsewhere");
+                //throw new ForbiddenException("user was logged in elsewhere");
+                _logger.LogWarning("user was logged in elsewhere");
             }
             await _userDomainService.CacheTokenAsync(user.Id, token);
             return token;
@@ -91,8 +95,20 @@ namespace HgznMes.Application.Services
             var user = await _apiDbContext.Users
                 .Where(u => u.Id == id)
                 .Include(u => u.Roles)
+                .ThenInclude(r => r.Menus)
                 .FirstOrDefaultAsync();
             return Mapper.Map<UserReadDto>(user);
+        }
+
+        public async Task<UserScopeReadDto?> GetCurrentUserAsync(IEnumerable<Claim> claims)
+        {
+            var userId = Guid.Parse(claims.FirstOrDefault(c => c.Type == CustomClaimsType.UserId)!.Value);
+            var user = await _apiDbContext.Users
+                .Where(u => u.Id == userId)
+                .Include(u => u.Roles)
+                .ThenInclude(r => r.Menus)
+                .FirstOrDefaultAsync();
+            return Mapper.Map<UserScopeReadDto>(user);
         }
 
         [ScopeDefinition("get users where", $"{ManagedResource.User}.{ManagedAction.Get}.Query")]
