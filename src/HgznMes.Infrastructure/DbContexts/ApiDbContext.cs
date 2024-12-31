@@ -45,16 +45,22 @@ namespace HgznMes.Infrastructure.DbContexts
                         delete.SoftDeleted = true;
                         delete.DeleteTime = DateTime.UtcNow;
                     }
-                    if (entityEntry.Entity is ICreationAudited creationAudited)
-                    {
-                        creationAudited.CreationTime =DateTime.Now;
-                        creationAudited.CreatorId = Guid.Parse(_httpContextAccessor.HttpContext.User.Claims.First(c => CustomClaimsType.UserId == c.Type).Value);
-                    }
-                    if (entityEntry.Entity is ILastModificationAudited lastModificationAudited)
-                    {
-                        lastModificationAudited.LastModificationTime = DateTime.Now;
-                        lastModificationAudited.LastModifierId = Guid.Parse(_httpContextAccessor.HttpContext.User.Claims.First(c => CustomClaimsType.UserId == c.Type).Value);
-                    }
+                }
+                if (entityEntry.Entity is ICreationAudited creationAudited)
+                {
+                    var plain = _httpContextAccessor?.HttpContext?.User.Claims
+                        .First(c => CustomClaimsType.UserId == c.Type).Value;
+                    var userId = plain is null ? new Guid?() : Guid.Parse(plain);
+                    creationAudited.CreationTime = DateTime.UtcNow;
+                    creationAudited.CreatorId = userId;
+                }
+                if (entityEntry.Entity is ILastModificationAudited lastModificationAudited)
+                {
+                    var plain = _httpContextAccessor?.HttpContext?.User.Claims
+                        .First(c => CustomClaimsType.UserId == c.Type).Value;
+                    var userId = plain is null ? new Guid?() : Guid.Parse(plain);
+                    lastModificationAudited.LastModificationTime = DateTime.UtcNow;
+                    lastModificationAudited.LastModifierId = userId;
                 }
             }
             return base.SaveChangesAsync(cancellationToken);
