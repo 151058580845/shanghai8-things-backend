@@ -120,9 +120,9 @@ builder.Services.AddSwaggerGen(option =>
 // Add dbContext pool
 builder.Services.AddDbContextPool<ApiDbContext>(options =>
 {
-    //options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
     //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
-    options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
+    //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
     options.UseSnakeCaseNamingConvention();
 });
 

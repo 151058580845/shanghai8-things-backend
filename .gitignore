@@ -34,6 +34,9 @@ bld/
 [Bb]in/
 [Oo]bj/
 
+# Idea
+.idea/
+
 # outputs logs
 [Ll]og/
 [Ll]ogs/
