@@ -2,6 +2,7 @@
 using HgznMes.Application.Services.Base;
 using HgznMes.Domain.Services;
 using System.Reflection;
+using HgznMes.Application.Services;
 
 namespace HgznMes.WebApi.Utilities.InjectionModules
 {

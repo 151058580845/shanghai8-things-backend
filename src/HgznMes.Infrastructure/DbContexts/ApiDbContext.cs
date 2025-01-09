@@ -1,13 +1,14 @@
 ﻿using HgznMes.Domain.Entities;
-using HgznMes.Domain.Entities.Base;
 using Microsoft.EntityFrameworkCore;
 using CaseExtensions;
-using HgznMes.Domain.Entities.Account;
-using HgznMes.Domain.Entities.Authority;
-using HgznMes.Domain.Entities.Location;
-using HgznMes.Domain.Entities.Base.Audited;
+using HgznMes.Domain.Entities.Equip.EquipManager;
 using Microsoft.AspNetCore.Http;
 using HgznMes.Domain.Shared;
+using HgznMes.Domain.Entities.System.Base;
+using HgznMes.Domain.Entities.System.Location;
+using HgznMes.Domain.Entities.System.Account;
+using HgznMes.Domain.Entities.System.Authority;
+using HgznMes.Domain.Entities.System.Base.Audited;
 
 namespace HgznMes.Infrastructure.DbContexts
 {
@@ -30,6 +31,10 @@ namespace HgznMes.Infrastructure.DbContexts
         public DbSet<Building> Building { get; set; } = null!;
         public DbSet<Room> Rooms { get; set; } = null!;
         public DbSet<Floor> Floors { get; set; } = null!;
+        
+        public DbSet<EquipLedgerAggregateRoot> EquipLedgers { get; set; } = null!;
+        public DbSet<EquipTypeAggregateRoot> EquipTypes { get; set; } = null!;
+        
 
         #endregion dbsets
 

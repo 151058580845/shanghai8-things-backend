@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HgznMes.Domain.Entities.Base
+namespace HgznMes.Domain.Entities.System.Base
 {
     public class UniversalEntity : IAggregateRoot
     {

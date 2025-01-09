@@ -1,4 +1,4 @@
-﻿namespace HgznMes.Domain.Entities.Base.Audited
+﻿namespace HgznMes.Domain.Entities.System.Base.Audited
 {
     public interface IAudited : ICreationAudited, ILastModificationAudited
     {

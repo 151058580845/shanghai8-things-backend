@@ -1,4 +1,4 @@
-﻿using HgznMes.Domain.Entities.Account;
+﻿using HgznMes.Domain.Entities.System.Account;
 
 namespace HgznMes.Domain.ValueObjects.UserValue
 {

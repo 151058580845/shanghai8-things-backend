@@ -1,8 +1,8 @@
 ﻿using HgznMes.Domain.Shared;
-using HgznMes.Domain.Entities.Account;
 using HgznMes.Domain.Services;
 using HgznMes.Domain.Utilities;
 using StackExchange.Redis;
+using HgznMes.Domain.Entities.System.Account;
 
 namespace HgznMes.Infrastructure.DomainServices
 {

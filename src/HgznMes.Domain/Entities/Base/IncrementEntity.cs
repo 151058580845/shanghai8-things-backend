@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HgznMes.Domain.Entities.Base
+namespace HgznMes.Domain.Entities.System.Base
 {
     public class IncrementEntity : IAggregateRoot
     {

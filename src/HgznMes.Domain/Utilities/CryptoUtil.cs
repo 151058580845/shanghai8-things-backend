@@ -1,4 +1,4 @@
-﻿using HgznMes.Domain.Entities.Account;
+﻿using HgznMes.Domain.Entities.System.Account;
 using HgznMes.Domain.Shared.Utilities;
 using System.Security.Cryptography;
 using System.Text;
