@@ -6,8 +6,6 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\HgznMes.Domain.Shared\HgznMes.Domain.Shared.csproj" />
-        <ProjectReference Include="..\HgznMes.Domain\HgznMes.Domain.csproj" />
         <ProjectReference Include="..\HgznMes.Infrastructure\HgznMes.Infrastructure.csproj" />
     </ItemGroup>
 </Project>
