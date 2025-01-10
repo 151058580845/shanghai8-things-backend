@@ -22,15 +22,13 @@ var builder = WebApplication.CreateBuilder(args);
 RequireScopeUtil.Initialize();
 SettingUtil.Initialize(builder.Configuration);
 CryptoUtil.Initialize(SettingUtil.Jwt.KeyFolder);
-DataBaseUtil.Initalize(builder.Configuration);
 builder.Services.Configure<DbConnOptions>(builder.Configuration.GetSection(nameof(DbConnOptions)));
-// builder.Services.AddSingleton(t=>builder.Configuration.GetSection(nameof(DbConnOptions)).Get<DbConnOptions>());
 #endregion util Initialize
 
 // Change container to autoFac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(config =>
-    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load(nameof(Hgzn.Mes.Application.Main))));
+    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
 
 // Add services to the container.
 builder.Host.UseSerilog((context, logger) =>
@@ -119,14 +117,15 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 // Add dbContext pool
-builder.Services.AddDbContextPool<ApiDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
-    //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
-    //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
-    options.UseSnakeCaseNamingConvention();
-});
+// builder.Services.AddDbContextPool<ApiDbContext>(options =>
+// {
+//     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
+//     //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
+//     //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
+//     options.UseSnakeCaseNamingConvention();
+// });
 builder.Services.AddSingleton<SqlSugarContext>();
+
 // Add mapper profiles
 builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
 
@@ -150,7 +149,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Services.GetService<InitialDatabase>()?.Initialize();
+// app.Services.GetService<InitialDatabase>()?.Initialize();
+app.Services.GetService<SqlSugarContext>()?.InitTables();
 
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>

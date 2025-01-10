@@ -9,7 +9,7 @@ public abstract class CrudAppServiceSugar<TEntity, TGetOutputDto, TGetListOutput
 {
     protected SqlSugarContext SqlSugarContext { get; }
     protected ISqlSugarClient DbContext { get; }
-    public IMapper Mapper { get; init; } = null!;
+    protected IMapper Mapper { get; init; } = null!;
     protected CrudAppServiceSugar(SqlSugarContext dbContext)
     {
         SqlSugarContext = dbContext;

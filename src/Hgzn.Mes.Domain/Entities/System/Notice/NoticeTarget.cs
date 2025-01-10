@@ -1,8 +1,10 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Base;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Domain.Entities.System.Notice;
 
+[Table("NoticeTarget")]
 public class NoticeTarget : UniversalEntity
 {
 

@@ -1,9 +1,11 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Authority;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Entities.System.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
+    [Table("Role")]
     public class Role : UniversalEntity, ISoftDelete, IAudited, IState, IOrder
     {
         public string Name { get; set; } = null!;

@@ -1,7 +1,9 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Base;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Hgzn.Mes.Domain.Entities.System.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
+    [Table("Captcha")]
     public class Captcha : UniversalEntity
     {
         public CaptchaType Type { get; set; }

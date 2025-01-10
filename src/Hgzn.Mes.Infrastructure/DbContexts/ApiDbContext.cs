@@ -8,7 +8,7 @@ using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Entities.System.Base.Audited;
-using Hgzn.Mes.Domain.Entities.Location;
+using Hgzn.Mes.Domain.Entities.System.Location;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts
 {

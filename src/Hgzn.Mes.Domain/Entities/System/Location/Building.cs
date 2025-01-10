@@ -3,8 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Entities.System.Base.Audited;
 
-namespace Hgzn.Mes.Domain.Entities.Location;
+namespace Hgzn.Mes.Domain.Entities.System.Location;
 
+[Table("Building")]
 public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
 {
     [Description("建筑物名称")]

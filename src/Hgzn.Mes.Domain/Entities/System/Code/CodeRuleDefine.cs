@@ -1,7 +1,9 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Base;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Hgzn.Mes.Domain.Entities.System.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Code;
 
+[Table("CodeRuleDefine")]
 public class CodeRuleDefine : UniversalEntity, IOrder
 {
     /// <summary>

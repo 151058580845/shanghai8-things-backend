@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Domain.Entities.System.Notice
 {
+    [Table("Notice")]
     public class Notice : UniversalEntity, ISoftDelete, IAudited, IState, IOrder
     {
 

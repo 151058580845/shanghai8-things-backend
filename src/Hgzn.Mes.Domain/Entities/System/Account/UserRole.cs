@@ -1,10 +1,12 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Base;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Hgzn.Mes.Domain.Entities.System.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
     /// <summary>
     ///     关联表，如需使用可用Set获取
     /// </summary>
+    [Table("UserRole")]
     public class UserRole : IncrementEntity
     {
         public Guid UserId { get; set; }

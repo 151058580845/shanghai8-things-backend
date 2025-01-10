@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Location;
 using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;

@@ -1,8 +1,10 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Base;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Entities.System.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Authority
 {
+    [Table("Menu")]
     public class Menu : UniversalEntity, ISoftDelete, IAudited, IOrder, IState
     {
         public string Name { get; set; } = null!;

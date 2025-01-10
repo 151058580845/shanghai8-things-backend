@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Text;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Base;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SqlSugar;
@@ -17,11 +16,10 @@ public sealed class SqlSugarContext
     private DbConnOptions DbOptions { get; set; }
     private ILoggerFactory Logger {get;set;}
 
-    public SqlSugarContext(IConfiguration configuration, IOptions<DbConnOptions> dbConnOptions, ILoggerFactory logger)
+    public SqlSugarContext(IOptions<DbConnOptions> dbConnOptions, ILoggerFactory logger)
     {
         this.DbOptions = dbConnOptions.Value;
         Logger = logger;
-        var connectionString = configuration.GetConnectionString("SqlConnection");
         DbContext = new SqlSugarClient(Build());
         OnSqlSugarClientConfig(DbContext);
         InitTables();
@@ -29,12 +27,10 @@ public sealed class SqlSugarContext
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
 
     }
-    public Dictionary<string, string> PrefixDic = new()
+    private Dictionary<string, string> PrefixDic = new()
     {
-        { "EquipManager", "EQUIP_" },
-        { "EquipControl", "EQUIP_" },
-        { "SystemManager", "BASE_" },
-        { "WarehouseManagement", "WH_" }
+        { "Equip", "EQUIP_" },
+        { "System", "BASE_" }
     };
     private const string DefaultConnectionStringName = "Default";
 
@@ -81,21 +77,16 @@ public sealed class SqlSugarContext
                 {
                     var tableName = "";
                     var table = t.GetCustomAttribute<TableAttribute>();
-                    if (table != null)
+                    var name = t.FullName?.Split('.');
+                    var tablePrefix = "";
+                    if (name != null && name.Length>3)
                     {
-                        tableName = table.Name;
+                        tablePrefix = name[4];
                     }
-                    else
-                    {
-                        var name = t.FullName?.Split('.');
-                        if (name != null && name.Length>1)
-                        {
-                            tableName = name[0];
-                        }
-                    }
+                    tableName = table != null ? table.Name : name?[^1];
                     var tableDesc = t.GetCustomAttribute<DescriptionAttribute>();
                     
-                    if (PrefixDic.TryGetValue(tableName, out var prefix) && !string.IsNullOrEmpty(prefix))
+                    if (PrefixDic.TryGetValue(tablePrefix, out var prefix) && !string.IsNullOrEmpty(prefix))
                     {
                         e.DbTableName = prefix + tableName;
                         e.TableDescription = tableDesc?.Description;
@@ -120,14 +111,16 @@ public sealed class SqlSugarContext
     /// <summary>
     /// 初始化数据表
     /// </summary>
-    private void InitTables()
+    public void InitTables()
     {
-        
-        var tables = Assembly.Load("Hgzn.Mes." + nameof(Domain))
-            .GetTypes()
-            .Where(t => t.GetCustomAttribute<TableAttribute>() != null)
-            .ToArray();
-        DbContext.CodeFirst.InitTables(tables);
+        if (DbOptions.EnabledCodeFirst)
+        {
+            var tables = Assembly.Load("Hgzn.Mes." + nameof(Domain))
+                .GetTypes()
+                .Where(t => t.GetCustomAttribute<TableAttribute>() != null)
+                .ToArray();
+            DbContext.CodeFirst.InitTables(tables);
+        }
     }
     
     /// <summary>
@@ -184,7 +177,7 @@ public sealed class SqlSugarContext
         if (DbOptions.EnabledSqlLog)
         {
             var sqllog = $"=========SQL耗时{DbContext.Ado.SqlExecutionTime.TotalMilliseconds}毫秒=====";
-            Logger.CreateLogger<SqlSugarContext>().LogDebug(sqllog.ToString());
+            Logger.CreateLogger<SqlSugarContext>().LogDebug(sqllog);
         }
     }
     

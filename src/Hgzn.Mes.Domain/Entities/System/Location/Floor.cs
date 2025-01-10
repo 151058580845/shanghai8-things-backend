@@ -3,8 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Entities.System.Base.Audited;
 
-namespace Hgzn.Mes.Domain.Entities.Location;
+namespace Hgzn.Mes.Domain.Entities.System.Location;
 
+[Table("Floor")]
 public class Floor : UniversalEntity, IOrder, IAudited
 {
     [ForeignKey("Building")]  // 外键设置到 BuildingAggregateRoot

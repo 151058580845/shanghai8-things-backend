@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Hgzn.Mes.Application.Dtos.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Entities.Location;
+using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Application.Dtos.Equip;

@@ -1,7 +1,9 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Base;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Hgzn.Mes.Domain.Entities.System.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 {
+    [Table("DictionaryType")]
     public class DictionaryType : UniversalEntity, ISoftDelete, IOrder, IState
     {
         /// <summary>
