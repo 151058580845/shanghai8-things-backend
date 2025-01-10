@@ -1,14 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using HgznMes.Domain.Entities.System.Base;
-using HgznMes.Domain.Entities.System.Base.Audited;
-using HgznMes.Domain.Shared.Enums;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
+using Hgzn.Mes.Domain.Entities.System.Base;
+using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Shared.Enums;
 
-namespace HgznMes.Domain.Entities.Equip.EquipControl;
+namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 
 /// <summary>
 /// 采集模式设置
 /// </summary>
 [Table("CollectionConfig")]
+[Description("设备采集模式设置")]
 public class CollectionConfigEntity : UniversalEntity,ICreationAudited
 {
     /// <summary>

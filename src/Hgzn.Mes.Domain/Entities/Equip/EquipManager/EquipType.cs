@@ -1,8 +1,11 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.System.Base;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
+[Table("EquipType")]
+[Description("设备类型")]
 public class EquipType : UniversalEntity,ISoftDelete, IState
 {
 

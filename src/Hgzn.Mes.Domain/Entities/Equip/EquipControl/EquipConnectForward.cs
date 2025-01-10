@@ -1,17 +1,16 @@
-﻿
-
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using HgznMes.Domain.Entities.System.Base;
-using HgznMes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Entities.System.Base;
+using Hgzn.Mes.Domain.Entities.System.Base.Audited;
 
-namespace HgznMes.Domain.Entities.Equip.EquipControl;
+namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 
 /// <summary>
 /// 设备绑定表
 /// </summary>
 [Table("EquipConnect")]
-public class EquipConnectForwardEntity:UniversalEntity,ICreationAudited
+[Description("设备绑定表")]
+public class EquipConnectForward:UniversalEntity,ICreationAudited
 {
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }=default!;

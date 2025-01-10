@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Shared.Enums;
@@ -8,6 +9,8 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 /// <summary>
 /// 设备采集信息配置表
 /// </summary>
+[Table("EquipConnect")]
+[Description("设备采集信息配置表")]
 public class EquipConnect: UniversalEntity, ISoftDelete, IState, IOrder
 {
     public DateTime CreationTime { get; set; }
@@ -41,7 +44,7 @@ public class EquipConnect: UniversalEntity, ISoftDelete, IState, IOrder
     public int? CollectionExtension { get; set; }
 
     // [Navigate(NavigateType.OneToOne, nameof(CollectionConfigId))]
-    public CollectionConfig? CollectionConfig { get; set; }
+    // public CollectionConfig? CollectionConfig { get; set; }
     
     // [Navigate(NavigateType.OneToOne, nameof(EquipId))]
     public EquipLedger? EquipLedger { get; set; }

@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
-using HgznMes.Infrastructure.DbContexts;
+using SqlSugar;
 
 namespace HgznMes.Application.Services;
 
-public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, TKey, TGetListInput, TCreateInput, TUpdateInput>
-    where TEntity : class
+public abstract class CrudAppServiceSugar<TEntity, TGetOutputDto, TGetListOutputDto, TKey, TGetListInput, TCreateInput, TUpdateInput>
+    where TEntity : class, new()
 {
-    protected ApiDbContext DbContext { get; }
-    protected IMapper Mapper { get; init; } = null!;
-    protected CrudAppService(ApiDbContext dbContext)
+    protected ISqlSugarClient DbContext { get; }
+    public IMapper Mapper { get; init; } = null!;
+    protected CrudAppServiceSugar(ISqlSugarClient dbContext)
     {
         DbContext = dbContext;
     }
@@ -21,8 +21,7 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
     public async Task<TGetOutputDto> CreateAsync(TCreateInput input)
     {
         var entity = Mapper.Map<TEntity>(input);
-        await DbContext.Set<TEntity>().AddAsync(entity);
-        await DbContext.SaveChangesAsync();
+        await DbContext.Insertable(entity).ExecuteCommandAsync();
         return Mapper.Map<TGetOutputDto>(entity);
     }
 
@@ -34,14 +33,13 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
     /// <returns></returns>
     public async Task<TGetOutputDto?> UpdateAsync(TKey key,TUpdateInput input)
     {
-        var entity = await DbContext.Set<TEntity>().FindAsync(key);
+        var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity == null)
         {
             return default;
         }
         Mapper.Map(input, entity);
-        DbContext.Set<TEntity>().Update(entity);
-        await DbContext.SaveChangesAsync();
+        await DbContext.Updateable(entity).ExecuteCommandAsync();
         return Mapper.Map<TGetOutputDto>(entity);
     }
 
@@ -52,10 +50,10 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
     /// <returns></returns>
     public async Task<TGetOutputDto?> DeleteAsync(TKey key)
     {
-        var entity = await DbContext.Set<TEntity>().FindAsync(key);
+        var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity != null)
         {
-            var delete = DbContext.Set<TEntity>().Remove(entity);
+            var delete =await DbContext.Deleteable(entity).ExecuteCommandAsync();
             return Mapper.Map<TGetOutputDto>(delete);
         }
         return default;
@@ -68,7 +66,7 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
     /// <returns></returns>
     public async Task<TGetOutputDto> GetAsync(TKey key)
     {
-        var entity = await DbContext.Set<TEntity>().FindAsync(key);
+        var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         return Mapper.Map<TGetOutputDto>(entity);
     }
 

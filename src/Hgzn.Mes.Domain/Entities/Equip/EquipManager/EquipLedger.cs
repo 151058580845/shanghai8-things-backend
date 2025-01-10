@@ -1,13 +1,15 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using HgznMes.Domain.Entities.System.Base;
-using HgznMes.Domain.Entities.System.Base.Audited;
-using HgznMes.Domain.Entities.System.Location;
-using HgznMes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.Entities.Location;
+using Hgzn.Mes.Domain.Entities.System.Base;
+using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Shared.Enums;
 
-namespace HgznMes.Domain.Entities.Equip.EquipManager;
+namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
-public class EquipLedgerAggregateRoot : UniversalEntity, ISoftDelete, IState, IOrder,IAudited
+[Table("EquipLedger")]
+[Description("设备台账")]
+public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder,IAudited
 {
     [Description("设备编号")]
     public required string EquipCode { get; set; }
@@ -56,7 +58,7 @@ public class EquipLedgerAggregateRoot : UniversalEntity, ISoftDelete, IState, IO
     /// 设备类型
     /// </summary>
     // [Navigate(NavigateType.OneToOne, nameof(TypeId))]
-    public EquipTypeAggregateRoot? EquipTypeAggregate { get; set; }
+    public EquipType? EquipTypeAggregate { get; set; }
 
     // /// <summary>
     // /// 部门

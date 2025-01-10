@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.System.Base;
 using Hgzn.Mes.Domain.Entities.System.Base.Audited;
 
@@ -7,6 +8,8 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
 /// <summary>
 /// 接收的数据
 /// </summary>
+[Table("ReceiveData")]
+[Description("接收的数据")]
 public class ReceiveData : UniversalEntity, IAudited
 {
     public Guid? CreatorId { get; set; }
