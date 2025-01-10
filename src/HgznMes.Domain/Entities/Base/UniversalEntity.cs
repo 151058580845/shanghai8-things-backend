@@ -2,7 +2,7 @@
 
 namespace HgznMes.Domain.Entities.System.Base
 {
-    public class UniversalEntity : IAggregateRoot
+    public abstract class UniversalEntity : IAggregateRoot
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();

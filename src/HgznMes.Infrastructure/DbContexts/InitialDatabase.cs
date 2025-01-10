@@ -1,4 +1,5 @@
-﻿using HgznMes.Domain.Entities;
+﻿using System.Reflection;
+using HgznMes.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,8 @@ namespace HgznMes.Infrastructure.DbContexts
         {
             _apiDbContext = apiDbContext;
             _logger = logger;
+           var ss = Assembly.Load("HgznMes." + nameof(Domain));
+           ss.GetTypes().Where(t => t.FullName.Contains("123"));
         }
 
         private readonly ApiDbContext _apiDbContext;

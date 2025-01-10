@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using HgznMes.Domain.Entities.System.Base;
 using HgznMes.Domain.Entities.System.Base.Audited;
 using HgznMes.Domain.Entities.System.Location;
@@ -15,6 +16,7 @@ public class EquipLedgerAggregateRoot : UniversalEntity, ISoftDelete, IState, IO
     public required string EquipName { get; set; }
     
     [Description( "设备类型ID")]
+    [ForeignKey(nameof(EquipTypeAggregate))]
     public Guid? TypeId { get; set; }
     
     [Description( "规格型号")]

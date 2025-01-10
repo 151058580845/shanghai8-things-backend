@@ -11,8 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using MySql.Data.MySqlClient;
-using Npgsql;
 using Serilog;
 using System.Reflection;
 

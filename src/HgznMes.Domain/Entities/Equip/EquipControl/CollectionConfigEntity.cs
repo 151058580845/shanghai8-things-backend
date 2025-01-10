@@ -1,5 +1,4 @@
-﻿
-
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using HgznMes.Domain.Entities.System.Base;
 using HgznMes.Domain.Entities.System.Base.Audited;
 using HgznMes.Domain.Shared.Enums;
@@ -9,6 +8,7 @@ namespace HgznMes.Domain.Entities.Equip.EquipControl;
 /// <summary>
 /// 采集模式设置
 /// </summary>
+[Table("CollectionConfig")]
 public class CollectionConfigEntity : UniversalEntity,ICreationAudited
 {
     /// <summary>
