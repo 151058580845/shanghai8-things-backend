@@ -1,0 +1,20 @@
+# 基础action用例 
+name: release-jiaer-webapi
+on:
+  # 满足以v开头的tag才会触发
+  push:
+    tags:        
+      - v*
+
+jobs:
+  start:
+    # 我将引用bwtps组织下ActionBase代码库dev分支上名为publisher.yml的可重用工作流
+    uses: bwtps/ActionBase/.github/workflows/publisher.yml@main
+    with: 
+        # 我容器将以名为org/zdtest，Tag为latest的镜像启动
+        image-name: bewatec/jiaer-webapi
+        image-tag: dev
+        # 我的Dockerfile文件在项目根目录
+        dockerfile-path: ./src/BcsJiaer.WebApi/Dockerfile
+    secrets: #inherit
+        ding-token: ${{ secrets.DING_TOKEN }}

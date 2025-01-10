@@ -1,0 +1,238 @@
+﻿using System.ComponentModel;
+using Hgzn.Mes.Application.Dtos.Base;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.Location;
+using Hgzn.Mes.Domain.Shared.Enums;
+
+namespace Hgzn.Mes.Application.Dtos.Equip;
+
+public class EquipLedgerDto
+{
+}
+
+public class EquipLedgerReadDto : ReadDto
+{
+    public Guid Id { get; set; }
+    [Description("设备编号")] public required string EquipCode { get; set; }
+
+    [Description("设备名称")] public required string EquipName { get; set; }
+
+    [Description("设备类型ID")] public Guid? TypeId { get; set; }
+
+    [Description("规格型号")] public string? Model { get; set; }
+
+    [Description("购置日期")] public DateTime? PurchaseDate { get; set; }
+
+    [Description("供应商ID")] public Guid? SupplierId { get; set; }
+
+    [Description("资产编号")] public string? AssetNumber { get; set; }
+
+    [Description("使用部门ID")] public Guid? DepartmentId { get; set; }
+
+    [Description("安装地点")] //若是rfidReader则不可为null
+    public Guid? RoomId { get; set; }
+
+    public Room? Room { get; set; }
+
+    [Description("状态（在用/停用/报废）")] public EquipOperationStatus? EquipOperationStatus { get; set; }
+
+    [Description("有效期时间")] public DateTime? ValidityDate { get; set; }
+
+    [Description("设备资源集（需要做文档管理功能）")] public Guid? ResourceId { get; set; }
+
+    [Description("备注")] public string? Remark { get; set; }
+
+    /// <summary>
+    /// 设备类型
+    /// </summary>
+    public EquipType? EquipTypeAggregate { get; set; }
+
+    /// <summary>
+    /// 是否在移动中
+    /// </summary>
+    public bool HasMove { get; set; } = false;
+
+    /// <summary>
+    /// 设备当前的MAC地址
+    /// </summary>
+    public string? Mac { get; set; }
+
+    /// <summary>
+    /// 设备当前的IP地址
+    /// </summary>
+    public string? IpAddress { get; set; }
+
+    /// <summary>
+    /// 设备重要级别
+    /// </summary>
+    public EquipLevelEnum? EquipLevel { get; set; } = EquipLevelEnum.Basic;
+
+    public bool State { get; set; } = true;
+    public int OrderNum { get; set; } = 0;
+    public bool SoftDeleted { get; set; }
+    public DateTime? DeleteTime { get; set; }
+}
+
+public class EquipLedgerCreateDto : CreateDto
+{
+    /// <summary>
+    /// 设备编号
+    /// </summary>
+    public required string EquipCode { get; set; }
+
+    /// <summary>
+    /// 设备名称
+    /// </summary>
+    public required string EquipName { get; set; }
+
+    /// <summary>
+    /// 设备类型ID
+    /// </summary>
+    public Guid? TypeId { get; set; }
+
+    /// <summary>
+    /// 规格型号
+    /// </summary>
+    public string? Model { get; set; }
+
+    /// <summary>
+    /// 购置日期
+    /// </summary>
+    public DateTime? PurchaseDate { get; set; }
+
+    /// <summary>
+    /// 供应商ID
+    /// </summary>
+    public Guid? SupplierId { get; set; }
+
+    /// <summary>
+    /// 资产编号
+    /// </summary>
+    public string? AssetNumber { get; set; }
+
+    /// <summary>
+    /// 使用部门ID
+    /// </summary>
+    public Guid? DepartmentId { get; set; }
+
+    /// <summary>
+    /// 安装地点
+    /// </summary>
+    public Guid? RoomId { get; set; }
+
+    /// <summary>
+    /// 状态（在用/停用/报废）
+    /// </summary>
+    public EquipOperationStatus? EquipOperationStatus { get; set; }
+
+    /// <summary>
+    /// 有效期时间
+    /// </summary>
+    public DateTime? ValidityDate { get; set; }
+
+    /// <summary>
+    /// 设备资源集（需要做文档管理功能）
+    /// </summary>
+    public Guid? ResourceId { get; set; }
+
+    /// <summary>
+    /// 备注
+    /// </summary>
+    public string? Remark { get; set; }
+}
+
+public class EquipLedgerUpdateDto : UpdateDto
+{
+    /// <summary>
+    /// 设备编号
+    /// </summary>
+    public required string EquipmentCode { get; set; }
+
+    /// <summary>
+    /// 设备名称
+    /// </summary>
+    public required string EquipmentName { get; set; }
+
+    /// <summary>
+    /// 设备类型ID
+    /// </summary>
+    public Guid? TypeId { get; set; }
+
+    /// <summary>
+    /// 规格型号
+    /// </summary>
+    public string? Model { get; set; }
+
+    /// <summary>
+    /// 购置日期
+    /// </summary>
+    public DateTime? PurchaseDate { get; set; }
+
+    /// <summary>
+    /// 供应商ID
+    /// </summary>
+    public Guid? SupplierId { get; set; }
+
+    /// <summary>
+    /// 资产编号
+    /// </summary>
+    public string? AssetNumber { get; set; }
+
+    /// <summary>
+    /// 使用部门ID
+    /// </summary>
+    public Guid? DepartmentId { get; set; }
+
+    /// <summary>
+    /// 安装地点
+    /// </summary>
+    public string? Location { get; set; }
+
+    /// <summary>
+    /// 状态（在用/停用/报废）
+    /// </summary>
+    public EquipOperationStatus? EquipOperationStatus { get; set; }
+
+    /// <summary>
+    /// 有效期时间
+    /// </summary>
+    public DateTime? ValidityDate { get; set; }
+
+    /// <summary>
+    /// 设备资源集（需要做文档管理功能）
+    /// </summary>
+    public Guid? ResourceId { get; set; }
+
+    /// <summary>
+    /// 备注
+    /// </summary>
+    public string? Remarks { get; set; }
+}
+
+public class EquipLedgerQueryDto : PaginatedQueryDto
+{
+    /// <summary>
+    /// 设备类型编号
+    /// </summary>
+    public string? EquipCode { get; set; }
+
+    /// <summary>
+    /// 设备类型名称
+    /// </summary>
+    public string? EquipName { get; set; }
+
+    /// <summary>
+    /// 设备状态
+    /// </summary>
+    public bool State { get; set; }
+
+    /// <summary>
+    /// 设备类型
+    /// </summary>
+    public Guid? TypeId { get; set; }
+
+    /// <summary>
+    /// 房间Id
+    /// </summary>
+    public Guid? RoomId { get; set; }
+}
