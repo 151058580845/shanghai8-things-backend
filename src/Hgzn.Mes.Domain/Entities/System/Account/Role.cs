@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.System.Authority;
-using Hgzn.Mes.Domain.Entities.System.Base;
-using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {

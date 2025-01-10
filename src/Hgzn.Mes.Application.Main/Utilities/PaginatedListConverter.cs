@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Hgzn.Mes.Domain.Shared;
 
-namespace Hgzn.Mes.Application.Utilities
+namespace Hgzn.Mes.Application.Main.Utilities
 {
     public class PaginatedListConverter<TEntity, TDto> :
         ITypeConverter<PaginatedList<TEntity>, PaginatedList<TDto>>

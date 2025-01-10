@@ -1,6 +1,6 @@
 ﻿using SqlSugar;
 
-namespace Hgzn.Mes.Infrastructure.SqlSugarContext;
+namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
 public class DbConnOptions
 {
@@ -18,7 +18,7 @@ public class DbConnOptions
     /// 开启种子数据
     /// </summary>
     public bool EnabledDbSeed { get; set; } = false;
-    
+
     /// <summary>
     /// 开启codefirst
     /// </summary>

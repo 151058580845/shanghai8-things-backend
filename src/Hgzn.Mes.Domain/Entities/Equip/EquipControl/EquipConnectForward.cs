@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.System.Base;
-using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 
@@ -10,7 +10,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 /// </summary>
 [Table("EquipConnect")]
 [Description("设备绑定表")]
-public class EquipConnectForward:UniversalEntity,ICreationAudited
+public class EquipConnectForward : UniversalEntity ,ICreationAudited
 {
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }=default!;

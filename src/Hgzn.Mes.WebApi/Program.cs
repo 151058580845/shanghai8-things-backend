@@ -1,6 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Hgzn.Mes.Application.Auth;
+using Hgzn.Mes.Application.Main.Auth;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
@@ -13,7 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
-using Hgzn.Mes.Infrastructure.SqlSugarContext;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
 var builder = WebApplication.CreateBuilder(args);
 

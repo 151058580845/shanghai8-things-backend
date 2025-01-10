@@ -1,13 +1,12 @@
-﻿using Hgzn.Mes.Application.Auth.Requirements;
+﻿using Hgzn.Mes.Application.Main.Auth.Requirements;
 using Hgzn.Mes.Application.Main.Services.System.IService;
-using Hgzn.Mes.Application.Services.Base;
 using Hgzn.Mes.Domain.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using Hgzn.Mes.Domain.Entities.System.Account;
 
 
-namespace BcsJiaer.Application.Auth.AuthHandler
+namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
 {
     public class CustomRequireHandler : AuthorizationHandler<CustomRequireScope>
     {

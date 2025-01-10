@@ -1,5 +1,5 @@
-﻿using Hgzn.Mes.Application.Dtos;
-using Hgzn.Mes.Application.Services.Base;
+﻿using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Application.Main.Services.Base;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

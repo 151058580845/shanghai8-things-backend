@@ -1,15 +1,16 @@
-﻿using AutoMapper;
-using Hgzn.Mes.Application.Dtos.Base;
-using Hgzn.Mes.Infrastructure.DbContexts;
-using Hgzn.Mes.Infrastructure.Utilities;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Infrastructure.DbContexts.Ef;
 
-namespace Hgzn.Mes.Application.BaseS;
+namespace Hgzn.Mes.Application.Main.Services;
 
-public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, TKey, TGetListInput, TCreateInput, TUpdateInput>
-    where TEntity : class
+public abstract class CrudAppService<TEntity, TKey, TReadDto, TCreateDto, TUpdateDto> : BaseService
+    where TEntity : AggregateRoot
+    where TReadDto : ReadDto
+    where TUpdateDto : UpdateDto
+    where TCreateDto : CreateDto
 {
     protected ApiDbContext DbContext { get; }
-    public IMapper Mapper { get; init; } = null!;
     protected CrudAppService(ApiDbContext dbContext)
     {
         DbContext = dbContext;
@@ -18,38 +19,38 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
     protected IQueryable<TEntity> Queryable()
     {
         return DbContext.Set<TEntity>().AsQueryable();
-    } 
-    
+    }
+
     /// <summary>
     /// 创建服务
     /// </summary>
-    /// <param name="input"></param>
+    /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TGetOutputDto> CreateAsync(TCreateInput input)
+    public async Task<TReadDto> CreateAsync(TCreateDto dto)
     {
-        var entity = Mapper.Map<TEntity>(input);
+        var entity = Mapper.Map<TEntity>(dto);
         await DbContext.Set<TEntity>().AddAsync(entity);
         await DbContext.SaveChangesAsync();
-        return Mapper.Map<TGetOutputDto>(entity);
+        return Mapper.Map<TReadDto>(entity);
     }
 
     /// <summary>
     /// 修改服务
     /// </summary>
     /// <param name="key"></param>
-    /// <param name="input"></param>
+    /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TGetOutputDto?> UpdateAsync(TKey key,TUpdateInput input)
+    public async Task<TReadDto?> UpdateAsync(TKey key,TUpdateDto dto)
     {
         var entity = await DbContext.Set<TEntity>().FindAsync(key);
         if (entity == null)
         {
             return default;
         }
-        Mapper.Map(input, entity);
+        Mapper.Map(dto, entity);
         DbContext.Set<TEntity>().Update(entity);
         await DbContext.SaveChangesAsync();
-        return Mapper.Map<TGetOutputDto>(entity);
+        return Mapper.Map<TReadDto>(entity);
     }
 
     /// <summary>
@@ -57,13 +58,13 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public async Task<TGetOutputDto?> DeleteAsync(TKey key)
+    public async Task<TReadDto?> DeleteAsync(TKey key)
     {
         var entity = await DbContext.Set<TEntity>().FindAsync(key);
         if (entity != null)
         {
             var delete = DbContext.Set<TEntity>().Remove(entity);
-            return Mapper.Map<TGetOutputDto>(delete);
+            return Mapper.Map<TReadDto>(delete);
         }
         return default;
     }
@@ -73,16 +74,10 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public async Task<TGetOutputDto> GetAsync(TKey key)
+    public async Task<TReadDto> GetAsync(TKey key)
     {
         var entity = await DbContext.Set<TEntity>().FindAsync(key);
-        return Mapper.Map<TGetOutputDto>(entity);
+        return Mapper.Map<TReadDto>(entity);
     }
 
-    /// <summary>
-    /// 获取列表
-    /// </summary>
-    /// <param name="input"></param>
-    /// <returns></returns>
-    public abstract Task<IEnumerable<TGetListOutputDto>> GetListAsync(TGetListInput input);
 }

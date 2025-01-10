@@ -1,8 +1,8 @@
-﻿using Hgzn.Mes.Application.Auth.Requirements;
+﻿using Hgzn.Mes.Application.Main.Auth.Requirements;
 using Microsoft.AspNetCore.Authorization;
 using Hgzn.Mes.Domain.ValueObjects;
 
-namespace Hgzn.Mes.Application.Auth
+namespace Hgzn.Mes.Application.Main.Auth
 {
     public static class AuthPolicyExtension
     {

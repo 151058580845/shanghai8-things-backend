@@ -1,8 +1,7 @@
-﻿using Hgzn.Mes.Application.Services.Base;
+﻿
+namespace Hgzn.Mes.Application.Main.Services.Location;
 
-namespace Hgzn.Mes.Application.Services.Location;
-
-public interface ILocationService:IBaseService
+public interface ILocationService : IBaseService
 {
     
 }

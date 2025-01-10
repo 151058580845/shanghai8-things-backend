@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Hgzn.Mes.Infrastructure.DbContexts
+namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
 {
     public class InitialDatabase
     {

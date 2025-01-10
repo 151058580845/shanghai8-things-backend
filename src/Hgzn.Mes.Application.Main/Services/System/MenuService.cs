@@ -1,22 +1,18 @@
 ﻿using System.Security.Claims;
-using Hgzn.Mes.Application.Dtos;
+using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
-using Hgzn.Mes.Infrastructure.SqlSugarContext;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
-    public class MenuService : CrudAppServiceSugar<Menu
-        , MenuReadDto, MenuReadDto, Guid, MenuQueryDto, MenuCreateDto,
+    public class MenuService : CrudAppServiceSugar<Menu, Guid
+        , MenuReadDto, MenuCreateDto,
         MenuUpdateDto>, IMenuService
     {
-        public MenuService(SqlSugarContext dbContext) : base(dbContext)
-        {
-        }
 
         public async Task<PaginatedList<MenuReadDto>> QueryMenusAsync(MenuQueryDto query)
         {
@@ -94,11 +90,6 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
 
             return count;
-        }
-
-        public override Task<IEnumerable<MenuReadDto>> GetListAsync(MenuQueryDto input)
-        {
-            throw new NotImplementedException();
         }
     }
 }

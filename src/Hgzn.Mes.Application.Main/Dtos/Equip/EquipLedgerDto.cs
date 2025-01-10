@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
-using Hgzn.Mes.Application.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
 
-namespace Hgzn.Mes.Application.Dtos.Equip;
+namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 
 public class EquipLedgerDto
 {

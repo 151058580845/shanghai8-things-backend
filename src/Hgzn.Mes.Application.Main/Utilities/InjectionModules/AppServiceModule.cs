@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using Autofac;
-using Hgzn.Mes.Application.Services;
+using Hgzn.Mes.Application.Main.Services;
 using Hgzn.Mes.Domain.Services;
 
 namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules

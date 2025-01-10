@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.System.Base;
-using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 
-namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
+namespace Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
 
 /// <summary>
 /// 接收的数据

@@ -1,12 +1,12 @@
-﻿using Hgzn.Mes.Application.BaseS;
-using Hgzn.Mes.Application.Dtos.Base;
-using Hgzn.Mes.Application.Dtos.Equip;
+﻿using Hgzn.Mes.Application;
+using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
-namespace Hgzn.Mes.Application.Services.Equip.IService;
+namespace Hgzn.Mes.Application.Main.Services.Equip.IService;
 
-public interface IEquipLedgerService:ICrudAppService<EquipLedger
-    ,EquipLedgerReadDto,EquipLedgerReadDto,Guid,EquipLedgerQueryDto,EquipLedgerCreateDto,EquipLedgerUpdateDto>
+public interface IEquipLedgerService : ICrudAppService<EquipLedger, Guid,
+     EquipLedgerReadDto, EquipLedgerCreateDto, EquipLedgerUpdateDto>
 {
     /// <summary>
     /// 获取设备列表

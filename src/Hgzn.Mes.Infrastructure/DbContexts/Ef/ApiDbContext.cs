@@ -1,16 +1,15 @@
-﻿using Hgzn.Mes.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using CaseExtensions;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Microsoft.AspNetCore.Http;
 using Hgzn.Mes.Domain.Shared;
-using Hgzn.Mes.Domain.Entities.System.Base;
+using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
-using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.System.Location;
 
-namespace Hgzn.Mes.Infrastructure.DbContexts
+namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
 {
     public class ApiDbContext : DbContext
     {
@@ -27,14 +26,14 @@ namespace Hgzn.Mes.Infrastructure.DbContexts
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<Menu> Menus { get; set; } = null!;
-        
+
         public DbSet<Building> Building { get; set; } = null!;
         public DbSet<Room> Rooms { get; set; } = null!;
         public DbSet<Floor> Floors { get; set; } = null!;
-        
+
         public DbSet<EquipLedger> EquipLedgers { get; set; } = null!;
         public DbSet<EquipType> EquipTypes { get; set; } = null!;
-        
+
 
         #endregion dbsets
 
@@ -167,7 +166,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts
             modelBuilder.Entity<Menu>()
                 .HasIndex(m => m.Code)
                 .IsUnique();
-            
+
             #endregion
 
             #region Location
@@ -189,7 +188,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts
                 .WithOne(r => r.Floor)
                 .HasForeignKey(r => r.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             modelBuilder.Entity<Room>()
                 .HasOne(t => t.Floor)
                 .WithMany()

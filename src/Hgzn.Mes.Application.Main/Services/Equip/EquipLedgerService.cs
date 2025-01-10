@@ -1,25 +1,21 @@
-﻿using Hgzn.Mes.Application.BaseS;
-using Hgzn.Mes.Application.Dtos.Base;
-using Hgzn.Mes.Application.Dtos.Equip;
+﻿using Hgzn.Mes.Application;
+using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services;
-using Hgzn.Mes.Application.Services.Equip.IService;
+using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Infrastructure.DbContexts;
-using Hgzn.Mes.Infrastructure.SqlSugarContext;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Microsoft.EntityFrameworkCore;
 using SqlSugar;
 
-namespace Hgzn.Mes.Application.Services.Equip;
+namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipLedgerService : CrudAppServiceSugar<EquipLedger
-        , EquipLedgerReadDto, EquipLedgerReadDto, Guid, EquipLedgerQueryDto, EquipLedgerCreateDto,
-        EquipLedgerUpdateDto>,
+public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid,
+    EquipLedgerReadDto, EquipLedgerCreateDto,
+    EquipLedgerUpdateDto>,
     IEquipLedgerService
 {
-    public EquipLedgerService(SqlSugarContext context) : base(context)
-    {
-    }
 
     public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListAsync(EquipLedgerQueryDto query)
     {
@@ -49,10 +45,5 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger
                 Value = t.Id.ToString()
             }).ToListAsync();
         return entities;
-    }
-
-    public override Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto input)
-    {
-        throw new NotImplementedException();
     }
 }

@@ -1,30 +1,24 @@
-﻿using Hgzn.Mes.Application.Auth;
-using Hgzn.Mes.Application.Dtos;
+﻿using Hgzn.Mes.Application.Main.Auth;
+using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.System.IService;
-using Hgzn.Mes.Application.Services;
-using Hgzn.Mes.Application.Services.Base;
+using Hgzn.Mes.Application.Main.Services;
+using Hgzn.Mes.Application.Main.Services.Base;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.DbContexts;
-using Hgzn.Mes.Infrastructure.SqlSugarContext;
 using Microsoft.EntityFrameworkCore;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     [ScopeDefinition("manage all role resources", ManagedResource.Role)]
-    public class RoleService : CrudAppServiceSugar<Role
-        , RoleReadDto, RoleReadDto, Guid, RoleQueryDto, RoleCreateDto,
-        RoleUpdateDto>, IRoleService
+    public class RoleService : CrudAppServiceSugar<Role, Guid,
+        RoleReadDto, RoleCreateDto, RoleUpdateDto>,
+        IRoleService
     {
-        public RoleService(
-            SqlSugarContext apiDbContext) : base(apiDbContext)
-        {
-        }
-
 
         [ScopeDefinition("create a role", $"{ManagedResource.Role}.{ManagedAction.Add}.New")]
         public async Task<RoleReadDto?> CreateRoleAsync(RoleCreateDto roleDto)
@@ -87,11 +81,6 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Select(r => r.Users ?? Array.Empty<User>())
                 .ToArrayAsync();
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
-        }
-
-        public override Task<IEnumerable<RoleReadDto>> GetListAsync(RoleQueryDto input)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using Hgzn.Mes.Application.Dtos;
+﻿using Hgzn.Mes.Application.Main.Dtos;
 using System.Security.Claims;
 
-namespace Hgzn.Mes.Application.Services.Base
+namespace Hgzn.Mes.Application.Main.Services.Base
 {
     public interface IUserService : IBaseService
     {

@@ -1,12 +1,12 @@
-﻿namespace Hgzn.Mes.Application.Helper;
+﻿namespace Hgzn.Mes.Domain.Shared.Utilities;
 
-public static class IdHelper
+public static class KeyExtension
 {
     public static dynamic[] ToDynamicArray(this IEnumerable<long> ids)
     {
         return ids.Select(id => (dynamic)id).ToArray();
     }
-        
+
     /// <summary>
     /// 判断guid是否为空
     /// </summary>
@@ -14,7 +14,7 @@ public static class IdHelper
     /// <returns></returns>
     public static bool IsGuidEmpty(this Guid? guid)
     {
-        return guid==null || guid == Guid.Empty;
+        return guid == null || guid == Guid.Empty;
     }
     /// <summary>
     /// 判断guid是否为空

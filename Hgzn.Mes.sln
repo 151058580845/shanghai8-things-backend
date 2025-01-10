@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hgzn.Mes.Application.Main",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hgzn.Mes.Application.Iot", "src\Hgzn.Mes.Application.Iot\Hgzn.Mes.Application.Iot.csproj", "{6A619D5A-63B4-4942-8A77-2677B1E5E497}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hgzn.Mes.CodeGenerator", "src\Hgzn.Mes.CodeGenerator\Hgzn.Mes.CodeGenerator.csproj", "{9CCD76AC-6E0B-4C5A-AA5F-5CF21B6C6D77}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CCD76AC-6E0B-4C5A-AA5F-5CF21B6C6D77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CCD76AC-6E0B-4C5A-AA5F-5CF21B6C6D77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CCD76AC-6E0B-4C5A-AA5F-5CF21B6C6D77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CCD76AC-6E0B-4C5A-AA5F-5CF21B6C6D77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

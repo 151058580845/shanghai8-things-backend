@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace Hgzn.Mes.Application.Auth.Requirements
+namespace Hgzn.Mes.Application.Main.Auth.Requirements
 {
     public class CustomRequireScope : IAuthorizationRequirement
     {

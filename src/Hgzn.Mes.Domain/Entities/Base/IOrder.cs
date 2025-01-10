@@ -1,4 +1,4 @@
-﻿namespace Hgzn.Mes.Domain.Entities.System.Base
+﻿namespace Hgzn.Mes.Domain.Entities.Base
 {
     public interface IOrder
     {

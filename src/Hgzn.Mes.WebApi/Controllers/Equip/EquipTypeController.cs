@@ -1,13 +1,13 @@
-﻿using Hgzn.Mes.Application.Dtos.Equip;
-using Hgzn.Mes.Application.Services.Equip.IService;
+﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
+using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hgzn.Mes.WebApi.Controllers.Equip;
 
-[Route("Api/[controller]")]
+[Route("api/[controller]")]
 [ApiController]
-public class EquipTypeController:BaseController
+public class EquipTypeController : BaseController
 {
     private readonly IEquipTypeService _equipTypeService;
 

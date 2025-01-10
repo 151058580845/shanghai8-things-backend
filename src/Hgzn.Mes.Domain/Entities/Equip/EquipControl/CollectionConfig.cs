@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.System.Base;
-using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
@@ -28,9 +28,9 @@ public class CollectionConfigEntity : UniversalEntity,ICreationAudited
     /// <summary>
     /// 一天中的时间，采集开始时间
     /// </summary>
-    public List<CollectTime> CollectionTime  { get; set; }
+    public IEnumerable<CollectTime> CollectionTime { get; set; } = [];
 
-    public List<DayOfWeek> CollectDays { get; set; }
+    public IEnumerable<DayOfWeek> CollectDays { get; set; } = [];
     
     /// <summary>
     /// 传输模式

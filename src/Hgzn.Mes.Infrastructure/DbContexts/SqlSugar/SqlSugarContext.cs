@@ -2,23 +2,23 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using System.Text;
+using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Entities.System.Base;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SqlSugar;
 
-namespace Hgzn.Mes.Infrastructure.SqlSugarContext;
+namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
 public sealed class SqlSugarContext
 {
     public ISqlSugarClient DbContext { get; set; }
     private DbConnOptions DbOptions { get; set; }
-    private ILoggerFactory Logger {get;set;}
+    private ILoggerFactory Logger { get; set; }
 
     public SqlSugarContext(IOptions<DbConnOptions> dbConnOptions, ILoggerFactory logger)
     {
-        this.DbOptions = dbConnOptions.Value;
+        DbOptions = dbConnOptions.Value;
         Logger = logger;
         DbContext = new SqlSugarClient(Build());
         OnSqlSugarClientConfig(DbContext);
@@ -62,8 +62,8 @@ public sealed class SqlSugarContext
                     //配置表外键
                     c.IfTable<EquipLedger>()
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
-                    
-                    
+
+
                     if (new NullabilityInfoContext().Create(p).WriteState is NullabilityState.Nullable)
                     {
                         c.IsNullable = true;
@@ -79,13 +79,13 @@ public sealed class SqlSugarContext
                     var table = t.GetCustomAttribute<TableAttribute>();
                     var name = t.FullName?.Split('.');
                     var tablePrefix = "";
-                    if (name != null && name.Length>3)
+                    if (name != null && name.Length > 3)
                     {
                         tablePrefix = name[4];
                     }
                     tableName = table != null ? table.Name : name?[^1];
                     var tableDesc = t.GetCustomAttribute<DescriptionAttribute>();
-                    
+
                     if (PrefixDic.TryGetValue(tablePrefix, out var prefix) && !string.IsNullOrEmpty(prefix))
                     {
                         e.DbTableName = prefix + tableName;
@@ -105,7 +105,7 @@ public sealed class SqlSugarContext
     {
         //是否开启软删除查询
         if (DbOptions.IsSoftDelete)
-            sqlSugarClient.QueryFilter.AddTableFilter<ISoftDelete>(t=>t.SoftDeleted == false);
+            sqlSugarClient.QueryFilter.AddTableFilter<ISoftDelete>(t => t.SoftDeleted == false);
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public sealed class SqlSugarContext
             DbContext.CodeFirst.InitTables(tables);
         }
     }
-    
+
     /// <summary>
     /// 软删除实现
     /// </summary>
@@ -130,7 +130,7 @@ public sealed class SqlSugarContext
     /// <typeparam name="T"></typeparam>
     public async Task SoftDeleteAsync<T>(Guid id) where T : class, ISoftDelete, new()
     {
-        var entity =await DbContext.Queryable<T>().In(id).SingleAsync();
+        var entity = await DbContext.Queryable<T>().In(id).SingleAsync();
         if (entity is { SoftDeleted: false })
         {
             entity.SoftDeleted = true;
@@ -138,7 +138,7 @@ public sealed class SqlSugarContext
             await DbContext.Updateable(entity).ExecuteCommandAsync();
         }
     }
-    
+
     /// <summary>
     /// 硬删除实现
     /// </summary>
@@ -148,7 +148,7 @@ public sealed class SqlSugarContext
     {
         await DbContext.Deleteable<T>().In(id).ExecuteCommandAsync();
     }
-    
+
     /// <summary>
     /// 日志
     /// </summary>
@@ -180,7 +180,7 @@ public sealed class SqlSugarContext
             Logger.CreateLogger<SqlSugarContext>().LogDebug(sqllog);
         }
     }
-    
+
     /// <summary>
     /// 备份
     /// </summary>
@@ -188,7 +188,7 @@ public sealed class SqlSugarContext
     /// <exception cref="NotImplementedException"></exception>
     public Task BackUpDataBaseAsync()
     {
-        string directory =Path.Combine(Directory.GetCurrentDirectory(),"database_backup");
+        string directory = Path.Combine(Directory.GetCurrentDirectory(), "database_backup");
         string fileName = DateTime.Now.ToString($"yyyyMMdd_HHmmss") + $"_{DbContext.Ado.Connection.Database}";
         if (!Directory.Exists(directory))
         {

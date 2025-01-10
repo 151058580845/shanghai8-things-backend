@@ -1,20 +1,18 @@
-﻿using AutoMapper;
-using Hgzn.Mes.Infrastructure.SqlSugarContext;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services;
 
-public abstract class CrudAppServiceSugar<TEntity, TGetOutputDto, TGetListOutputDto, TKey, TGetListInput, TCreateInput, TUpdateInput>
-    where TEntity : class, new()
+public abstract class CrudAppServiceSugar<TEntity, TKey, TReadDto, TCreateDto, TUpdateDto> : BaseService
+    where TEntity : AggregateRoot, new()
+    where TReadDto : ReadDto
+    where TUpdateDto : UpdateDto
+    where TCreateDto : CreateDto
 {
-    protected SqlSugarContext SqlSugarContext { get; }
-    protected ISqlSugarClient DbContext { get; }
-    protected IMapper Mapper { get; init; } = null!;
-    protected CrudAppServiceSugar(SqlSugarContext dbContext)
-    {
-        SqlSugarContext = dbContext;
-        DbContext=dbContext.DbContext;
-    }
+    protected SqlSugarContext SqlSugarContext { get; } = null!;
+    protected ISqlSugarClient DbContext { get; } = null!;
 
     protected ISugarQueryable<TEntity> Queryable()
     {
@@ -23,31 +21,31 @@ public abstract class CrudAppServiceSugar<TEntity, TGetOutputDto, TGetListOutput
     /// <summary>
     /// 创建服务
     /// </summary>
-    /// <param name="input"></param>
+    /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TGetOutputDto> CreateAsync(TCreateInput input)
+    public async Task<TReadDto> CreateAsync(TCreateDto dto)
     {
-        var entity = Mapper.Map<TEntity>(input);
+        var entity = Mapper.Map<TEntity>(dto);
         await DbContext.Insertable(entity).ExecuteCommandAsync();
-        return Mapper.Map<TGetOutputDto>(entity);
+        return Mapper.Map<TReadDto>(entity);
     }
 
     /// <summary>
     /// 修改服务
     /// </summary>
     /// <param name="key"></param>
-    /// <param name="input"></param>
+    /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TGetOutputDto?> UpdateAsync(TKey key,TUpdateInput input)
+    public async Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity == null)
         {
             return default;
         }
-        Mapper.Map(input, entity);
+        Mapper.Map(dto, entity);
         await DbContext.Updateable(entity).ExecuteCommandAsync();
-        return Mapper.Map<TGetOutputDto>(entity);
+        return Mapper.Map<TReadDto>(entity);
     }
 
     /// <summary>
@@ -70,16 +68,9 @@ public abstract class CrudAppServiceSugar<TEntity, TGetOutputDto, TGetListOutput
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public async Task<TGetOutputDto> GetAsync(TKey key)
+    public async Task<TReadDto> GetAsync(TKey key)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
-        return Mapper.Map<TGetOutputDto>(entity);
+        return Mapper.Map<TReadDto>(entity);
     }
-
-    /// <summary>
-    /// 获取列表
-    /// </summary>
-    /// <param name="input"></param>
-    /// <returns></returns>
-    public abstract Task<IEnumerable<TGetListOutputDto>> GetListAsync(TGetListInput input);
 }

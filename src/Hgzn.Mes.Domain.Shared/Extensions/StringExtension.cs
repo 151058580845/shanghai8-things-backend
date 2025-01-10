@@ -1,6 +1,6 @@
-﻿namespace Hgzn.Mes.Application.Helper;
+﻿namespace Hgzn.Mes.Application.Main.Utilities;
 
-public static class StringHelper
+public static class StringExtension
 {
     public static bool IsNullOrWhiteSpace(this string value)
     {

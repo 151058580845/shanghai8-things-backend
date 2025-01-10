@@ -1,6 +1,6 @@
-﻿using Hgzn.Mes.Application.Dtos.Base;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 
-namespace Hgzn.Mes.Application.Dtos
+namespace Hgzn.Mes.Application.Main.Dtos
 {
     public class ExceptionReadDto : ReadDto
     {

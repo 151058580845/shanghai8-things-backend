@@ -1,6 +1,6 @@
-﻿using Hgzn.Mes.Application.Services.Base;
+﻿using Hgzn.Mes.Application.Main.Services.Base;
 
-namespace Hgzn.Mes.Application.Services
+namespace Hgzn.Mes.Application.Main.Services
 {
     public class SettingService : BaseService, ISettingService
     {

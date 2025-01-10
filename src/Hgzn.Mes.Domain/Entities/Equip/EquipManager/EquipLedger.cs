@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.System.Base;
-using Hgzn.Mes.Domain.Entities.System.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
 
@@ -9,13 +9,13 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
 [Table("EquipLedger")]
 [Description("设备台账")]
-public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder,IAudited
+public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudited
 {
     [Description("设备编号")]
-    public string EquipCode { get; set; }
-    
-    [Description( "设备名称")]
-    public string EquipName { get; set; }
+    public string EquipCode { get; set; } = null!;
+
+    [Description("设备名称")]
+    public string EquipName { get; set; } = null!;
     
     [Description( "设备类型ID")]
     [ForeignKey(nameof(EquipTypeAggregate))]

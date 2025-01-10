@@ -1,13 +1,16 @@
-﻿using Hgzn.Mes.Application.Dtos.Base;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Domain.Entities.Base;
 
-namespace Hgzn.Mes.Application.BaseS;
+namespace Hgzn.Mes.Application.Main.Services;
 
-public interface ICrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, TKey, TGetListInput, TCreateInput, TUpdateInput>
-    where TEntity : class
+public interface ICrudAppService<TEntity, TKey, TReadDto, TCreateDto, TUpdateDto> : IBaseService
+    where TEntity : AggregateRoot
+    where TReadDto : ReadDto
+    where TUpdateDto : UpdateDto
+    where TCreateDto : CreateDto
 {
-    Task<TGetOutputDto> CreateAsync(TCreateInput input);
-    Task<TGetOutputDto?> UpdateAsync(TKey key, TUpdateInput input);
+    Task<TReadDto> CreateAsync(TCreateDto dto);
+    Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto);
     Task<int> DeleteAsync(TKey key);
-    Task<TGetOutputDto> GetAsync(TKey key);
-    Task<IEnumerable<TGetListOutputDto>> GetListAsync(TGetListInput input);
+    Task<TReadDto> GetAsync(TKey key);
 }

@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace Hgzn.Mes.Application.Utilities
+namespace Hgzn.Mes.Application.Main.Utilities
 {
     public static class JwtTokenUtil
     {

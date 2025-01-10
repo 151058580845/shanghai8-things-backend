@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 
-namespace Hgzn.Mes.Application.Utilities.InjectionModules
+namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 {
     public class AuthModule : Autofac.Module
     {

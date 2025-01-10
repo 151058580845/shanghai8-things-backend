@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Hgzn.Mes.Domain.Entities.System.Base
+namespace Hgzn.Mes.Domain.Entities.Base
 {
-    public class IncrementEntity : IAggregateRoot
+    public class IncrementEntity : AggregateRoot
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -1,6 +1,6 @@
 ﻿using SkiaSharp;
 
-namespace Hgzn.Mes.Application.Captchas
+namespace Hgzn.Mes.Application.Main.Captchas
 {
     public class CaptchaGenOptions
     {

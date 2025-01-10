@@ -1,4 +1,4 @@
-﻿namespace Hgzn.Mes.Domain.Entities.System.Base.Audited
+﻿namespace Hgzn.Mes.Domain.Entities.Base.Audited
 {
     public interface ICreationAudited
     {

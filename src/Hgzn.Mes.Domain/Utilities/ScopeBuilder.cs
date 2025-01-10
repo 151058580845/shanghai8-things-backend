@@ -1,4 +1,4 @@
-﻿namespace Hgzn.Mes.Application.Auth
+﻿namespace Hgzn.Mes.Domain.Utilities
 {
     public class ScopeBuilder
     {

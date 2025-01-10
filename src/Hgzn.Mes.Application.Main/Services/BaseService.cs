@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
-using Hgzn.Mes.Application.Services.Base;
 
-namespace Hgzn.Mes.Application.Services
+namespace Hgzn.Mes.Application.Main.Services
 {
     public class BaseService : IBaseService
     {

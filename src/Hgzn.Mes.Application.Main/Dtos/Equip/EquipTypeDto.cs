@@ -1,11 +1,6 @@
-﻿using Hgzn.Mes.Application.Dtos.Base;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 
-namespace Hgzn.Mes.Application.Dtos.Equip;
-
-public class EquipTypeDto
-{
-    
-}
+namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 
 public class EquipTypeReadDto : ReadDto
 {

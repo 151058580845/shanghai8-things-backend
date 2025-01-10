@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using Hgzn.Mes.Domain.Events;
+using MediatR;
 
-namespace Hgzn.Mes.Domain.Events.Handlers
+namespace Hgzn.Mes.Application.Main.Events.Handlers
 {
     public class UserLoginEventHandler : INotificationHandler<UserLoginEvent>
     {

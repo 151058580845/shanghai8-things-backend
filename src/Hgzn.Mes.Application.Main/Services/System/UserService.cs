@@ -1,9 +1,8 @@
-﻿using Hgzn.Mes.Application.Auth;
-using Hgzn.Mes.Application.Captchas;
-using Hgzn.Mes.Application.Captchas.Builder;
-using Hgzn.Mes.Application.Dtos;
-using Hgzn.Mes.Application.Services.Base;
-using Hgzn.Mes.Application.Utilities;
+﻿using Hgzn.Mes.Application.Main.Captchas;
+using Hgzn.Mes.Application.Main.Captchas.Builder;
+using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Application.Main.Services.Base;
+using Hgzn.Mes.Application.Main.Utilities;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Utilities;
@@ -11,11 +10,11 @@ using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using Hgzn.Mes.Infrastructure.DbContexts;
 using Microsoft.Extensions.Logging;
 using Hgzn.Mes.Domain.Entities.System.Account;
+using Hgzn.Mes.Infrastructure.DbContexts.Ef;
 
-namespace Hgzn.Mes.Application.Services
+namespace Hgzn.Mes.Application.Main.Services
 {
     [ScopeDefinition("manage all user resources", ManagedResource.User)]
     public class UserService : BaseService, IUserService

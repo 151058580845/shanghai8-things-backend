@@ -1,10 +1,10 @@
 ﻿using Autofac;
-using Hgzn.Mes.Infrastructure.DbContexts;
+using Hgzn.Mes.Infrastructure.DbContexts.Ef;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
-namespace Hgzn.Mes.Application.Utilities.InjectionModules
+namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 {
     public class SingletonModule : Module
     {

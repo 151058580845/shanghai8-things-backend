@@ -1,5 +1,5 @@
 ﻿
-namespace Hgzn.Mes.Application.Dtos.Base
+namespace Hgzn.Mes.Application.Main.Dtos.Base
 {
     public class PaginatedQueryDto
     {

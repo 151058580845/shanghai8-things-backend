@@ -1,13 +1,11 @@
-﻿using Hgzn.Mes.Application.BaseS;
-using Hgzn.Mes.Application.Dtos;
-using Hgzn.Mes.Application.Services;
+﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.System.IService
 {
-    public interface IRoleService : IBaseService,ICrudAppService<Role
-        , RoleReadDto, RoleReadDto, Guid, RoleQueryDto, RoleCreateDto,
+    public interface IRoleService : IBaseService,ICrudAppService<Role, Guid,
+        RoleReadDto, RoleCreateDto,
         RoleUpdateDto>
     {
         Task<RoleReadDto?> GetRoleAsync(Guid id);

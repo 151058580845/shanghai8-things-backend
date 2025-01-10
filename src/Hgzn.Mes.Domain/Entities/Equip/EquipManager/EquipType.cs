@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.System.Base;
+using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
@@ -10,10 +10,10 @@ public class EquipType : UniversalEntity,ISoftDelete, IState
 {
 
     [Description("设备类型编号")]
-    public string TypeCode { get; set; }
+    public string TypeCode { get; set; } = null!;
 
-    [Description("设备类型名称")]
-    public string TypeName { get; set; }
+    [Description("设备类型名称")] 
+    public string TypeName { get; set; } = null!;
 
     [Description("设备描述")]
     public string? Description { get; set; }

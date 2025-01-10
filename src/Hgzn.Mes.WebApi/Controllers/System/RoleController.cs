@@ -1,7 +1,6 @@
-﻿using Hgzn.Mes.Application.Auth;
-using Hgzn.Mes.Application.Dtos;
+﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.System.IService;
-using Hgzn.Mes.Application.Services.Base;
+using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

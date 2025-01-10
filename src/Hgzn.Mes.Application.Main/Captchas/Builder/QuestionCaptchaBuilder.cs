@@ -1,6 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Entities.System.Account;
 
-namespace Hgzn.Mes.Application.Captchas.Builder
+namespace Hgzn.Mes.Application.Main.Captchas.Builder
 {
     public class QuestionCaptchaBuilder : CaptchaBuilder
     {

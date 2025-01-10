@@ -1,4 +1,4 @@
-﻿namespace Hgzn.Mes.Application.Services.Base
+﻿namespace Hgzn.Mes.Application.Main.Services.Base
 {
     public interface ISettingService : IBaseService
     {

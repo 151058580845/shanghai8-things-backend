@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Infrastructure.SqlSugarContext;
+﻿using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Microsoft.Extensions.Options;
 
 namespace Hgzn.Mes.WebApi.Utilities;

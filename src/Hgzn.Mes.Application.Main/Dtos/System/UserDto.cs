@@ -1,7 +1,7 @@
-﻿using Hgzn.Mes.Application.Dtos.Base;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.ValueObjects.UserValue;
 
-namespace Hgzn.Mes.Application.Dtos
+namespace Hgzn.Mes.Application.Main.Dtos
 {
     public class UserRegisterDto : CreateDto
     {

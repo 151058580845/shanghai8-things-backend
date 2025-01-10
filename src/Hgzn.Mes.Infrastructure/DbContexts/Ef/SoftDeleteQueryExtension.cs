@@ -1,9 +1,9 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Hgzn.Mes.Infrastructure.DbContexts
+namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
 {
     public static class SoftDeleteQueryExtension
     {
