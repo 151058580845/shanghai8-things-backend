@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Application.Auth.Requirements;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Application.Services.Base;
 using Hgzn.Mes.Domain.Shared;
 using Microsoft.AspNetCore.Authorization;

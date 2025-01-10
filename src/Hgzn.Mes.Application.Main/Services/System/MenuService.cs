@@ -1,32 +1,30 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Claims;
 using Hgzn.Mes.Application.Dtos;
-using Hgzn.Mes.Application.Services.Base;
-using Hgzn.Mes.Domain.Shared.Exceptions;
-using Hgzn.Mes.Infrastructure.DbContexts;
-using Hgzn.Mes.Infrastructure.Utilities;
-using Hgzn.Mes.Domain.Shared;
-using System.Security.Claims;
+using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
+using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Exceptions;
+using Hgzn.Mes.Infrastructure.SqlSugarContext;
+using SqlSugar;
 
-namespace Hgzn.Mes.Application.Services
+namespace Hgzn.Mes.Application.Main.Services.System
 {
-    public class MenuService : BaseService, IMenuService
+    public class MenuService : CrudAppServiceSugar<Menu
+        , MenuReadDto, MenuReadDto, Guid, MenuQueryDto, MenuCreateDto,
+        MenuUpdateDto>, IMenuService
     {
-        public MenuService(
-            ApiDbContext dbContext)
+        public MenuService(SqlSugarContext dbContext) : base(dbContext)
         {
-            _dbContext = dbContext;
         }
 
-        private readonly ApiDbContext _dbContext;
-
-        public async Task<PaginatedList<MenuReadDto>> QueryMenusAsync(QueryMenuDto query)
+        public async Task<PaginatedList<MenuReadDto>> QueryMenusAsync(MenuQueryDto query)
         {
-            var entities = await _dbContext.Menus
+            var entities = await Queryable()
                 .Where(m => query.State == null || query.State == m.State)
                 .Where(m => query.Filter == null || m.Code.Contains(query.Filter) || m.Name.Contains(query.Filter))
                 .OrderByDescending(m => m.OrderNum)
-                .ToPaginatedListAsync(query.PageIndex, query.PageSize);
+                .ToPageListAsync(query.PageIndex, query.PageSize);
             return Mapper.Map<PaginatedList<MenuReadDto>>(entities);
         }
 
@@ -34,40 +32,42 @@ namespace Hgzn.Mes.Application.Services
         {
             var roleId = Guid.Parse(claims.FirstOrDefault(c => c.Type == CustomClaimsType.RoleId)!.Value);
 
-            var roles = await _dbContext.Roles
+            var roles = await DbContext.Queryable<Role>()
                 .Where(r => r.Id == roleId)
-                .Include(r => r.Menus)
+                .Includes(r => r.Menus)
                 .ToArrayAsync();
             var targets = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
             var menus = Mapper.Map<IEnumerable<MenuReadDto>>(targets);
-            var root = AsTree(menus.Single(m => m.ParentId == null));
+            var menuReadDtos = menus as MenuReadDto[] ?? menus.ToArray();
+            var root = AsTree(menuReadDtos.Single(m => m.ParentId == null));
             return root.Children!;
 
             MenuReadDto AsTree(MenuReadDto parent)
             {
-                parent.Children = menus
+                parent.Children = menuReadDtos
                     .Where(m => m.ParentId == parent.Id)
                     .OrderBy(m => m.Order)
                     .ThenBy(m => m.Level)
-                    .Select(m => AsTree(m));
+                    .Select(AsTree);
                 return parent;
             }
         }
 
         public async Task<IEnumerable<MenuReadDto>> GetRootMenusAsTreeAsync()
         {
-            var entities = await _dbContext.Menus.ToArrayAsync();
+            var entities = await Queryable().ToArrayAsync();
             var menus = Mapper.Map<IEnumerable<MenuReadDto>>(entities);
-            var root = AsTree(menus.Single(m => m.ParentId == null));
+            var menuReadDtos = menus as MenuReadDto[] ?? menus.ToArray();
+            var root = AsTree(menuReadDtos.Single(m => m.ParentId == null));
             return root.Children!;
 
             MenuReadDto AsTree(MenuReadDto parent)
             {
-                parent.Children = menus
+                parent.Children = menuReadDtos
                     .Where(m => m.ParentId == parent.Id)
                     .OrderBy(m => m.Order)
                     .ThenBy(m => m.Level)
-                    .Select(m => AsTree(m));
+                    .Select(AsTree);
                 return parent;
             }
         }
@@ -80,41 +80,25 @@ namespace Hgzn.Mes.Application.Services
         public async Task<int> DeleteMenuAsync(Guid id, bool force)
         {
             var count = 0;
-            var menu = await _dbContext.Menus
-                .FindAsync(id) ?? throw new NotFoundException("id not exist");
+            var menu = await GetAsync(id) ?? throw new NotFoundException("id not exist");
 
             if (menu.ParentId is null) throw new NotAcceptableException("root menu con't delete");
 
             if (force)
             {
-                count = await _dbContext.Menus.Where(m => m.Id == id).ExecuteDeleteAsync();
+                count = await DeleteAsync(id);
             }
-            else if(await _dbContext.Menus.AnyAsync(m => m.ParentId == id))
+            else if (await Queryable().AnyAsync(m => m.ParentId == id))
             {
                 throw new NotAcceptableException("child menu exist");
             }
+
             return count;
         }
 
-        public async Task<MenuReadDto> CreateMenuAsync(MenuCreateDto dto)
+        public override Task<IEnumerable<MenuReadDto>> GetListAsync(MenuQueryDto input)
         {
-            var entity = Mapper.Map<Menu>(dto);
-            await _dbContext.Menus.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
-            return Mapper.Map<MenuReadDto>(dto);
-        }
-
-        public async Task<MenuReadDto> UpdateMenuAsync(Guid id, MenuUpdateDto dto)
-        { 
-            var target = await _dbContext.Menus.FindAsync(id);
-            if(target is null)
-            {
-                throw new NotFoundException("menu not exsit");
-            }
-            Mapper.Map(dto, target);
-            _dbContext.Menus.Update(target);
-            await _dbContext.SaveChangesAsync();
-            return Mapper.Map<MenuReadDto>(dto);
+            throw new NotImplementedException();
         }
     }
 }

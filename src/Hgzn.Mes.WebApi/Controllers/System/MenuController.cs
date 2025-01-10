@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Hgzn.Mes.Application.Dtos;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Application.Services.Base;
 using Hgzn.Mes.WebApi.Utilities;
 
@@ -65,6 +66,6 @@ namespace Hgzn.Mes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<MenuReadDto>> CreateMenuAsync(MenuCreateDto dto) =>
-            (await _menuService.CreateMenuAsync(dto)).Wrap()!;
+            (await _menuService.CreateAsync(dto)).Wrap()!;
     }
 }

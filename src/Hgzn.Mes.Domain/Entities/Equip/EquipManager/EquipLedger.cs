@@ -12,10 +12,10 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder,IAudited
 {
     [Description("设备编号")]
-    public required string EquipCode { get; set; }
+    public string EquipCode { get; set; }
     
     [Description( "设备名称")]
-    public required string EquipName { get; set; }
+    public string EquipName { get; set; }
     
     [Description( "设备类型ID")]
     [ForeignKey(nameof(EquipTypeAggregate))]

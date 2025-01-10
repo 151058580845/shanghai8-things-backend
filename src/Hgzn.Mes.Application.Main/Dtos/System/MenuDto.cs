@@ -125,7 +125,7 @@ namespace Hgzn.Mes.Application.Dtos
         public bool Favorite { get; set; } = false;
     }
 
-    public class QueryMenuDto : PaginatedQueryDto
+    public class MenuQueryDto : PaginatedQueryDto
     {
         public bool? State { get; set; }
         public string? Filter { get; set; }

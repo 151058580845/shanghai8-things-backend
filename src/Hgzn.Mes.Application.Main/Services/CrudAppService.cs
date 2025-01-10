@@ -15,6 +15,11 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
         DbContext = dbContext;
     }
 
+    protected IQueryable<TEntity> Queryable()
+    {
+        return DbContext.Set<TEntity>().AsQueryable();
+    } 
+    
     /// <summary>
     /// 创建服务
     /// </summary>

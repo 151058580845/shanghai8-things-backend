@@ -10,10 +10,10 @@ public class EquipType : UniversalEntity,ISoftDelete, IState
 {
 
     [Description("设备类型编号")]
-    public required string TypeCode { get; set; }
+    public string TypeCode { get; set; }
 
     [Description("设备类型名称")]
-    public required string TypeName { get; set; }
+    public string TypeName { get; set; }
 
     [Description("设备描述")]
     public string? Description { get; set; }

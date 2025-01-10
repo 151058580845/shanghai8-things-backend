@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Application.Auth;
 using Hgzn.Mes.Application.Dtos;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Application.Services.Base;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -80,7 +81,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Put}.Scopes")]
-        public async Task<ResponseWrapper<int>> ModifyRoleMenu(Guid roleId, List<Guid> menus) =>
+        public async Task<ResponseWrapper<bool>> ModifyRoleMenu(Guid roleId, List<Guid> menus) =>
             (await _roleService.ModifyRoleMenuAsync(roleId, menus)).Wrap();
 
         /// <summary>

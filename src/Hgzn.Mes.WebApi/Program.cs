@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
+using Hgzn.Mes.Infrastructure.SqlSugarContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,13 +22,15 @@ var builder = WebApplication.CreateBuilder(args);
 RequireScopeUtil.Initialize();
 SettingUtil.Initialize(builder.Configuration);
 CryptoUtil.Initialize(SettingUtil.Jwt.KeyFolder);
-
+DataBaseUtil.Initalize(builder.Configuration);
+builder.Services.Configure<DbConnOptions>(builder.Configuration.GetSection(nameof(DbConnOptions)));
+// builder.Services.AddSingleton(t=>builder.Configuration.GetSection(nameof(DbConnOptions)).Get<DbConnOptions>());
 #endregion util Initialize
 
 // Change container to autoFac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(config =>
-    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application))));
+    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load(nameof(Hgzn.Mes.Application.Main))));
 
 // Add services to the container.
 builder.Host.UseSerilog((context, logger) =>
@@ -123,13 +126,13 @@ builder.Services.AddDbContextPool<ApiDbContext>(options =>
     //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
     options.UseSnakeCaseNamingConvention();
 });
-
+builder.Services.AddSingleton<SqlSugarContext>();
 // Add mapper profiles
-builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application))));
+builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
 
 // Add mediatR
 builder.Services.AddMediatR(config =>
-    config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application))));
+    config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
 
 var app = builder.Build();
 

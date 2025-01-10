@@ -1,27 +1,26 @@
-﻿using Hgzn.Mes.Application.BaseS;
-using Hgzn.Mes.Application.Dtos.Equip;
+﻿using Hgzn.Mes.Application.Dtos.Equip;
 using Hgzn.Mes.Application.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Infrastructure.DbContexts;
-using Microsoft.EntityFrameworkCore;
+using Hgzn.Mes.Infrastructure.SqlSugarContext;
+using SqlSugar;
 
-namespace Hgzn.Mes.Application.Services.Equip;
+namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipTypeService:CrudAppService<EquipType
-    ,EquipTypeReadDto,EquipTypeReadDto,Guid,EquipTypeQueryDto,EquipTypeCreateDto,EquipTypeUpdateDto>,IEquipTypeService
+public class EquipTypeService : CrudAppServiceSugar<EquipType
+        , EquipTypeReadDto, EquipTypeReadDto, Guid, EquipTypeQueryDto, EquipTypeCreateDto, EquipTypeUpdateDto>,
+    IEquipTypeService
 {
-    private readonly ApiDbContext _context;
-    public EquipTypeService(ApiDbContext dbContext) : base(dbContext)
+    public EquipTypeService(SqlSugarContext dbContext) : base(dbContext)
     {
-        _context = dbContext;
     }
 
     public override async Task<IEnumerable<EquipTypeReadDto>> GetListAsync(EquipTypeQueryDto input)
     {
-       var entities = await _context.EquipTypes.Where(m => input.TypeName == null || input.TypeName == m.TypeName)
+        var entities = await Queryable()
+            .Where(m => input.TypeName == null || input.TypeName == m.TypeName)
             .Where(m => input.TypeCode == null || input.TypeCode == m.TypeCode)
             .OrderBy(m => m.OrderNum)
             .ToListAsync();
-       return Mapper.Map<IEnumerable<EquipTypeReadDto>>(entities);
+        return Mapper.Map<IEnumerable<EquipTypeReadDto>>(entities);
     }
 }

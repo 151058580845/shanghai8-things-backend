@@ -1,9 +1,14 @@
-﻿using Hgzn.Mes.Application.Dtos;
+﻿using Hgzn.Mes.Application.BaseS;
+using Hgzn.Mes.Application.Dtos;
+using Hgzn.Mes.Application.Services;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
 
-namespace Hgzn.Mes.Application.Services.Base
+namespace Hgzn.Mes.Application.Main.Services.System.IService
 {
-    public interface IRoleService : IBaseService
+    public interface IRoleService : IBaseService,ICrudAppService<Role
+        , RoleReadDto, RoleReadDto, Guid, RoleQueryDto, RoleCreateDto,
+        RoleUpdateDto>
     {
         Task<RoleReadDto?> GetRoleAsync(Guid id);
 
@@ -11,7 +16,7 @@ namespace Hgzn.Mes.Application.Services.Base
 
         Task<RoleReadDto?> CreateRoleAsync(RoleCreateDto roleDto);
 
-        Task<int> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds);
+        Task<bool> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds);
 
         IEnumerable<ScopeDefReadDto> GetScopes();
 

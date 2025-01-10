@@ -9,7 +9,7 @@ namespace Hgzn.Mes.Domain.Utilities
 
         public static void Initialize()
         {
-            Scopes = Assembly.Load("Hgzn.Mes." + nameof(Application)).GetTypes()
+            Scopes = Assembly.Load("Hgzn.Mes." + nameof(Application)+".Main").GetTypes()
                 .Where(type => type.Namespace == "Hgzn.Mes." + nameof(Application) + ".Services")
                 .SelectMany(rqt => rqt.GetMethods()
                     .Select(m => (typeName: rqt.Name, attribute: m.GetCustomAttribute<ScopeDefinitionAttribute>()))

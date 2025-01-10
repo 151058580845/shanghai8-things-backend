@@ -16,4 +16,16 @@ namespace Hgzn.Mes.Application.Dtos
         public string Description { get; set; } = null!;
         public IEnumerable<MenuReadDto> Menus { get; set; } = null!;
     }
+    public class RoleQueryDto : QueryDto
+    {
+        public string Name { get; set; } = null!;
+        public string Description { get; set; } = null!;
+    }
+    
+    public class RoleUpdateDto : UpdateDto
+    {
+        public string Name { get; set; } = null!;
+        public string Description { get; set; } = null!;
+        public IEnumerable<string> MenuIds { get; set; } = null!;
+    }
 }

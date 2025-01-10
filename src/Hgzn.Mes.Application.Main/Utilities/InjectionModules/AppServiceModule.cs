@@ -1,16 +1,15 @@
-﻿using Autofac;
-using Hgzn.Mes.Application.Services.Base;
-using Hgzn.Mes.Domain.Services;
-using System.Reflection;
+﻿using System.Reflection;
+using Autofac;
 using Hgzn.Mes.Application.Services;
+using Hgzn.Mes.Domain.Services;
 
-namespace Hgzn.Mes.WebApi.Utilities.InjectionModules
+namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 {
     public class AppServiceModule : Autofac.Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterAssemblyTypes(Assembly.Load("Hgzn.Mes." + nameof(Application)))
+            builder.RegisterAssemblyTypes(Assembly.Load("Hgzn.Mes." + nameof(Application)+".Main"))
                 .Where(type => type.IsAssignableTo(typeof(IBaseService)))
                 .AsImplementedInterfaces()
                 .PropertiesAutowired();

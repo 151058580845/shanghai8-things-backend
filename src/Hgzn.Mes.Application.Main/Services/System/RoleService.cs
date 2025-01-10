@@ -1,94 +1,97 @@
 ﻿using Hgzn.Mes.Application.Auth;
 using Hgzn.Mes.Application.Dtos;
+using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Application.Services;
 using Hgzn.Mes.Application.Services.Base;
-using Hgzn.Mes.Domain.Shared.Exceptions;
-using Hgzn.Mes.Domain.Utilities;
-using Microsoft.EntityFrameworkCore;
-using Hgzn.Mes.Infrastructure.DbContexts;
-using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
+using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Exceptions;
+using Hgzn.Mes.Domain.Utilities;
+using Hgzn.Mes.Infrastructure.DbContexts;
+using Hgzn.Mes.Infrastructure.SqlSugarContext;
+using Microsoft.EntityFrameworkCore;
+using SqlSugar;
 
-namespace Hgzn.Mes.Application.Services
+namespace Hgzn.Mes.Application.Main.Services.System
 {
     [ScopeDefinition("manage all role resources", ManagedResource.Role)]
-    public class RoleService : BaseService, IRoleService
+    public class RoleService : CrudAppServiceSugar<Role
+        , RoleReadDto, RoleReadDto, Guid, RoleQueryDto, RoleCreateDto,
+        RoleUpdateDto>, IRoleService
     {
         public RoleService(
-            ApiDbContext apiDbContext)
+            SqlSugarContext apiDbContext) : base(apiDbContext)
         {
-            _apiDbContext = apiDbContext;
         }
 
-        private readonly ApiDbContext _apiDbContext;
 
         [ScopeDefinition("create a role", $"{ManagedResource.Role}.{ManagedAction.Add}.New")]
         public async Task<RoleReadDto?> CreateRoleAsync(RoleCreateDto roleDto)
         {
-            if (!RequireScopeUtil.Scopes.Any(s => !roleDto.MenuIds.Contains(s.Name)))
-            {
-                throw new NotAcceptableException("unsupported scope find");
-            }
-            var entity = Mapper.Map<Role>(roleDto);
-            await _apiDbContext.Roles.AddAsync(entity);
-            var index = await _apiDbContext.SaveChangesAsync();
-            return index == 0 ? null : Mapper.Map<RoleReadDto>(entity);
+            return await base.CreateAsync(roleDto);
         }
 
         [ScopeDefinition("get role info by id", $"{ManagedResource.Role}.{ManagedAction.Get}.Id")]
         public async Task<RoleReadDto?> GetRoleAsync(Guid id)
         {
-            var role = await _apiDbContext.Roles
-                .Where(r => r.Id == id)
-                .Include(r => r.Menus)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-            return Mapper.Map<RoleReadDto>(role);
+            return await GetAsync(id);
         }
 
         [ScopeDefinition("get all roles", $"{ManagedResource.Role}.{ManagedAction.Get}.All")]
         public async Task<IEnumerable<RoleReadDto>> GetRolesAsync()
         {
-            var roles = await _apiDbContext.Roles
-                .Include(r => r.Menus)
-                .AsNoTracking()
+            var roles = await Queryable()
+                .Includes(r => r.Menus)
                 .ToArrayAsync();
             return Mapper.Map<IEnumerable<RoleReadDto>>(roles);
         }
 
         [ScopeDefinition("change role manage scope", $"{ManagedResource.Role}.{ManagedAction.Put}.Scopes")]
-        public async Task<int> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds)
+        public async Task<bool> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds)
         {
             var roleMenuns = menuIds.Select(m => new RoleMenu
             {
                 RoleId = roleId,
                 MenuId = m
             });
-            var role = (await _apiDbContext.Roles.FindAsync(roleId)) ??
-                throw new NotFoundException("role is not exist");
-            await _apiDbContext.Set<RoleMenu>().Where(s => s.RoleId == roleId).ExecuteDeleteAsync();
-            await _apiDbContext.Set<RoleMenu>().AddRangeAsync(roleMenuns);
-            var result = await _apiDbContext.SaveChangesAsync();
-            return result;
+            var role = await GetAsync(roleId) ??
+                       throw new NotFoundException("role is not exist");
+            var result = await DbContext.Ado.UseTranAsync(async () =>
+            {
+                // 获取现有的菜单 ID
+                await DbContext.Deleteable<RoleMenu>().Where(s => s.RoleId == roleId).ExecuteCommandAsync();
+                await DbContext.Insertable<RoleMenu>(roleMenuns).ExecuteCommandAsync();
+            });
+            if (result.IsSuccess)
+            {
+                return true;
+            }
+            throw result.ErrorException;
         }
-
+        
         [ScopeDefinition("get all supported scopes", $"{ManagedResource.Role}.{ManagedAction.Get}.Scopes")]
         public IEnumerable<ScopeDefReadDto> GetScopes() =>
             Mapper.Map<IEnumerable<ScopeDefReadDto>>(RequireScopeUtil.Scopes);
 
         public async Task<PaginatedList<UserReadDto>> GetRoleUsersAsync(Guid roleId, UserQueryDto query)
         {
-            var users = await _apiDbContext.Roles
+            var users = await Queryable()
                 .Where(r => r.Id == roleId)
-                .Include(r => r.Users == null ? null : r.Users
+                .Includes(r => r.Users == null ? null : r.Users
                     .Where(u => query.Filter == null ||
                     (u.Phone != null && u.Phone.Contains(query.Filter)) ||
                     u.Username.Contains(query.Filter) ||
                     (u.Nick != null && u.Nick.Contains(query.Filter)))
                     .Where(u => query == null || u.State == query.State ))
-                .SelectMany(r => r.Users ?? Array.Empty<User>())
+                .Select(r => r.Users ?? Array.Empty<User>())
                 .ToArrayAsync();
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
+        }
+
+        public override Task<IEnumerable<RoleReadDto>> GetListAsync(RoleQueryDto input)
+        {
+            throw new NotImplementedException();
         }
     }
 }

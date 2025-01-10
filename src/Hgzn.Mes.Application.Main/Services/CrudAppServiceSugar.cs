@@ -1,18 +1,25 @@
 ﻿using AutoMapper;
+using Hgzn.Mes.Infrastructure.SqlSugarContext;
 using SqlSugar;
 
-namespace HgznMes.Application.Services;
+namespace Hgzn.Mes.Application.Main.Services;
 
 public abstract class CrudAppServiceSugar<TEntity, TGetOutputDto, TGetListOutputDto, TKey, TGetListInput, TCreateInput, TUpdateInput>
     where TEntity : class, new()
 {
+    protected SqlSugarContext SqlSugarContext { get; }
     protected ISqlSugarClient DbContext { get; }
     public IMapper Mapper { get; init; } = null!;
-    protected CrudAppServiceSugar(ISqlSugarClient dbContext)
+    protected CrudAppServiceSugar(SqlSugarContext dbContext)
     {
-        DbContext = dbContext;
+        SqlSugarContext = dbContext;
+        DbContext=dbContext.DbContext;
     }
 
+    protected ISugarQueryable<TEntity> Queryable()
+    {
+        return DbContext.Queryable<TEntity>();
+    } 
     /// <summary>
     /// 创建服务
     /// </summary>
@@ -48,15 +55,14 @@ public abstract class CrudAppServiceSugar<TEntity, TGetOutputDto, TGetListOutput
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public async Task<TGetOutputDto?> DeleteAsync(TKey key)
+    public async Task<int> DeleteAsync(TKey key)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity != null)
         {
-            var delete =await DbContext.Deleteable(entity).ExecuteCommandAsync();
-            return Mapper.Map<TGetOutputDto>(delete);
+            return await DbContext.Deleteable(entity).ExecuteCommandAsync();
         }
-        return default;
+        return 0;
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Base;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SqlSugar;
 
 namespace Hgzn.Mes.Infrastructure.SqlSugarContext;
@@ -16,9 +17,9 @@ public sealed class SqlSugarContext
     private DbConnOptions DbOptions { get; set; }
     private ILoggerFactory Logger {get;set;}
 
-    public SqlSugarContext(IConfiguration configuration, DbConnOptions dbConnOptions, ILoggerFactory logger)
+    public SqlSugarContext(IConfiguration configuration, IOptions<DbConnOptions> dbConnOptions, ILoggerFactory logger)
     {
-        this.DbOptions = dbConnOptions;
+        this.DbOptions = dbConnOptions.Value;
         Logger = logger;
         var connectionString = configuration.GetConnectionString("SqlConnection");
         DbContext = new SqlSugarClient(Build());
@@ -121,7 +122,8 @@ public sealed class SqlSugarContext
     /// </summary>
     private void InitTables()
     {
-        var tables = Assembly.Load("HgznMes." + nameof(Domain))
+        
+        var tables = Assembly.Load("Hgzn.Mes." + nameof(Domain))
             .GetTypes()
             .Where(t => t.GetCustomAttribute<TableAttribute>() != null)
             .ToArray();
