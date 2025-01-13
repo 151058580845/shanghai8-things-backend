@@ -1,10 +1,12 @@
 ﻿using Autofac;
 using Hgzn.Mes.Infrastructure.DbContexts.Ef;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 using StackExchange.Redis;
+using System.Text.Json;
 
 namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 {
@@ -21,15 +23,26 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .AsImplementedInterfaces()
                 .SingleInstance();
             builder.RegisterGeneric(typeof(PaginatedListConverter<,>));
-            
-            builder.RegisterType<SqlSugarContext>();
-            builder.Register(sp =>
+
+            builder.Register(context =>
             {
-                var context = sp.Resolve<SqlSugarContext>();
-                return context.DbContext;
+                var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))
+                    .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
+                return new SqlSugarClient(SqlSugarContext.Build(setting));
             })
             .As<ISqlSugarClient>()
             .SingleInstance();
+            builder.Register(context =>
+            {
+                var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))
+                    .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
+                var logger = context.Resolve<ILogger<SqlSugarContext>>();
+                var client = context.Resolve<ISqlSugarClient>();
+                return new SqlSugarContext(logger, setting, client);
+            })
+            .PropertiesAutowired()
+            .SingleInstance();
+
         }
     }
 }

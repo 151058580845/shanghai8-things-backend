@@ -23,7 +23,6 @@ var builder = WebApplication.CreateBuilder(args);
 RequireScopeUtil.Initialize();
 SettingUtil.Initialize(builder.Configuration);
 CryptoUtil.Initialize(SettingUtil.Jwt.KeyFolder);
-builder.Services.Configure<DbConnOptions>(builder.Configuration.GetSection(nameof(DbConnOptions)));
 #endregion util Initialize
 
 // Change container to autoFac

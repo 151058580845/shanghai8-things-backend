@@ -4,29 +4,27 @@ using System.Reflection;
 using System.Text;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SqlSugar;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
 public sealed class SqlSugarContext
 {
-    public ISqlSugarClient DbContext { get; set; }
-    private DbConnOptions DbOptions { get; set; }
-    private ILoggerFactory Logger { get; set; }
+    public ISqlSugarClient DbContext { get; set; } = null!;
+    private readonly DbConnOptions _dbOptions;
+    private readonly ILogger<SqlSugarContext> _logger;
 
-    public SqlSugarContext(IOptions<DbConnOptions> dbConnOptions, ILoggerFactory logger)
+    public SqlSugarContext(ILogger<SqlSugarContext> logger, DbConnOptions dbOptions, ISqlSugarClient client)
     {
-        DbOptions = dbConnOptions.Value;
-        Logger = logger;
-        DbContext = new SqlSugarClient(Build());
+        _dbOptions = dbOptions;
+        _logger = logger;
+        DbContext = client;
         OnSqlSugarClientConfig(DbContext);
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
     }
-    private readonly Dictionary<string, string> _prefixDic = new()
+    private static readonly Dictionary<string, string> _prefixDic = new()
     {
         { "Equip", "EQUIP_" },
         { "System", "BASE_" }
@@ -38,9 +36,9 @@ public sealed class SqlSugarContext
     /// </summary>
     /// <returns></returns>
     /// <exception cref="NullReferenceException"></exception>
-    private ConnectionConfig Build()
+    public static ConnectionConfig Build(DbConnOptions dbOptions)
     {
-        if (DbOptions.DbType is null)
+        if (dbOptions.DbType is null)
         {
             throw new NullReferenceException("DbOptions.DbType is null");
         }
@@ -49,8 +47,8 @@ public sealed class SqlSugarContext
         var connConfig = new ConnectionConfig()
         {
             ConfigId = DefaultConnectionStringName,
-            DbType = DbOptions.DbType ?? DbType.Sqlite,
-            ConnectionString = DbOptions.Url,
+            DbType = dbOptions.DbType ?? DbType.Sqlite,
+            ConnectionString = dbOptions.Url,
             InitKeyType = InitKeyType.Attribute,
             IsAutoCloseConnection = true,
             SlaveConnectionConfigs = slavaConfig,
@@ -104,7 +102,7 @@ public sealed class SqlSugarContext
     private void OnSqlSugarClientConfig(ISqlSugarClient sqlSugarClient)
     {
         //是否开启软删除查询
-        if (DbOptions.IsSoftDelete)
+        if (_dbOptions.IsSoftDelete)
             sqlSugarClient.QueryFilter.AddTableFilter<ISoftDelete>(t => t.SoftDeleted == false);
     }
 
@@ -113,7 +111,7 @@ public sealed class SqlSugarContext
     /// </summary>
     public void InitTables()
     {
-        if (DbOptions.EnabledCodeFirst)
+        if (_dbOptions.EnabledCodeFirst)
         {
             var tables = Assembly.Load("Hgzn.Mes." + nameof(Domain))
                 .GetTypes()
@@ -156,14 +154,9 @@ public sealed class SqlSugarContext
     /// <param name="pars"></param>
     private void OnLogExecuting(string sql, SugarParameter[] pars)
     {
-        if (DbOptions.EnabledSqlLog)
+        if (_dbOptions.EnabledSqlLog)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine();
-            sb.AppendLine("==========SQL执行:==========");
-            sb.AppendLine(UtilMethods.GetSqlString(DbType.SqlServer, sql, pars));
-            sb.AppendLine("===============================");
-            Logger.CreateLogger<SqlSugarContext>().LogDebug(sb.ToString());
+            _logger.LogDebug($"sql excuting: {UtilMethods.GetSqlString(DbType.SqlServer, sql, pars)}" );
         }
     }
 
@@ -174,10 +167,9 @@ public sealed class SqlSugarContext
     /// <param name="pars"></param>
     private void OnLogExecuted(string sql, SugarParameter[] pars)
     {
-        if (DbOptions.EnabledSqlLog)
+        if (_dbOptions.EnabledSqlLog)
         {
-            var sqllog = $"=========SQL耗时{DbContext.Ado.SqlExecutionTime.TotalMilliseconds}毫秒=====";
-            Logger.CreateLogger<SqlSugarContext>().LogDebug(sqllog);
+            _logger.LogDebug($"excuted take {DbContext.Ado.SqlExecutionTime.TotalMilliseconds}ms");
         }
     }
 
@@ -194,7 +186,7 @@ public sealed class SqlSugarContext
         {
             Directory.CreateDirectory(directory);
         }
-        switch (DbOptions.DbType)
+        switch (_dbOptions.DbType)
         {
             case DbType.MySql:
                 //MySql

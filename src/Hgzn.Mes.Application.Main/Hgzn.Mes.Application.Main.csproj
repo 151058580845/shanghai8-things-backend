@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
     <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SqlSugar.IOC" Version="2.0.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.22" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
   </ItemGroup>
