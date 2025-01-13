@@ -57,6 +57,7 @@ public sealed class SqlSugarContext
             SlaveConnectionConfigs = slavaConfig,
             ConfigureExternalServices = new ConfigureExternalServices()
             {
+<<<<<<< Updated upstream:src/Hgzn.Mes.Infrastructure/DbContexts/SqlSugar/SqlSugarContext.cs
                 EntityService = (p, c) =>
                 {
                     //配置表外键
@@ -73,6 +74,8 @@ public sealed class SqlSugarContext
                         c.IsPrimarykey = true;
                     }
                 },
+=======
+>>>>>>> Stashed changes:src/Hgzn.Mes.Infrastructure/SqlSugarContext/SqlSugarContext.cs
                 EntityNameService = (t, e) =>
                 {
                     var tableName = "";
@@ -90,6 +93,23 @@ public sealed class SqlSugarContext
                     {
                         e.DbTableName = prefix + tableName;
                         e.TableDescription = tableDesc?.Description;
+                    }
+                },
+                EntityService = (p, c) =>
+                {
+                    //配置表外键
+                    c.IfTable<EquipLedger>()
+                        .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
+
+                    var desc = p.GetCustomAttribute<DescriptionAttribute>();
+                    c.ColumnDescription = desc?.Description;
+                    if (new NullabilityInfoContext().Create(p).WriteState is NullabilityState.Nullable)
+                    {
+                        c.IsNullable = true;
+                    }
+                    if (p.Name.ToLower() == "id")
+                    {
+                        c.IsPrimarykey = true;
                     }
                 }
             }
