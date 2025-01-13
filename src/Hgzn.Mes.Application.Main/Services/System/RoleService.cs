@@ -15,7 +15,7 @@ using SqlSugar;
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     [ScopeDefinition("manage all role resources", ManagedResource.Role)]
-    public class RoleService : CrudAppServiceSugar<Role, Guid,
+    public class RoleService : CrudAppServiceSugar<Role, Guid,RoleQueryDto,
         RoleReadDto, RoleCreateDto, RoleUpdateDto>,
         IRoleService
     {
@@ -81,6 +81,11 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Select(r => r.Users ?? Array.Empty<User>())
                 .ToArrayAsync();
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
+        }
+
+        public override Task<IEnumerable<RoleReadDto>> GetListAsync(RoleQueryDto queryDto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

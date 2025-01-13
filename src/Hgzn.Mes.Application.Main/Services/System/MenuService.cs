@@ -9,7 +9,7 @@ using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
-    public class MenuService : CrudAppServiceSugar<Menu, Guid
+    public class MenuService : CrudAppServiceSugar<Menu, Guid,MenuQueryDto
         , MenuReadDto, MenuCreateDto,
         MenuUpdateDto>, IMenuService
     {
@@ -90,6 +90,11 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
 
             return count;
+        }
+
+        public override Task<IEnumerable<MenuReadDto>> GetListAsync(MenuQueryDto queryDto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

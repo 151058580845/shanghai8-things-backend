@@ -1,7 +1,9 @@
 ﻿using Autofac;
 using Hgzn.Mes.Infrastructure.DbContexts.Ef;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SqlSugar;
 using StackExchange.Redis;
 
 namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
@@ -19,6 +21,15 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .AsImplementedInterfaces()
                 .SingleInstance();
             builder.RegisterGeneric(typeof(PaginatedListConverter<,>));
+            
+            builder.RegisterType<SqlSugarContext>();
+            builder.Register(sp =>
+            {
+                var context = sp.Resolve<SqlSugarContext>();
+                return context.DbContext;
+            })
+            .As<ISqlSugarClient>()
+            .SingleInstance();
         }
     }
 }

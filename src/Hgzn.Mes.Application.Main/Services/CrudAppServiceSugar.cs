@@ -5,15 +5,17 @@ using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services;
 
-public abstract class CrudAppServiceSugar<TEntity, TKey, TReadDto, TCreateDto, TUpdateDto> : BaseService
+public abstract class CrudAppServiceSugar<TEntity, TKey,TQueryDto, TReadDto, TCreateDto, TUpdateDto> : BaseService
+    where TQueryDto:QueryDto
     where TEntity : AggregateRoot, new()
     where TReadDto : ReadDto
     where TUpdateDto : UpdateDto
     where TCreateDto : CreateDto
 {
-    protected SqlSugarContext SqlSugarContext { get; } = null!;
-    protected ISqlSugarClient DbContext { get; } = null!;
+    public SqlSugarContext SqlSugarContext { get; } = null!;
+    public ISqlSugarClient DbContext { get; } = null!;
 
+    public abstract Task<IEnumerable<TReadDto>> GetListAsync(TQueryDto queryDto);
     protected ISugarQueryable<TEntity> Queryable()
     {
         return DbContext.Queryable<TEntity>();

@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
+using SqlSugar;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,7 +125,6 @@ builder.Services.AddSwaggerGen(option =>
 //     //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
 //     options.UseSnakeCaseNamingConvention();
 // });
-builder.Services.AddSingleton<SqlSugarContext>();
 
 // Add mapper profiles
 builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
@@ -132,7 +132,6 @@ builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes.
 // Add mediatR
 builder.Services.AddMediatR(config =>
     config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -155,5 +154,5 @@ app.Services.GetService<SqlSugarContext>()?.InitTables();
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>
         await ExceptionLocalizerExtension.LocalizeException(context, app.Services.GetService<IStringLocalizer<Exception>>()!)));
-
+var services = app.Services;
 app.Run();

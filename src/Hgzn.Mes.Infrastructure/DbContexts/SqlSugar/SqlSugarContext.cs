@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SqlSugar;
@@ -22,12 +23,10 @@ public sealed class SqlSugarContext
         Logger = logger;
         DbContext = new SqlSugarClient(Build());
         OnSqlSugarClientConfig(DbContext);
-        InitTables();
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
-
     }
-    private Dictionary<string, string> PrefixDic = new()
+    private readonly Dictionary<string, string> _prefixDic = new()
     {
         { "Equip", "EQUIP_" },
         { "System", "BASE_" }
@@ -57,28 +56,9 @@ public sealed class SqlSugarContext
             SlaveConnectionConfigs = slavaConfig,
             ConfigureExternalServices = new ConfigureExternalServices()
             {
-<<<<<<< Updated upstream:src/Hgzn.Mes.Infrastructure/DbContexts/SqlSugar/SqlSugarContext.cs
-                EntityService = (p, c) =>
-                {
-                    //配置表外键
-                    c.IfTable<EquipLedger>()
-                        .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
-
-
-                    if (new NullabilityInfoContext().Create(p).WriteState is NullabilityState.Nullable)
-                    {
-                        c.IsNullable = true;
-                    }
-                    if (p.Name.ToLower() == "id")
-                    {
-                        c.IsPrimarykey = true;
-                    }
-                },
-=======
->>>>>>> Stashed changes:src/Hgzn.Mes.Infrastructure/SqlSugarContext/SqlSugarContext.cs
                 EntityNameService = (t, e) =>
                 {
-                    var tableName = "";
+                    string? tableName;
                     var table = t.GetCustomAttribute<TableAttribute>();
                     var name = t.FullName?.Split('.');
                     var tablePrefix = "";
@@ -89,7 +69,7 @@ public sealed class SqlSugarContext
                     tableName = table != null ? table.Name : name?[^1];
                     var tableDesc = t.GetCustomAttribute<DescriptionAttribute>();
 
-                    if (PrefixDic.TryGetValue(tablePrefix, out var prefix) && !string.IsNullOrEmpty(prefix))
+                    if (_prefixDic.TryGetValue(tablePrefix, out var prefix) && !string.IsNullOrEmpty(prefix))
                     {
                         e.DbTableName = prefix + tableName;
                         e.TableDescription = tableDesc?.Description;

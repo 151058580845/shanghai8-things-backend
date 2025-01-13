@@ -2,6 +2,7 @@
 using Autofac;
 using Hgzn.Mes.Application.Main.Services;
 using Hgzn.Mes.Domain.Services;
+using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 {
