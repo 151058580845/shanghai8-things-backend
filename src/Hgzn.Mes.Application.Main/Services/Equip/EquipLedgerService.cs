@@ -5,7 +5,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid,EquipLedgerQueryDto,
+public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLedgerQueryDto,
     EquipLedgerReadDto, EquipLedgerCreateDto,
     EquipLedgerUpdateDto>,
     IEquipLedgerService
@@ -25,6 +25,15 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid,EquipLed
                 Value = t.Id.ToString()
             }).ToListAsync();
         return entities;
+    }
+
+    public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListAsync(string? equipCode, string? equipName)
+    {
+        var entities = await DbContext.Queryable<EquipLedger>()
+             .WhereIF(!equipCode.IsNullOrEmpty(), t => t.EquipCode == equipCode)
+             .WhereIF(!equipName.IsNullOrEmpty(), t => t.EquipName == equipName)
+             .ToListAsync();
+        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
     public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto query)

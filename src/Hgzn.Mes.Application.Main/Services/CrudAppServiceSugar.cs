@@ -6,7 +6,7 @@ using SqlSugar;
 namespace Hgzn.Mes.Application.Main.Services;
 
 public abstract class CrudAppServiceSugar<TEntity, TKey, TQueryDto, TReadDto, TCreateDto, TUpdateDto> : BaseService
-    where TQueryDto:QueryDto
+    where TQueryDto : QueryDto
     where TEntity : AggregateRoot, new()
     where TReadDto : ReadDto
     where TUpdateDto : UpdateDto
@@ -19,7 +19,7 @@ public abstract class CrudAppServiceSugar<TEntity, TKey, TQueryDto, TReadDto, TC
     protected ISugarQueryable<TEntity> Queryable()
     {
         return DbContext.Queryable<TEntity>();
-    } 
+    }
     /// <summary>
     /// 创建服务
     /// </summary>
