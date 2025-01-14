@@ -1,5 +1,4 @@
 ﻿using Hgzn.Mes.Domain.Entities.System.Account;
-using Hgzn.Mes.Domain.Shared.Utilities;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -37,7 +36,7 @@ namespace Hgzn.Mes.Domain.Utilities
                 if (!Directory.Exists(keyFolder))
                 {
                     Directory.CreateDirectory(keyFolder);
-                } 
+                }
                 File.WriteAllText(privateKeyPath, privatePem);
                 File.WriteAllText(publicKeyPath, publicPem);
             }

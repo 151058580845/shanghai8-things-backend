@@ -16,6 +16,7 @@ public static class KeyExtension
     {
         return guid == null || guid == Guid.Empty;
     }
+
     /// <summary>
     /// 判断guid是否为空
     /// </summary>

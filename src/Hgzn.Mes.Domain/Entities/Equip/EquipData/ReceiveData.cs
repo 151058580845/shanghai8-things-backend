@@ -1,7 +1,6 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
+using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
 
@@ -13,7 +12,7 @@ public class ReceiveData : UniversalEntity, IAudited
 {
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
-    
+
     [Description("仿真试验系统识别编码")]
     public byte SimuTestSysld { get; set; }
 
@@ -49,16 +48,20 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道功率模式")]
     public byte Model5 { get; set; }
 
-    #endregion
+    #endregion 工作模式信息
 
     #region 健康状态信息
+
     [Description("状态类型")]
     public byte StateType { get; set; }
+
     [Description("自检状态")]
     public uint SelfTest { get; set; }
+
     [Description("电源电压状态")]
     public string? SupplyVoltageState { get; set; }
-    #endregion
+
+    #endregion 健康状态信息
 
     #region 解析,精控器件
 
@@ -314,7 +317,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6解析精控风扇12V")]
     public float Channel6ParserPrecisionFan12V { get; set; }
 
-    #endregion
+    #endregion 解析,精控器件
 
     #region 放大器
 
@@ -414,7 +417,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6放大器风扇12V")]
     public float Channel6AmplifierFan12V { get; set; }
 
-    #endregion
+    #endregion 放大器
 
     #region 垂直
 
@@ -482,7 +485,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区1垂直粗控15V")]
     public float Channel6Zone1VerticalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控
 
     #region 公用和垂直粗控风扇
 
@@ -498,9 +501,9 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区1垂直粗控风扇12V")]
     public float Zone1VerticalCoarseControlFan12V { get; set; }
 
-    #endregion
+    #endregion 公用和垂直粗控风扇
 
-    #endregion
+    #endregion 垂直粗控,公用和垂直粗控风扇 分区1
 
     #region 垂直粗控,公用和垂直粗控风扇 分区2
 
@@ -566,7 +569,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区2垂直粗控15V")]
     public float Channel6Zone2VerticalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控
 
     #region 公用和垂直粗控风扇
 
@@ -582,9 +585,11 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区2垂直粗控风扇12V")]
     public float Zone2VerticalCoarseControlFan12V { get; set; }
 
-    #endregion 
+    #endregion 公用和垂直粗控风扇
 
-    #endregion
+
+
+    #endregion 垂直粗控,公用和垂直粗控风扇 分区2
 
     #region 垂直粗控,公用和垂直粗控风扇 分区3
 
@@ -650,7 +655,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区3垂直粗控15V")]
     public float Channel6Zone3VerticalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控
 
     #region 公用和垂直粗控风扇
 
@@ -666,9 +671,11 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区3垂直粗控风扇12V")]
     public float Zone3VerticalCoarseControlFan12V { get; set; }
 
-    #endregion 
+    #endregion 公用和垂直粗控风扇
 
-    #endregion
+
+
+    #endregion 垂直粗控,公用和垂直粗控风扇 分区3
 
     #region 垂直粗控,公用和垂直粗控风扇 分区4
 
@@ -734,7 +741,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区4垂直粗控15V")]
     public float Channel6Zone4VerticalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控
 
     #region 公用和垂直粗控风扇
 
@@ -750,9 +757,11 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区4垂直粗控风扇12V")]
     public float Zone4VerticalCoarseControlFan12V { get; set; }
 
-    #endregion 
+    #endregion 公用和垂直粗控风扇
 
-    #endregion
+
+
+    #endregion 垂直粗控,公用和垂直粗控风扇 分区4
 
     #region 垂直粗控,公用和垂直粗控风扇 分区5
 
@@ -818,7 +827,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区5垂直粗控15V")]
     public float Channel6Zone5VerticalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控
 
     #region 公用和垂直粗控风扇
 
@@ -834,9 +843,11 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区5垂直粗控风扇12V")]
     public float Zone5VerticalCoarseControlFan12V { get; set; }
 
-    #endregion 
+    #endregion 公用和垂直粗控风扇
 
-    #endregion
+
+
+    #endregion 垂直粗控,公用和垂直粗控风扇 分区5
 
     #region 垂直粗控,公用和垂直粗控风扇 分区6
 
@@ -902,7 +913,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区6垂直粗控15V")]
     public float Channel6Zone6VerticalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控
 
     #region 公用和垂直粗控风扇
 
@@ -918,9 +929,9 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区6垂直粗控风扇12V")]
     public float Zone6VerticalCoarseControlFan12V { get; set; }
 
-    #endregion
+    #endregion 公用和垂直粗控风扇
 
-    #endregion
+    #endregion 垂直粗控,公用和垂直粗控风扇 分区6
 
     #region 垂直粗控控制 分区1
 
@@ -956,7 +967,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区1垂直粗控控制风扇12V")]
     public float Zone1VerticalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控控制 分区1
 
     #region 垂直粗控控制 分区2
 
@@ -992,7 +1003,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区2垂直粗控控制风扇12V")]
     public float Zone2VerticalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控控制 分区2
 
     #region 垂直粗控控制 分区3
 
@@ -1028,7 +1039,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区3垂直粗控控制风扇12V")]
     public float Zone3VerticalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控控制 分区3
 
     #region 垂直粗控控制 分区4
 
@@ -1064,7 +1075,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区4垂直粗控控制风扇12V")]
     public float Zone4VerticalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控控制 分区4
 
     #region 垂直粗控控制 分区5
 
@@ -1100,7 +1111,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区5垂直粗控控制风扇12V")]
     public float Zone5VerticalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控控制 分区5
 
     #region 垂直粗控控制 分区6
 
@@ -1136,9 +1147,9 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区6垂直粗控控制风扇12V")]
     public float Zone6VerticalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 垂直粗控控制 分区6
 
-    #endregion
+    #endregion 垂直
 
     #region 水平
 
@@ -1206,7 +1217,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区1水平粗控15V")]
     public float Channel6Zone1HorizontalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 水平粗控
 
     #region 公用和水平粗控风扇
 
@@ -1222,9 +1233,9 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区1水平粗控风扇12V")]
     public float Zone1HorizontalCoarseControlFan12V { get; set; }
 
-    #endregion
+    #endregion 公用和水平粗控风扇
 
-    #endregion
+    #endregion 水平粗控,公用和水平粗控风扇 分区1
 
     #region 水平粗控,公用和水平粗控风扇 分区2
 
@@ -1290,7 +1301,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区2水平粗控15V")]
     public float Channel6Zone2HorizontalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 水平粗控
 
     #region 公用和水平粗控风扇
 
@@ -1306,9 +1317,11 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区2水平粗控风扇12V")]
     public float Zone2HorizontalCoarseControlFan12V { get; set; }
 
-    #endregion 
+    #endregion 公用和水平粗控风扇
 
-    #endregion
+
+
+    #endregion 水平粗控,公用和水平粗控风扇 分区2
 
     #region 水平粗控,公用和水平粗控风扇 分区3
 
@@ -1374,7 +1387,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区3水平粗控15V")]
     public float Channel6Zone3HorizontalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 水平粗控
 
     #region 公用和水平粗控风扇
 
@@ -1390,9 +1403,11 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区3水平粗控风扇12V")]
     public float Zone3HorizontalCoarseControlFan12V { get; set; }
 
-    #endregion 
+    #endregion 公用和水平粗控风扇
 
-    #endregion
+
+
+    #endregion 水平粗控,公用和水平粗控风扇 分区3
 
     #region 水平粗控,公用和水平粗控风扇 分区4
 
@@ -1458,7 +1473,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区4水平粗控15V")]
     public float Channel6Zone4HorizontalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 水平粗控
 
     #region 公用和水平粗控风扇
 
@@ -1474,9 +1489,11 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区4水平粗控风扇12V")]
     public float Zone4HorizontalCoarseControlFan12V { get; set; }
 
-    #endregion 
+    #endregion 公用和水平粗控风扇
 
-    #endregion
+
+
+    #endregion 水平粗控,公用和水平粗控风扇 分区4
 
     #region 水平粗控,公用和水平粗控风扇 分区5
 
@@ -1542,7 +1559,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区5水平粗控15V")]
     public float Channel6Zone5HorizontalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 水平粗控
 
     #region 公用和水平粗控风扇
 
@@ -1558,9 +1575,11 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区5水平粗控风扇12V")]
     public float Zone5HorizontalCoarseControlFan12V { get; set; }
 
-    #endregion 
+    #endregion 公用和水平粗控风扇
 
-    #endregion
+
+
+    #endregion 水平粗控,公用和水平粗控风扇 分区5
 
     #region 水平粗控,公用和水平粗控风扇 分区6
 
@@ -1626,7 +1645,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("通道6分区6水平粗控15V")]
     public float Channel6Zone6HorizontalCoarseControl15V { get; set; }
 
-    #endregion
+    #endregion 水平粗控
 
     #region 公用和水平粗控风扇
 
@@ -1642,9 +1661,9 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区6水平粗控风扇12V")]
     public float Zone6HorizontalCoarseControlFan12V { get; set; }
 
-    #endregion
+    #endregion 公用和水平粗控风扇
 
-    #endregion
+    #endregion 水平粗控,公用和水平粗控风扇 分区6
 
     #region 水平粗控控制 分区1
 
@@ -1680,7 +1699,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区1水平粗控控制风扇12V")]
     public float Zone1HorizontalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 水平粗控控制 分区1
 
     #region 水平粗控控制 分区2
 
@@ -1716,7 +1735,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区2水平粗控控制风扇12V")]
     public float Zone2HorizontalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 水平粗控控制 分区2
 
     #region 水平粗控控制 分区3
 
@@ -1752,7 +1771,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区3水平粗控控制风扇12V")]
     public float Zone3HorizontalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 水平粗控控制 分区3
 
     #region 水平粗控控制 分区4
 
@@ -1788,7 +1807,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区4水平粗控控制风扇12V")]
     public float Zone4HorizontalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 水平粗控控制 分区4
 
     #region 水平粗控控制 分区5
 
@@ -1824,7 +1843,7 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区5水平粗控控制风扇12V")]
     public float Zone5HorizontalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 水平粗控控制 分区5
 
     #region 水平粗控控制 分区6
 
@@ -1860,9 +1879,9 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("分区6水平粗控控制风扇12V")]
     public float Zone6HorizontalCoarseControlFanControl12V { get; set; }
 
-    #endregion
+    #endregion 水平粗控控制 分区6
 
-    #endregion
+    #endregion 水平
 
     public Guid? LastModifierId { get; set; }
     public DateTime? LastModificationTime { get; set; }

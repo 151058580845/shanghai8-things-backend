@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Authority
@@ -23,12 +22,12 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         public string Path { get; set; } = null!;
 
         /// <summary>
-        ///    菜单图标 
+        ///    菜单图标
         /// </summary>
         public string? IconUrl { get; set; }
 
         /// <summary>
-        /// 是否为外部链接 
+        /// 是否为外部链接
         ///</summary>
         public bool IsLink { get; set; }
 
@@ -52,7 +51,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
 
-        #endregion
+        #endregion audit
 
         #region delete filter
 
@@ -81,6 +80,6 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
 
         public static IEnumerable<Menu> Seeds { get; } = [Root];
 
-        #endregion
+        #endregion static
     }
 }

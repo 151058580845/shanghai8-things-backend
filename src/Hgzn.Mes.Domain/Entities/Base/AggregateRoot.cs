@@ -1,5 +1,4 @@
-﻿
-namespace Hgzn.Mes.Domain.Entities.Base
+﻿namespace Hgzn.Mes.Domain.Entities.Base
 {
     public class AggregateRoot : IAggregateRoot
     {

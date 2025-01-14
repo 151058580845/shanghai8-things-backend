@@ -4,17 +4,14 @@ using Hgzn.Mes.Application.Main.Auth;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
-using Hgzn.Mes.Infrastructure.DbContexts;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
-using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
-using SqlSugar;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,12 +20,13 @@ var builder = WebApplication.CreateBuilder(args);
 RequireScopeUtil.Initialize();
 SettingUtil.Initialize(builder.Configuration);
 CryptoUtil.Initialize(SettingUtil.Jwt.KeyFolder);
+
 #endregion util Initialize
 
 // Change container to autoFac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(config =>
-    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
+    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
 
 // Add services to the container.
 builder.Host.UseSerilog((context, logger) =>
@@ -126,11 +124,11 @@ builder.Services.AddSwaggerGen(option =>
 // });
 
 // Add mapper profiles
-builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
+builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
 
 // Add mediatR
 builder.Services.AddMediatR(config =>
-    config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
+    config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

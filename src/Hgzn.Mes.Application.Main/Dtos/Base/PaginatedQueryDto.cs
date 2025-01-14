@@ -1,11 +1,10 @@
-﻿
-namespace Hgzn.Mes.Application.Main.Dtos.Base
+﻿namespace Hgzn.Mes.Application.Main.Dtos.Base
 {
-    public class PaginatedQueryDto:QueryDto
+    public class PaginatedQueryDto : QueryDto
     {
         public int PageIndex { get; set; }
         public int PageSize { get; set; }
-        
+
         /// <summary>
         /// 查询开始时间条件
         /// </summary>

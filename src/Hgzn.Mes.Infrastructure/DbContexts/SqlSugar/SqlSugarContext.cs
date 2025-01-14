@@ -1,13 +1,12 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection;
-using System.Text;
-using CaseExtensions;
+﻿using CaseExtensions;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -74,7 +73,7 @@ public sealed class SqlSugarContext
                     c.IfTable<EquipLedger>()
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
                     c.IfTable<Notice>()
-                        .OneToMany(t=>t.NoticeTargets,nameof(NoticeTarget.NoticeId),nameof(Notice.Id));
+                        .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(Notice.Id));
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();
@@ -154,7 +153,7 @@ public sealed class SqlSugarContext
     {
         if (_dbOptions.EnabledSqlLog)
         {
-            _logger.LogDebug($"sql excuting: {UtilMethods.GetSqlString(DbType.SqlServer, sql, pars)}" );
+            _logger.LogDebug($"sql excuting: {UtilMethods.GetSqlString(DbType.SqlServer, sql, pars)}");
         }
     }
 
@@ -192,18 +191,17 @@ public sealed class SqlSugarContext
                     $"{Path.Combine(directory, fileName)}.sql"); //mysql 只支持.net core
                 break;
 
-
             case DbType.Sqlite:
                 //Sqlite
                 DbContext.DbMaintenance.BackupDataBase(null, $"{fileName}.db"); //sqlite 只支持.net core
                 break;
 
-
             case DbType.SqlServer:
                 //SqlServer
                 DbContext.DbMaintenance.BackupDataBase(DbContext.Ado.Connection.Database,
-                    $"{Path.Combine(directory, fileName)}.bak" /*服务器路径*/); //第一个参数库名 
+                    $"{Path.Combine(directory, fileName)}.bak" /*服务器路径*/); //第一个参数库名
                 break;
+
             default:
                 throw new NotImplementedException("其他数据库备份未实现");
         }

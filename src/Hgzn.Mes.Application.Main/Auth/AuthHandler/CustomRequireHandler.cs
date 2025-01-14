@@ -1,10 +1,9 @@
 ﻿using Hgzn.Mes.Application.Main.Auth.Requirements;
 using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
-using Hgzn.Mes.Domain.Entities.System.Account;
-
 
 namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
 {

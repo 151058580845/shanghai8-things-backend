@@ -68,6 +68,7 @@ public enum Priority
     已发布（Published） → 管理员决定撤销公告 → 已撤销（Revoked）。
     已发布（Published） → 公告有效期结束 → 过期（Expired）。
  */
+
 public enum NoticeStatus
 {
     [Description("草稿状态")] Draft = 0, // 草稿状态，表示通知尚未完成并保存为草稿

@@ -3,15 +3,14 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Dictionary;
 using Hgzn.Mes.Domain.Shared;
-using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
 
 /// <summary>
 /// 字典类型
 /// </summary>
-public class DictionaryTypeService:CrudAppServiceSugar<DictionaryType
-    ,Guid,DictionaryTypeQueryDto,DictionaryTypeReadDto,DictionaryTypeCreateDto,DictionaryTypeUpdateDto>,IDictionaryTypeService
+public class DictionaryTypeService : CrudAppServiceSugar<DictionaryType
+    , Guid, DictionaryTypeQueryDto, DictionaryTypeReadDto, DictionaryTypeCreateDto, DictionaryTypeUpdateDto>, IDictionaryTypeService
 {
     public override async Task<PaginatedList<DictionaryTypeReadDto>> GetListAsync(DictionaryTypeQueryDto input)
     {
@@ -24,6 +23,7 @@ public class DictionaryTypeService:CrudAppServiceSugar<DictionaryType
             .ToPageListAsync(input.PageIndex, input.PageSize);
         return Mapper.Map<PaginatedList<DictionaryTypeReadDto>>(entities);
     }
+
     /// <summary>
     /// 获取树形列表
     /// </summary>

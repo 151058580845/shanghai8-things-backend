@@ -3,7 +3,6 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Dictionary;
 using Hgzn.Mes.Domain.Shared;
-using Microsoft.AspNetCore.Components;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
 
@@ -23,6 +22,7 @@ public class DictionaryInfoService : CrudAppServiceSugar<DictionaryInfo
             .ToListAsync();
         return Mapper.Map<PaginatedList<DictionaryInfoReadDto>>(entities);
     }
+
     /// <summary>
     /// 根据字典类型获取数据
     /// </summary>

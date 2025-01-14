@@ -48,6 +48,7 @@ public class DbConnOptions
     /// 开启Saas多租户
     /// </summary>
     public bool EnabledSaasMultiTenancy { get; set; } = false;
+
     /// <summary>
     /// 是否开启软删除
     /// </summary>

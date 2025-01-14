@@ -3,16 +3,16 @@ using Hgzn.Mes.Application.Main.Captchas.Builder;
 using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.Base;
 using Hgzn.Mes.Application.Main.Utilities;
+using Hgzn.Mes.Domain.Entities.System.Account;
+using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Utilities;
-using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Utilities;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using Microsoft.Extensions.Logging;
-using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Infrastructure.DbContexts.Ef;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Hgzn.Mes.Application.Main.Services
 {
@@ -29,7 +29,7 @@ namespace Hgzn.Mes.Application.Main.Services
             _apiDbContext = pgDbContext;
             _logger = logger;
         }
-        
+
         private readonly ApiDbContext _apiDbContext;
         private readonly IUserDomainService _userDomainService;
         private readonly ILogger<UserService> _logger;
@@ -129,7 +129,7 @@ namespace Hgzn.Mes.Application.Main.Services
         {
             var user = (await _apiDbContext.Users.FindAsync(userId)) ??
                 throw new NotFoundException("user not found");
-            user.Roles = roleIds.Select(id => new Role { Id = id}).ToArray();
+            user.Roles = roleIds.Select(id => new Role { Id = id }).ToArray();
             _apiDbContext.Users.Update(user);
             var count = await _apiDbContext.SaveChangesAsync();
             return count == 0 ? null : Mapper.Map<UserReadDto>(user);

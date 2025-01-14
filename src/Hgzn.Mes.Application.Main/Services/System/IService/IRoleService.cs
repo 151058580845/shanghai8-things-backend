@@ -4,7 +4,7 @@ using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.System.IService
 {
-    public interface IRoleService : IBaseService,ICrudAppService<Role, Guid,RoleQueryDto,
+    public interface IRoleService : IBaseService, ICrudAppService<Role, Guid, RoleQueryDto,
         RoleReadDto, RoleCreateDto,
         RoleUpdateDto>
     {

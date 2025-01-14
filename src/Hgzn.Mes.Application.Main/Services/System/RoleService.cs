@@ -1,25 +1,19 @@
-﻿using Hgzn.Mes.Application.Main.Auth;
-using Hgzn.Mes.Application.Main.Dtos;
+﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.System.IService;
-using Hgzn.Mes.Application.Main.Services;
-using Hgzn.Mes.Application.Main.Services.Base;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Utilities;
-using Hgzn.Mes.Infrastructure.DbContexts;
-using Microsoft.EntityFrameworkCore;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     [ScopeDefinition("manage all role resources", ManagedResource.Role)]
-    public class RoleService : CrudAppServiceSugar<Role, Guid,RoleQueryDto,
+    public class RoleService : CrudAppServiceSugar<Role, Guid, RoleQueryDto,
         RoleReadDto, RoleCreateDto, RoleUpdateDto>,
         IRoleService
     {
-
         [ScopeDefinition("create a role", $"{ManagedResource.Role}.{ManagedAction.Add}.New")]
         public async Task<RoleReadDto?> CreateRoleAsync(RoleCreateDto roleDto)
         {
@@ -63,7 +57,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
             throw result.ErrorException;
         }
-        
+
         [ScopeDefinition("get all supported scopes", $"{ManagedResource.Role}.{ManagedAction.Get}.Scopes")]
         public IEnumerable<ScopeDefReadDto> GetScopes() =>
             Mapper.Map<IEnumerable<ScopeDefReadDto>>(RequireScopeUtil.Scopes);
@@ -77,7 +71,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                     (u.Phone != null && u.Phone.Contains(query.Filter)) ||
                     u.Username.Contains(query.Filter) ||
                     (u.Nick != null && u.Nick.Contains(query.Filter)))
-                    .Where(u => query == null || u.State == query.State ))
+                    .Where(u => query == null || u.State == query.State))
                 .Select(r => r.Users ?? Array.Empty<User>())
                 .ToArrayAsync();
             return Mapper.Map<PaginatedList<UserReadDto>>(users);

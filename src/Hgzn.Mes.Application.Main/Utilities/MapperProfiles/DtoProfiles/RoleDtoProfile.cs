@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
-using Hgzn.Mes.Domain.Entities.System.Account;
 
 namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles
 {

@@ -5,7 +5,7 @@ using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipTypeService : CrudAppServiceSugar<EquipType, Guid,EquipTypeQueryDto,
+public class EquipTypeService : CrudAppServiceSugar<EquipType, Guid, EquipTypeQueryDto,
     EquipTypeReadDto, EquipTypeCreateDto, EquipTypeUpdateDto>,
     IEquipTypeService
 {

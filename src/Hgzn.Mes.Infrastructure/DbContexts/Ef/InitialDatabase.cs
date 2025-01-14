@@ -1,6 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
 {

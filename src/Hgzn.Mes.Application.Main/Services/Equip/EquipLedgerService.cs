@@ -6,12 +6,11 @@ using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid,EquipLedgerQueryDto,
+public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLedgerQueryDto,
     EquipLedgerReadDto, EquipLedgerCreateDto,
     EquipLedgerUpdateDto>,
     IEquipLedgerService
 {
-
     public async Task<EquipLedger> GetEquipByIpAsync(string ipAddress)
     {
         return await Queryable().FirstAsync(t => t.IpAddress == ipAddress);

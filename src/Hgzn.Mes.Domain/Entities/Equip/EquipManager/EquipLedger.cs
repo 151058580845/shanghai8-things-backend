@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
@@ -15,42 +15,42 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
 
     [Description("设备名称")]
     public string EquipName { get; set; } = null!;
-    
-    [Description( "设备类型ID")]
+
+    [Description("设备类型ID")]
     [ForeignKey(nameof(EquipTypeAggregate))]
     public Guid? TypeId { get; set; }
-    
-    [Description( "规格型号")]
+
+    [Description("规格型号")]
     public string? Model { get; set; }
-    
-    [Description( "购置日期")]
+
+    [Description("购置日期")]
     public DateTime? PurchaseDate { get; set; }
-    
-    [Description( "供应商ID")]
+
+    [Description("供应商ID")]
     public Guid? SupplierId { get; set; }
-    
-    [Description( "资产编号")]
+
+    [Description("资产编号")]
     public string? AssetNumber { get; set; }
-    
-    [Description( "使用部门ID")]
+
+    [Description("使用部门ID")]
     public Guid? DepartmentId { get; set; }
-    
-    [Description( "安装地点")]//若是rfidReader则不可为null
+
+    [Description("安装地点")]//若是rfidReader则不可为null
     public Guid? RoomId { get; set; }
-    
+
     // [Navigate(NavigateType.OneToOne,nameof(RoomId))]
     public Room? Room { get; set; }
-    
-    [Description( "状态（在用/停用/报废）")]
+
+    [Description("状态（在用/停用/报废）")]
     public EquipOperationStatus? EquipOperationStatus { get; set; }
-    
-    [Description( "有效期时间")]
+
+    [Description("有效期时间")]
     public DateTime? ValidityDate { get; set; }
-    
-    [Description( "设备资源集（需要做文档管理功能）")]
+
+    [Description("设备资源集（需要做文档管理功能）")]
     public Guid? ResourceId { get; set; }
-    
-    [Description( "备注")]
+
+    [Description("备注")]
     public string? Remark { get; set; }
 
     /// <summary>
@@ -71,7 +71,7 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     // [Navigate(typeof(MaintenancePlanEquipEntity), nameof(MaintenancePlanEquipEntity.EquipId),
     //     nameof(MaintenancePlanEquipEntity.PlanId))]
     // public List<EquipMaintenancePlanAggregateRoot> PlanAggregateRoots { get; set; }
-    
+
     // /// <summary>
     // /// 采集数据列表
     // /// </summary>
@@ -81,19 +81,22 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     /// 是否在移动中
     /// </summary>
     public bool HasMove { get; set; } = false;
+
     /// <summary>
     /// 设备当前的MAC地址
     /// </summary>
     public string? Mac { get; set; }
+
     /// <summary>
     /// 设备当前的IP地址
     /// </summary>
     public string? IpAddress { get; set; }
-    
+
     /// <summary>
     /// 设备重要级别
     /// </summary>
     public EquipLevelEnum? EquipLevel { get; set; } = EquipLevelEnum.Basic;
+
     // /// <summary>
     // /// 设备类型(默认为用户类型)
     // /// </summary>

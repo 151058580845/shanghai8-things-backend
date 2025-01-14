@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 using StackExchange.Redis;
-using System.Text.Json;
 
 namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 {
@@ -41,7 +40,6 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
             })
             .PropertiesAutowired()
             .SingleInstance();
-
         }
     }
 }

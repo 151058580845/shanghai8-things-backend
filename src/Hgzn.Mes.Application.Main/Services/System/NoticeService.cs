@@ -1,10 +1,7 @@
-﻿using System.Text;
-using Hgzn.Mes.Application.Main.Dtos.System;
+﻿using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
-using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Hgzn.Mes.Domain.Shared;
-using Hgzn.Mes.Domain.Shared.Enums;
 using Notice = Hgzn.Mes.Domain.Entities.System.Notice.Notice;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
@@ -43,7 +40,7 @@ public class NoticeService : CrudAppServiceSugar<Notice
                 NoticeObjectId = id,
                 NoticeTime = output.SendTime,
             }));
-        
+
         await ModifyTargets(output.Id, list);
         return output;
     }

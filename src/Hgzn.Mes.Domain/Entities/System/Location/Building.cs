@@ -1,9 +1,10 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
+
 public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
 {
     [Description("建筑物名称")]
@@ -44,5 +45,4 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
     public DateTime? DeleteTime { get; set; } = null;
 
     #endregion delete filter
-
 }

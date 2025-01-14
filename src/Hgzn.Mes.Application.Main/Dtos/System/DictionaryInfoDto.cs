@@ -4,7 +4,6 @@ namespace Hgzn.Mes.Application.Main.Dtos.System;
 
 public class DictionaryInfoDto
 {
-    
 }
 
 public class DictionaryInfoReadDto : ReadDto

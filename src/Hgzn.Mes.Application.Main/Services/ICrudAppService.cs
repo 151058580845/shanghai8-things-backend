@@ -4,16 +4,20 @@ using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services;
 
-public interface ICrudAppService<TEntity, TKey,TQueryDto, TReadDto, TCreateDto, TUpdateDto> : IBaseService
-    where TQueryDto:QueryDto
+public interface ICrudAppService<TEntity, TKey, TQueryDto, TReadDto, TCreateDto, TUpdateDto> : IBaseService
+    where TQueryDto : QueryDto
     where TEntity : AggregateRoot
     where TReadDto : ReadDto
     where TUpdateDto : UpdateDto
     where TCreateDto : CreateDto
 {
     Task<PaginatedList<TReadDto>> GetListAsync(TQueryDto queryDto);
+
     Task<TReadDto> CreateAsync(TCreateDto dto);
+
     Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto);
+
     Task<int> DeleteAsync(TKey key);
+
     Task<TReadDto> GetAsync(TKey key);
 }

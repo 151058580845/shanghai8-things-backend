@@ -7,10 +7,12 @@ namespace Hgzn.Mes.Application.Main.Dtos
     {
         public string Username { get; set; } = null!;
         public string Password { get; set; } = null!;
+
         /// <summary>
         /// 姓名
         /// </summary>s
         public string? Name { get; set; }
+
         public string Salt { get; set; } = null!;
         public string? Nick { get; set; }
         public string? Icon { get; set; }

@@ -1,8 +1,8 @@
-﻿using System.Reflection;
-using Autofac;
+﻿using Autofac;
 using Hgzn.Mes.Application.Main.Services;
 using Hgzn.Mes.Domain.Services;
 using SqlSugar;
+using System.Reflection;
 
 namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 {
@@ -10,7 +10,7 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterAssemblyTypes(Assembly.Load("Hgzn.Mes." + nameof(Application)+".Main"))
+            builder.RegisterAssemblyTypes(Assembly.Load("Hgzn.Mes." + nameof(Application) + ".Main"))
                 .Where(type => type.IsAssignableTo(typeof(IBaseService)))
                 .AsImplementedInterfaces()
                 .PropertiesAutowired();
