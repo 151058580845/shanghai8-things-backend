@@ -4,7 +4,6 @@ using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Code;
 
-[Table("CodeRule")]
 public class CodeRule : UniversalEntity, ISoftDelete, IState, IOrder
 {
     [Description("创建时间")]

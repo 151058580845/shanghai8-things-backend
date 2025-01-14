@@ -4,7 +4,6 @@ using Hgzn.Mes.Domain.ValueObjects.UserValue;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
-    [Table("User")]
     public class User : UniversalEntity, ISoftDelete, IState
     {
         /// <summary>

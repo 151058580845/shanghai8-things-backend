@@ -7,7 +7,6 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
     /// <summary>
     ///     关联表，如需使用可用Set获取
     /// </summary>
-    [Table("RoleMenu")]
     public class RoleMenu : IncrementEntity
     {
         public Guid MenuId { get; set; }

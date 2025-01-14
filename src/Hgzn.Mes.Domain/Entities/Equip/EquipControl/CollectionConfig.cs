@@ -9,9 +9,8 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 /// <summary>
 /// 采集模式设置
 /// </summary>
-[Table("CollectionConfig")]
 [Description("设备采集模式设置")]
-public class CollectionConfigEntity : UniversalEntity,ICreationAudited
+public class CollectionConfig : UniversalEntity, ICreationAudited
 {
     /// <summary>
     /// 采集间隔时间（多久采集一次）

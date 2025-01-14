@@ -4,7 +4,6 @@ using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 {
-    [Table("DictionaryType")]
     public class DictionaryType : UniversalEntity, ISoftDelete, IOrder, IState
     {
         [Description("排序")]

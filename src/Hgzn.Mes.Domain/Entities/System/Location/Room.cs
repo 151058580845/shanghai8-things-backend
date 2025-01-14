@@ -6,7 +6,6 @@ using Hgzn.Mes.Domain.Shared.Enum;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
 
-[Table("Room")]
 public class Room : UniversalEntity, IOrder, IAudited
 {
     public Guid ParentId { get; set; }  // 外键，关联 FloorEntity

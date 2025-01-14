@@ -5,7 +5,6 @@ using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 {
-    [Table("DictionaryInfo")]
     public class DictionaryInfo : UniversalEntity, ISoftDelete, IOrder, IState, IAudited
     {
         [Description("排序")]

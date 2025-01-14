@@ -4,7 +4,6 @@ using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Authority
 {
-    [Table("Menu")]
     public class Menu : UniversalEntity, ISoftDelete, IAudited, IOrder, IState
     {
         public string Name { get; set; } = null!;

@@ -9,7 +9,6 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 /// <summary>
 /// 设备采集信息配置表
 /// </summary>
-[Table("EquipConnect")]
 [Description("设备采集信息配置表")]
 public class EquipConnect: UniversalEntity, ISoftDelete, IState, IOrder
 {

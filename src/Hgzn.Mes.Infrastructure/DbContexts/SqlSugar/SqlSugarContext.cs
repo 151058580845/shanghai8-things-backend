@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using System.Text;
+using CaseExtensions;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Notice;
@@ -25,11 +26,7 @@ public sealed class SqlSugarContext
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
     }
-    private static readonly Dictionary<string, string> _prefixDic = new()
-    {
-        { "Equip", "EQUIP_" },
-        { "System", "BASE_" }
-    };
+
     private const string DefaultConnectionStringName = "Default";
 
     /// <summary>
@@ -59,20 +56,17 @@ public sealed class SqlSugarContext
                 {
                     string? tableName;
                     var table = t.GetCustomAttribute<TableAttribute>();
-                    var name = t.FullName?.Split('.');
+                    var name = t.FullName!.Split('.');
                     var tablePrefix = "";
-                    if (name != null && name.Length > 3)
+                    if (name.Length > 3)
                     {
-                        tablePrefix = name[4];
+                        tablePrefix = name[4] + '_';
                     }
-                    tableName = table != null ? table.Name : name?[^1];
+                    tableName = table != null ? table.Name : name?[^1].ToSnakeCase();
                     var tableDesc = t.GetCustomAttribute<DescriptionAttribute>();
 
-                    if (_prefixDic.TryGetValue(tablePrefix, out var prefix) && !string.IsNullOrEmpty(prefix))
-                    {
-                        e.DbTableName = prefix + tableName;
-                        e.TableDescription = tableDesc?.Description;
-                    }
+                    e.DbTableName = tablePrefix + tableName;
+                    e.TableDescription = tableDesc?.Description;
                 },
                 EntityService = (p, c) =>
                 {
@@ -83,11 +77,13 @@ public sealed class SqlSugarContext
                         .OneToMany(t=>t.NoticeTargets,nameof(NoticeTarget.NoticeId),nameof(Notice.Id));
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
+                    var name = p.Name.ToSnakeCase();
+                    c.DbColumnName = name;
                     if (new NullabilityInfoContext().Create(p).WriteState is NullabilityState.Nullable)
                     {
                         c.IsNullable = true;
                     }
-                    if (p.Name.ToLower() == "id")
+                    if (name == "id")
                     {
                         c.IsPrimarykey = true;
                     }
@@ -117,7 +113,7 @@ public sealed class SqlSugarContext
         {
             var tables = Assembly.Load("Hgzn.Mes." + nameof(Domain))
                 .GetTypes()
-                .Where(t => t.GetCustomAttribute<TableAttribute>() != null)
+                .Where(t => (typeof(AggregateRoot)).IsAssignableFrom(t) && !t.Namespace!.Contains("Base"))
                 .ToArray();
             DbContext.CodeFirst.InitTables(tables);
         }

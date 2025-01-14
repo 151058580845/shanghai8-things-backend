@@ -8,7 +8,6 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 /// <summary>
 /// 设备绑定表
 /// </summary>
-[Table("EquipConnect")]
 [Description("设备绑定表")]
 public class EquipConnectForward : UniversalEntity ,ICreationAudited
 {

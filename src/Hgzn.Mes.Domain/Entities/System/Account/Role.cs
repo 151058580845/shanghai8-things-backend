@@ -5,7 +5,6 @@ using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
-    [Table("Role")]
     public class Role : UniversalEntity, ISoftDelete, IAudited, IState, IOrder
     {
         public string Name { get; set; } = null!;

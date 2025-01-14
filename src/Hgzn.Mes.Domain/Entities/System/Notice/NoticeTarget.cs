@@ -4,8 +4,6 @@ using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Domain.Entities.System.Notice;
-
-[Table("NoticeTarget")]
 public class NoticeTarget : UniversalEntity
 {
     [Description("通知id")]

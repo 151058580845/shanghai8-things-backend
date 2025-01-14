@@ -4,7 +4,6 @@ using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
-[Table("EquipType")]
 [Description("设备类型")]
 public class EquipType : UniversalEntity,ISoftDelete, IState
 {

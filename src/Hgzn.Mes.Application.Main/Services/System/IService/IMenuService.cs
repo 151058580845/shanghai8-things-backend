@@ -6,7 +6,7 @@ using Hgzn.Mes.Domain.Shared;
 namespace Hgzn.Mes.Application.Main.Services.System.IService
 {
     public interface IMenuService : IBaseService, ICrudAppService<
-        Menu, Guid,MenuQueryDto, MenuReadDto, MenuCreateDto,MenuUpdateDto>
+        Menu, Guid, MenuQueryDto, MenuReadDto, MenuCreateDto,MenuUpdateDto>
     {
         Task<PaginatedList<MenuReadDto>> QueryMenusAsync(MenuQueryDto query);
 
