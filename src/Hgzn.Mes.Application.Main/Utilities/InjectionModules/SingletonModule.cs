@@ -23,7 +23,6 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .AsImplementedInterfaces()
                 .SingleInstance();
             builder.RegisterGeneric(typeof(PaginatedListConverter<,>));
-
             builder.Register(context =>
             {
                 var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))

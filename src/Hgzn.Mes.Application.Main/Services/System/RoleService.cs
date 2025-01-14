@@ -83,7 +83,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
         }
 
-        public override Task<IEnumerable<RoleReadDto>> GetListAsync(RoleQueryDto queryDto)
+        public override Task<PaginatedList<RoleReadDto>> GetListAsync(RoleQueryDto queryDto)
         {
             throw new NotImplementedException();
         }

@@ -31,9 +31,9 @@ namespace Hgzn.Mes.Infrastructure.DomainServices
 
         public async Task<bool> DeleteTokenAsync(Guid userId)
         {
-            var databse = _connectionMultiplexer.GetDatabase();
+            var database = _connectionMultiplexer.GetDatabase();
             var key = string.Format(CacheKeyFormatter.Token, userId);
-            return await databse.KeyDeleteAsync(key);
+            return await database.KeyDeleteAsync(key);
         }
 
         public async Task<bool> VerifyCaptchaAnswerAsync(Captcha captcha)

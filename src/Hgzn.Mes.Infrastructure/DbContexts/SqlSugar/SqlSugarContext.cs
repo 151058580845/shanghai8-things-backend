@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.System.Notice;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 
@@ -78,7 +79,8 @@ public sealed class SqlSugarContext
                     //配置表外键
                     c.IfTable<EquipLedger>()
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
-
+                    c.IfTable<Notice>()
+                        .OneToMany(t=>t.NoticeTargets,nameof(NoticeTarget.NoticeId),nameof(Notice.Id));
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     if (new NullabilityInfoContext().Create(p).WriteState is NullabilityState.Nullable)

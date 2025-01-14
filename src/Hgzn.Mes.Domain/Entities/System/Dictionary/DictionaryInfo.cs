@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 
@@ -7,79 +8,49 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
     [Table("DictionaryInfo")]
     public class DictionaryInfo : UniversalEntity, ISoftDelete, IOrder, IState, IAudited
     {
-        /// <summary>
-        /// 排序
-        /// </summary>
+        [Description("排序")]
         public int OrderNum { get; set; } = 0;
 
-        /// <summary>
-        /// 状态
-        /// </summary>
+        [Description("状态")]
         public bool State { get; set; } = true;
 
-        /// <summary>
-        /// 描述
-        /// </summary>
+        [Description("描述")]
         public string? Remark { get; set; }
 
-        /// <summary>
-        /// tag类型
-        /// </summary>
+        [Description("tag类型")]
         public string? ListClass { get; set; }
 
-        /// <summary>
-        /// tagClass
-        /// </summary>
+        [Description("tagClass")]
         public string? CssClass { get; set; }
 
-        /// <summary>
-        /// 字典类型
-        /// </summary>
+        [Description("字典类型")]
         public Guid ParentId { get; set; }
 
-        /// <summary>
-        /// 字典标签
-        /// </summary>
-        public string? DictLabel { get; set; }
+        [Description("字典标签")]
+        public string DictLabel { get; set; } = null!;
 
-        /// <summary>
-        /// 字典值
-        /// </summary>
+        [Description("字典值")]
         public string DictValue { get; set; } = string.Empty;
 
-        /// <summary>
-        /// 是否为该类型的默认值
-        /// </summary>
+        [Description("是否为该类型的默认值")]
         public bool IsDefault { get; set; }
 
-        /// <summary>
-        /// 创建时间
-        /// </summary>
+        [Description("创建时间")]
         public DateTime CreationTime { get; set; }
 
-        /// <summary>
-        /// 创建者ID
-        /// </summary>
+        [Description("创建者ID")]
         public Guid? CreatorId { get; set; }
 
-        /// <summary>
-        /// 最后修改者ID
-        /// </summary>
+        [Description("最后修改者ID")]
         public Guid? LastModifierId { get; set; }
 
-        /// <summary>
-        /// 最后修改时间
-        /// </summary>
+        [Description("最后修改时间")]
         public DateTime? LastModificationTime { get; set; }
 
-        /// <summary>
-        /// 软删除标志
-        /// </summary>
+        [Description("软删除标志")]
         public bool SoftDeleted { get; set; }
 
-        /// <summary>
-        /// 删除时间
-        /// </summary>
+        [Description("删除时间")]
         public DateTime? DeleteTime { get; set; }
     }
 }

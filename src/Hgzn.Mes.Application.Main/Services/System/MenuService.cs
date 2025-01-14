@@ -92,7 +92,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return count;
         }
 
-        public override Task<IEnumerable<MenuReadDto>> GetListAsync(MenuQueryDto queryDto)
+        public override Task<PaginatedList<MenuReadDto>> GetListAsync(MenuQueryDto queryDto)
         {
             throw new NotImplementedException();
         }

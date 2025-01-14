@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Shared.Enums;
 
@@ -7,29 +8,18 @@ namespace Hgzn.Mes.Domain.Entities.System.Notice;
 [Table("NoticeTarget")]
 public class NoticeTarget : UniversalEntity
 {
-
-    /// <summary>
-    /// 通知id 
-    /// </summary>
+    [Description("通知id")]
     public Guid NoticeId { get; set; }
 
-    /// <summary>
-    /// 目标类型
-    /// </summary>
+    [Description("目标类型")]
     public NoticeTargetType NoticeTargetType { get; set; }
 
-    /// <summary>
-    /// 目标Id
-    /// </summary>
+    [Description("目标Id")]
     public Guid NoticeObjectId { get; set; }
 
-    /// <summary>
-    /// 通知发送时间
-    /// </summary>
+    [Description("通知发送时间")]
     public DateTime NoticeTime { get; set; } = DateTime.Now;
 
-    /// <summary>
-    /// 阅读状态
-    /// </summary>
+    [Description("阅读状态")]
     public bool IsRead { get; set; } = false;
 }

@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -21,13 +22,14 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid,EquipLed
         var entities = await Queryable()
             .Select(t => new NameValueDto
             {
+                Id = t.Id,
                 Name = t.EquipName,
                 Value = t.Id.ToString()
             }).ToListAsync();
         return entities;
     }
 
-    public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto query)
+    public override async Task<PaginatedList<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto query)
     {
         var entities = await Queryable()
             .Where(m => query.EquipName == null || m.EquipName.Contains(query.EquipName))
@@ -38,6 +40,6 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid,EquipLed
             .Includes(t => t.Room)
             .OrderByDescending(m => m.OrderNum)
             .ToPageListAsync(query.PageIndex, query.PageSize);
-        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
+        return Mapper.Map<PaginatedList<EquipLedgerReadDto>>(entities);
     }
 }

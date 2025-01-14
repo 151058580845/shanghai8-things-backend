@@ -76,7 +76,7 @@ namespace Hgzn.Mes.Application.Main.Services
         public async Task LogoutAsync(IEnumerable<Claim> claims)
         {
             var userId = claims.FirstOrDefault(c => c.Type == CustomClaimsType.UserId)!.Value;
-            await _userDomainService.DeleteTokenAsync(Guid.Parse(userId)!);
+            await _userDomainService.DeleteTokenAsync(Guid.Parse(userId));
         }
 
         [ScopeDefinition("delete user by id", $"{ManagedResource.User}.{ManagedAction.Delete}.Id")]
