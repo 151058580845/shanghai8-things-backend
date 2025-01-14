@@ -1,63 +1,40 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Code;
-
-[Table("CodeRuleDefine")]
 public class CodeRuleDefine : UniversalEntity, IOrder
 {
-    /// <summary>
-    /// 编码规则
-    /// </summary>
+    [Description("编码规则")]
     public Guid CodeRuleId { get; set; }
 
-    /// <summary>
-    /// 类型
-    /// </summary>
+    [Description("类型")]
     public string? CodeRuleType { get; set; }
 
-    /// <summary>
-    /// 排序号
-    /// </summary>
+    [Description("排序号")]
     public int OrderNum { get; set; }
 
-    /// <summary>
-    /// 流水长度
-    /// </summary>
+    [Description("流水长度")]
     public int? MaxFlow { get; set; }
 
-    /// <summary>
-    /// 当前流水号
-    /// </summary>
+    [Description("当前流水号")]
     public int? NowFlow { get; set; }
 
-    /// <summary>
-    /// 确认当前编码被应用
-    /// </summary>
+    [Description("确认当前编码被应用")]
     public bool? NowFlowIsSure { get; set; }
 
-    /// <summary>
-    /// 补位符
-    /// </summary>
+    [Description("补位符")]
     public char? CodeCover { get; set; }
 
-    /// <summary>
-    /// 日期格式
-    /// </summary>
+    [Description("日期格式")]
     public string? DateFormat { get; set; }
 
-    /// <summary>
-    /// 常量
-    /// </summary>
+    [Description("常量")]
     public string? ConstantChar { get; set; }
 
-    /// <summary>
-    /// 元素键值
-    /// </summary>
+    [Description("元素键值")]
     public string? SourceKey { get; set; }
 
-    /// <summary>
-    /// 元素属性
-    /// </summary>
+    [Description("元素属性")]
     public string? SourceValue { get; set; }
 }

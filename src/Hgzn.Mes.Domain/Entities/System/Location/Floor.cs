@@ -5,7 +5,6 @@ using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
 
-[Table("Floor")]
 public class Floor : UniversalEntity, IOrder, IAudited
 {
     [ForeignKey("Building")]  // 外键设置到 BuildingAggregateRoot

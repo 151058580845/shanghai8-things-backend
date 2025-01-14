@@ -7,7 +7,6 @@ using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
-[Table("EquipLedger")]
 [Description("设备台账")]
 public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudited
 {

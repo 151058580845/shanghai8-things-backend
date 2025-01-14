@@ -8,7 +8,6 @@ namespace Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
 /// <summary>
 /// 接收的数据
 /// </summary>
-[Table("ReceiveData")]
 [Description("接收的数据")]
 public class ReceiveData : UniversalEntity, IAudited
 {

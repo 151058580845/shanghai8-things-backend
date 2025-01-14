@@ -1,5 +1,6 @@
 using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services;
 
@@ -10,7 +11,7 @@ public interface ICrudAppService<TEntity, TKey,TQueryDto, TReadDto, TCreateDto, 
     where TUpdateDto : UpdateDto
     where TCreateDto : CreateDto
 {
-    Task<IEnumerable<TReadDto>> GetListAsync(TQueryDto queryDto);
+    Task<PaginatedList<TReadDto>> GetListAsync(TQueryDto queryDto);
     Task<TReadDto> CreateAsync(TCreateDto dto);
     Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto);
     Task<int> DeleteAsync(TKey key);

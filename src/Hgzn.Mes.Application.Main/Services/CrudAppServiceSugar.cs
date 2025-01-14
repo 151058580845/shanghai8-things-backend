@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using SqlSugar;
 
@@ -15,7 +16,9 @@ public abstract class CrudAppServiceSugar<TEntity, TKey, TQueryDto, TReadDto, TC
     public SqlSugarContext SqlSugarContext { get; init; } = null!;
     public ISqlSugarClient DbContext { get; init; } = null!;
 
-    public abstract Task<IEnumerable<TReadDto>> GetListAsync(TQueryDto queryDto);
+    // public abstract Task<IEnumerable<TReadDto>> GetListAsync(TQueryDto queryDto);
+    public abstract Task<PaginatedList<TReadDto>> GetListAsync(TQueryDto queryDto);
+
     protected ISugarQueryable<TEntity> Queryable()
     {
         return DbContext.Queryable<TEntity>();
@@ -25,7 +28,7 @@ public abstract class CrudAppServiceSugar<TEntity, TKey, TQueryDto, TReadDto, TC
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TReadDto> CreateAsync(TCreateDto dto)
+    public virtual async Task<TReadDto> CreateAsync(TCreateDto dto)
     {
         var entity = Mapper.Map<TEntity>(dto);
         await DbContext.Insertable(entity).ExecuteCommandAsync();
@@ -38,7 +41,7 @@ public abstract class CrudAppServiceSugar<TEntity, TKey, TQueryDto, TReadDto, TC
     /// <param name="key"></param>
     /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto)
+    public virtual async Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity == null)
@@ -55,7 +58,7 @@ public abstract class CrudAppServiceSugar<TEntity, TKey, TQueryDto, TReadDto, TC
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public async Task<int> DeleteAsync(TKey key)
+    public virtual async Task<int> DeleteAsync(TKey key)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity != null)
@@ -70,9 +73,10 @@ public abstract class CrudAppServiceSugar<TEntity, TKey, TQueryDto, TReadDto, TC
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public async Task<TReadDto> GetAsync(TKey key)
+    public virtual async Task<TReadDto> GetAsync(TKey key)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         return Mapper.Map<TReadDto>(entity);
     }
+
 }

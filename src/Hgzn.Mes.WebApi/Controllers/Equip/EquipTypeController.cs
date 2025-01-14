@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,6 @@ public class EquipTypeController : BaseController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("list")]
-    public async Task<ResponseWrapper<IEnumerable<EquipTypeReadDto>>> GetListAsync(EquipTypeQueryDto queryDto)
+    public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>>> GetListAsync(EquipTypeQueryDto queryDto)
         => Success(await _equipTypeService.GetListAsync(queryDto));
 }

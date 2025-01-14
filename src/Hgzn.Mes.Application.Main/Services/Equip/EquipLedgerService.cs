@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -21,6 +22,7 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLe
         var entities = await Queryable()
             .Select(t => new NameValueDto
             {
+                Id = t.Id,
                 Name = t.EquipName,
                 Value = t.Id.ToString()
             }).ToListAsync();
@@ -47,6 +49,6 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLe
             .Includes(t => t.Room)
             .OrderByDescending(m => m.OrderNum)
             .ToPageListAsync(query.PageIndex, query.PageSize);
-        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
+        return Mapper.Map<PaginatedList<EquipLedgerReadDto>>(entities);
     }
 }

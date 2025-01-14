@@ -3,7 +3,6 @@ using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
-    [Table("Captcha")]
     public class Captcha : UniversalEntity
     {
         public CaptchaType Type { get; set; }

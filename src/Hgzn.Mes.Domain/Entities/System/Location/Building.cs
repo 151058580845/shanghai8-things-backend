@@ -4,8 +4,6 @@ using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
-
-[Table("Building")]
 public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
 {
     [Description("建筑物名称")]
