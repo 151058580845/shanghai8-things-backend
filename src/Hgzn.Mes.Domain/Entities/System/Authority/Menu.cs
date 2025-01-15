@@ -78,7 +78,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Path = "root"
         };
 
-        public static IEnumerable<Menu> Seeds { get; } = [Root];
+        public static List<Menu> Seeds { get; } = [Root];
 
         #endregion static
     }

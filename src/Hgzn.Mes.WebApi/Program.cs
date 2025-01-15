@@ -4,9 +4,11 @@ using Hgzn.Mes.Application.Main.Auth;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
+using Hgzn.Mes.Infrastructure.DbContexts.Ef;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -114,14 +116,15 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-// Add dbContext pool
-// builder.Services.AddDbContextPool<ApiDbContext>(options =>
-// {
-//     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
-//     //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
-//     //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
-//     options.UseSnakeCaseNamingConvention();
-// });
+//Add dbContext pool
+ builder.Services.AddDbContextPool<ApiDbContext>(options =>
+ {
+    //options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
+    //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
+    //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
+    options.UseGaussDB(builder.Configuration.GetConnectionString("OpenGauss")).EnableDetailedErrors(); ;
+    options.UseSnakeCaseNamingConvention();
+ });
 
 // Add mapper profiles
 builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));

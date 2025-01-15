@@ -1,6 +1,7 @@
 ﻿using CaseExtensions;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
@@ -16,7 +17,8 @@ public sealed class SqlSugarContext
     private readonly DbConnOptions _dbOptions;
     private readonly ILogger<SqlSugarContext> _logger;
 
-    public SqlSugarContext(ILogger<SqlSugarContext> logger, DbConnOptions dbOptions, ISqlSugarClient client)
+    public SqlSugarContext(ILogger<SqlSugarContext> logger, DbConnOptions dbOptions, ISqlSugarClient client
+        )
     {
         _dbOptions = dbOptions;
         _logger = logger;
@@ -85,6 +87,7 @@ public sealed class SqlSugarContext
                     if (name == "id")
                     {
                         c.IsPrimarykey = true;
+                        c.IsIdentity = p.GetType() == typeof(int) || p.GetType() == typeof(long);
                     }
                 }
             }
@@ -103,6 +106,36 @@ public sealed class SqlSugarContext
             sqlSugarClient.QueryFilter.AddTableFilter<ISoftDelete>(t => t.SoftDeleted == false);
     }
 
+    private void SeedData()
+    {
+        var entities = Assembly.Load("Hgzn.Mes." + nameof(Domain))
+            .GetTypes()
+            .Where(t => (typeof(AggregateRoot)).IsAssignableFrom(t) && !t.Namespace!.Contains("Base"))
+            .ToArray();
+
+        DbContext.Insertable(Menu.Seeds).ExecuteCommandAsync().Wait();
+
+        foreach (var entity in entities)
+        {
+            var methodGeneric = typeof(ISqlSugarClient).GetMethods()
+                .Where(me => me.Name == "Insertable" &&
+                me.GetParameters().Length == 1 &&
+                me.GetParameters()[0].ParameterType.IsGenericType &&
+                me.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(List<>));
+            //获取静态种子属性
+            var seeds = entity.GetProperty("Seeds", BindingFlags.Public | BindingFlags.Static);
+            var value = seeds?.GetValue(null);
+            if (value != null)
+            {
+                var data = methodGeneric.FirstOrDefault()?.MakeGenericMethod(entity)
+                .Invoke(DbContext, [value]);
+                var excuteMethod = typeof(IInsertable<>).GetMethod("ExecuteCommandAsync", BindingFlags.Public);
+                var task = (Task?)excuteMethod?.Invoke(data, null);
+                task?.Wait();
+            }
+        }
+    }
+
     /// <summary>
     /// 初始化数据表
     /// </summary>
@@ -116,6 +149,7 @@ public sealed class SqlSugarContext
                 .ToArray();
             DbContext.CodeFirst.InitTables(tables);
         }
+        SeedData();
     }
 
     /// <summary>
