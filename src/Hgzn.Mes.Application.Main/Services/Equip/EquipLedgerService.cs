@@ -32,13 +32,13 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLe
     public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListAsync(string? equipCode, string? equipName)
     {
         var entities = await DbContext.Queryable<EquipLedger>()
-             .WhereIF(!equipCode.IsNullOrEmpty(), t => t.EquipCode == equipCode)
-             .WhereIF(!equipName.IsNullOrEmpty(), t => t.EquipName == equipName)
+             .WhereIF(!string.IsNullOrEmpty(equipCode), t => t.EquipCode == equipCode)
+             .WhereIF(!string.IsNullOrEmpty(equipName), t => t.EquipName == equipName)
              .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
-    public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto query)
+    public override async Task<PaginatedList<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto query)
     {
         var entities = await Queryable()
             .Where(m => query.EquipName == null || m.EquipName.Contains(query.EquipName))
