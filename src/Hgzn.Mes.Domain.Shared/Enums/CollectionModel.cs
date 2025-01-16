@@ -4,8 +4,8 @@ namespace Hgzn.Mes.Domain.Shared.Enums;
 
 public enum CollectionModel
 {
-    
 }
+
 /// <summary>
 /// 传输模式
 /// </summary>
@@ -13,8 +13,10 @@ public enum TransmissionMode
 {
     [Description("实时传输")]
     RealTime,
+
     [Description("批量传输")]
     Batch,
+
     [Description("周期传输")]
     Periodic,
 }
@@ -46,6 +48,7 @@ public enum CollectionStartMode
 {
     [Description("手动开始")]
     Manual,
+
     [Description("自动")]
     Automatic,
 }

@@ -1,7 +1,6 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
+using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 {

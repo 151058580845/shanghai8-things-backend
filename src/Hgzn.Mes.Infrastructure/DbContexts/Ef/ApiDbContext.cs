@@ -1,19 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
-using CaseExtensions;
-using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Microsoft.AspNetCore.Http;
-using Hgzn.Mes.Domain.Shared;
+﻿using CaseExtensions;
 using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
-using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.System.Location;
+using Hgzn.Mes.Domain.Shared;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
 {
     public class ApiDbContext : DbContext
     {
         private readonly IHttpContextAccessor? _httpContextAccessor;
+
         public ApiDbContext(
             DbContextOptions<ApiDbContext> options,
             IHttpContextAccessor? httpContextAccessor) : base(options)
@@ -33,7 +34,6 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
 
         public DbSet<EquipLedger> EquipLedgers { get; set; } = null!;
         public DbSet<EquipType> EquipTypes { get; set; } = null!;
-
 
         #endregion dbsets
 
@@ -167,7 +167,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
                 .HasIndex(m => m.Code)
                 .IsUnique();
 
-            #endregion
+            #endregion menu
 
             #region Location
 
@@ -195,7 +195,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
                 .HasForeignKey(t => t.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            #endregion
+            #endregion Location
 
             #endregion entities initialize
         }

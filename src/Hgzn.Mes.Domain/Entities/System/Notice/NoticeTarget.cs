@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Shared.Enums;
+using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Notice;
+
 public class NoticeTarget : UniversalEntity
 {
     [Description("通知id")]

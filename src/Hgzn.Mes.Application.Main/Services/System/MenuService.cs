@@ -1,19 +1,18 @@
-﻿using System.Security.Claims;
-using Hgzn.Mes.Application.Main.Dtos;
+﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using SqlSugar;
+using System.Security.Claims;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
-    public class MenuService : CrudAppServiceSugar<Menu, Guid,MenuQueryDto
+    public class MenuService : CrudAppServiceSugar<Menu, Guid, MenuQueryDto
         , MenuReadDto, MenuCreateDto,
         MenuUpdateDto>, IMenuService
     {
-
         public async Task<PaginatedList<MenuReadDto>> QueryMenusAsync(MenuQueryDto query)
         {
             var entities = await Queryable()

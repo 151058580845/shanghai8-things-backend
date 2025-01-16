@@ -26,7 +26,6 @@ namespace Hgzn.Mes.Domain.Shared.Utilities
         public static JwtSettings Jwt { get; private set; } = new JwtSettings();
         public static OpenApiInfo OpenApi { get; private set; } = new OpenApiInfo();
 
-
         public static bool IsDevelopment { get; private set; } = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
         public class JwtSettings

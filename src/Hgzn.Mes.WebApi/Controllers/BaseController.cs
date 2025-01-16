@@ -5,7 +5,7 @@ namespace Hgzn.Mes.WebApi.Controllers;
 
 public class BaseController : ControllerBase
 {
-    protected ResponseWrapper<T> Success<T>(T t, string info="",int statusCode=StatusCodes.Status200OK)
+    protected ResponseWrapper<T> Success<T>(T t, string info = "", int statusCode = StatusCodes.Status200OK)
     {
         return new ResponseWrapper<T>()
         {

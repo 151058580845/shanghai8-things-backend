@@ -1,0 +1,253 @@
+﻿using Hgzn.Mes.Infrastructure.Mqtt.RfidReader;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MQTTnet;
+using MQTTnet.Client;
+using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Protocol;
+
+namespace Hgzn.Mes.Infrastructure.Mqtt.Manager;
+
+/// <summary>
+/// Mqtt客户端实例
+/// </summary>
+public class ApiMqttPub : IMqttExplorer
+{
+    private readonly ILogger<ApiMqttPub> _logger;
+    private ManagedMqttClientOptions _mqttClientOptions;
+    private readonly IManagedMqttClient _mqttClient;
+    private readonly TimeSpan _reconnectDelay = TimeSpan.FromSeconds(10);
+    private readonly HashSet<string> _subscribedTopics = new();
+    private readonly MqttSettings _mqttSettings;
+    public TopicBuilder TopicBuilder { get; set; } = new();
+
+    public ApiMqttPub(ILogger<ApiMqttPub> logger,IManagedMqttClient mqttClient, MqttSettings mqttSettings)
+    {
+        TopicBuilder.WithTag(MqttTag.Alarm)
+            .WithDirection(MqttDirection.Down)
+            .WithPrefix("Equip");
+        _logger = logger;
+        _mqttClient = mqttClient;
+        _mqttSettings = mqttSettings;
+        // 订阅客户端连接和断开连接的事件
+        _mqttClient.ConnectedAsync += OnClientConnectedAsync;
+        _mqttClient.DisconnectedAsync += OnClientDisconnectedAsync;
+        _mqttClient.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
+    }
+
+    public async Task StartAsync()
+    {
+        if (_mqttSettings is { Username: not null, Password: not null })
+        {
+            var options = CreateMqttClientOptions(_mqttSettings.Broker, _mqttSettings.Port, _mqttSettings.Username,
+                _mqttSettings.Password);
+            await _mqttClient.StartAsync(options);
+        }
+    }
+
+
+    /// <summary>
+    /// 启动Mqtt客户端并连接到服务器
+    /// </summary>
+    /// <param name="server"></param>
+    /// <param name="port"></param>
+    /// <param name="username"></param>
+    /// <param name="password"></param>
+    public async Task StartAsync(string server, int port, string username, string password)
+    {
+        var options = CreateMqttClientOptions(server, port, username, password);
+        await _mqttClient.StartAsync(options);
+    }
+
+    /// <summary>
+    /// 停止Mqtt服务器
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public async Task StopAsync()
+    {
+        //创建停止消息
+        var message = CreateMattMessage(MqttState.Stop);
+        //发布停止消息
+        await _mqttClient.EnqueueAsync(message);
+        //停止Mqtt客户端
+        await _mqttClient.StopAsync();
+    }
+
+    /// <summary>
+    /// 重启Mqtt客户端
+    /// </summary>
+    /// <param name="server"></param>
+    /// <param name="port"></param>
+    /// <param name="username"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
+    public async Task RestartAsync(string server, int port, string? username, string? password)
+    {
+        // 使用新的连接选项重新创建客户端配置
+        _mqttClientOptions = CreateMqttClientOptions(server, port, username, password);
+        // 创建重启消息
+        var message = CreateMattMessage(MqttState.Restart);
+        // 发布重启消息
+        await _mqttClient.EnqueueAsync(message);
+        // 停止MQTT客户端并重新启动
+        await _mqttClient.StopAsync();
+        await _mqttClient.StartAsync(_mqttClientOptions);
+    }
+
+    /// <summary>
+    /// 订阅一个主题，并发送与一个数据
+    /// </summary>
+    /// <param name="topic"></param>
+    /// <param name="payload"></param>
+    public async Task PublishAsync(string topic, byte[] payload)
+    {
+        if (!_mqttClient.IsConnected)
+        {
+            await _mqttClient.StartAsync(_mqttClientOptions);
+        }
+
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic(topic)
+            .WithPayload(payload)
+            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+            .Build();
+        await _mqttClient.EnqueueAsync(message);
+        _subscribedTopics.Add(topic);
+    }
+
+    public async Task PublishAsync(string topic, string payload)
+    {
+        if (!_mqttClient.IsConnected)
+        {
+            await _mqttClient.StartAsync(_mqttClientOptions);
+        }
+
+        var message = new MqttApplicationMessageBuilder()
+            .WithTopic(topic)
+            .WithPayload(payload)
+            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+            .Build();
+        await _mqttClient.EnqueueAsync(message);
+        _subscribedTopics.Add(topic);
+    }
+
+    /// <summary>
+    /// 取消订阅一个主题
+    /// </summary>
+    /// <param name="topic"></param>
+    /// <returns></returns>
+    public async Task UnSubscribeAsync(string topic)
+    {
+        await _mqttClient.UnsubscribeAsync(topic);
+        _subscribedTopics.Remove(topic);
+    }
+
+
+    /// <summary>
+    /// 检查客户端的连接状态
+    /// </summary>
+    /// <returns></returns>
+    public Task<bool> IsConnectedAsync()
+    {
+        return Task.FromResult(_mqttClient.IsConnected);
+    }
+
+    public event Func<MqttClientConnectedEventArgs, Task>? MqttClientConnected;
+    public event Func<MqttClientDisconnectedEventArgs, Task>? MqttClientDisconnected;
+    public event Func<MqttMessageEventArgs, Task>? MessageReceived;
+
+    /// <summary>
+    /// 事件触发：客户端连接成功时调用
+    /// </summary>
+    /// <param name="args"></param>
+    private Task OnClientConnectedAsync(MqttClientConnectedEventArgs args)
+    {
+        _logger.LogInformation("mqtt connected");
+        MqttClientConnected?.Invoke(args);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 事件触发：客户端断开连接时调用
+    /// </summary>
+    /// <param name="args"></param>
+    private Task OnClientDisconnectedAsync(MqttClientDisconnectedEventArgs args)
+    {
+        _logger.LogError("mqtt connected");
+        MqttClientDisconnected?.Invoke(args);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 事件触发：接收到消息时调用
+    /// </summary>
+    /// <param name="args"></param>
+    private Task OnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs args)
+    {
+        var mqttMessageEventArgs = new MqttMessageEventArgs(args.ApplicationMessage.Topic,
+            args.ApplicationMessage.PayloadSegment.ToArray());
+        MessageReceived?.Invoke(mqttMessageEventArgs);
+        return Task.CompletedTask;
+    }
+
+
+    /// <summary>
+    /// 获取已经订阅的消息
+    /// </summary>
+    /// <returns></returns>
+    public Task<IEnumerable<string>> GetSubscribedTopicsAsync()
+    {
+        return Task.FromResult<IEnumerable<string>>(_subscribedTopics);
+    }
+
+    /// <summary>
+    /// 创建一个Mqtt连接客户端
+    /// </summary>
+    /// <param name="server"></param>
+    /// <param name="port"></param>
+    /// <param name="username"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
+    private ManagedMqttClientOptions CreateMqttClientOptions(string server, int port, string? username, string? password)
+    {
+        var mqttOptionsBuilder = new MqttClientOptionsBuilder()
+            .WithClientId(_mqttSettings.ClientId)
+            .WithKeepAlivePeriod(_reconnectDelay)
+            .WithWillQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
+            .WithTcpServer(server, port)
+            .WithWillTopic(TopicBuilder
+                .WithTag(MqttTag.State)
+                .Build())
+            .WithWillPayload([(byte)MqttState.Will])
+            .WithCleanSession();
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+        {
+            mqttOptionsBuilder = mqttOptionsBuilder.WithCredentials(username, password);
+        }
+        var option = mqttOptionsBuilder
+            .Build();
+        _mqttClientOptions = new ManagedMqttClientOptionsBuilder()
+            .WithAutoReconnectDelay(_reconnectDelay)
+            .WithClientOptions(option)
+            .Build();
+        return _mqttClientOptions;
+    }
+    
+    /// <summary>
+    /// 创建一个特定的消息
+    /// </summary>
+    /// <param name="state"></param>
+    /// <returns></returns>
+    private MqttApplicationMessage CreateMattMessage(MqttState state)
+    {
+        return new MqttApplicationMessageBuilder()
+            .WithTopic(TopicBuilder
+                .WithTag(MqttTag.State)
+                .Build())
+            .WithPayload([(byte)state])
+            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+            .Build();
+    }
+}

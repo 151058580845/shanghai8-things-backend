@@ -78,5 +78,4 @@ public abstract class CrudAppServiceSugar<TEntity, TKey, TQueryDto, TReadDto, TC
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         return Mapper.Map<TReadDto>(entity);
     }
-
 }

@@ -8,6 +8,7 @@ public class AssemblyHelper
     {
         return GetAssembliesByName("Hgzn.Mes." + nameof(Application)).ToArray();
     }
+
     public static List<Assembly> GetAssembliesByName(string name)
     {
         return AppDomain.CurrentDomain.GetAssemblies()

@@ -11,7 +11,6 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLe
     EquipLedgerUpdateDto>,
     IEquipLedgerService
 {
-
     public async Task<EquipLedger> GetEquipByIpAsync(string ipAddress)
     {
         return await Queryable().FirstAsync(t => t.IpAddress == ipAddress);

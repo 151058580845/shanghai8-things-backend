@@ -23,12 +23,12 @@ namespace Hgzn.Mes.Application.Main.Dtos
         public string Path { get; set; } = null!;
 
         /// <summary>
-        ///    菜单图标 
+        ///    菜单图标
         /// </summary>
         public string? IconUrl { get; set; }
 
         /// <summary>
-        /// 是否为外部链接 
+        /// 是否为外部链接
         ///</summary>
         public bool IsLink { get; set; }
 
@@ -65,12 +65,12 @@ namespace Hgzn.Mes.Application.Main.Dtos
         public string Path { get; set; } = null!;
 
         /// <summary>
-        ///    菜单图标 
+        ///    菜单图标
         /// </summary>
         public string? IconUrl { get; set; }
 
         /// <summary>
-        /// 是否为外部链接 
+        /// 是否为外部链接
         ///</summary>
         public bool IsLink { get; set; }
 
@@ -84,7 +84,6 @@ namespace Hgzn.Mes.Application.Main.Dtos
         public bool Visible { get; set; } = true;
 
         public bool Favorite { get; set; } = false;
-
     }
 
     public class MenuUpdateDto : UpdateDto
@@ -104,12 +103,12 @@ namespace Hgzn.Mes.Application.Main.Dtos
         public string Path { get; set; } = null!;
 
         /// <summary>
-        ///    菜单图标 
+        ///    菜单图标
         /// </summary>
         public string? IconUrl { get; set; }
 
         /// <summary>
-        /// 是否为外部链接 
+        /// 是否为外部链接
         ///</summary>
         public bool IsLink { get; set; }
 

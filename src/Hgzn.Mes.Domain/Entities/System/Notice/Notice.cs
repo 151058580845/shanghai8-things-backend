@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Shared.Enums;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hgzn.Mes.Domain.Entities.System.Notice
 {
@@ -43,7 +43,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Notice
 
         [NotMapped]
         [Description("通知目标列表")]
-        public List<NoticeTarget>? NoticeTargets { get; set; }
+        public List<Guid>? NoticeTargets { get; set; }
 
         [Description("创建时间")]
         public DateTime CreationTime { get; set; }

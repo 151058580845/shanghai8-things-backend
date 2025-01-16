@@ -13,7 +13,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
+using Hangfire;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using SqlSugar;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,6 +73,9 @@ builder.Services.AddLocalization();
 builder.Services.AddAuthorization(options =>
     options.AddPolicyExt(RequireScopeUtil.Scopes)
 );
+
+//注册hangfire
+// builder.Services.AddHangfireServer();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -149,9 +154,10 @@ app.MapControllers();
 
 // app.Services.GetService<InitialDatabase>()?.Initialize();
 app.Services.GetService<SqlSugarContext>()?.InitTables();
-
+app.Services.GetService<IMqttExplorer>()?.StartAsync();
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>
         await ExceptionLocalizerExtension.LocalizeException(context, app.Services.GetService<IStringLocalizer<Exception>>()!)));
-var services = app.Services;
+//启动hangfire展示界面
+// app.UseHangfireDashboard();
 app.Run();

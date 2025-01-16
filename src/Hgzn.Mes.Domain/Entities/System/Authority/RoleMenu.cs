@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.System.Account;
-using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Authority
 {
@@ -13,7 +12,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
 
         public Guid RoleId { get; set; }
 
-        public static IEnumerable<RoleMenu> Seeds { get; set; } =
+        public static RoleMenu[] Seeds { get; set; } =
         [
             new RoleMenu { Id = 1, MenuId = Menu.Root.Id, RoleId = Role.DevRole.Id},
             new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.SuperRole.Id}

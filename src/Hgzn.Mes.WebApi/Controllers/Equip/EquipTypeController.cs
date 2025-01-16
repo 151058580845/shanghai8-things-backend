@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.WebApi.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hgzn.Mes.WebApi.Controllers.Equip;
@@ -23,4 +24,12 @@ public class EquipTypeController : BaseController
     [Route("list")]
     public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>>> GetListAsync(EquipTypeQueryDto queryDto)
         => Success(await _equipTypeService.GetListAsync(queryDto));
+
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
+    [Route("")]
+    public async Task<ResponseWrapper<EquipTypeReadDto>> CreateAsync(EquipTypeCreateDto createDto)
+    => Success(await _equipTypeService.CreateAsync(createDto));
 }

@@ -18,49 +18,55 @@ public enum ProtocolEnum
     /// </summary>
     [Description("Modbus ASCII")]
     ModbusAscii = 2,
-    
+
     /// <summary>
     /// Modbus TCP 协议
     /// </summary>
     [Description("Modbus TCP")]
     ModbusTcp = 3,
+
     /// <summary>
     /// Modbus UDP 协议
     /// </summary>
     [Description("Modbus UDP")]
     ModbusUdp = 4,
-    
+
     /// <summary>
     /// HTTP 协议
     /// </summary>
     [Description("HTTP")]
     Http = 5,
-    
+
     /// <summary>
     /// MQTT 协议
     /// </summary>
     [Description("MQTT")]
     Mqtt = 6,
+
     /// <summary>
     /// 串口 协议
     /// </summary>
     [Description("SerialPort")]
     SerialPort = 7,
+
     /// <summary>
     /// TcpServer
     /// </summary>
     [Description("TcpServer")]
     TcpServer = 8,
+
     /// <summary>
     /// TcpClient
     /// </summary>
     [Description("TcpClient")]
     TcpClient = 9,
+
     /// <summary>
     /// RfidReaderClient
     /// </summary>
     [Description("RfidReaderClient")]
     RfidReaderClient = 10,
+
     // /// <summary>
     // /// OPC UA 协议
     // /// </summary>
@@ -132,7 +138,7 @@ public enum ProtocolEnum
     // /// <summary>
     // /// HART 协议
     // /// </summary>
-    // [Description("HART")] 
+    // [Description("HART")]
     // HART = 14,
     //
     // /// <summary>
@@ -150,7 +156,7 @@ public enum ProtocolEnum
     // /// <summary>
     // /// FTP/SFTP 协议
     // /// </summary>
-    // [Description("FTP")] 
+    // [Description("FTP")]
     // FTP = 17,
     //
     // /// <summary>

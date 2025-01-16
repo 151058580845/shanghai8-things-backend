@@ -11,6 +11,7 @@ public abstract class CrudAppService<TEntity, TKey, TReadDto, TCreateDto, TUpdat
     where TCreateDto : CreateDto
 {
     protected ApiDbContext DbContext { get; }
+
     protected CrudAppService(ApiDbContext dbContext)
     {
         DbContext = dbContext;
@@ -40,7 +41,7 @@ public abstract class CrudAppService<TEntity, TKey, TReadDto, TCreateDto, TUpdat
     /// <param name="key"></param>
     /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TReadDto?> UpdateAsync(TKey key,TUpdateDto dto)
+    public async Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto)
     {
         var entity = await DbContext.Set<TEntity>().FindAsync(key);
         if (entity == null)
@@ -79,5 +80,4 @@ public abstract class CrudAppService<TEntity, TKey, TReadDto, TCreateDto, TUpdat
         var entity = await DbContext.Set<TEntity>().FindAsync(key);
         return Mapper.Map<TReadDto>(entity);
     }
-
 }

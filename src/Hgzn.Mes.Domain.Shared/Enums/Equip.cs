@@ -4,8 +4,8 @@ namespace Hgzn.Mes.Domain.Shared.Enums;
 
 public enum Equip
 {
-    
 }
+
 // /// <summary>
 // /// 设备类型
 // /// </summary>
@@ -24,11 +24,13 @@ public enum Equip
 public enum EquipLevelEnum
 {
     [Description("关键设备")]
-    Important=1,
+    Important = 1,
+
     [Description("一般设备")]
-    General=2,
+    General = 2,
+
     [Description("普通设备")]
-    Basic=3
+    Basic = 3
 }
 
 public enum EquipOperationStatus

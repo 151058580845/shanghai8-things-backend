@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Hgzn.Mes.Application.Main.Dtos;
+﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.System.IService;
-using Hgzn.Mes.Application.Main.Services.Base;
 using Hgzn.Mes.WebApi.Utilities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Hgzn.Mes.WebApi.Controllers
 {

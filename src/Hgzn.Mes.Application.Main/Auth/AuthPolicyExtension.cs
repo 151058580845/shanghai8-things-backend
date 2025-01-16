@@ -1,6 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Auth.Requirements;
-using Microsoft.AspNetCore.Authorization;
 using Hgzn.Mes.Domain.ValueObjects;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hgzn.Mes.Application.Main.Auth
 {

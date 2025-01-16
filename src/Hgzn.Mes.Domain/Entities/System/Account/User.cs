@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.ValueObjects.UserValue;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
@@ -10,12 +9,14 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         /// 用户名
         /// </summary>
         public string Username { get; set; } = null!;
+
         public string Passphrase { get; set; } = null!;
 
         /// <summary>
         /// 姓名
         /// </summary>s
         public string? Name { get; set; }
+
         public string Salt { get; set; } = null!;
         public string? Nick { get; set; }
         public string? Icon { get; set; }
@@ -52,7 +53,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
 
-        #endregion
+        #endregion audit
 
         public static readonly User DevUser = new()
         {

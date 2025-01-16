@@ -4,7 +4,6 @@ namespace Hgzn.Mes.Application.Main.Dtos.System;
 
 public class CodeRuleDefineDto
 {
-    
 }
 
 public class CodeRuleDefineReadDto : ReadDto
@@ -53,7 +52,6 @@ public class CodeRuleDefineReadDto : ReadDto
     /// 元素属性
     /// </summary>
     public string? SourceValue { get; set; }
-
 }
 
 public class CodeRuleDefineCreateDto : CreateDto
@@ -67,7 +65,7 @@ public class CodeRuleDefineCreateDto : CreateDto
     /// 编码规则
     /// </summary>
     public Guid? CodeRuleId { get; set; }
-    
+
     /// <summary>
     /// 类型
     /// </summary>
@@ -112,7 +110,6 @@ public class CodeRuleDefineCreateDto : CreateDto
     /// 元素属性
     /// </summary>
     public string? SourceValue { get; set; }
-        
 }
 
 public class CodeRuleDefineUpdateDto : UpdateDto

@@ -1,8 +1,8 @@
-﻿using System.Text;
-using Hgzn.Mes.Application.Main.Dtos.System;
+﻿using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Domain.Shared;
+using System.Text;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
 
@@ -16,14 +16,14 @@ public class CodeRuleService : CrudAppServiceSugar<CodeRule
     public override async Task<PaginatedList<CodeRuleReadDto>> GetListAsync(CodeRuleQueryDto input)
     {
         var entities = await Queryable()
-            .Where(x=>input.CodeName != null && x.CodeName.Contains(input.CodeName))
-            .Where(x=>x.CodeNumber != null && input.CodeNumber != null && x.CodeNumber.Contains(input.CodeNumber))
-            .Where(x=>x.BasicDomain != null && input.BasicDomain != null && x.BasicDomain.Contains(input.BasicDomain))
-            .OrderBy(x=>x.OrderNum)
+            .Where(x => input.CodeName != null && x.CodeName.Contains(input.CodeName))
+            .Where(x => x.CodeNumber != null && input.CodeNumber != null && x.CodeNumber.Contains(input.CodeNumber))
+            .Where(x => x.BasicDomain != null && input.BasicDomain != null && x.BasicDomain.Contains(input.BasicDomain))
+            .OrderBy(x => x.OrderNum)
             .ToPageListAsync(input.PageIndex, input.PageSize);
         return Mapper.Map<PaginatedList<CodeRuleReadDto>>(entities);
     }
-    
+
     /// <summary>
     /// 返回对应的编码
     /// </summary>
@@ -32,14 +32,14 @@ public class CodeRuleService : CrudAppServiceSugar<CodeRule
     public async Task<string> GetGenerateCodeByCodeAsync(string codeNumber)
     {
         var code = await Queryable().FirstAsync(t => t.CodeNumber == codeNumber);
-        
+
         if (code == null)
         {
             return "";
         }
         var codeRules = await DbContext.Queryable<CodeRuleDefine>()
-            .Where(t=>t.CodeRuleId == code.Id)
-            .OrderBy(t=>t.OrderNum)
+            .Where(t => t.CodeRuleId == code.Id)
+            .OrderBy(t => t.OrderNum)
             .ToListAsync();
         if (codeRules.Count < 1)
         {
@@ -58,12 +58,15 @@ public class CodeRuleService : CrudAppServiceSugar<CodeRule
                         sb.Append((rule.NowFlow).ToString()?.PadLeft((int)rule.MaxFlow!, (char)rule.CodeCover!));
                         rule.NowFlowIsSure = false;
                         break;
+
                     case "Constant":
                         sb.Append(rule.ConstantChar);
                         break;
+
                     case "Date":
                         sb.Append(DateTime.Now.ToString(rule.DateFormat));
                         break;
+
                     case "AttributeValue":
                         break;
                 }

@@ -6,7 +6,7 @@
         public ScopeDefinitionAttribute(string description, string name)
         {
             Name = name;
-            Description = description;            
+            Description = description;
         }
 
         public string Name { get; private set; }

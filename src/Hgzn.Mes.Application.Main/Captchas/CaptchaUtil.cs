@@ -38,7 +38,7 @@ namespace Hgzn.Mes.Application.Main.Captchas
 
             var fontSize = (options.Width) / (text.Length + 1);
             using var drawStyle = new SKPaint { IsAntialias = true };
-            using var font = new SKFont { Size = fontSize};
+            using var font = new SKFont { Size = fontSize };
 
             var limitHeigtStart = (int)(options.Height * (1 - _drawPositionLimit)) / 2;
             var limitHeightEnd = options.Height - limitHeigtStart;

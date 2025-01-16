@@ -1,7 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Hgzn.Mes.Domain.Entities.System.Authority;
-using Hgzn.Mes.Domain.Entities.Base;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
+using Hgzn.Mes.Domain.Entities.System.Authority;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
@@ -45,7 +44,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
 
-        #endregion
+        #endregion audit
 
         #region static roles
 
