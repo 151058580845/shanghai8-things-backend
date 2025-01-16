@@ -117,14 +117,14 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 //Add dbContext pool
- builder.Services.AddDbContextPool<ApiDbContext>(options =>
- {
-    //options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
-    //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
-    //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
-    options.UseGaussDB(builder.Configuration.GetConnectionString("OpenGauss")).EnableDetailedErrors(); ;
-    options.UseSnakeCaseNamingConvention();
- });
+ //builder.Services.AddDbContextPool<ApiDbContext>(options =>
+ //{
+ //   //options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
+ //   //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
+ //   //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
+ //   options.UseGaussDB(builder.Configuration.GetConnectionString("OpenGauss")).EnableDetailedErrors(); ;
+ //   options.UseSnakeCaseNamingConvention();
+ //});
 
 // Add mapper profiles
 builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
@@ -154,5 +154,4 @@ app.Services.GetService<SqlSugarContext>()?.InitTables();
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>
         await ExceptionLocalizerExtension.LocalizeException(context, app.Services.GetService<IStringLocalizer<Exception>>()!)));
-var services = app.Services;
 app.Run();

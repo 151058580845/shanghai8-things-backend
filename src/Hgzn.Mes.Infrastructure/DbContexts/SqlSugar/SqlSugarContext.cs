@@ -84,6 +84,10 @@ public sealed class SqlSugarContext
                     {
                         c.IsNullable = true;
                     }
+                    if (p.GetMethod!.IsStatic)
+                    {
+                        c.IsIgnore = true;
+                    }
                     if (name == "id")
                     {
                         c.IsPrimarykey = true;
@@ -106,32 +110,44 @@ public sealed class SqlSugarContext
             sqlSugarClient.QueryFilter.AddTableFilter<ISoftDelete>(t => t.SoftDeleted == false);
     }
 
-    private void SeedData()
+    public void SeedData()
     {
         var entities = Assembly.Load("Hgzn.Mes." + nameof(Domain))
             .GetTypes()
             .Where(t => (typeof(AggregateRoot)).IsAssignableFrom(t) && !t.Namespace!.Contains("Base"))
             .ToArray();
 
-        DbContext.Insertable(Menu.Seeds).ExecuteCommandAsync().Wait();
-
         foreach (var entity in entities)
         {
             var methodGeneric = typeof(ISqlSugarClient).GetMethods()
                 .Where(me => me.Name == "Insertable" &&
                 me.GetParameters().Length == 1 &&
-                me.GetParameters()[0].ParameterType.IsGenericType &&
-                me.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(List<>));
+                me.GetParameters()[0].ParameterType.IsArray);
             //获取静态种子属性
             var seeds = entity.GetProperty("Seeds", BindingFlags.Public | BindingFlags.Static);
             var value = seeds?.GetValue(null);
             if (value != null)
             {
-                var data = methodGeneric.FirstOrDefault()?.MakeGenericMethod(entity)
-                .Invoke(DbContext, [value]);
-                var excuteMethod = typeof(IInsertable<>).GetMethod("ExecuteCommandAsync", BindingFlags.Public);
-                var task = (Task?)excuteMethod?.Invoke(data, null);
-                task?.Wait();
+                try
+                {
+                    var data = methodGeneric.FirstOrDefault()?.MakeGenericMethod(entity)
+                    .Invoke(DbContext, [value]);
+                    var typeInsert = typeof(IInsertable<>).MakeGenericType(entity);
+                    var typeTask = typeof(Task<>).MakeGenericType(typeof(int));
+                    var excuteMethod = typeInsert.GetMethods()
+                        .Where(me => me.Name == "ExecuteCommandAsync" &&
+                            me.GetParameters().Length == 0 &&
+                            me.ReturnType == typeTask)
+                        .FirstOrDefault();
+                    var task = (Task?)excuteMethod?.Invoke(data, null);
+                    task?.Wait();
+                }
+                //只捕获主键重复异常
+                catch (AggregateException)
+                {                    
+                    _logger.LogWarning("data seeds exist");
+                }
+
             }
         }
     }

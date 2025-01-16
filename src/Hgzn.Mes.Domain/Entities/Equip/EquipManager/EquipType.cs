@@ -30,9 +30,6 @@ public class EquipType : UniversalEntity, ISoftDelete, IState
     [Description("设备最后修改时间")]
     public DateTime? LastModificationTime { get; set; }
 
-    [Description("软删除")]
-    public bool IsDeleted { get; set; }
-
     public bool State { get; set; }
 
     public Guid? CreatorId { get; set; }
@@ -43,7 +40,8 @@ public class EquipType : UniversalEntity, ISoftDelete, IState
     /// </summary>
     // [Navigate(NavigateType.OneToMany, nameof(EquipDataEntity.TypeId))]
     // public List<EquipDataEntity>? EquipTypeDataEntities { get; set; }
-    public bool SoftDeleted { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    [Description("软删除")]
+    public bool SoftDeleted { get; set; }
 
-    public DateTime? DeleteTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public DateTime? DeleteTime { get; set; }
 }

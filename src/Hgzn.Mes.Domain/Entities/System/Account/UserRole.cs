@@ -11,7 +11,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
 
         public Guid RoleId { get; set; }
 
-        public static IEnumerable<UserRole> Seeds { get; set; } =
+        public static UserRole[] Seeds { get; set; } =
         [
             new UserRole { Id = 1, UserId = User.DevUser.Id, RoleId = Role.DevRole.Id},
             new UserRole { Id = 2, UserId = User.AdminUser.Id, RoleId = Role.AdminRole.Id}

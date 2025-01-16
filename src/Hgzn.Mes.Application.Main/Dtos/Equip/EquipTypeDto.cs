@@ -49,12 +49,12 @@ public class EquipTypeCreateDto : CreateDto
     /// <summary>
     /// 设备类型编号
     /// </summary>
-    public string TypeCode { get; set; }
+    public string? TypeCode { get; set; }
 
     /// <summary>
     /// 设备类型名称
     /// </summary>
-    public string TypeName { get; set; }
+    public string? TypeName { get; set; }
 
     /// <summary>
     /// 设备描述
