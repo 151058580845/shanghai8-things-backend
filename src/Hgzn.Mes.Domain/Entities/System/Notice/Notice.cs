@@ -43,7 +43,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Notice
 
         [NotMapped]
         [Description("通知目标列表")]
-        public List<NoticeTarget>? NoticeTargets { get; set; }
+        public List<Guid>? NoticeTargets { get; set; }
 
         [Description("创建时间")]
         public DateTime CreationTime { get; set; }

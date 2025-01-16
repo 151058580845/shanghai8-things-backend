@@ -1,4 +1,6 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.System;
+using Hangfire;
+using Hgzn.Mes.Application.Main.Dtos.System;
+using Hgzn.Mes.Application.Main.Jobs;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Hgzn.Mes.Domain.Shared;
@@ -40,7 +42,7 @@ public class NoticeService : CrudAppServiceSugar<Notice
                 NoticeObjectId = id,
                 NoticeTime = output.SendTime,
             }));
-
+        
         await ModifyTargets(output.Id, list);
         return output;
     }
@@ -95,6 +97,7 @@ public class NoticeService : CrudAppServiceSugar<Notice
             DbContext.Deleteable<NoticeTarget>().Where(t => t.NoticeId == outputId);
             DbContext.Insertable(targetsEntities);
             await DbContext.Ado.CommitTranAsync();
+            
         }
         catch
         {
@@ -102,4 +105,6 @@ public class NoticeService : CrudAppServiceSugar<Notice
             throw;
         }
     }
+
+
 }

@@ -4,8 +4,7 @@ using Hgzn.Mes.Application.Main.Auth;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
-using Hgzn.Mes.Infrastructure.DbContexts.Ef;
-using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
+using Hgzn.Mes.Infrastructure.DbContexts;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +13,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
+using Hangfire;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using SqlSugar;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +25,12 @@ var builder = WebApplication.CreateBuilder(args);
 RequireScopeUtil.Initialize();
 SettingUtil.Initialize(builder.Configuration);
 CryptoUtil.Initialize(SettingUtil.Jwt.KeyFolder);
-
 #endregion util Initialize
 
 // Change container to autoFac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(config =>
-    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
+    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
 
 // Add services to the container.
 builder.Host.UseSerilog((context, logger) =>
@@ -71,6 +73,9 @@ builder.Services.AddLocalization();
 builder.Services.AddAuthorization(options =>
     options.AddPolicyExt(RequireScopeUtil.Scopes)
 );
+
+//注册hangfire
+// builder.Services.AddHangfireServer();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -116,22 +121,21 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-//Add dbContext pool
- //builder.Services.AddDbContextPool<ApiDbContext>(options =>
- //{
- //   //options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
- //   //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
- //   //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
- //   options.UseGaussDB(builder.Configuration.GetConnectionString("OpenGauss")).EnableDetailedErrors(); ;
- //   options.UseSnakeCaseNamingConvention();
- //});
+// Add dbContext pool
+// builder.Services.AddDbContextPool<ApiDbContext>(options =>
+// {
+//     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).EnableDetailedErrors();
+//     //options.UseMySQL(builder.Configuration.GetConnectionString("MySql")!).EnableDetailedErrors();
+//     //options.UseOpenGauss(builder.Configuration.GetConnectionString("Postgres")!).EnableDetailedErrors();
+//     options.UseSnakeCaseNamingConvention();
+// });
 
 // Add mapper profiles
-builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
+builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
 
 // Add mediatR
 builder.Services.AddMediatR(config =>
-    config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
+    config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -150,8 +154,10 @@ app.MapControllers();
 
 // app.Services.GetService<InitialDatabase>()?.Initialize();
 app.Services.GetService<SqlSugarContext>()?.InitTables();
-
+app.Services.GetService<IMqttExplorer>()?.StartAsync();
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>
         await ExceptionLocalizerExtension.LocalizeException(context, app.Services.GetService<IStringLocalizer<Exception>>()!)));
+//启动hangfire展示界面
+// app.UseHangfireDashboard();
 app.Run();
