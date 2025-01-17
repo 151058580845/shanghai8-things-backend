@@ -1,15 +1,15 @@
 ﻿using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
-using Mysqlx.Crud;
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.RfidReader;
 
 public class RfidReaderTopicBuilder: TopicBuilder
 {
-    private TopicEnum _deviceType;
-    private string _deviceUri = null!;
+    private TopicEquipEnum _deviceType;
+    private string _equipId = null!;
+    private MqttState? _state;
 
-    public override RfidReaderTopicBuilder WithPrefix(string prefix)
+    public override RfidReaderTopicBuilder WithPrefix(TopicTypeEnum prefix)
     {
         Prefix = prefix;
         return this;
@@ -27,15 +27,21 @@ public class RfidReaderTopicBuilder: TopicBuilder
         return this;
     }
 
-    public RfidReaderTopicBuilder WithDeviceType(TopicEnum equipType)
+    public RfidReaderTopicBuilder WithDeviceType(TopicEquipEnum equipType)
     {
         _deviceType = equipType;
         return this;
     }
 
-    public RfidReaderTopicBuilder WithUri(string uri)
+    public RfidReaderTopicBuilder WithEquipId(string equipId)
     {
-        _deviceUri = uri;
+        _equipId = equipId;
+        return this;
+    }
+
+    public RfidReaderTopicBuilder WithState(MqttState state)
+    {
+        _state = state;
         return this;
     }
 
@@ -43,10 +49,11 @@ public class RfidReaderTopicBuilder: TopicBuilder
         new RfidReaderTopic
         {
             Direction = MqttDirection.Down,
-            Prefix = Prefix ?? "iot",
+            Prefix = Prefix ?? TopicTypeEnum.Equip,
             Tag = Tag,
             EquipType = _deviceType,
-            EquipCode = _deviceUri
+            EquipId = _equipId,
+            State = (_state==null?"+":_state.ToString()) ?? "+"
         }.ToString();
 
     public static RfidReaderTopicBuilder CreateBuilder() => new();

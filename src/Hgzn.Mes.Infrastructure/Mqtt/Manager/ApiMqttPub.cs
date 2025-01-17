@@ -1,7 +1,6 @@
 ﻿using Hgzn.Mes.Infrastructure.Mqtt.RfidReader;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
@@ -15,21 +14,19 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager;
 public class ApiMqttPub : IMqttExplorer
 {
     private readonly ILogger<ApiMqttPub> _logger;
-    private ManagedMqttClientOptions _mqttClientOptions;
+    private ManagedMqttClientOptions _mqttClientOptions = null!;
     private readonly IManagedMqttClient _mqttClient;
-    private readonly TimeSpan _reconnectDelay = TimeSpan.FromSeconds(10);
+    private readonly TimeSpan _reconnectDelay;
     private readonly HashSet<string> _subscribedTopics = new();
     private readonly MqttSettings _mqttSettings;
-    public TopicBuilder TopicBuilder { get; set; } = new();
+    public TopicBuilder WillTopicBuilder { get; set; } = new();
 
-    public ApiMqttPub(ILogger<ApiMqttPub> logger,IManagedMqttClient mqttClient, MqttSettings mqttSettings)
+    public ApiMqttPub(ILogger<ApiMqttPub> logger, IManagedMqttClient mqttClient, MqttSettings mqttSettings)
     {
-        TopicBuilder.WithTag(MqttTag.Alarm)
-            .WithDirection(MqttDirection.Down)
-            .WithPrefix("Equip");
         _logger = logger;
         _mqttClient = mqttClient;
         _mqttSettings = mqttSettings;
+        _reconnectDelay = TimeSpan.FromSeconds(_mqttSettings.ReconnectDelaySeconds);
         // 订阅客户端连接和断开连接的事件
         _mqttClient.ConnectedAsync += OnClientConnectedAsync;
         _mqttClient.DisconnectedAsync += OnClientDisconnectedAsync;
@@ -40,10 +37,26 @@ public class ApiMqttPub : IMqttExplorer
     {
         if (_mqttSettings is { Username: not null, Password: not null })
         {
+            //连接mqtt服务器
             var options = CreateMqttClientOptions(_mqttSettings.Broker, _mqttSettings.Port, _mqttSettings.Username,
                 _mqttSettings.Password);
             await _mqttClient.StartAsync(options);
         }
+
+        while (!_mqttClient.IsConnected)
+        {
+            Task.Delay(100).Wait();
+        }
+        //订阅消息
+        var rfid = new RfidReaderTopicBuilder()
+            .WithPrefix(TopicTypeEnum.Equip)
+            .WithDirection(MqttDirection.Down)
+            .WithDeviceType(TopicEquipEnum.RfidReader)
+            .WithEquipId("+")
+            .WithTag(MqttTag.State)
+            .Build();
+        await SubscribeAsync(rfid);
+        Console.WriteLine(rfid);
     }
 
 
@@ -75,6 +88,7 @@ public class ApiMqttPub : IMqttExplorer
         await _mqttClient.StopAsync();
     }
 
+
     /// <summary>
     /// 重启Mqtt客户端
     /// </summary>
@@ -97,7 +111,7 @@ public class ApiMqttPub : IMqttExplorer
     }
 
     /// <summary>
-    /// 订阅一个主题，并发送与一个数据
+    /// 发送一个主题数据
     /// </summary>
     /// <param name="topic"></param>
     /// <param name="payload"></param>
@@ -107,16 +121,21 @@ public class ApiMqttPub : IMqttExplorer
         {
             await _mqttClient.StartAsync(_mqttClientOptions);
         }
-
         var message = new MqttApplicationMessageBuilder()
             .WithTopic(topic)
             .WithPayload(payload)
-            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
             .Build();
         await _mqttClient.EnqueueAsync(message);
+        
         _subscribedTopics.Add(topic);
     }
 
+    /// <summary>
+    /// 发送一个主题数据
+    /// </summary>
+    /// <param name="topic"></param>
+    /// <param name="payload"></param>
     public async Task PublishAsync(string topic, string payload)
     {
         if (!_mqttClient.IsConnected)
@@ -127,10 +146,18 @@ public class ApiMqttPub : IMqttExplorer
         var message = new MqttApplicationMessageBuilder()
             .WithTopic(topic)
             .WithPayload(payload)
-            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
             .Build();
         await _mqttClient.EnqueueAsync(message);
         _subscribedTopics.Add(topic);
+    }
+    /// <summary>
+    /// 订阅一个主题
+    /// </summary>
+    /// <param name="topic"></param>
+    public async Task SubscribeAsync(string topic)
+    {
+        await _mqttClient.SubscribeAsync(topic);
     }
 
     /// <summary>
@@ -210,14 +237,15 @@ public class ApiMqttPub : IMqttExplorer
     /// <param name="username"></param>
     /// <param name="password"></param>
     /// <returns></returns>
-    private ManagedMqttClientOptions CreateMqttClientOptions(string server, int port, string? username, string? password)
+    private ManagedMqttClientOptions CreateMqttClientOptions(string server, int port, string? username,
+        string? password)
     {
         var mqttOptionsBuilder = new MqttClientOptionsBuilder()
             .WithClientId(_mqttSettings.ClientId)
             .WithKeepAlivePeriod(_reconnectDelay)
             .WithWillQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce)
             .WithTcpServer(server, port)
-            .WithWillTopic(TopicBuilder
+            .WithWillTopic(WillTopicBuilder
                 .WithTag(MqttTag.State)
                 .Build())
             .WithWillPayload([(byte)MqttState.Will])
@@ -226,6 +254,7 @@ public class ApiMqttPub : IMqttExplorer
         {
             mqttOptionsBuilder = mqttOptionsBuilder.WithCredentials(username, password);
         }
+
         var option = mqttOptionsBuilder
             .Build();
         _mqttClientOptions = new ManagedMqttClientOptionsBuilder()
@@ -234,7 +263,7 @@ public class ApiMqttPub : IMqttExplorer
             .Build();
         return _mqttClientOptions;
     }
-    
+
     /// <summary>
     /// 创建一个特定的消息
     /// </summary>
@@ -243,7 +272,7 @@ public class ApiMqttPub : IMqttExplorer
     private MqttApplicationMessage CreateMattMessage(MqttState state)
     {
         return new MqttApplicationMessageBuilder()
-            .WithTopic(TopicBuilder
+            .WithTopic(WillTopicBuilder
                 .WithTag(MqttTag.State)
                 .Build())
             .WithPayload([(byte)state])

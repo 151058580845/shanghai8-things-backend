@@ -5,7 +5,7 @@
     /// </summary>
     public class MqttTopic
     {
-        public string Prefix { get; set; } = null!;
+        public TopicTypeEnum Prefix { get; set; } = TopicTypeEnum.Equip;
         public MqttDirection Direction { get; set; }
         public MqttTag Tag { get; set; }
 

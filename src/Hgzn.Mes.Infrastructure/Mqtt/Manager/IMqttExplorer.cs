@@ -4,7 +4,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 {
     public interface IMqttExplorer
     {
-        public TopicBuilder TopicBuilder { get;set; }
+        public TopicBuilder WillTopicBuilder { get;set; }
 
         /// <summary>
         /// 启动连接
@@ -26,14 +26,14 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         Task StopAsync();
 
         /// <summary>
-        /// 订阅一个主题
+        /// 发送一个主题数据
         /// </summary>
         /// <param name="topic">主题</param>
         /// <param name="payload">消息内容</param>
         /// <returns></returns>
         Task PublishAsync(string topic, byte[] payload);
         /// <summary>
-        /// 订阅一个主题
+        /// 发送一个主题数据
         /// </summary>
         /// <param name="topic">主题</param>
         /// <param name="payload">消息内容</param>
@@ -45,6 +45,12 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         /// <param name="topic"></param>
         /// <returns></returns>
         Task UnSubscribeAsync(string topic);
+        /// <summary>
+        /// 订阅一个主题
+        /// </summary>
+        /// <param name="topic"></param>
+        /// <returns></returns>
+        Task SubscribeAsync(string topic);
         /// <summary>
         /// 重新连接
         /// </summary>

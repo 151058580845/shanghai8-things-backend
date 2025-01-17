@@ -2,13 +2,18 @@
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.Topic;
 
-public enum TopicEnum
+public enum TopicTypeEnum
+{
+    Equip,
+    Product
+}
+
+public enum TopicEquipEnum
 {
     RfidReader,
     Rs232Reader
 }
-
-public enum MqttDirection: byte
+public enum MqttDirection
 {
     Up,
     Down,
@@ -35,7 +40,10 @@ public enum MqttTag
     Calibration,
 
     [Description("警报信息")]
-    Alarm
+    Alarm,
+
+    [Description("通知消息")]
+    Notice
 }
 
 public enum MqttState : byte
@@ -50,5 +58,5 @@ public enum MqttState : byte
     Restart,
 
     [Description("遗愿消息")]
-    Will
+    Will,
 }

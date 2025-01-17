@@ -4,14 +4,14 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 {
     public class TopicBuilder
     {
-        protected string? Prefix ;
+        protected TopicTypeEnum? Prefix =TopicTypeEnum.Equip;
         protected MqttDirection Direction;
         protected MqttTag Tag;
 
         public TopicBuilder()
         { }
 
-        public virtual TopicBuilder WithPrefix(string prefix)
+        public virtual TopicBuilder WithPrefix(TopicTypeEnum prefix)
         {
             Prefix = prefix;
             return this;

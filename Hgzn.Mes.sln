@@ -15,6 +15,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hgzn.Mes.Application.Main",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hgzn.Mes.Application.Iot", "src\Hgzn.Mes.Application.Iot\Hgzn.Mes.Application.Iot.csproj", "{6A619D5A-63B4-4942-8A77-2677B1E5E497}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MqttClient", "MqttClient", "{5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RfidReaderClient", "src\MqttClient\RfidReaderClient\RfidReaderClient.csproj", "{A12BF939-3205-4557-BCE3-AA805310E9FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServerClient", "src\MqttClient\TcpServerClient\TcpServerClient.csproj", "{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,11 +51,23 @@ Global
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A12BF939-3205-4557-BCE3-AA805310E9FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A12BF939-3205-4557-BCE3-AA805310E9FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A12BF939-3205-4557-BCE3-AA805310E9FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A12BF939-3205-4557-BCE3-AA805310E9FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2361A07E-E311-496B-8C99-D3B2386C12C4}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A12BF939-3205-4557-BCE3-AA805310E9FB} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
+		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
 	EndGlobalSection
 EndGlobal

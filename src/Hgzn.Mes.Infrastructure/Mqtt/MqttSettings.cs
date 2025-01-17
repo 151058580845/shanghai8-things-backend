@@ -5,11 +5,11 @@ public class MqttSettings
     public string ClientId { get; set; } = "DotNetCoreClient";
     public string Broker { get; set; } = "localhost";
     public int Port { get; set; } = 1883;
-    public bool UseTls { get; set; } = false;
+    public bool UseTls { get; set; }
     public string? Username { get; set; }
     public string? Password { get; set; }
-    public List<TopicSubscription> Topics { get; set; } = [];
-    public int ReconnectDelaySeconds { get; set; } = 5;
+    public IEnumerable<TopicSubscription> Topics { get; set; } = [];
+    public int ReconnectDelaySeconds { get; set; } = 10;
 }
 
 public class TopicSubscription
