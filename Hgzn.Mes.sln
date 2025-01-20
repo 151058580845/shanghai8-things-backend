@@ -17,9 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hgzn.Mes.Application.Iot", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MqttClient", "MqttClient", "{5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RfidReaderClient", "src\MqttClient\RfidReaderClient\RfidReaderClient.csproj", "{A12BF939-3205-4557-BCE3-AA805310E9FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServerClient", "src\MqttClient\TcpServerClient\TcpServerClient.csproj", "{D6CAB9A6-A026-43CE-ACF1-E5094041E1D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServerClient", "src\MqttClient\TcpServerClient\TcpServerClient.csproj", "{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RfidReaderClient", "src\MqttClient\RfidReaderClient\RfidReaderClient.csproj", "{D5704056-53C6-448A-899A-C5ABC4463F81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,14 +51,14 @@ Global
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A619D5A-63B4-4942-8A77-2677B1E5E497}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A12BF939-3205-4557-BCE3-AA805310E9FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A12BF939-3205-4557-BCE3-AA805310E9FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A12BF939-3205-4557-BCE3-AA805310E9FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A12BF939-3205-4557-BCE3-AA805310E9FB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6CAB9A6-A026-43CE-ACF1-E5094041E1D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6CAB9A6-A026-43CE-ACF1-E5094041E1D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6CAB9A6-A026-43CE-ACF1-E5094041E1D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6CAB9A6-A026-43CE-ACF1-E5094041E1D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5704056-53C6-448A-899A-C5ABC4463F81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5704056-53C6-448A-899A-C5ABC4463F81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5704056-53C6-448A-899A-C5ABC4463F81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5704056-53C6-448A-899A-C5ABC4463F81}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,7 +67,7 @@ Global
 		SolutionGuid = {2361A07E-E311-496B-8C99-D3B2386C12C4}
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{A12BF939-3205-4557-BCE3-AA805310E9FB} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
-		{5A338D9C-E6B2-4CFE-8159-D00B02FC12B3} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
+		{D6CAB9A6-A026-43CE-ACF1-E5094041E1D3} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
+		{D5704056-53C6-448A-899A-C5ABC4463F81} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
 	EndGlobalSection
 EndGlobal

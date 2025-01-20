@@ -181,9 +181,9 @@ public class ApiMqttPub : IMqttExplorer
         return Task.FromResult(_mqttClient.IsConnected);
     }
 
-    public event Func<MqttClientConnectedEventArgs, Task>? MqttClientConnected;
-    public event Func<MqttClientDisconnectedEventArgs, Task>? MqttClientDisconnected;
-    public event Func<MqttMessageEventArgs, Task>? MessageReceived;
+    public event Func<MqttClientConnectedEventArgs, Task>? MqttClientConnectedAsync;
+    public event Func<MqttClientDisconnectedEventArgs, Task>? MqttClientDisconnectedAsync;
+    public event Func<MqttMessageEventArgs, Task>? MessageReceivedAsync;
 
     /// <summary>
     /// 事件触发：客户端连接成功时调用
@@ -192,7 +192,7 @@ public class ApiMqttPub : IMqttExplorer
     private Task OnClientConnectedAsync(MqttClientConnectedEventArgs args)
     {
         _logger.LogInformation("mqtt connected");
-        MqttClientConnected?.Invoke(args);
+        MqttClientConnectedAsync?.Invoke(args);
         return Task.CompletedTask;
     }
 
@@ -203,7 +203,7 @@ public class ApiMqttPub : IMqttExplorer
     private Task OnClientDisconnectedAsync(MqttClientDisconnectedEventArgs args)
     {
         _logger.LogError("mqtt connected");
-        MqttClientDisconnected?.Invoke(args);
+        MqttClientDisconnectedAsync?.Invoke(args);
         return Task.CompletedTask;
     }
 
@@ -211,12 +211,13 @@ public class ApiMqttPub : IMqttExplorer
     /// 事件触发：接收到消息时调用
     /// </summary>
     /// <param name="args"></param>
-    private Task OnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs args)
+    private async Task OnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs args)
     {
+        if (args.ApplicationMessage.PayloadSegment.Count <= 0) return;
         var mqttMessageEventArgs = new MqttMessageEventArgs(args.ApplicationMessage.Topic,
             args.ApplicationMessage.PayloadSegment.ToArray());
-        MessageReceived?.Invoke(mqttMessageEventArgs);
-        return Task.CompletedTask;
+        await MessageReceivedAsync?.Invoke(mqttMessageEventArgs)!;
+        // return Task.CompletedTask;
     }
 
 

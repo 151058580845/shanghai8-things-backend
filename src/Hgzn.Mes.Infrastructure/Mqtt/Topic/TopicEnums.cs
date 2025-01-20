@@ -11,7 +11,8 @@ public enum TopicTypeEnum
 public enum TopicEquipEnum
 {
     RfidReader,
-    Rs232Reader
+    Rs232Reader,
+    TcpServer,
 }
 public enum MqttDirection
 {

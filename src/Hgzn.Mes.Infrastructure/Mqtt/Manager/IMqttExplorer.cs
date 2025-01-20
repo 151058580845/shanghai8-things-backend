@@ -69,16 +69,16 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         /// <summary>
         /// 连接回调
         /// </summary>
-        event Func<MqttClientConnectedEventArgs,Task>? MqttClientConnected;
+        event Func<MqttClientConnectedEventArgs,Task>? MqttClientConnectedAsync;
         /// <summary>
         /// 断开连接回调
         /// </summary>
-        event Func<MqttClientDisconnectedEventArgs,Task> MqttClientDisconnected;
+        event Func<MqttClientDisconnectedEventArgs,Task> MqttClientDisconnectedAsync;
         
         /// <summary>
         /// 获取消息（接收到的消息可以触发事件）
         /// </summary>
-        event Func<MqttMessageEventArgs,Task> MessageReceived;
+        event Func<MqttMessageEventArgs,Task> MessageReceivedAsync;
         
         /// <summary>
         /// 获取当前订阅的所有主题
