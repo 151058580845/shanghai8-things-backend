@@ -15,10 +15,10 @@ using TcpServerClient.mqtt;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json");
 //Configure Serilog for logging
-builder.Logging.AddSerilog(new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .CreateLogger());
+ builder.Logging.AddSerilog(new LoggerConfiguration()
+     .ReadFrom.Configuration(builder.Configuration)
+     .Enrich.FromLogContext()
+     .CreateLogger());
 
 // Add logging service
 builder.Services.AddLogging();

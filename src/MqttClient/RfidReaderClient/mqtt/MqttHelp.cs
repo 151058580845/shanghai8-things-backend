@@ -2,8 +2,9 @@
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.RfidReader;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Microsoft.Extensions.Logging;
 
-namespace RfidReaderClient.mqtt;
+namespace TcpServerClient.mqtt;
 
 public class MqttHelp
 {
@@ -22,7 +23,7 @@ public class MqttHelp
         var rfid = new RfidReaderTopicBuilder()
             .WithPrefix(TopicTypeEnum.Equip)
             .WithDirection(MqttDirection.Down)
-            .WithDeviceType(TopicEquipEnum.RfidReader)
+            .WithDeviceType(TopicEquipEnum.TcpServer)
             .WithEquipId("+")
             .WithTag(MqttTag.State)
             .Build();
