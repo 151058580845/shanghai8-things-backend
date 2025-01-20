@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rs232Client", "src\MqttClie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RfidReaderClient", "src\MqttClient\RfidReaderClient\RfidReaderClient.csproj", "{FBD36779-69CE-4671-AD19-4EF36068649E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpServerClient", "src\MqttClient\TcpServerClient\TcpServerClient.csproj", "{9B282479-CA75-4008-B30D-24EE1A7E0662}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{FBD36779-69CE-4671-AD19-4EF36068649E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBD36779-69CE-4671-AD19-4EF36068649E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBD36779-69CE-4671-AD19-4EF36068649E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B282479-CA75-4008-B30D-24EE1A7E0662}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B282479-CA75-4008-B30D-24EE1A7E0662}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B282479-CA75-4008-B30D-24EE1A7E0662}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B282479-CA75-4008-B30D-24EE1A7E0662}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +72,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F7EDB45B-76B0-4AC0-9646-848ACD4C4DC7} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
 		{FBD36779-69CE-4671-AD19-4EF36068649E} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
+		{9B282479-CA75-4008-B30D-24EE1A7E0662} = {5B43D0F7-6A82-49B6-BAAE-947BA3C8DF36}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2361A07E-E311-496B-8C99-D3B2386C12C4}
