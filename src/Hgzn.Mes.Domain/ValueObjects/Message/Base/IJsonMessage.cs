@@ -1,0 +1,9 @@
+﻿using System.Text.Json.Nodes;
+
+namespace Hgzn.Mes.Domain.ValueObjects.Message.Base
+{
+    public interface IJsonMessage : IIotMessage
+    {
+        JsonNode? Node { get; set; }
+    }
+}

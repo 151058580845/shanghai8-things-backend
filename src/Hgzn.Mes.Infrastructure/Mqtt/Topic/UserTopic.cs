@@ -2,16 +2,12 @@
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
 {
-    /// <summary>
-    /// MqttTopic基础类
-    /// </summary>
-    public class MqttTopic
+    public class UserTopic : MqttTopic
     {
-        public TopicType Prefix { get; set; } = TopicType.Iot;
-        public MqttDirection Direction { get; set; }
-        public MqttTag Tag { get; set; }
+        public string UserCode { get; set; } = null!;
+        public const string UserCodeName = "user";
 
-        public static MqttTopic FromString(string topic)
+        public static UserTopic FromUserString(string topic)
         {
             var nodes = topic.Split('/');
             var dir = nodes[1] switch
@@ -31,9 +27,10 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 _ => throw new NotSupportedException()
             };
 
-            var res = new MqttTopic
+            var res = new UserTopic
             {
                 Direction = dir,
+                UserCode = nodes[3],
                 Tag = tag
             };
             return res;
@@ -41,10 +38,17 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
 
         public override string ToString()
         {
-            var tag = Tag!.ToString("F").ToLower();
+            var prefix = $"{Prefix:F}".ToLower();
+            var tag = Tag.ToString("F").ToLower();
             var dir = Direction.ToString("F").ToLower();
-            return $"{Prefix}/{dir}/{tag}";
+            if (!string.IsNullOrEmpty(UserCode))
+            {
+                return $"{Prefix}/{dir}/{UserCodeName}/{UserCode}/{tag}";
+            }
+            else
+            {
+                return $"{prefix}/{dir}/{tag}";
+            }
         }
     }
-    
 }

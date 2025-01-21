@@ -22,19 +22,19 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
         public DateTime CreationTime { get; set; }
 
         [Description("编号")]
-        public string Code { get; set; }
+        public string Code { get; set; } = null!;
 
         [Description("连接Id")]
         public Guid ConnectionId { get; set; }
         public EquipConnect? Connection { get; set; }
 
         [Description("备注")]
-        public string Remark { get; set; }
+        public string? Remark { get; set; }
 
         [Description("采集频率")]
         public Guid? CollectionConfigId { get; set; }
 
-        public CollectionConfig CollectionConfig { get; set; }
+        public CollectionConfig? CollectionConfig { get; set; }
 
         [Description("采集地址设置")]
         public string? CollectionAddressStr { get; set; }

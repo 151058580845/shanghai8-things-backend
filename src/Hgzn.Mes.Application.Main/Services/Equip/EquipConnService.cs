@@ -39,13 +39,13 @@ public class EquipConnService : CrudAppServiceSugar<EquipConnect
         var query = Queryable()
             .Where(t => equipIds.Contains(t.EquipId));
         RefAsync<int> total = await query.CountAsync();
-        List<EquipConnect> entities = await query
+        var entities = await query
             .Skip(queryDto.PageIndex)
             .Take(queryDto.PageSize)
             .Includes(t => t.ForwardEntities)
-            .Includes(t => t.EquipLedger, eq => eq.EquipTypeAggregate)
+            .Includes(t => t.EquipLedger, eq => eq!.EquipTypeAggregate)
             .ToListAsync();
-        List<EquipConnectReadDto> outputs = await MapToGetListOutputDtosAsync(entities);
+        var outputs = await MapToGetListOutputDtosAsync(entities);
         var equipDictionary = entities
             .Select(t => t.EquipLedger)
             .GroupBy(t => t.Id)
@@ -55,13 +55,13 @@ public class EquipConnService : CrudAppServiceSugar<EquipConnect
         {
             if (equipDictionary.TryGetValue(outputDto.EquipId, out var entity))
             {
-                outputDto.EquipCode = entity.EquipCode;
-                outputDto.EquipName = entity.EquipCode;
-                outputDto.TypeName = entity.EquipTypeAggregate?.TypeName;
+                outputDto.EquipCode = entity?.EquipCode;
+                outputDto.EquipName = entity?.EquipCode;
+                outputDto.TypeName = entity?.EquipTypeAggregate?.TypeName;
                 outputDto.ConnectState = await IsConnectedAsync(outputDto.EquipId);
                 outputDto.ConnectStateStr = outputDto.ConnectState ? "已连接" : "未连接";
                 // 判断是否为 RFID 设备，并填充状态
-                if (outputDto.ProtocolEnum == ProtocolEnum.RfidReaderClient)
+                if (outputDto.ProtocolEnum == Protocol.RfidReaderClient)
                 {
                     outputDto.CollectionModel = outputDto.CollectionExtension switch
                     {

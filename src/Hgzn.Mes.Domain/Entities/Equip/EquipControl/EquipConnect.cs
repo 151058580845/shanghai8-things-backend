@@ -27,7 +27,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder
     public Guid EquipId { get; set; }
 
     [Description("采集协议")]
-    public ProtocolEnum ProtocolEnum { get; set; }
+    public Protocol ProtocolEnum { get; set; }
 
     [Description("连接参数")]
     public string? ConnectStr { get; set; }

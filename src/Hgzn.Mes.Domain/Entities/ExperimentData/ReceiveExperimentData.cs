@@ -39,7 +39,7 @@ namespace Hgzn.Mes.Domain.Entities.ExperimentData
         [Description("制导控制专业代表")]
         public string? GncResp { get; set; }
         [Description("UUT数据信息")]
-        public UUT[] UUTs { get; set; }
+        public IEnumerable<UUT>? UUTs { get; set; }
         
     }
 

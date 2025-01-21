@@ -40,7 +40,7 @@ public class EquipConnectReadDto : ReadDto
     /// <summary>
     /// 采集协议
     /// </summary>
-    public ProtocolEnum? ProtocolEnum { get; set; }
+    public Protocol? ProtocolEnum { get; set; }
 
     /// <summary>
     /// 连接参数
@@ -97,7 +97,7 @@ public class EquipConnectCreateDto : CreateDto
     /// <summary>
     /// 采集协议
     /// </summary>
-    public ProtocolEnum? ProtocolEnum { get; set; }
+    public Protocol? ProtocolEnum { get; set; }
 
     /// <summary>
     /// 连接参数
@@ -133,7 +133,7 @@ public class EquipConnectUpdateDto : UpdateDto
     /// <summary>
     /// 采集协议
     /// </summary>
-    public ProtocolEnum? ProtocolEnum { get; set; }
+    public Protocol? ProtocolEnum { get; set; }
 
     /// <summary>
     /// 连接参数
@@ -173,5 +173,5 @@ public class EquipConnectQueryDto : PaginatedQueryDto
     /// <summary>
     /// 采集协议
     /// </summary>
-    public ProtocolEnum? ProtocolEnum { get; set; }
+    public Protocol? ProtocolEnum { get; set; }
 }

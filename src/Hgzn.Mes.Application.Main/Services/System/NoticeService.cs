@@ -4,14 +4,14 @@ using Hgzn.Mes.Application.Main.Jobs;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Hgzn.Mes.Domain.Shared;
-using Notice = Hgzn.Mes.Domain.Entities.System.Notice.Notice;
+using NoticeInfo = Hgzn.Mes.Domain.Entities.System.Notice.NoticeInfo;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
 
 /// <summary>
 /// 通知信息
 /// </summary>
-public class NoticeService : CrudAppServiceSugar<Notice
+public class NoticeService : CrudAppServiceSugar<NoticeInfo
         , Guid, NoticeQueryDto, NoticeReadDto, NoticeCreateDto, NoticeUpdateDto>,
     INoticeService
 {
@@ -78,7 +78,7 @@ public class NoticeService : CrudAppServiceSugar<Notice
     public override async Task<int> DeleteAsync(Guid key)
     {
         //级联删除
-        var result = await DbContext.DeleteNav<Notice>(t => t.Id == key)
+        var result = await DbContext.DeleteNav<NoticeInfo>(t => t.Id == key)
             .Include(t => t.NoticeTargets)
             .ExecuteCommandAsync();
         return result ? 1 : 0;

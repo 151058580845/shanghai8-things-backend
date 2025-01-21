@@ -1,18 +1,16 @@
 ﻿using System.Collections.Concurrent;
 using Hangfire;
-using Hangfire.Server;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Hgzn.Mes.Domain.Shared.Enums;
 using SqlSugar;
-using Notice = Hgzn.Mes.Domain.Entities.System.Notice.Notice;
 
 namespace Hgzn.Mes.Application.Main.Jobs;
 
 public class NoticeJob : INoticeJob
 {
     private readonly ConcurrentDictionary<Guid, string> _dictionary = new();
-    private ISqlSugarClient _sqlSugarClient;
+    private ISqlSugarClient _sqlSugarClient = null!;
     public Task ScheduleNoticeInsertAsync(Guid noticeId, DateTime sendTime)
     {
         if (_dictionary.ContainsKey(noticeId))
@@ -49,7 +47,7 @@ public class NoticeJob : INoticeJob
 
     private async Task ExecuteJob(Guid noticeId)
     {
-        var notice = await _sqlSugarClient.Queryable<Notice>().FirstAsync(t=>t.Id == noticeId);
+        var notice = await _sqlSugarClient.Queryable<NoticeInfo>().FirstAsync(t=>t.Id == noticeId);
         notice.Status = NoticeStatus.Publish;
         var targets = new List<Guid>();
         switch (notice.Target)

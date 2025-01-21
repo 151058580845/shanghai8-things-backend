@@ -1,7 +1,6 @@
 ﻿using CaseExtensions;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
@@ -17,7 +16,10 @@ public sealed class SqlSugarContext
     private readonly DbConnOptions _dbOptions;
     private readonly ILogger<SqlSugarContext> _logger;
 
-    public SqlSugarContext(ILogger<SqlSugarContext> logger, DbConnOptions dbOptions, ISqlSugarClient client
+    public SqlSugarContext(
+        ILogger<SqlSugarContext> logger, 
+        DbConnOptions dbOptions, 
+        ISqlSugarClient client
         )
     {
         _dbOptions = dbOptions;
@@ -74,8 +76,8 @@ public sealed class SqlSugarContext
                     //配置表外键
                     c.IfTable<EquipLedger>()
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
-                    c.IfTable<Notice>()
-                        .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(Notice.Id));
+                    c.IfTable<NoticeInfo>()
+                        .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();

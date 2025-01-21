@@ -13,9 +13,9 @@ public class EquipLedgerDto
 public class EquipLedgerReadDto : ReadDto
 {
     public Guid Id { get; set; }
-    [Description("设备编号")] public string EquipCode { get; set; }
+    [Description("设备编号")] public string EquipCode { get; set; } = null!;
 
-    [Description("设备名称")] public string EquipName { get; set; }
+    [Description("设备名称")] public string EquipName { get; set; } = null!;
 
     [Description("设备类型ID")] public Guid? TypeId { get; set; }
 
@@ -78,12 +78,12 @@ public class EquipLedgerCreateDto : CreateDto
     /// <summary>
     /// 设备编号
     /// </summary>
-    public string EquipCode { get; set; }
+    public string EquipCode { get; set; } = null!;
 
     /// <summary>
     /// 设备名称
     /// </summary>
-    public string EquipName { get; set; }
+    public string EquipName { get; set; } = null!;
 
     /// <summary>
     /// 设备类型ID
@@ -146,12 +146,12 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// <summary>
     /// 设备编号
     /// </summary>
-    public string EquipmentCode { get; set; }
+    public string EquipmentCode { get; set; } = null!;
 
     /// <summary>
     /// 设备名称
     /// </summary>
-    public string EquipmentName { get; set; }
+    public string EquipmentName { get; set; } = null!;
 
     /// <summary>
     /// 设备类型ID

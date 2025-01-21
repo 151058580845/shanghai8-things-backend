@@ -54,30 +54,9 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 
             #region 注册Mqtt
 
-            builder.Register(context =>
-                {
-                    var setting = context.Resolve<IConfiguration>().GetSection(nameof(MqttSettings))
-                        .Get<MqttSettings>() ?? throw new Exception("Mqtt config not found!");
-                    return setting;
-                })
-                .As<MqttSettings>()
+            builder.RegisterType<ApiMqttPub>()
+                .AsImplementedInterfaces()
                 .SingleInstance();
-            builder.Register(context =>
-                {
-                    var factory = new MqttFactory();
-                    return factory.CreateManagedMqttClient();
-                })
-                .As<IManagedMqttClient>()
-                .SingleInstance();
-            builder.Register(context =>
-            {
-                var logger = context.Resolve<ILogger<ApiMqttPub>>();
-                var client = context.Resolve<IManagedMqttClient>();
-                var options = context.Resolve<MqttSettings>();
-                return new ApiMqttPub(logger,client,options);
-            })
-            .As<IMqttExplorer>()
-            .SingleInstance();
 
             #endregion
         }

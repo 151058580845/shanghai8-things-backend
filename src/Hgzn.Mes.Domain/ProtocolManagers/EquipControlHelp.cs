@@ -18,7 +18,7 @@ namespace Hgzn.Mes.Domain.ProtocolManagers
         /// <returns></returns>
         public static async Task<bool> IsConnectedAsync(Guid connectId)
         {
-            if (EquipManagers.TryGetValue(connectId, out IEquipManager deviceManager))
+            if (EquipManagers.TryGetValue(connectId, out IEquipManager? deviceManager))
             {
                 return await deviceManager.IsConnectedAsync();
             }
