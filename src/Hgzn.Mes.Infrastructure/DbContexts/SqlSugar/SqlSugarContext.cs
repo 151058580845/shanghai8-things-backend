@@ -2,11 +2,13 @@
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Notice;
+using Hgzn.Mes.Domain.Shared.Extensions;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
+using Hgzn.Mes.Domain.Entities.System.Account;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -78,6 +80,10 @@ public sealed class SqlSugarContext
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
                     c.IfTable<NoticeInfo>()
                         .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
+                    c.IfTable<User>()
+                        .ManyToMany(t=>t.Roles,typeof(UserRole),nameof(UserRole.UserId),nameof(UserRole.RoleId));
+                    c.IfTable<Role>()
+                        .ManyToMany(t=>t.Users,typeof(UserRole),nameof(UserRole.RoleId),nameof(UserRole.UserId));
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();
@@ -86,7 +92,7 @@ public sealed class SqlSugarContext
                     {
                         c.IsNullable = true;
                     }
-                    if (p.GetMethod!.IsStatic || p.PropertyType.IsClass && p.PropertyType != typeof(string))
+                    if (p.GetMethod!.IsStatic || !p.PropertyType.IsDatabaseType())
                     {
                         c.IsIgnore = true;
                     }
