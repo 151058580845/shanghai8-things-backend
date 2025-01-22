@@ -9,13 +9,15 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// <summary>
 /// 字典详情
 /// </summary>
-public class DictionaryInfoService : CrudAppServiceSugar<DictionaryInfo
-        , Guid, DictionaryInfoQueryDto, DictionaryInfoReadDto, DictionaryInfoCreateDto, DictionaryInfoUpdateDto>,
+public class DictionaryInfoService : SugarCrudAppService<
+    DictionaryInfo, Guid,
+    DictionaryInfoReadDto, DictionaryInfoQueryDto,
+    DictionaryInfoCreateDto, DictionaryInfoUpdateDto>,
     IDictionaryInfoService
 {
-    public override async Task<PaginatedList<DictionaryInfoReadDto>> GetListAsync(DictionaryInfoQueryDto queryDto)
+    public override async Task<PaginatedList<DictionaryInfoReadDto>> GetPaginatedListAsync(DictionaryInfoQueryDto queryDto)
     {
-        var entities = await Queryable()
+        var entities = await Queryable
             .WhereIF(queryDto.DictLabel is not null, x => x.DictLabel.Contains(queryDto.DictLabel!))
             .WhereIF(queryDto.ParentId is not null, x => x.ParentId == queryDto.ParentId)
             .WhereIF(queryDto.State is not null, x => x.State == queryDto.State)
@@ -50,7 +52,7 @@ public class DictionaryInfoService : CrudAppServiceSugar<DictionaryInfo
     public async Task<List<NameValueDto>> GetNameValueByTypeIdAsync(Guid dictTypeId)
     {
         return
-            await Queryable()
+            await Queryable
                 .Where(t => t.ParentId == dictTypeId)
                 .Select<NameValueDto>(t => new NameValueDto()
                 {
@@ -58,5 +60,10 @@ public class DictionaryInfoService : CrudAppServiceSugar<DictionaryInfo
                     Name = t.DictLabel,
                     Value = t.DictValue
                 }).ToListAsync();
+    }
+
+    public override Task<IEnumerable<DictionaryInfoReadDto>> GetListAsync(DictionaryInfoQueryDto? queryDto)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -6,19 +6,20 @@ using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLedgerQueryDto,
-    EquipLedgerReadDto, EquipLedgerCreateDto,
-    EquipLedgerUpdateDto>,
+public class EquipLedgerService : SugarCrudAppService<
+    EquipLedger, Guid, 
+    EquipLedgerReadDto, EquipLedgerQueryDto,
+    EquipLedgerCreateDto, EquipLedgerUpdateDto>,
     IEquipLedgerService
 {
     public async Task<EquipLedger> GetEquipByIpAsync(string ipAddress)
     {
-        return await Queryable().FirstAsync(t => t.IpAddress == ipAddress);
+        return await Queryable.FirstAsync(t => t.IpAddress == ipAddress);
     }
 
     public async Task<IEnumerable<NameValueDto>> GetNameValueListAsync()
     {
-        var entities = await Queryable()
+        var entities = await Queryable
             .Select(t => new NameValueDto
             {
                 Id = t.Id,
@@ -37,9 +38,9 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLe
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
-    public override async Task<PaginatedList<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto query)
+    public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
-        var entities = await Queryable()
+        var entities = await Queryable
             .Where(m => query.EquipName == null || m.EquipName.Contains(query.EquipName))
             .Where(m => query.TypeId == null || m.TypeId.Equals(query.TypeId))
             .Where(m => query.RoomId == null || m.RoomId.Equals(query.RoomId))
@@ -49,5 +50,10 @@ public class EquipLedgerService : CrudAppServiceSugar<EquipLedger, Guid, EquipLe
             .OrderByDescending(m => m.OrderNum)
             .ToPageListAsync(query.PageIndex, query.PageSize);
         return Mapper.Map<PaginatedList<EquipLedgerReadDto>>(entities);
+    }
+
+    public override Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto? queryDto)
+    {
+        throw new NotImplementedException();
     }
 }

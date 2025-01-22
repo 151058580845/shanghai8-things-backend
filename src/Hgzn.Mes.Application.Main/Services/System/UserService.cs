@@ -9,36 +9,33 @@ using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
-using Hgzn.Mes.Infrastructure.DbContexts.Ef;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace Hgzn.Mes.Application.Main.Services
 {
     [ScopeDefinition("manage all user resources", ManagedResource.User)]
-    public class UserService : BaseService, IUserService
+    public class UserService : SugarCrudAppService<
+        User, Guid,
+        UserReadDto, UserQueryDto>,
+        IUserService
     {
         public UserService(
-            ApiDbContext pgDbContext,
             IUserDomainService userDomainService,
             ILogger<UserService> logger
             )
         {
             _userDomainService = userDomainService;
-            _apiDbContext = pgDbContext;
             _logger = logger;
         }
 
-        private readonly ApiDbContext _apiDbContext;
         private readonly IUserDomainService _userDomainService;
         private readonly ILogger<UserService> _logger;
 
         public async Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto)
         {
             var user = Mapper.Map<User>(registerDto);
-            await _apiDbContext.Users.AddAsync(user);
-            var count = await _apiDbContext.SaveChangesAsync();
+            var count = await DbContext.Insertable(user).ExecuteCommandAsync();
             return count == 0 ? null : Mapper.Map<UserReadDto>(user);
         }
 
@@ -51,8 +48,8 @@ namespace Hgzn.Mes.Application.Main.Services
             {
                 throw new NotAcceptableException("captcha not found or not correct");
             }
-            var user = await _apiDbContext.Users.Include(u => u.Roles)
-                .FirstOrDefaultAsync(u => u.Username == credential.Username);
+            var user = await Queryable.Includes(u => u.Roles)
+                .FirstAsync(u => u.Username == credential.Username);
             var bytes = Convert.FromBase64String(credential.Password);
 
             if (user is null || !user.Verify(bytes))
@@ -79,47 +76,36 @@ namespace Hgzn.Mes.Application.Main.Services
             await _userDomainService.DeleteTokenAsync(Guid.Parse(userId));
         }
 
-        [ScopeDefinition("delete user by id", $"{ManagedResource.User}.{ManagedAction.Delete}.Id")]
-        public async Task<int> DeleteAsync(Guid id)
-        {
-            var user = await _apiDbContext.Users.FindAsync(id);
-            if (user is not null)
-                _apiDbContext.Users.Remove(user);
-            return await _apiDbContext.SaveChangesAsync();
-        }
-
         [ScopeDefinition("get single user by id", $"{ManagedResource.User}.{ManagedAction.Get}.Id")]
-        public async Task<UserReadDto?> GetUserAsync(Guid id)
+        public override async Task<UserReadDto?> GetAsync(Guid id)
         {
-            var user = await _apiDbContext.Users
+            var user = await Queryable
                 .Where(u => u.Id == id)
-                .Include(u => u.Roles)
-                .ThenInclude(r => r.Menus)
-                .FirstOrDefaultAsync();
+                .Includes(u => u.Roles, r => r.Menus)
+                .FirstAsync();
             return Mapper.Map<UserReadDto>(user);
         }
 
         public async Task<UserScopeReadDto?> GetCurrentUserAsync(IEnumerable<Claim> claims)
         {
             var userId = Guid.Parse(claims.FirstOrDefault(c => c.Type == CustomClaimsType.UserId)!.Value);
-            var user = await _apiDbContext.Users
+            var user = await Queryable
                 .Where(u => u.Id == userId)
-                .Include(u => u.Roles)
-                .ThenInclude(r => r.Menus)
-                .FirstOrDefaultAsync();
+                .Includes(u => u.Roles, r => r.Menus)
+                .FirstAsync();
             return Mapper.Map<UserScopeReadDto>(user);
         }
 
         [ScopeDefinition("get users where", $"{ManagedResource.User}.{ManagedAction.Get}.Query")]
-        public async Task<IEnumerable<UserReadDto>> GetUsersWhereAsync(UserQueryDto query)
+        public override async Task<IEnumerable<UserReadDto>> GetListAsync(UserQueryDto? query)
         {
-            var users = await _apiDbContext.Users
-                .Where(u => query.Filter == null ||
-                (u.Phone != null && u.Phone.Contains(query.Filter)) ||
-                u.Username.Contains(query.Filter) ||
-                        (u.Nick != null && u.Nick.Contains(query.Filter)))
-                .Where(u => query == null || u.State == query.State)
-                .Include(u => u.Roles)
+            var users = await Queryable
+                .Where(u => query == null ||(query.Filter == null ||
+                    (u.Phone != null && u.Phone.Contains(query.Filter)) ||
+                    u.Username.Contains(query.Filter) ||
+                    (u.Nick != null && u.Nick.Contains(query.Filter)))
+                    && u.State == query.State)
+                .Includes(u => u.Roles)
                 .ToArrayAsync();
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
         }
@@ -127,11 +113,10 @@ namespace Hgzn.Mes.Application.Main.Services
         [ScopeDefinition("change user role", $"{ManagedResource.User}.{ManagedAction.Put}.Role")]
         public async Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds)
         {
-            var user = (await _apiDbContext.Users.FindAsync(userId)) ??
+            var user = (await Queryable.FirstAsync(u => u.Id == userId)) ??
                 throw new NotFoundException("user not found");
-            user.Roles = roleIds.Select(id => new Role { Id = id }).ToArray();
-            _apiDbContext.Users.Update(user);
-            var count = await _apiDbContext.SaveChangesAsync();
+            user.Roles = roleIds.Select(id => new Role { Id = id }).ToList();
+            var count = await DbContext.Updateable(user).ExecuteCommandAsync();
             return count == 0 ? null : Mapper.Map<UserReadDto>(user);
         }
 
@@ -160,7 +145,7 @@ namespace Hgzn.Mes.Application.Main.Services
             {
                 throw new NotAcceptableException("captcha not exist or not correct");
             }
-            var user = await _apiDbContext.Users.FindAsync(passwordDto.Username) ??
+            var user = await Queryable.FirstAsync(u => u.Username == passwordDto.Username) ??
                 throw new NotFoundException("user not found");
             var bytes = Convert.FromBase64String(passwordDto.OldPassword);
             if (!user.Verify(bytes))
@@ -169,19 +154,22 @@ namespace Hgzn.Mes.Application.Main.Services
             }
 
             _userDomainService.WithSalt(ref user, passwordDto.NewPassword);
-            _apiDbContext.Users.Update(user);
-            return await _apiDbContext.SaveChangesAsync();
+            return await DbContext.Updateable(user).ExecuteCommandAsync();
         }
 
         [ScopeDefinition("reset someone's password", $"{ManagedResource.User}.{ManagedAction.Put}.ResetPwd")]
         public async Task<int> ResetPasswordAsync(Guid userId)
         {
-            var user = await _apiDbContext.Users.FindAsync(userId) ??
+            var user = await Queryable.FirstAsync(u => u.Id == userId) ??
                 throw new NotFoundException("user not found");
             var hash = CryptoUtil.Sha256("12345678");
-            _userDomainService.WithSalt(ref user, hash);
-            _apiDbContext.Users.Update(user);
-            return await _apiDbContext.SaveChangesAsync();
+            _userDomainService.WithSalt(ref user, hash);            
+            return await DbContext.Updateable(user).ExecuteCommandAsync();
+        }
+
+        public override Task<PaginatedList<UserReadDto>> GetPaginatedListAsync(UserQueryDto queryDto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

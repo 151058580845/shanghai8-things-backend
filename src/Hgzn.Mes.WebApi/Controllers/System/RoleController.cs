@@ -40,7 +40,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Get}.Id")]
         public async Task<ResponseWrapper<RoleReadDto?>> GetRole(Guid roleId) =>
-            (await _roleService.GetRoleAsync(roleId)).Wrap();
+            (await _roleService.GetAsync(roleId)).Wrap();
 
         /// <summary>
         ///     获取所有角色
@@ -53,7 +53,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Get}.All")]
         public async Task<ResponseWrapper<IEnumerable<RoleReadDto>>> GetRoles() =>
-            (await _roleService.GetRolesAsync()).Wrap();
+            (await _roleService.GetListAsync()).Wrap();
 
         /// <summary>
         ///     创建新角色
@@ -66,7 +66,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Add}.New")]
         public async Task<ResponseWrapper<RoleReadDto?>> CreateRole(RoleCreateDto roleDto) =>
-            (await _roleService.CreateRoleAsync(roleDto)).Wrap();
+            (await _roleService.CreateAsync(roleDto)).Wrap();
 
         /// <summary>
         ///     编辑角色权限范围

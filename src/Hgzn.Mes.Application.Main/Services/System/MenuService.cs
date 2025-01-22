@@ -9,13 +9,15 @@ using System.Security.Claims;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
-    public class MenuService : CrudAppServiceSugar<Menu, Guid, MenuQueryDto
-        , MenuReadDto, MenuCreateDto,
-        MenuUpdateDto>, IMenuService
+    public class MenuService : SugarCrudAppService<
+        Menu, Guid,
+        MenuReadDto, MenuQueryDto,
+        MenuCreateDto,MenuUpdateDto>,
+        IMenuService
     {
-        public async Task<PaginatedList<MenuReadDto>> QueryMenusAsync(MenuQueryDto query)
+        public override async Task<PaginatedList<MenuReadDto>> GetPaginatedListAsync(MenuQueryDto query)
         {
-            var entities = await Queryable()
+            var entities = await Queryable
                 .Where(m => query.State == null || query.State == m.State)
                 .Where(m => query.Filter == null || m.Code.Contains(query.Filter) || m.Name.Contains(query.Filter))
                 .OrderByDescending(m => m.OrderNum)
@@ -50,7 +52,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<IEnumerable<MenuReadDto>> GetRootMenusAsTreeAsync()
         {
-            var entities = await Queryable().ToArrayAsync();
+            var entities = await Queryable.ToArrayAsync();
             var menus = Mapper.Map<IEnumerable<MenuReadDto>>(entities);
             var menuReadDtos = menus as MenuReadDto[] ?? menus.ToArray();
             var root = AsTree(menuReadDtos.Single(m => m.ParentId == null));
@@ -83,7 +85,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             {
                 count = await DeleteAsync(id);
             }
-            else if (await Queryable().AnyAsync(m => m.ParentId == id))
+            else if (await Queryable.AnyAsync(m => m.ParentId == id))
             {
                 throw new NotAcceptableException("child menu exist");
             }
@@ -91,7 +93,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return count;
         }
 
-        public override Task<PaginatedList<MenuReadDto>> GetListAsync(MenuQueryDto queryDto)
+        public override Task<IEnumerable<MenuReadDto>> GetListAsync(MenuQueryDto? queryDto)
         {
             throw new NotImplementedException();
         }

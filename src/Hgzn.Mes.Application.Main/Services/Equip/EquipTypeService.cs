@@ -5,13 +5,20 @@ using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipTypeService : CrudAppServiceSugar<EquipType, Guid, EquipTypeQueryDto,
-    EquipTypeReadDto, EquipTypeCreateDto, EquipTypeUpdateDto>,
+public class EquipTypeService : SugarCrudAppService<
+    EquipType, Guid,
+    EquipTypeReadDto, EquipTypeQueryDto,
+    EquipTypeCreateDto, EquipTypeUpdateDto>,
     IEquipTypeService
 {
-    public override async Task<PaginatedList<EquipTypeReadDto>> GetListAsync(EquipTypeQueryDto dto)
+    public override Task<IEnumerable<EquipTypeReadDto>> GetListAsync(EquipTypeQueryDto? queryDto)
     {
-        var entities = await Queryable()
+        throw new NotImplementedException();
+    }
+
+    public override async Task<PaginatedList<EquipTypeReadDto>> GetPaginatedListAsync(EquipTypeQueryDto dto)
+    {
+        var entities = await Queryable
             .Where(m => dto.TypeName == null || dto.TypeName == m.TypeName)
             .Where(m => dto.TypeCode == null || dto.TypeCode == m.TypeCode)
             .OrderBy(m => m.OrderNum)

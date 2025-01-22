@@ -9,13 +9,15 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// <summary>
 /// 编码规则
 /// </summary>
-public class CodeRuleService : CrudAppServiceSugar<CodeRule
-        , Guid, CodeRuleQueryDto, CodeRuleReadDto, CodeRuleCreateDto, CodeRuleUpdateDto>,
+public class CodeRuleService : SugarCrudAppService<
+    CodeRule, Guid,
+    CodeRuleReadDto, CodeRuleQueryDto,
+    CodeRuleCreateDto, CodeRuleUpdateDto>,
     ICodeRuleService
 {
-    public override async Task<PaginatedList<CodeRuleReadDto>> GetListAsync(CodeRuleQueryDto input)
+    public override async Task<PaginatedList<CodeRuleReadDto>> GetPaginatedListAsync(CodeRuleQueryDto input)
     {
-        var entities = await Queryable()
+        var entities = await Queryable
             .Where(x => input.CodeName != null && x.CodeName.Contains(input.CodeName))
             .Where(x => x.CodeNumber != null && input.CodeNumber != null && x.CodeNumber.Contains(input.CodeNumber))
             .Where(x => x.BasicDomain != null && input.BasicDomain != null && x.BasicDomain.Contains(input.BasicDomain))
@@ -31,7 +33,7 @@ public class CodeRuleService : CrudAppServiceSugar<CodeRule
     /// <returns></returns>
     public async Task<string> GetGenerateCodeByCodeAsync(string codeNumber)
     {
-        var code = await Queryable().FirstAsync(t => t.CodeNumber == codeNumber);
+        var code = await Queryable.FirstAsync(t => t.CodeNumber == codeNumber);
 
         if (code == null)
         {
@@ -78,5 +80,10 @@ public class CodeRuleService : CrudAppServiceSugar<CodeRule
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    public override Task<IEnumerable<CodeRuleReadDto>> GetListAsync(CodeRuleQueryDto? queryDto)
+    {
+        throw new NotImplementedException();
     }
 }

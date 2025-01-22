@@ -54,7 +54,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Get}.Id")]
         public async Task<ResponseWrapper<UserReadDto?>> GetUser(Guid userId) =>
-            (await _userService.GetUserAsync(userId)).Wrap();
+            (await _userService.GetAsync(userId)).Wrap();
 
         /// <summary>
         ///     模糊匹配用户名和昵称
@@ -68,7 +68,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Get}.Query")]
         public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUsers(UserQueryDto dto) =>
-            (await _userService.GetUsersWhereAsync(dto)).Wrap();
+            (await _userService.GetListAsync(dto)).Wrap();
 
         /// <summary>
         ///     删除用户

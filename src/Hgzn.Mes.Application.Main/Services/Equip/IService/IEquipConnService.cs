@@ -3,7 +3,9 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip.IService;
 
-public interface IEquipConnectService : ICrudAppService<EquipConnect
-    , Guid, EquipConnectQueryDto, EquipConnectReadDto, EquipConnectCreateDto, EquipConnectUpdateDto>
+public interface IEquipConnectService : ICrudAppService<
+    EquipConnect, Guid,
+    EquipConnectReadDto, EquipConnectQueryDto,
+    EquipConnectCreateDto, EquipConnectUpdateDto>
 {
 }

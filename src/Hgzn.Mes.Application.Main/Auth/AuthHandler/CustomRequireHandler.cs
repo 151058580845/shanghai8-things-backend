@@ -40,7 +40,7 @@ namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
                 return;
             }
 
-            var role = await _roleService.GetRoleAsync(roleId);
+            var role = await _roleService.GetAsync(roleId);
             if (role is null)
             {
                 _logger.LogWarning("a token with invalid role");

@@ -4,16 +4,11 @@ using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Application.Main.Services.System.IService
 {
-    public interface IRoleService : IBaseService, ICrudAppService<Role, Guid, RoleQueryDto,
-        RoleReadDto, RoleCreateDto,
-        RoleUpdateDto>
+    public interface IRoleService : ICrudAppService<
+        Role, Guid,
+        RoleReadDto, RoleQueryDto,
+        RoleCreateDto, RoleUpdateDto>
     {
-        Task<RoleReadDto?> GetRoleAsync(Guid id);
-
-        Task<IEnumerable<RoleReadDto>> GetRolesAsync();
-
-        Task<RoleReadDto?> CreateRoleAsync(RoleCreateDto roleDto);
-
         Task<bool> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds);
 
         IEnumerable<ScopeDefReadDto> GetScopes();

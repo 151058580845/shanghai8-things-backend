@@ -10,8 +10,10 @@ using SqlSugar;
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     [ScopeDefinition("manage all role resources", ManagedResource.Role)]
-    public class RoleService : CrudAppServiceSugar<Role, Guid, RoleQueryDto,
-        RoleReadDto, RoleCreateDto, RoleUpdateDto>,
+    public class RoleService : SugarCrudAppService<
+        Role, Guid,
+        RoleReadDto, RoleQueryDto,
+        RoleCreateDto, RoleUpdateDto>,
         IRoleService
     {
         [ScopeDefinition("create a role", $"{ManagedResource.Role}.{ManagedAction.Add}.New")]
@@ -29,7 +31,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
         [ScopeDefinition("get all roles", $"{ManagedResource.Role}.{ManagedAction.Get}.All")]
         public async Task<IEnumerable<RoleReadDto>> GetRolesAsync()
         {
-            var roles = await Queryable()
+            var roles = await Queryable
                 .Includes(r => r.Menus)
                 .ToArrayAsync();
             return Mapper.Map<IEnumerable<RoleReadDto>>(roles);
@@ -64,7 +66,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<PaginatedList<UserReadDto>> GetRoleUsersAsync(Guid roleId, UserQueryDto query)
         {
-            var users = await Queryable()
+            var users = await Queryable
                 .Where(r => r.Id == roleId)
                 .Includes(r => r.Users == null ? null : r.Users
                     .Where(u => query.Filter == null ||
@@ -77,7 +79,12 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
         }
 
-        public override Task<PaginatedList<RoleReadDto>> GetListAsync(RoleQueryDto queryDto)
+        public override Task<IEnumerable<RoleReadDto>> GetListAsync(RoleQueryDto? queryDto = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<PaginatedList<RoleReadDto>> GetPaginatedListAsync(RoleQueryDto queryDto)
         {
             throw new NotImplementedException();
         }

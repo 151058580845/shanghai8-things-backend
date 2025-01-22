@@ -26,7 +26,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
 
         public virtual ICollection<User>? Users { get; set; }
 
-        public ICollection<Menu>? Menus { get; set; }
+        public List<Menu>? Menus { get; set; }
 
         #endregion navigation
 

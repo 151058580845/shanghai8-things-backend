@@ -9,12 +9,20 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// <summary>
 /// 字典类型
 /// </summary>
-public class DictionaryTypeService : CrudAppServiceSugar<DictionaryType
-    , Guid, DictionaryTypeQueryDto, DictionaryTypeReadDto, DictionaryTypeCreateDto, DictionaryTypeUpdateDto>, IDictionaryTypeService
+public class DictionaryTypeService : SugarCrudAppService<
+    DictionaryType, Guid,
+    DictionaryTypeReadDto, DictionaryTypeQueryDto,
+    DictionaryTypeCreateDto, DictionaryTypeUpdateDto>,
+    IDictionaryTypeService
 {
-    public override async Task<PaginatedList<DictionaryTypeReadDto>> GetListAsync(DictionaryTypeQueryDto input)
+    public override Task<IEnumerable<DictionaryTypeReadDto>> GetListAsync(DictionaryTypeQueryDto? queryDto = null)
     {
-        var entities = await Queryable()
+        throw new NotImplementedException();
+    }
+
+    public override async Task<PaginatedList<DictionaryTypeReadDto>> GetPaginatedListAsync(DictionaryTypeQueryDto input)
+    {
+        var entities = await Queryable
             .WhereIF(input.DictName is not null, x => x.DictName.Contains(input.DictName!))
             .WhereIF(input.DictType is not null, x => x.DictType.Contains(input.DictType!))
             .WhereIF(input.State is not null, x => x.State == input.State)
@@ -32,7 +40,7 @@ public class DictionaryTypeService : CrudAppServiceSugar<DictionaryType
 
     public async Task<IEnumerable<TreeDto>> GetTreeListAsync(DictionaryTypeQueryDto input)
     {
-        var p = await Queryable()
+        var p = await Queryable
             .WhereIF(input.DictName is not null, x => x.DictName.Contains(input.DictName!))
             .Select(t => new TreeDto()
             {

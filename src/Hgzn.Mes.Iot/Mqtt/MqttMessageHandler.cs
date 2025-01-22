@@ -62,13 +62,13 @@ namespace Hgzn.Mes.Iot.Mqtt
             }
         }
 
-        private async Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
+        private Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
         {
             throw new NotImplementedException();
 
         }
 
-        private async Task HandleDataAsync(IotTopic topic, byte[] msg)
+        private Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
             throw new NotImplementedException();
         }

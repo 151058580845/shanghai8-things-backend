@@ -1,6 +1,4 @@
-using Hangfire;
 using Hgzn.Mes.Application.Main.Dtos.System;
-using Hgzn.Mes.Application.Main.Jobs;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Hgzn.Mes.Domain.Shared;
@@ -11,13 +9,15 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// <summary>
 /// 通知信息
 /// </summary>
-public class NoticeService : CrudAppServiceSugar<NoticeInfo
-        , Guid, NoticeQueryDto, NoticeReadDto, NoticeCreateDto, NoticeUpdateDto>,
+public class NoticeService : SugarCrudAppService<
+    NoticeInfo, Guid,
+    NoticeReadDto, NoticeQueryDto,
+    NoticeCreateDto, NoticeUpdateDto>,
     INoticeService
 {
-    public override async Task<PaginatedList<NoticeReadDto>> GetListAsync(NoticeQueryDto input)
+    public override async Task<PaginatedList<NoticeReadDto>> GetPaginatedListAsync(NoticeQueryDto input)
     {
-        var entities = await Queryable().WhereIF(input.Type is not null, x => x.NoticeShowType == input.Type)
+        var entities = await Queryable.WhereIF(input.Type is not null, x => x.NoticeShowType == input.Type)
             .WhereIF(!string.IsNullOrEmpty(input.Title), x => x.Title.Contains(input.Title!))
             .WhereIF(input.StartTime is not null && input.EndTime is not null,
                 x => x.CreationTime >= input.StartTime && x.CreationTime <= input.EndTime)
@@ -106,5 +106,8 @@ public class NoticeService : CrudAppServiceSugar<NoticeInfo
         }
     }
 
-
+    public override Task<IEnumerable<NoticeReadDto>> GetListAsync(NoticeQueryDto? queryDto)
+    {
+        throw new NotImplementedException();
+    }
 }

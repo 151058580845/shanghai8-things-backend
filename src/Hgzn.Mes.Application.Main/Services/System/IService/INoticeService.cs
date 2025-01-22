@@ -4,8 +4,10 @@ using NoticeInfo = Hgzn.Mes.Domain.Entities.System.Notice.NoticeInfo;
 
 namespace Hgzn.Mes.Application.Main.Services.System.IService;
 
-public interface INoticeService : ICrudAppService<NoticeInfo
-    , Guid, NoticeQueryDto, NoticeReadDto, NoticeCreateDto, NoticeUpdateDto>
+public interface INoticeService : ICrudAppService<
+    NoticeInfo, Guid,
+    NoticeReadDto, NoticeQueryDto,
+    NoticeCreateDto, NoticeUpdateDto>
 {
     Task ModifyTargets(Guid outputId, List<NoticeTarget> targetsEntities);
 }

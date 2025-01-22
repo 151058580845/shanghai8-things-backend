@@ -1,9 +1,12 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using System.Security.Claims;
 
 namespace Hgzn.Mes.Application.Main.Services.Base
 {
-    public interface IUserService : IBaseService
+    public interface IUserService : ICrudAppService<
+        User, Guid,
+        UserReadDto, UserQueryDto>
     {
         Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto);
 
@@ -11,13 +14,7 @@ namespace Hgzn.Mes.Application.Main.Services.Base
 
         Task LogoutAsync(IEnumerable<Claim> claims);
 
-        Task<int> DeleteAsync(Guid id);
-
-        Task<UserReadDto?> GetUserAsync(Guid id);
-
         Task<UserScopeReadDto?> GetCurrentUserAsync(IEnumerable<Claim> claims);
-
-        Task<IEnumerable<UserReadDto>> GetUsersWhereAsync(UserQueryDto query);
 
         Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds);
 

@@ -9,13 +9,13 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EquipTypeController : BaseController
+public class EquipTypeController : ControllerBase
 {
     private readonly IEquipTypeService _equipTypeService;
 
     public EquipTypeController(IEquipTypeService equipTypeService)
     {
-        this._equipTypeService = equipTypeService;
+        _equipTypeService = equipTypeService;
     }
 
     [HttpGet]
@@ -23,7 +23,7 @@ public class EquipTypeController : BaseController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("list")]
     public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>>> GetListAsync(EquipTypeQueryDto queryDto)
-        => Success(await _equipTypeService.GetListAsync(queryDto));
+        => (await _equipTypeService.GetPaginatedListAsync(queryDto)).Wrap();
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -31,5 +31,5 @@ public class EquipTypeController : BaseController
     [AllowAnonymous]
     [Route("")]
     public async Task<ResponseWrapper<EquipTypeReadDto>> CreateAsync(EquipTypeCreateDto createDto)
-    => Success(await _equipTypeService.CreateAsync(createDto));
+    => (await _equipTypeService.CreateAsync(createDto)).Wrap()!;
 }

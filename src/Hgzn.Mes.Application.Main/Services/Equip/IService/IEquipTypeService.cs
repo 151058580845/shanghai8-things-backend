@@ -3,7 +3,9 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip.IService;
 
-public interface IEquipTypeService : ICrudAppService<EquipType, Guid, EquipTypeQueryDto
-    , EquipTypeReadDto, EquipTypeCreateDto, EquipTypeUpdateDto>
+public interface IEquipTypeService : ICrudAppService<
+    EquipType, Guid,
+    EquipTypeReadDto, EquipTypeQueryDto,
+    EquipTypeCreateDto, EquipTypeUpdateDto>
 {
 }

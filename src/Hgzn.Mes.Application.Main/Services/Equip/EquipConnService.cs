@@ -1,19 +1,20 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
+using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
-using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.ProtocolManagers;
 using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared.Extensions;
-using Hgzn.Mes.Infrastructure.DomainServices;
-using Microsoft.Extensions.Caching.Memory;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipConnService : CrudAppServiceSugar<EquipConnect
-    , Guid, EquipConnectQueryDto, EquipConnectReadDto, EquipConnectCreateDto, EquipConnectUpdateDto>
+public class EquipConnService : SugarCrudAppService<
+    EquipConnect, Guid,
+    EquipConnectReadDto, EquipConnectQueryDto,
+    EquipConnectCreateDto, EquipConnectUpdateDto>,
+    IEquipConnectService
 {
     private readonly EquipLedgerService _equipLedgerService;
     private readonly IMemoryCacheDomainService _memoryCacheDomainService;
@@ -25,7 +26,7 @@ public class EquipConnService : CrudAppServiceSugar<EquipConnect
     }
 
 
-    public override async Task<PaginatedList<EquipConnectReadDto>> GetListAsync(EquipConnectQueryDto queryDto)
+    public override async Task<PaginatedList<EquipConnectReadDto>> GetPaginatedListAsync(EquipConnectQueryDto queryDto)
     {
         var equips = await (await _equipLedgerService.GetEquipsListAsync(queryDto.EquipCode, queryDto.EquipName))
             .OrderBy(t => t.OrderNum)
@@ -36,7 +37,7 @@ public class EquipConnService : CrudAppServiceSugar<EquipConnect
             return new PaginatedList<EquipConnectReadDto>((Enumerable.Empty<EquipConnectReadDto>()), 0, queryDto.PageIndex, queryDto.PageSize);
         }
 
-        var query = Queryable()
+        var query = Queryable
             .Where(t => equipIds.Contains(t.EquipId));
         RefAsync<int> total = await query.CountAsync();
         var entities = await query
@@ -48,7 +49,7 @@ public class EquipConnService : CrudAppServiceSugar<EquipConnect
         var outputs = await MapToGetListOutputDtosAsync(entities);
         var equipDictionary = entities
             .Select(t => t.EquipLedger)
-            .GroupBy(t => t.Id)
+            .GroupBy(t => t!.Id)
             .ToDictionary(g => g.Key, g => g.First()); // 获取每组的第一个实体;
 
         foreach (EquipConnectReadDto outputDto in outputs)
@@ -92,5 +93,10 @@ public class EquipConnService : CrudAppServiceSugar<EquipConnect
             });
 
         return entity.ConnectStatus;
+    }
+
+    public override Task<IEnumerable<EquipConnectReadDto>> GetListAsync(EquipConnectQueryDto? queryDto)
+    {
+        throw new NotImplementedException();
     }
 }

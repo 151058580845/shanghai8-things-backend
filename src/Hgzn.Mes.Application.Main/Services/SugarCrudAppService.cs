@@ -1,35 +1,33 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Shared;
-using Hgzn.Mes.Infrastructure.DbContexts.Ef;
+using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services;
 
-public abstract class CrudAppService<TEntity, TKey, TReadDto> : BaseService,
+public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService,
     ICrudAppService<TEntity, TKey, TReadDto>
-    where TEntity : AggregateRoot
+    where TEntity : AggregateRoot, new()
     where TReadDto : ReadDto
 {
     /// <summary>
-    ///     aoc 属性注入
+    ///     aoc属性注入
     /// </summary>
-    public ApiDbContext DbContext { get; init; } = null!;
+    public ISqlSugarClient DbContext { get; init; } = null!;
 
-    protected IQueryable<TEntity> Queryable { get => DbContext.Set<TEntity>().AsQueryable(); }
+    protected ISugarQueryable<TEntity> Queryable { get => DbContext.Queryable<TEntity>(); }
 
     /// <summary>
     /// 删除实体
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public async Task<int> DeleteAsync(TKey key)
+    public virtual async Task<int> DeleteAsync(TKey key)
     {
-        var entity = await DbContext.Set<TEntity>().FindAsync(key);
+        var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity != null)
         {
-            var delete = DbContext.Set<TEntity>().Remove(entity);
-            var count = await DbContext.SaveChangesAsync();
-            return count;
+            return await DbContext.Deleteable(entity).ExecuteCommandAsync();
         }
         return 0;
     }
@@ -39,17 +37,17 @@ public abstract class CrudAppService<TEntity, TKey, TReadDto> : BaseService,
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public async Task<TReadDto?> GetAsync(TKey key)
+    public virtual async Task<TReadDto?> GetAsync(TKey key)
     {
-        var entity = await DbContext.Set<TEntity>().FindAsync(key);
+        var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         return Mapper.Map<TReadDto>(entity);
     }
 }
 
-public abstract class CrudAppService<TEntity, TKey, TReadDto, TQueryDto> :   
-    CrudAppService<TEntity, TKey, TReadDto>,
+public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto> :
+    SugarCrudAppService<TEntity, TKey, TReadDto>,
     ICrudAppService<TEntity, TKey, TReadDto, TQueryDto>
-    where TEntity : AggregateRoot
+    where TEntity : AggregateRoot, new()
     where TReadDto : ReadDto
     where TQueryDto : QueryDto
 {
@@ -68,36 +66,35 @@ public abstract class CrudAppService<TEntity, TKey, TReadDto, TQueryDto> :
     public abstract Task<PaginatedList<TReadDto>> GetPaginatedListAsync(TQueryDto queryDto);
 }
 
-public abstract class CrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto> :
-    CrudAppService<TEntity, TKey, TReadDto, TQueryDto>,
+public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto> :
+    SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto>,
     ICrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto>
-    where TEntity : AggregateRoot
+    where TEntity : AggregateRoot, new()
     where TReadDto : ReadDto
-    where TQueryDto : QueryDto
     where TCreateDto : CreateDto
+    where TQueryDto : QueryDto
 {
     /// <summary>
     /// 创建实体
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TReadDto> CreateAsync(TCreateDto dto)
+    public virtual async Task<TReadDto> CreateAsync(TCreateDto dto)
     {
         var entity = Mapper.Map<TEntity>(dto);
-        await DbContext.Set<TEntity>().AddAsync(entity);
-        await DbContext.SaveChangesAsync();
+        await DbContext.Insertable(entity).ExecuteCommandAsync();
         return Mapper.Map<TReadDto>(entity);
     }
 }
 
-public abstract class CrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto, TUpdateDto> :
-    CrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto>,
+public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto, TUpdateDto> :
+    SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto>,
     ICrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto, TUpdateDto>
-    where TEntity : AggregateRoot
+    where TEntity : AggregateRoot, new()
     where TReadDto : ReadDto
     where TQueryDto : QueryDto
-    where TCreateDto : CreateDto
     where TUpdateDto : UpdateDto
+    where TCreateDto : CreateDto
 {
     /// <summary>
     /// 修改实体
@@ -105,16 +102,15 @@ public abstract class CrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreate
     /// <param name="key"></param>
     /// <param name="dto"></param>
     /// <returns></returns>
-    public async Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto)
+    public virtual async Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto)
     {
-        var entity = await DbContext.Set<TEntity>().FindAsync(key);
+        var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity == null)
         {
             return default;
         }
         Mapper.Map(dto, entity);
-        DbContext.Set<TEntity>().Update(entity);
-        await DbContext.SaveChangesAsync();
+        await DbContext.Updateable(entity).ExecuteCommandAsync();
         return Mapper.Map<TReadDto>(entity);
     }
 }

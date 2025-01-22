@@ -8,13 +8,20 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// <summary>
 /// 编码规则详细内容
 /// </summary>
-public class CodeRuleDefineDefineService : CrudAppServiceSugar<CodeRuleDefine
-        , Guid, CodeRuleDefineQueryDto, CodeRuleDefineReadDto, CodeRuleDefineCreateDto, CodeRuleDefineUpdateDto>,
+public class CodeRuleDefineDefineService : SugarCrudAppService<
+    CodeRuleDefine, Guid,
+    CodeRuleDefineReadDto,
+    CodeRuleDefineQueryDto>,
     ICodeRuleDefineService
 {
-    public override async Task<PaginatedList<CodeRuleDefineReadDto>> GetListAsync(CodeRuleDefineQueryDto input)
+    public override Task<IEnumerable<CodeRuleDefineReadDto>> GetListAsync(CodeRuleDefineQueryDto? queryDto)
     {
-        var entities = await Queryable()
+        throw new NotImplementedException();
+    }
+
+    public override async Task<PaginatedList<CodeRuleDefineReadDto>> GetPaginatedListAsync(CodeRuleDefineQueryDto input)
+    {
+        var entities = await Queryable
             .Where(x => x.CodeRuleId == input.CodeRuleId)
             .Where(x => x.CodeRuleType != null && input.CodeRuleType != null && x.CodeRuleType.Contains(input.CodeRuleType))
             .Where(x => x.SourceKey != null && input.SourceKey != null && x.SourceKey.Contains(input.SourceKey))

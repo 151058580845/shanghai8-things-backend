@@ -35,7 +35,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
 
         #region navigation
 
-        public virtual ICollection<Role> Roles { get; set; } = null!;
+        public virtual List<Role> Roles { get; set; } = null!;
 
         #endregion navigation
 
