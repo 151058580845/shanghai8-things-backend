@@ -13,7 +13,7 @@ namespace Hgzn.Mes.Domain.Utilities
         {
             //if (SettingUtil.IsDevelopment)
             //{
-            //    //var password = "dev@2024";
+            //    var password = "dev@2024";
             //    var password = "admin@2024";
             //    var secret = SHA256.HashData(Encoding.UTF8.GetBytes(password));
             //    var base64 = Convert.ToBase64String(secret);

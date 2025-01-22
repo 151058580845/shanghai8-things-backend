@@ -87,7 +87,7 @@ public sealed class SqlSugarContext
                     {
                         c.IsNullable = true;
                     }
-                    if (p.GetMethod!.IsStatic || p.PropertyType.IsDatabaseType())
+                    if (p.GetMethod!.IsStatic || !p.PropertyType.IsDatabaseType())
                     {
                         c.IsIgnore = true;
                     }
