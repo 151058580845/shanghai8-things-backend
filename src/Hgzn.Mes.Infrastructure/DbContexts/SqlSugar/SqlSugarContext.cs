@@ -86,7 +86,7 @@ public sealed class SqlSugarContext
                     {
                         c.IsNullable = true;
                     }
-                    if (p.GetMethod!.IsStatic)
+                    if (p.GetMethod!.IsStatic || p.PropertyType.IsClass && p.PropertyType != typeof(string))
                     {
                         c.IsIgnore = true;
                     }
