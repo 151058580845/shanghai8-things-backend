@@ -2,6 +2,7 @@
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Notice;
+using Hgzn.Mes.Domain.Shared.Extensions;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 using System.ComponentModel;
@@ -86,7 +87,7 @@ public sealed class SqlSugarContext
                     {
                         c.IsNullable = true;
                     }
-                    if (p.GetMethod!.IsStatic)
+                    if (p.GetMethod!.IsStatic || p.PropertyType.IsDatabaseType())
                     {
                         c.IsIgnore = true;
                     }
