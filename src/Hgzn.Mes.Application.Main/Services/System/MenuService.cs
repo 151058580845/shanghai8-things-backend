@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using System.Security.Claims;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared.Extensions;
 
 namespace Hgzn.Mes.Application.Main.Services.System
@@ -32,19 +33,18 @@ namespace Hgzn.Mes.Application.Main.Services.System
             IEnumerable<Menu> entities;
             if (roleId == Role.DevRole.Id)
             {
-                entities = await DbContext.Queryable<Menu>().ToArrayAsync();
+                entities = await DbContext.Queryable<Menu>().Where(t=>t.Type != MenuType.Component).ToArrayAsync();
             }
             else
             {
                 var roles = await DbContext.Queryable<Role>()
                     .Where(r => r.Id == roleId)
-                    .Includes(r => r.Menus)
+                    .Includes(r => r.Menus.Where(t=>t.Type != MenuType.Component))
                     .ToArrayAsync();
                 if (roles.Length == 0) throw new NotFoundException("role not found");
                 entities = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
                 if (entities.Count() == 0) return Enumerable.Empty<MenuReaderRouterDto>();
             }
-
             var allRoutes = await entities.Select(t => new MenuReaderRouterDto()
             {
                 Path = t.Route == null ? "" : t.Route.StartsWith("/") ? t.Route : "/" + t.Route,
