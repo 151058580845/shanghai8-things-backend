@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using Hgzn.Mes.Domain.Entities.System.Account;
+using Hgzn.Mes.Domain.Entities.System.Authority;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -81,9 +82,9 @@ public sealed class SqlSugarContext
                     c.IfTable<NoticeInfo>()
                         .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
                     c.IfTable<User>()
-                        .ManyToMany(t=>t.Roles,typeof(UserRole),nameof(UserRole.UserId),nameof(UserRole.RoleId));
+                        .ManyToMany(t => t.Roles, typeof(UserRole), nameof(UserRole.UserId), nameof(UserRole.RoleId));
                     c.IfTable<Role>()
-                        .ManyToMany(t=>t.Users,typeof(UserRole),nameof(UserRole.RoleId),nameof(UserRole.UserId));
+                        .ManyToMany(t => t.Menus, typeof(RoleMenu), nameof(RoleMenu.RoleId), nameof(RoleMenu.MenuId));
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();
@@ -153,7 +154,7 @@ public sealed class SqlSugarContext
                 //只捕获主键重复异常
                 catch (AggregateException)
                 {                    
-                    _logger.LogWarning("data seeds exist");
+                    _logger.LogWarning($"{entity.Name} data seeds exist");
                 }
 
             }

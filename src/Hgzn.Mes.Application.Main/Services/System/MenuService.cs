@@ -33,6 +33,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Where(r => r.Id == roleId)
                 .Includes(r => r.Menus)
                 .ToArrayAsync();
+            if(roles.Length == 0) return Enumerable.Empty<MenuReadDto>();
             var targets = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
             var menus = Mapper.Map<IEnumerable<MenuReadDto>>(targets);
             var menuReadDtos = menus as MenuReadDto[] ?? menus.ToArray();
