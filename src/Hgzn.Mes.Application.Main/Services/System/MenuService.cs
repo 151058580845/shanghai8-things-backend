@@ -33,30 +33,31 @@ namespace Hgzn.Mes.Application.Main.Services.System
             IEnumerable<Menu> entities;
             if (roleId == Role.DevRole.Id)
             {
-                entities = await DbContext.Queryable<Menu>().Where(t=>t.Type != MenuType.Component).ToArrayAsync();
+                entities = await DbContext.Queryable<Menu>()
+                    .Where(t=>t.Type != MenuType.Component).ToArrayAsync();
             }
             else
             {
                 var roles = await DbContext.Queryable<Role>()
                     .Where(r => r.Id == roleId)
-                    .Includes(r => r.Menus.Where(t=>t.Type != MenuType.Component))
+                    .Includes(r => r.Menus == null ? null : r.Menus.Where(t=>t.Type != MenuType.Component) )
                     .ToArrayAsync();
                 if (roles.Length == 0) throw new NotFoundException("role not found");
                 entities = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
-                if (entities.Count() == 0) return Enumerable.Empty<MenuReaderRouterDto>();
+                if (!entities.Any()) return [];
             }
             var allRoutes = await entities.Select(t => new MenuReaderRouterDto()
             {
-                Path = t.Route == null ? "" : t.Route.StartsWith("/") ? t.Route : "/" + t.Route,
-                Name = t.IsLink == true ? "Link" : t.Name,
+                Path = t.Route == null ? "" : t.Route.StartsWith('/') ? t.Route : '/' + t.Route,
+                Name = t.IsLink ? "Link" : t.Name,
                 Id = t.Id,
                 component = t.Component,
                 Meta = new MetaDto()
                 {
                     showLink = t.Visible,
-                    FrameSrc = t.IsLink == true ? t.Route : null,
-                    Auths = new List<string>() { },
-                    Icon = t.IconUrl,
+                    FrameSrc = t.IsLink ? t.Route : null,
+                    Auths = [],
+                    Icon = t.IconUrl ?? "",
                     Title = t.Name
                 },
                 Children = null,
@@ -71,7 +72,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 parent.Children = allRoutes
                     .Where(m => m.ParentId == parent.Id)
                     .Select(AsTree).ToList();
-                if (parent.Children.Count() == 0)
+                if (parent.Children.Count == 0)
                 {
                     parent.Children = null;
                 }
