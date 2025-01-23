@@ -10,8 +10,8 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// </summary>
 public class CodeRuleDefineService : SugarCrudAppService<
     CodeRuleDefine, Guid,
-    CodeRuleDefineReadDto,
-    CodeRuleDefineQueryDto>,
+    CodeRuleDefineReadDto, CodeRuleDefineQueryDto,
+    CodeRuleDefineCreateDto, CodeRuleDefineUpdateDto>,
     ICodeRuleDefineService
 {
     public override Task<IEnumerable<CodeRuleDefineReadDto>> GetListAsync(CodeRuleDefineQueryDto? queryDto)

@@ -8,5 +8,5 @@ public interface ICodeRuleService : ICrudAppService<
     CodeRuleReadDto, CodeRuleQueryDto,
     CodeRuleCreateDto, CodeRuleUpdateDto>
 {
-    Task<string> GetGenerateCodeByCodeAsync(string codeNumber);
+    Task<string> GenerateCodeByCodeAsync(string codeNumber);
 }

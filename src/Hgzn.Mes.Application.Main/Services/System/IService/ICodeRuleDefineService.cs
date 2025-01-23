@@ -5,6 +5,7 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService;
 
 public interface ICodeRuleDefineService : ICrudAppService<
     CodeRuleDefine, Guid,
-    CodeRuleDefineReadDto, CodeRuleDefineQueryDto>
+    CodeRuleDefineReadDto, CodeRuleDefineQueryDto,
+    CodeRuleDefineCreateDto, CodeRuleDefineUpdateDto>
 {
 }

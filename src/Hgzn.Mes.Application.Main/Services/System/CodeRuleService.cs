@@ -31,7 +31,7 @@ public class CodeRuleService : SugarCrudAppService<
     /// </summary>
     /// <param name="codeNumber"></param>
     /// <returns></returns>
-    public async Task<string> GetGenerateCodeByCodeAsync(string codeNumber)
+    public async Task<string> GenerateCodeByCodeAsync(string codeNumber)
     {
         var code = await Queryable.FirstAsync(t => t.CodeNumber == codeNumber);
 
