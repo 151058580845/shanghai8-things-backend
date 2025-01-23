@@ -27,15 +27,26 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<IEnumerable<MenuReadDto>> GetCurrentUserMenusAsTreeAsync(IEnumerable<Claim> claims)
         {
-            var roleId = Guid.Parse(claims.FirstOrDefault(c => c.Type == CustomClaimsType.RoleId)!.Value);
+            var roleId = Guid.Parse(claims.FirstOrDefault(c =>
+                c.Type == CustomClaimsType.RoleId)!.Value);
 
-            var roles = await DbContext.Queryable<Role>()
-                .Where(r => r.Id == roleId)
-                .Includes(r => r.Menus)
-                .ToArrayAsync();
-            var targets = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
-            if (targets.Count() == 0) return Enumerable.Empty<MenuReadDto>();
-            var menus = Mapper.Map<IEnumerable<MenuReadDto>>(targets);
+            IEnumerable<Menu> entities;
+            if(roleId == Role.DevRole.Id)
+            {
+                entities = await DbContext.Queryable<Menu>().ToArrayAsync();
+            }
+            else
+            {
+                var roles = await DbContext.Queryable<Role>()
+                    .Where(r => r.Id == roleId)
+                    .Includes(r => r.Menus)
+                    .ToArrayAsync();
+                if (roles.Length == 0) throw new NotFoundException("role not found");
+                entities = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
+                if (entities.Count() == 0) return Enumerable.Empty<MenuReadDto>();
+            }
+
+            var menus = Mapper.Map<IEnumerable<MenuReadDto>>(entities);
             var menuReadDtos = menus as MenuReadDto[] ?? menus.ToArray();
             var root = AsTree(menuReadDtos.Single(m => m.ParentId == null));
             return root.Children!;
