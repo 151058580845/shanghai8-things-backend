@@ -10,8 +10,8 @@ namespace Hgzn.Mes.Application.Main.Auth
         {
             foreach (var scope in scopes)
             {
-                options.AddPolicy(scope.Name, policy =>
-                    policy.AddRequirements(new CustomRequireScope(scope.Name)));
+                options.AddPolicy(scope.Code, policy =>
+                    policy.AddRequirements(new CustomRequireScope(scope.Code)));
             }
         }
     }

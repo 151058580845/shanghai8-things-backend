@@ -1,6 +1,7 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.Base;
 using Hgzn.Mes.Domain.Utilities;
+using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,6 @@ namespace Hgzn.Mes.WebApi.Controllers
     ///     用户资源
     /// </summary>
     [Route("api/[controller]")]
-    [Authorize(Policy = ManagedResource.User)]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -52,7 +52,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("{userId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Get}.Id")]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<UserReadDto?>> GetUser(Guid userId) =>
             (await _userService.GetAsync(userId)).Wrap();
 
@@ -66,7 +66,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("where")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Get}.Query")]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUsers(UserQueryDto dto) =>
             (await _userService.GetListAsync(dto)).Wrap();
 
@@ -80,7 +80,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("{userId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Delete}.Id")]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Remove}")]
         public async Task<ResponseWrapper<int>> Delete(Guid userId) =>
             (await _userService.DeleteAsync(userId)).Wrap();
 
@@ -95,7 +95,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("{userId:guid}/role")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Put}.Role")]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<UserReadDto?>> ModifyRole(Guid userId, IEnumerable<Guid> roleIds) =>
             (await _userService.ChangeRoleAsync(userId, roleIds)).Wrap();
 
@@ -107,9 +107,10 @@ namespace Hgzn.Mes.WebApi.Controllers
         /// <returns>更换密码状态</returns>
         [HttpPut]
         [Route("pwd")]
-        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
+
         public async Task<ResponseWrapper<int>> ChangePassword(ChangePasswordDto passwordDto) =>
             (await _userService.ChangePasswordAsync(passwordDto)).Wrap();
 
@@ -123,7 +124,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("{userId}/pwd")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.User}.{ManagedAction.Put}.ResetPwd")]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<int>> ResetPassword(Guid userId) =>
             (await _userService.ResetPasswordAsync(userId)).Wrap();
     }

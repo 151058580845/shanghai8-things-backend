@@ -11,4 +11,9 @@ public static class StringExtension
     {
         return string.IsNullOrEmpty(value);
     }
+
+    public static IEnumerable<string> GetNameSpaces(this string value)
+    {
+        return value.Split('.');
+    }
 }

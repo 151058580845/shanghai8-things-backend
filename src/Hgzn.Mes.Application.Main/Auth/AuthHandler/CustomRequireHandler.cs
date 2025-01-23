@@ -48,7 +48,7 @@ namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
                 return;
             }
 
-            if (role.Menus.Any(s => requirement.Scope.Contains(s.Name)))
+            if (role.Menus.Any(s => s.ScopeCode is null || requirement.Scope.Contains(s.ScopeCode)))
             {
                 _logger.LogTrace("scope match success");
                 context.Succeed(requirement);

@@ -14,7 +14,6 @@ using System.Security.Claims;
 
 namespace Hgzn.Mes.Application.Main.Services
 {
-    [ScopeDefinition("manage all user resources", ManagedResource.User)]
     public class UserService : SugarCrudAppService<
         User, Guid,
         UserReadDto, UserQueryDto>,
@@ -76,7 +75,6 @@ namespace Hgzn.Mes.Application.Main.Services
             await _userDomainService.DeleteTokenAsync(Guid.Parse(userId));
         }
 
-        [ScopeDefinition("get single user by id", $"{ManagedResource.User}.{ManagedAction.Get}.Id")]
         public override async Task<UserReadDto?> GetAsync(Guid id)
         {
             var user = await Queryable
@@ -96,7 +94,6 @@ namespace Hgzn.Mes.Application.Main.Services
             return Mapper.Map<UserScopeReadDto>(user);
         }
 
-        [ScopeDefinition("get users where", $"{ManagedResource.User}.{ManagedAction.Get}.Query")]
         public override async Task<IEnumerable<UserReadDto>> GetListAsync(UserQueryDto? query)
         {
             var users = await Queryable
@@ -110,7 +107,6 @@ namespace Hgzn.Mes.Application.Main.Services
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
         }
 
-        [ScopeDefinition("change user role", $"{ManagedResource.User}.{ManagedAction.Put}.Role")]
         public async Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds)
         {
             var user = (await Queryable.FirstAsync(u => u.Id == userId)) ??
@@ -157,7 +153,6 @@ namespace Hgzn.Mes.Application.Main.Services
             return await DbContext.Updateable(user).ExecuteCommandAsync();
         }
 
-        [ScopeDefinition("reset someone's password", $"{ManagedResource.User}.{ManagedAction.Put}.ResetPwd")]
         public async Task<int> ResetPasswordAsync(Guid userId)
         {
             var user = await Queryable.FirstAsync(u => u.Id == userId) ??

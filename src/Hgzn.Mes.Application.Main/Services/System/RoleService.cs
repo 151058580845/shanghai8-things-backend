@@ -9,26 +9,22 @@ using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
-    [ScopeDefinition("manage all role resources", ManagedResource.Role)]
     public class RoleService : SugarCrudAppService<
         Role, Guid,
         RoleReadDto, RoleQueryDto,
         RoleCreateDto, RoleUpdateDto>,
         IRoleService
     {
-        [ScopeDefinition("create a role", $"{ManagedResource.Role}.{ManagedAction.Add}.New")]
         public async Task<RoleReadDto?> CreateRoleAsync(RoleCreateDto roleDto)
         {
             return await base.CreateAsync(roleDto);
         }
 
-        [ScopeDefinition("get role info by id", $"{ManagedResource.Role}.{ManagedAction.Get}.Id")]
         public async Task<RoleReadDto?> GetRoleAsync(Guid id)
         {
             return await GetAsync(id);
         }
 
-        [ScopeDefinition("get all roles", $"{ManagedResource.Role}.{ManagedAction.Get}.All")]
         public async Task<IEnumerable<RoleReadDto>> GetRolesAsync()
         {
             var roles = await Queryable
@@ -37,7 +33,6 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<IEnumerable<RoleReadDto>>(roles);
         }
 
-        [ScopeDefinition("change role manage scope", $"{ManagedResource.Role}.{ManagedAction.Put}.Scopes")]
         public async Task<bool> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds)
         {
             var roleMenuns = menuIds.Select(m => new RoleMenu
@@ -46,7 +41,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 MenuId = m
             });
             var role = await GetAsync(roleId) ??
-                       throw new NotFoundException("role is not exist");
+                throw new NotFoundException("role is not exist");
             var result = await DbContext.Ado.UseTranAsync(async () =>
             {
                 // 获取现有的菜单 ID
@@ -60,7 +55,6 @@ namespace Hgzn.Mes.Application.Main.Services.System
             throw result.ErrorException;
         }
 
-        [ScopeDefinition("get all supported scopes", $"{ManagedResource.Role}.{ManagedAction.Get}.Scopes")]
         public IEnumerable<ScopeDefReadDto> GetScopes() =>
             Mapper.Map<IEnumerable<ScopeDefReadDto>>(RequireScopeUtil.Scopes);
 

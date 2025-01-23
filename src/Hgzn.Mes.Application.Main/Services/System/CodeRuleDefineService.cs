@@ -8,7 +8,7 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// <summary>
 /// 编码规则详细内容
 /// </summary>
-public class CodeRuleDefineDefineService : SugarCrudAppService<
+public class CodeRuleDefineService : SugarCrudAppService<
     CodeRuleDefine, Guid,
     CodeRuleDefineReadDto,
     CodeRuleDefineQueryDto>,

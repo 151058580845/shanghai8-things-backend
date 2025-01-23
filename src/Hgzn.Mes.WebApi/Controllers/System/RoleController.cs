@@ -1,6 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.System.IService;
-using Hgzn.Mes.Domain.Utilities;
+using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +12,6 @@ namespace Hgzn.Mes.WebApi.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Policy = ManagedResource.Role)]
     public class RoleController : ControllerBase
     {
         /// <summary>
@@ -38,7 +37,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("{roleId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Get}.Id")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<RoleReadDto?>> GetRole(Guid roleId) =>
             (await _roleService.GetAsync(roleId)).Wrap();
 
@@ -51,7 +50,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Get}.All")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<IEnumerable<RoleReadDto>>> GetRoles() =>
             (await _roleService.GetListAsync()).Wrap();
 
@@ -64,7 +63,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Add}.New")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<RoleReadDto?>> CreateRole(RoleCreateDto roleDto) =>
             (await _roleService.CreateAsync(roleDto)).Wrap();
 
@@ -79,7 +78,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("{roleId:guid}/menus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Put}.Scopes")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<bool>> ModifyRoleMenu(Guid roleId, List<Guid> menus) =>
             (await _roleService.ModifyRoleMenuAsync(roleId, menus)).Wrap();
 
@@ -92,7 +91,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("scopes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"{ManagedResource.Role}.{ManagedAction.Get}.Scopes")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public ResponseWrapper<IEnumerable<ScopeDefReadDto>> GetSupportedScopes() =>
             _roleService.GetScopes().Wrap();
     }

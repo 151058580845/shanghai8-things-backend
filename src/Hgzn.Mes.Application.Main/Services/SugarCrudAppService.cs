@@ -1,6 +1,8 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.Utilities;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services;
@@ -22,6 +24,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
+    [ScopeDefinition(ScopeMethodType.Remove)]
     public virtual async Task<int> DeleteAsync(TKey key)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
@@ -37,6 +40,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
+    [ScopeDefinition(ScopeMethodType.Query)]
     public virtual async Task<TReadDto?> GetAsync(TKey key)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
@@ -56,6 +60,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto> :
     /// </summary>
     /// <param name="queryDto"></param>
     /// <returns></returns>
+    [ScopeDefinition(ScopeMethodType.List)]
     public abstract Task<IEnumerable<TReadDto>> GetListAsync(TQueryDto? queryDto = null);
 
     /// <summary>
@@ -63,6 +68,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto> :
     /// </summary>
     /// <param name="queryDto"></param>
     /// <returns></returns>
+    [ScopeDefinition(ScopeMethodType.List)]
     public abstract Task<PaginatedList<TReadDto>> GetPaginatedListAsync(TQueryDto queryDto);
 }
 
@@ -79,6 +85,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto, TC
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
+    [ScopeDefinition(ScopeMethodType.Add)]
     public virtual async Task<TReadDto> CreateAsync(TCreateDto dto)
     {
         var entity = Mapper.Map<TEntity>(dto);
@@ -102,6 +109,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto, TC
     /// <param name="key"></param>
     /// <param name="dto"></param>
     /// <returns></returns>
+    [ScopeDefinition(ScopeMethodType.Edit)]
     public virtual async Task<TReadDto?> UpdateAsync(TKey key, TUpdateDto dto)
     {
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
