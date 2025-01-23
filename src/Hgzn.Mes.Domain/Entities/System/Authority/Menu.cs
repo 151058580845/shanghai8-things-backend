@@ -81,7 +81,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         public static Menu System = new()
         {
             Id = new Guid("e3a57edf-0670-4657-af10-44c4620c1012"),
-            Name = "System",
+            Name = "系统管理",
             Code = "system",
             Description = "system menu",
             Type = MenuType.Catalogue,
@@ -94,7 +94,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         public static Menu Monitoring = new()
         {
             Id = new Guid("044808f5-afe5-42b4-9720-5c00900538ca"),
-            Name = "Monitoring",
+            Name = "系统监控",
             Code = "monitoring",
             Description = "monitoring menu",
             Type = MenuType.Catalogue,
@@ -112,12 +112,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "online",
             ScopeCode = "monitor:online:list",
             Type = MenuType.Menu,
-            Route = "/monitor/online-user",
+            Route = "monitor/online/index",
             IconUrl = "ri:user-voice-line",
             OrderNum = 100,
             RouteName = "OnlineUser",
-            Component = "monitor/online/index",
-            ParentId = Root.Id
+            ParentId = Monitoring.Id
         };
 
         // 用户管理
@@ -320,7 +319,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             IconUrl = "ri:git-branch-line",
             OrderNum = 97,
             RouteName = "SystemDept",
-            ParentId = Root.Id
+            ParentId = System.Id
         };
 
         public static Menu DeptQuery = new()
