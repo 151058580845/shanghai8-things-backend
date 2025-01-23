@@ -8,7 +8,8 @@ namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles
     {
         public MenuDtoProfile()
         {
-            CreateMap<Menu, MenuReadDto>();
+            CreateMap<Menu, MenuReadDto>()
+                .ForMember(dest => dest.Path, opt => opt.MapFrom(src => src.Route));
             CreateMap<MenuCreateDto, Menu>();
         }
     }

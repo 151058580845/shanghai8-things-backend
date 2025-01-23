@@ -9,7 +9,7 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
         MenuReadDto, MenuQueryDto,
         MenuCreateDto, MenuUpdateDto>
     {
-        Task<IEnumerable<MenuReadDto>> GetCurrentUserMenusAsTreeAsync(IEnumerable<Claim> claims);
+        Task<IEnumerable<MenuReaderRouterDto>> GetCurrentUserMenusAsTreeAsync(IEnumerable<Claim> claims);
 
         Task<IEnumerable<MenuReadDto>> GetRootMenusAsTreeAsync();
 

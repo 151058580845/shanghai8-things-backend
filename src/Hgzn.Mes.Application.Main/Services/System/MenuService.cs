@@ -4,15 +4,15 @@ using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
-using SqlSugar;
 using System.Security.Claims;
+using Hgzn.Mes.Domain.Shared.Extensions;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     public class MenuService : SugarCrudAppService<
-        Menu, Guid,
-        MenuReadDto, MenuQueryDto,
-        MenuCreateDto,MenuUpdateDto>,
+            Menu, Guid,
+            MenuReadDto, MenuQueryDto,
+            MenuCreateDto, MenuUpdateDto>,
         IMenuService
     {
         public override async Task<PaginatedList<MenuReadDto>> GetPaginatedListAsync(MenuQueryDto query)
@@ -25,13 +25,12 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<PaginatedList<MenuReadDto>>(entities);
         }
 
-        public async Task<IEnumerable<MenuReadDto>> GetCurrentUserMenusAsTreeAsync(IEnumerable<Claim> claims)
+        public async Task<IEnumerable<MenuReaderRouterDto>> GetCurrentUserMenusAsTreeAsync(IEnumerable<Claim> claims)
         {
             var roleId = Guid.Parse(claims.FirstOrDefault(c =>
                 c.Type == CustomClaimsType.RoleId)!.Value);
-
             IEnumerable<Menu> entities;
-            if(roleId == Role.DevRole.Id)
+            if (roleId == Role.DevRole.Id)
             {
                 entities = await DbContext.Queryable<Menu>().ToArrayAsync();
             }
@@ -43,21 +42,40 @@ namespace Hgzn.Mes.Application.Main.Services.System
                     .ToArrayAsync();
                 if (roles.Length == 0) throw new NotFoundException("role not found");
                 entities = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
-                if (entities.Count() == 0) return Enumerable.Empty<MenuReadDto>();
+                if (entities.Count() == 0) return Enumerable.Empty<MenuReaderRouterDto>();
             }
 
-            var menus = Mapper.Map<IEnumerable<MenuReadDto>>(entities);
-            var menuReadDtos = menus as MenuReadDto[] ?? menus.ToArray();
-            var root = AsTree(menuReadDtos.Single(m => m.ParentId == null));
+            var allRoutes = await entities.Select(t => new MenuReaderRouterDto()
+            {
+                Path = t.Route == null ? "" : t.Route.StartsWith("/") ? t.Route : "/" + t.Route,
+                Name = t.IsLink == true ? "Link" : t.Name,
+                Id = t.Id,
+                component = t.Component,
+                Meta = new MetaDto()
+                {
+                    showLink = t.Visible,
+                    FrameSrc = t.IsLink == true ? t.Route : null,
+                    Auths = new List<string>() { },
+                    Icon = t.IconUrl,
+                    Title = t.Name
+                },
+                Children = null,
+                ParentId = t.ParentId
+            }).ToListAsync();
+
+            var root = AsTree(allRoutes.Single(m => m.ParentId == null));
             return root.Children!;
 
-            MenuReadDto AsTree(MenuReadDto parent)
+            MenuReaderRouterDto AsTree(MenuReaderRouterDto parent)
             {
-                parent.Children = menuReadDtos
+                parent.Children = allRoutes
                     .Where(m => m.ParentId == parent.Id)
-                    .OrderBy(m => m.Order)
-                    .ThenBy(m => m.Level)
-                    .Select(AsTree);
+                    .Select(AsTree).ToList();
+                if (parent.Children.Count() == 0)
+                {
+                    parent.Children = null;
+                }
+
                 return parent;
             }
         }
@@ -67,6 +85,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var entities = await Queryable.ToArrayAsync();
             var menus = Mapper.Map<IEnumerable<MenuReadDto>>(entities);
             var menuReadDtos = menus as MenuReadDto[] ?? menus.ToArray();
+
             var root = AsTree(menuReadDtos.Single(m => m.ParentId == null));
             return root.Children!;
 
@@ -74,9 +93,14 @@ namespace Hgzn.Mes.Application.Main.Services.System
             {
                 parent.Children = menuReadDtos
                     .Where(m => m.ParentId == parent.Id)
-                    .OrderBy(m => m.Order)
+                    .OrderBy(m => m.OrderNum)
                     .ThenBy(m => m.Level)
                     .Select(AsTree);
+                if (parent.Children.Count() == 0)
+                {
+                    parent.Children = null;
+                }
+
                 return parent;
             }
         }

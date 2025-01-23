@@ -28,7 +28,7 @@ namespace Hgzn.Mes.WebApi.Controllers
         [Route("tree/curr-user")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetCurrentUserMenusAsTree() =>
+        public async Task<ResponseWrapper<IEnumerable<MenuReaderRouterDto>>> GetCurrentUserMenusAsTree() =>
             (await _menuService.GetCurrentUserMenusAsTreeAsync(HttpContext.User.Claims)).Wrap();
 
         /// <summary>

@@ -85,7 +85,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "system",
             Description = "system menu",
             Type = MenuType.Catalogue,
+            Route = "/system",
             IconUrl = "ri:settings-3-line",
+            OrderNum = 99,
             ParentId = Root.Id
         };
 
@@ -512,7 +514,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "system:dict:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "system/dict/index",
+            Route = "/system/dict/index",
             OrderNum = 95,
             ParentId = System.Id,
             RouteName = "SystemDict"
@@ -571,7 +573,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "system:notice:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "system/notice/index",
+            Route = "/system/notice/index",
             OrderNum = 95,
             ParentId = System.Id,
             RouteName = "SystemNotice"
@@ -630,7 +632,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "system:config:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "system/config/index",
+            Route = "/system/config/index",
             OrderNum = 95,
             ParentId = System.Id,
             RouteName = "SystemConfig"
@@ -691,7 +693,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "system:code:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "system/code/index",
+            Route = "/system/code/index",
             OrderNum = 95,
             ParentId = System.Id,
             RouteName = "SystemCode"
@@ -719,7 +721,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "main:unit:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "main/unit/index",
+            Route = "/main/unit/index",
             OrderNum = 95,
             ParentId = MainData.Id,
             RouteName = "UnitManage"
@@ -734,7 +736,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "main:customer:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "main/customer/index",
+            Route = "/main/customer/index",
             OrderNum = 95,
             ParentId = MainData.Id,
             RouteName = "CustomerManage"
@@ -749,7 +751,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "main:supplier:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "main/supplier/index",
+            Route = "/main/supplier/index",
             OrderNum = 95,
             ParentId = MainData.Id,
             RouteName = "SupplierManage"
@@ -781,7 +783,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:set:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/set/index",
+            Route = "/warehouse/set/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "WarehouseSet"
@@ -796,7 +798,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:stock:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/stock/index",
+            Route = "/warehouse/stock/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "WarehouseStock"
@@ -811,7 +813,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:procure:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/procure/index",
+            Route = "/warehouse/procure/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "ProcureWarehouse"
@@ -826,7 +828,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:supplier-return:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/supplier-return/index",
+            Route = "/warehouse/supplier-return/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "SupplierReturn"
@@ -841,7 +843,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:product-require:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/product-require/index",
+            Route = "/warehouse/product-require/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "ProductRequire"
@@ -856,7 +858,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:product-return:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/product-return/index",
+            Route = "/warehouse/product-return/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "ProductReturn"
@@ -871,7 +873,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:product-warehouse:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/product-warehouse/index",
+            Route = "/warehouse/product-warehouse/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "ProductWarehouse"
@@ -886,7 +888,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:sales-out:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/sales-out/index",
+            Route = "/warehouse/sales-out/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "SalesOut"
@@ -901,7 +903,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "warehouse:sales-return:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "warehouse/sales-return/index",
+            Route = "/warehouse/sales-return/index",
             OrderNum = 95,
             ParentId = Warehouse.Id,
             RouteName = "SalesReturn"
@@ -933,7 +935,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:type:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/type/index",
+            Route = "/equip/type/index",
             OrderNum = 100,
             ParentId = Equip.Id,
             RouteName = "EquipType"
@@ -948,7 +950,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:ledger:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/ledger/index",
+            Route = "/equip/ledger/index",
             OrderNum = 99,
             ParentId = Equip.Id,
             RouteName = "EquipLedger"
@@ -963,7 +965,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:items:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/item/index",
+            Route = "/equip/item/index",
             OrderNum = 98,
             ParentId = Equip.Id,
             RouteName = "EquipItems"
@@ -978,7 +980,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:plan:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/plan/index",
+            Route = "/equip/plan/index",
             OrderNum = 97,
             ParentId = Equip.Id,
             RouteName = "EquipPlan"
@@ -993,7 +995,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:task:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/task/index",
+            Route = "/equip/task/index",
             OrderNum = 96,
             ParentId = Equip.Id,
             RouteName = "EquipPlanDone"
@@ -1008,7 +1010,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:repair:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/repair/index",
+            Route = "/equip/repair/index",
             OrderNum = 95,
             ParentId = Equip.Id,
             RouteName = "EquipRepair"
@@ -1023,7 +1025,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:record:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/record:/index",
+            Route = "/equip/record:/index",
             OrderNum = 94,
             ParentId = Equip.Id,
             RouteName = "EquipPlanRecord"
@@ -1038,7 +1040,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:connect:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/connect/index",
+            Route = "/equip/connect/index",
             OrderNum = 90,
             ParentId = Equip.Id,
             RouteName = "EquipConfig"
@@ -1053,7 +1055,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:data:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "equip/data/index",
+            Route = "/equip/data/index",
             OrderNum = 89,
             ParentId = Equip.Id,
             RouteName = "EquipData"
@@ -1085,7 +1087,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "product:plan:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "product/plan/index",
+            Route = "/product/plan/index",
             OrderNum = 95,
             ParentId = Product.Id,
             RouteName = "ProductPlan"
@@ -1100,7 +1102,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "product:order:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "product/order/index",
+            Route = "/product/order/index",
             OrderNum = 95,
             ParentId = Product.Id,
             RouteName = "ProductOrder"
@@ -1115,7 +1117,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "product:schedule:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "product/schedule/index",
+            Route = "/product/schedule/index",
             OrderNum = 95,
             ParentId = Product.Id,
             RouteName = "ProductSchedule"
@@ -1147,7 +1149,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "quality:item:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "quality/item/index",
+            Route = "/quality/item/index",
             OrderNum = 95,
             ParentId = Quality.Id,
             RouteName = "QualityItem"
@@ -1162,7 +1164,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "quality:input:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "quality/input/index",
+            Route = "/quality/input/index",
             OrderNum = 95,
             ParentId = Quality.Id,
             RouteName = "QualityInput"
@@ -1177,7 +1179,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "quality:process:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "quality/process/index",
+            Route = "/quality/process/index",
             OrderNum = 95,
             ParentId = Quality.Id,
             RouteName = "QualityProcess"
@@ -1192,7 +1194,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "quality:output:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "quality/output/index",
+            Route = "/quality/output/index",
             OrderNum = 95,
             ParentId = Quality.Id,
             RouteName = "QualityOutput"
@@ -1224,7 +1226,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "schedule:team:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "schedule/output/index",
+            Route = "/schedule/output/index",
             OrderNum = 95,
             ParentId = Schedule.Id,
             RouteName = "ScheduleTeam"
@@ -1239,7 +1241,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "schedule:plan:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "schedule/plan/index",
+            Route = "/schedule/plan/index",
             OrderNum = 95,
             ParentId = Schedule.Id,
             RouteName = "SchedulePlan"
@@ -1254,7 +1256,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "schedule:holiday:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "schedule/holiday/index",
+            Route = "/schedule/holiday/index",
             OrderNum = 95,
             ParentId = Schedule.Id,
             RouteName = "ScheduleHoliday"
@@ -1269,7 +1271,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "schedule:calendar:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "schedule/calendar/index",
+            Route = "/schedule/calendar/index",
             OrderNum = 95,
             ParentId = Schedule.Id,
             RouteName = "ScheduleCalendar"
