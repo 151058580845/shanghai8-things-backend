@@ -8,4 +8,6 @@ public interface IEquipConnService : ICrudAppService<
     EquipConnectReadDto, EquipConnectQueryDto,
     EquipConnectCreateDto, EquipConnectUpdateDto>
 {
+    Task<List<EquipConnectReadDto>> MapToGetListOutputDtosAsync(List<EquipConnect> equipLedgerQueryDtos);
+    Task<bool> IsConnectedAsync(Guid connectionId);
 }

@@ -19,19 +19,19 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipMaintenance
         public int OrderNum { get; set; }
 
         [Description("计划编码")]
-        public string PlanCode { get; set; }
+        public string? PlanCode { get; set; }
 
         [Description("计划名称")]
-        public string PlanName { get; set; }
+        public string? PlanName { get; set; }
 
         [Description("计划类型")]
-        public string EquipMaintenancePlanType { get; set; }
+        public string? EquipMaintenancePlanType { get; set; }
 
         [Description("执行次数")]
         public int FrequencyNumber { get; set; }
 
         [Description("维护计划频率")]
-        public Frequency Frequency { get; set; }
+        public Frequency? Frequency { get; set; }
 
         [Description("开始时间")]
         public DateTime StartTime { get; set; }
@@ -43,7 +43,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipMaintenance
         public Guid? ResponsibleUserId { get; set; }
 
         [Description("状态")]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [Description("计划设备表")]
         public List<EquipLedger>? EquipLedgerAggregateRoots { get; set; }

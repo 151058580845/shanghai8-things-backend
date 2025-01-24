@@ -19,10 +19,10 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager
         public bool State { get; set; }
 
         [Description("编号")]
-        public string ItemCode { get; set; }
+        public string? ItemCode { get; set; }
 
         [Description("名称")]
-        public string ItemName { get; set; }
+        public string? ItemName { get; set; }
 
         /// <summary>
         /// 数据字典值
