@@ -77,7 +77,7 @@ public class EquipTypeController : ControllerBase
     [Route("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
+    [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
     public async Task<ResponseWrapper<EquipTypeReadDto?>> GetAsync(Guid id) =>
         (await _equipTypeService.GetAsync(id)).Wrap();
 }

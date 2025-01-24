@@ -41,7 +41,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
         public async Task<ResponseWrapper<EquipMaintenancePlanReadDto?>> EquipMaintenancePlanCreateAsync(EquipMaintenancePlanCreateDto input) =>
             (await _equipMaintenancePlanService.CreateAsync(input)).Wrap();
 
@@ -81,7 +81,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipMaintenancePlanReadDto?>> EquipMaintenancePlanGetAsync(Guid id) =>
             (await _equipMaintenancePlanService.GetAsync(id)).Wrap();
 
@@ -102,7 +102,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
         public async Task<ResponseWrapper<EquipMaintenanceRecordsReadDto?>> EquipMaintenanceRecordsCreateAsync(EquipMaintenanceRecordsCreateDto input) =>
             (await _equipMaintenanceRecordsService.CreateAsync(input)).Wrap();
 
@@ -142,7 +142,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipMaintenanceRecordsReadDto?>> EquipMaintenanceRecordsGetAsync(Guid id) =>
             (await _equipMaintenanceRecordsService.GetAsync(id)).Wrap();
 
@@ -163,7 +163,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
         public async Task<ResponseWrapper<EquipMaintenanceTaskReadDto?>> EquipMaintenanceTaskCreateAsync(EquipMaintenanceTaskCreateDto input) =>
             (await _equipMaintenanceTaskService.CreateAsync(input)).Wrap();
 
@@ -203,7 +203,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipMaintenanceTaskReadDto?>> EquipMaintenanceTaskGetAsync(Guid id) =>
             (await _equipMaintenanceTaskService.GetAsync(id)).Wrap();
     }
