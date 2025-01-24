@@ -3,9 +3,11 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip.IService;
 
-public interface IEquipConnectService : ICrudAppService<
+public interface IEquipConnService : ICrudAppService<
     EquipConnect, Guid,
     EquipConnectReadDto, EquipConnectQueryDto,
     EquipConnectCreateDto, EquipConnectUpdateDto>
 {
+    Task<List<EquipConnectReadDto>> MapToGetListOutputDtosAsync(List<EquipConnect> equipLedgerQueryDtos);
+    Task<bool> IsConnectedAsync(Guid connectionId);
 }

@@ -7,7 +7,7 @@ using Hgzn.Mes.Domain.Shared;
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
 public class EquipLedgerService : SugarCrudAppService<
-    EquipLedger, Guid, 
+    EquipLedger, Guid,
     EquipLedgerReadDto, EquipLedgerQueryDto,
     EquipLedgerCreateDto, EquipLedgerUpdateDto>,
     IEquipLedgerService
@@ -55,5 +55,11 @@ public class EquipLedgerService : SugarCrudAppService<
     public override Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto? queryDto)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<IEnumerable<RfidEquipDto>> GetRfidEquipsListAsync(Guid equipId)
+    {
+        List<RfidEquipDto> list = await DbContext.Queryable<RfidEquipDto>().Where(t => t.EquipId == equipId).ToListAsync();
+        return list;
     }
 }

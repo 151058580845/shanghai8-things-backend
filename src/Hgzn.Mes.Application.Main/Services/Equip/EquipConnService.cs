@@ -14,7 +14,7 @@ public class EquipConnService : SugarCrudAppService<
     EquipConnect, Guid,
     EquipConnectReadDto, EquipConnectQueryDto,
     EquipConnectCreateDto, EquipConnectUpdateDto>,
-    IEquipConnectService
+    IEquipConnService
 {
     private readonly EquipLedgerService _equipLedgerService;
     private readonly IMemoryCacheDomainService _memoryCacheDomainService;
