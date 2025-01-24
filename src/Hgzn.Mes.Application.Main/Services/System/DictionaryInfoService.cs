@@ -3,6 +3,7 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Dictionary;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
 
@@ -15,13 +16,23 @@ public class DictionaryInfoService : SugarCrudAppService<
     DictionaryInfoCreateDto, DictionaryInfoUpdateDto>,
     IDictionaryInfoService
 {
+    
+    public override async Task<IEnumerable<DictionaryInfoReadDto>> GetListAsync(DictionaryInfoQueryDto? queryDto)
+    {
+        var entities = await Queryable
+            .WhereIF(queryDto?.DictLabel is not null, x => queryDto != null && x.DictLabel.Contains(queryDto.DictLabel!))
+            .WhereIF(queryDto != null && queryDto.ParentId is not null, x => queryDto != null && x.ParentId == queryDto.ParentId)
+            .WhereIF(queryDto != null && queryDto.State is not null, x => queryDto != null && x.State == queryDto.State)
+            .ToListAsync();
+        return Mapper.Map<IEnumerable<DictionaryInfoReadDto>>(entities);
+    }
     public override async Task<PaginatedList<DictionaryInfoReadDto>> GetPaginatedListAsync(DictionaryInfoQueryDto queryDto)
     {
         var entities = await Queryable
             .WhereIF(queryDto.DictLabel is not null, x => x.DictLabel.Contains(queryDto.DictLabel!))
             .WhereIF(queryDto.ParentId is not null, x => x.ParentId == queryDto.ParentId)
             .WhereIF(queryDto.State is not null, x => x.State == queryDto.State)
-            .ToListAsync();
+            .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
         return Mapper.Map<PaginatedList<DictionaryInfoReadDto>>(entities);
     }
 
@@ -62,8 +73,4 @@ public class DictionaryInfoService : SugarCrudAppService<
                 }).ToListAsync();
     }
 
-    public override Task<IEnumerable<DictionaryInfoReadDto>> GetListAsync(DictionaryInfoQueryDto? queryDto)
-    {
-        throw new NotImplementedException();
-    }
 }

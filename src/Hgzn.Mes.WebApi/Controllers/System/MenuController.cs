@@ -3,7 +3,7 @@ using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Hgzn.Mes.WebApi.Controllers
+namespace Hgzn.Mes.WebApi.Controllers.System
 {
     /// <summary>
     ///     菜单
@@ -42,7 +42,17 @@ namespace Hgzn.Mes.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetRootMenusAsTree() =>
             (await _menuService.GetRootMenusAsTreeAsync()).Wrap();
-
+        /// <summary>
+        ///     获取树形菜单
+        ///     auth: anonymous
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("list")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetListAsync() =>
+            (await _menuService.GetListAsync()).Wrap();
         /// <summary>
         ///     删除菜单
         /// </summary>

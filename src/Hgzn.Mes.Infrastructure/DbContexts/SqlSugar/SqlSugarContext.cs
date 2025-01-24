@@ -174,7 +174,12 @@ public sealed class SqlSugarContext
                 .ToArray();
             DbContext.CodeFirst.InitTables(tables);
         }
-        SeedData();
+
+        if (_dbOptions.EnabledDbSeed)
+        {
+            SeedData();
+        }
+        
     }
 
     /// <summary>

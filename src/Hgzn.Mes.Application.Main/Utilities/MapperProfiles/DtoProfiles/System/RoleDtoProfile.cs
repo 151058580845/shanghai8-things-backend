@@ -4,7 +4,7 @@ using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
 
-namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles
+namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.System
 {
     public class RoleDtoProfile : Profile
     {

@@ -4,7 +4,7 @@ using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Domain.ValueObjects.UserValue;
 
-namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles
+namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.System
 {
     public class UserDtoProfile : Profile
     {

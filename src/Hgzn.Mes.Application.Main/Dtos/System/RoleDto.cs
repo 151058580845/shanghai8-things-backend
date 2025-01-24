@@ -17,10 +17,10 @@ namespace Hgzn.Mes.Application.Main.Dtos
         public IEnumerable<MenuReadDto> Menus { get; set; } = null!;
     }
 
-    public class RoleQueryDto : QueryDto
+    public class RoleQueryDto : PaginatedQueryDto
     {
-        public string Name { get; set; } = null!;
-        public string Description { get; set; } = null!;
+        public string? Name { get; set; }
+        public string? Code { get; set; }
     }
 
     public class RoleUpdateDto : UpdateDto

@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Captchas;
+﻿using System.Security.Claims;
+using Hgzn.Mes.Application.Main.Captchas;
 using Hgzn.Mes.Application.Main.Captchas.Builder;
 using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.Base;
@@ -10,9 +11,8 @@ using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims;
 
-namespace Hgzn.Mes.Application.Main.Services
+namespace Hgzn.Mes.Application.Main.Services.System
 {
     public class UserService : SugarCrudAppService<
         User, Guid,

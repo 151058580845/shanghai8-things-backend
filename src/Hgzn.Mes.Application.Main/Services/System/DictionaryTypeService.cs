@@ -3,6 +3,7 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Dictionary;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
 
@@ -10,14 +11,21 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// 字典类型
 /// </summary>
 public class DictionaryTypeService : SugarCrudAppService<
-    DictionaryType, Guid,
-    DictionaryTypeReadDto, DictionaryTypeQueryDto,
-    DictionaryTypeCreateDto, DictionaryTypeUpdateDto>,
+        DictionaryType, Guid,
+        DictionaryTypeReadDto, DictionaryTypeQueryDto,
+        DictionaryTypeCreateDto, DictionaryTypeUpdateDto>,
     IDictionaryTypeService
 {
-    public override Task<IEnumerable<DictionaryTypeReadDto>> GetListAsync(DictionaryTypeQueryDto? queryDto = null)
+    public override async Task<IEnumerable<DictionaryTypeReadDto>> GetListAsync(DictionaryTypeQueryDto? input = null)
     {
-        throw new NotImplementedException();
+        var entities = await Queryable
+            .WhereIF(input?.DictName is not null, x => input != null && x.DictName.Contains(input.DictName!))
+            .WhereIF(input?.DictType is not null, x => input != null && x.DictType.Contains(input.DictType!))
+            .WhereIF(input is { State: not null }, x => input != null && x.State == input.State)
+            .WhereIF(input is { StartTime: not null, EndTime: not null },
+                x => input != null && x.CreationTime >= input.StartTime && x.CreationTime <= input.EndTime)
+            .ToListAsync();
+        return Mapper.Map<IEnumerable<DictionaryTypeReadDto>>(entities);
     }
 
     public override async Task<PaginatedList<DictionaryTypeReadDto>> GetPaginatedListAsync(DictionaryTypeQueryDto input)
@@ -28,7 +36,7 @@ public class DictionaryTypeService : SugarCrudAppService<
             .WhereIF(input.State is not null, x => x.State == input.State)
             .WhereIF(input.StartTime is not null && input.EndTime is not null,
                 x => x.CreationTime >= input.StartTime && x.CreationTime <= input.EndTime)
-            .ToPageListAsync(input.PageIndex, input.PageSize);
+            .ToPaginatedListAsync(input.PageIndex, input.PageSize);
         return Mapper.Map<PaginatedList<DictionaryTypeReadDto>>(entities);
     }
 
@@ -37,7 +45,6 @@ public class DictionaryTypeService : SugarCrudAppService<
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-
     public async Task<IEnumerable<TreeDto>> GetTreeListAsync(DictionaryTypeQueryDto input)
     {
         var p = await Queryable

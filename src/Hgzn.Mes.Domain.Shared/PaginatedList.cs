@@ -2,17 +2,17 @@
 {
     public class PaginatedList<T>
     {
-        public PaginatedList(IEnumerable<T> content, long totalItems, long pageIndex, int pageSize)
+        public PaginatedList(IEnumerable<T> items, long totalCount, long pageIndex, int pageSize)
         {
-            Content = content;
-            TotalItems = totalItems; PageIndex = pageIndex; PageSize = pageSize;
-            TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            Items = items;
+            TotalCount = totalCount; PageIndex = pageIndex; PageSize = pageSize;
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
         }
 
-        public long TotalItems { get; init; }
+        public long TotalCount { get; init; }
         public long PageIndex { get; init; }
         public int PageSize { get; init; }
         public long TotalPages { get; init; }
-        public IEnumerable<T> Content { get; init; }
+        public IEnumerable<T> Items { get; init; }
     }
 }

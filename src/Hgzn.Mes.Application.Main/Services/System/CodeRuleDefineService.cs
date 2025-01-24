@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
 
@@ -27,7 +28,7 @@ public class CodeRuleDefineService : SugarCrudAppService<
             .Where(x => x.SourceKey != null && input.SourceKey != null && x.SourceKey.Contains(input.SourceKey))
             .Where(x => x.SourceValue != null && input.SourceValue != null && x.SourceValue.Contains(input.SourceValue))
             .OrderBy(x => x.OrderNum)
-            .ToPageListAsync(input.PageIndex, input.PageSize);
+            .ToPaginatedListAsync(input.PageIndex, input.PageSize);
         return Mapper.Map<PaginatedList<CodeRuleDefineReadDto>>(entities);
     }
 }

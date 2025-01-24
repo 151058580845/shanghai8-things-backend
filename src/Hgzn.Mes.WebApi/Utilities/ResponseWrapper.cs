@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Shared;
 using System.Data.SqlTypes;
+using Hgzn.Mes.Application.Main.Dtos.System;
 
 namespace Hgzn.Mes.WebApi.Utilities
 {
@@ -41,15 +42,6 @@ namespace Hgzn.Mes.WebApi.Utilities
             };
 
         public static ResponseWrapper<IEnumerable<TRead>> Wrap<TRead>(this IEnumerable<TRead> reads,
-            string? info = null, int status = StatusCodes.Status200OK) =>
-            new()
-            {
-                Info = info,
-                Data = reads,
-                Status = status
-            };
-
-        public static ResponseWrapper<PaginatedList<TRead>> Wrap<TRead>(this PaginatedList<TRead> reads,
             string? info = null, int status = StatusCodes.Status200OK) =>
             new()
             {

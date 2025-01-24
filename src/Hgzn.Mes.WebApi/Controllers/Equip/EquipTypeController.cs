@@ -22,7 +22,7 @@ public class EquipTypeController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("list")]
-    public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>>> GetListAsync(EquipTypeQueryDto queryDto)
+    public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>?>> GetListAsync(EquipTypeQueryDto queryDto)
         => (await _equipTypeService.GetPaginatedListAsync(queryDto)).Wrap();
 
     [HttpPost]

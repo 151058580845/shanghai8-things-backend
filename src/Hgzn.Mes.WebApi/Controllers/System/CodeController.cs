@@ -81,7 +81,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<CodeRuleReadDto>>> GetPaginatedListAsync(CodeRuleQueryDto input) =>
+        public async Task<ResponseWrapper<PaginatedList<CodeRuleReadDto>?>> GetPaginatedListAsync(CodeRuleQueryDto input) =>
             (await _codeService.GetPaginatedListAsync(input)).Wrap();
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<CodeRuleDefineReadDto>>> GetPaginatedDefineListAsync(CodeRuleDefineQueryDto input) =>
+        public async Task<ResponseWrapper<PaginatedList<CodeRuleDefineReadDto>?>> GetPaginatedDefineListAsync(CodeRuleDefineQueryDto input) =>
             (await _defineService.GetPaginatedListAsync(input)).Wrap();
 
         #endregion

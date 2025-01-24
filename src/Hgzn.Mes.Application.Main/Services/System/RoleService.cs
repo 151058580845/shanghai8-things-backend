@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Utilities;
+using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
@@ -73,14 +74,20 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
         }
 
-        public override Task<IEnumerable<RoleReadDto>> GetListAsync(RoleQueryDto? queryDto = null)
+        public override async Task<IEnumerable<RoleReadDto>> GetListAsync(RoleQueryDto? queryDto = null)
         {
-            throw new NotImplementedException();
+            var roles = await Queryable
+                .Includes(r => r.Menus)
+                .ToListAsync();
+            return Mapper.Map<IEnumerable<RoleReadDto>>(roles);
         }
 
-        public override Task<PaginatedList<RoleReadDto>> GetPaginatedListAsync(RoleQueryDto queryDto)
+        public override async Task<PaginatedList<RoleReadDto>> GetPaginatedListAsync(RoleQueryDto queryDto)
         {
-            throw new NotImplementedException();
+            var roles = await Queryable
+                .Includes(r => r.Menus)
+                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+            return Mapper.Map<PaginatedList<RoleReadDto>>(roles);
         }
     }
 }

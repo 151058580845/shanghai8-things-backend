@@ -4,7 +4,7 @@ using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Hgzn.Mes.WebApi.Controllers
+namespace Hgzn.Mes.WebApi.Controllers.System
 {
     /// <summary>
     ///     主页

@@ -9,8 +9,8 @@ namespace Hgzn.Mes.Application.Main.Utilities
         public PaginatedList<TDto> Convert(PaginatedList<TEntity> source,
             PaginatedList<TDto> destination, ResolutionContext context)
         {
-            destination = new PaginatedList<TDto>(context.Mapper.Map<IEnumerable<TDto>>(source.Content),
-                source.TotalItems, source.PageIndex, source.PageSize);
+            destination = new PaginatedList<TDto>(context.Mapper.Map<IEnumerable<TDto>>(source.Items),
+                source.TotalCount, source.PageIndex, source.PageSize);
             return destination;
         }
     }

@@ -2,6 +2,7 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Notice;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 using NoticeInfo = Hgzn.Mes.Domain.Entities.System.Notice.NoticeInfo;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
@@ -10,18 +11,29 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 /// 通知信息
 /// </summary>
 public class NoticeService : SugarCrudAppService<
-    NoticeInfo, Guid,
-    NoticeReadDto, NoticeQueryDto,
-    NoticeCreateDto, NoticeUpdateDto>,
+        NoticeInfo, Guid,
+        NoticeReadDto, NoticeQueryDto,
+        NoticeCreateDto, NoticeUpdateDto>,
     INoticeService
 {
+    public override async Task<IEnumerable<NoticeReadDto>> GetListAsync(NoticeQueryDto? input)
+    {
+        var entities = await Queryable
+            .WhereIF(input is { Type: not null }, x => input != null && x.NoticeShowType == input.Type)
+            .WhereIF(!string.IsNullOrEmpty(input?.Title), x => input != null && x.Title.Contains(input.Title!))
+            .WhereIF(input is { StartTime: not null, EndTime: not null },
+                x => input != null && x.CreationTime >= input.StartTime && x.CreationTime <= input.EndTime)
+            .ToListAsync();
+        return Mapper.Map<IEnumerable<NoticeReadDto>>(entities);
+    }
+
     public override async Task<PaginatedList<NoticeReadDto>> GetPaginatedListAsync(NoticeQueryDto input)
     {
         var entities = await Queryable.WhereIF(input.Type is not null, x => x.NoticeShowType == input.Type)
             .WhereIF(!string.IsNullOrEmpty(input.Title), x => x.Title.Contains(input.Title!))
             .WhereIF(input.StartTime is not null && input.EndTime is not null,
                 x => x.CreationTime >= input.StartTime && x.CreationTime <= input.EndTime)
-            .ToPageListAsync(input.PageIndex, input.PageSize);
+            .ToPaginatedListAsync(input.PageIndex, input.PageSize);
         return Mapper.Map<PaginatedList<NoticeReadDto>>(entities);
     }
 
@@ -42,7 +54,7 @@ public class NoticeService : SugarCrudAppService<
                 NoticeObjectId = id,
                 NoticeTime = output.SendTime,
             }));
-        
+
         await ModifyTargets(output.Id, list);
         return output;
     }
@@ -97,17 +109,11 @@ public class NoticeService : SugarCrudAppService<
             DbContext.Deleteable<NoticeTarget>().Where(t => t.NoticeId == outputId);
             DbContext.Insertable(targetsEntities);
             await DbContext.Ado.CommitTranAsync();
-            
         }
         catch
         {
             await DbContext.Ado.RollbackTranAsync();
             throw;
         }
-    }
-
-    public override Task<IEnumerable<NoticeReadDto>> GetListAsync(NoticeQueryDto? queryDto)
-    {
-        throw new NotImplementedException();
     }
 }

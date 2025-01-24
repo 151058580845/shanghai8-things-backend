@@ -1,12 +1,11 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.Base;
-using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Hgzn.Mes.WebApi.Controllers
+namespace Hgzn.Mes.WebApi.Controllers.System
 {
     /// <summary>
     ///     用户资源

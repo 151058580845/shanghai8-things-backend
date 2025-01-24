@@ -2,7 +2,7 @@
 using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 
-namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles
+namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.System
 {
     public class MenuDtoProfile : Profile
     {
