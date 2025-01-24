@@ -14,32 +14,35 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         private readonly IEquipMaintenanceRecordsService _equipMaintenanceRecordsService;
         private readonly IEquipMaintenanceTaskService _equipMaintenanceTaskService;
 
-        public EquipMaintenanceController(IEquipMaintenancePlanService equipMaintenancePlanService, IEquipMaintenanceRecordsService equipMaintenanceRecordsService, IEquipMaintenanceTaskService equipMaintenanceTaskService)
+        public EquipMaintenanceController(
+            IEquipMaintenancePlanService equipMaintenancePlanService,
+            IEquipMaintenanceRecordsService equipMaintenanceRecordsService,
+            IEquipMaintenanceTaskService equipMaintenanceTaskService)
         {
-            this._equipMaintenancePlanService = equipMaintenancePlanService;
-            this._equipMaintenanceRecordsService = equipMaintenanceRecordsService;
-            this._equipMaintenanceTaskService = equipMaintenanceTaskService;
+            _equipMaintenancePlanService = equipMaintenancePlanService;
+            _equipMaintenanceRecordsService = equipMaintenanceRecordsService;
+            _equipMaintenanceTaskService = equipMaintenanceTaskService;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Route("PlanList")]
-        public async Task<ResponseWrapper<PaginatedList<EquipMaintenancePlanReadDto>>> GetPaginatedListAsync(EquipMaintenancePlanQueryDto queryDto)
+        [Route("plan")]
+        public async Task<ResponseWrapper<PaginatedList<EquipMaintenancePlanReadDto>?>> GetPaginatedListAsync(EquipMaintenancePlanQueryDto queryDto)
         => (await _equipMaintenancePlanService.GetPaginatedListAsync(queryDto)).Wrap();
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Route("RecordsList")]
-        public async Task<ResponseWrapper<PaginatedList<EquipMaintenanceRecordsReadDto>>> GetPaginatedListAsync(EquipMaintenanceRecordsQueryDto queryDto)
+        [Route("record")]
+        public async Task<ResponseWrapper<PaginatedList<EquipMaintenanceRecordsReadDto>?>> GetPaginatedListAsync(EquipMaintenanceRecordsQueryDto queryDto)
         => (await _equipMaintenanceRecordsService.GetPaginatedListAsync(queryDto)).Wrap();
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Route("TaskList")]
-        public async Task<ResponseWrapper<PaginatedList<EquipMaintenanceTaskReadDto>>> GetPaginatedListAsync(EquipMaintenanceTaskQueryDto queryDto)
+        [Route("task")]
+        public async Task<ResponseWrapper<PaginatedList<EquipMaintenanceTaskReadDto>?>> GetPaginatedListAsync(EquipMaintenanceTaskQueryDto queryDto)
         => (await _equipMaintenanceTaskService.GetPaginatedListAsync(queryDto)).Wrap();
     }
 }
