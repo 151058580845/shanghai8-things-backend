@@ -22,11 +22,11 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
             _equipLedgerService = equipLedgerService;
         }
 
-        [HttpGet]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("list")]
-        public async Task<ResponseWrapper<PaginatedList<EquipLedgerReadDto>>> GetPaginatedListAsync(EquipLedgerQueryDto queryDto)
+        public async Task<ResponseWrapper<PaginatedList<EquipLedgerReadDto>?>> GetPaginatedListAsync(EquipLedgerQueryDto queryDto)
         => (await _equipLedgerService.GetPaginatedListAsync(queryDto)).Wrap();
 
 
@@ -73,7 +73,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
         public async Task<ResponseWrapper<EquipLedgerReadDto?>> CreateAsync(EquipLedgerCreateDto input) =>
             (await _equipLedgerService.CreateAsync(input)).Wrap();
 
@@ -113,7 +113,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipLedgerReadDto?>> GetAsync(Guid id) =>
             (await _equipLedgerService.GetAsync(id)).Wrap();
     }

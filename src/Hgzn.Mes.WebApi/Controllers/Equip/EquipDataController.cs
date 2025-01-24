@@ -37,7 +37,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
         public async Task<ResponseWrapper<EquipDataReadDto?>> CreateAsync(EquipDataCreateDto input) =>
             (await _equipDataService.CreateAsync(input)).Wrap();
 
@@ -77,7 +77,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipDataReadDto?>> GetAsync(Guid id) =>
             (await _equipDataService.GetAsync(id)).Wrap();
     }
