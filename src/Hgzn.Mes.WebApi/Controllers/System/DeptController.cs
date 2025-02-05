@@ -64,7 +64,7 @@ public class DeptController : ControllerBase
     /// <summary>
     /// 修改数据
     /// </summary>
-    /// <param name="key">主键</param>
+    /// <param name="id">主键</param>
     /// <param name="dto">修改实体</param>
     /// <returns></returns>
     [HttpPut]
@@ -74,13 +74,14 @@ public class DeptController : ControllerBase
     [Authorize(Policy = $"system:dept:{ScopeMethodType.Edit}")]
     public async Task<ResponseWrapper<DepartmentReadDto?>> UpdateAsync(Guid id, DepartmentUpdateDto dto) =>
         (await _departmentService.UpdateAsync(id, dto)).Wrap();
+
     /// <summary>
     /// 修改数据
     /// </summary>
     /// <param name="dto">修改实体</param>
     /// <returns></returns>
     [HttpPost]
-    [Route("Create")]
+    [Route("")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
