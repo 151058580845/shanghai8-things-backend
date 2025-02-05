@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -11,18 +12,23 @@ public class EquipTypeService : SugarCrudAppService<
     EquipTypeCreateDto, EquipTypeUpdateDto>,
     IEquipTypeService
 {
-    public override Task<IEnumerable<EquipTypeReadDto>> GetListAsync(EquipTypeQueryDto? queryDto)
+    public override async Task<IEnumerable<EquipTypeReadDto>> GetListAsync(EquipTypeQueryDto? dto)
     {
-        throw new NotImplementedException();
+        var entities = await Queryable
+            .Where(m =>string.IsNullOrEmpty(dto.TypeName) || dto.TypeName == m.TypeName)
+            .Where(m => string.IsNullOrEmpty(dto.TypeCode)|| dto.TypeCode == m.TypeCode)
+            .OrderBy(m => m.OrderNum)
+            .ToListAsync();
+        return Mapper.Map<IEnumerable<EquipTypeReadDto>>(entities);
     }
 
     public override async Task<PaginatedList<EquipTypeReadDto>> GetPaginatedListAsync(EquipTypeQueryDto dto)
     {
         var entities = await Queryable
-            .Where(m => dto.TypeName == null || dto.TypeName == m.TypeName)
-            .Where(m => dto.TypeCode == null || dto.TypeCode == m.TypeCode)
+            .Where(m =>string.IsNullOrEmpty(dto.TypeName) || dto.TypeName == m.TypeName)
+            .Where(m => string.IsNullOrEmpty(dto.TypeCode)|| dto.TypeCode == m.TypeCode)
             .OrderBy(m => m.OrderNum)
-            .ToListAsync();
+            .ToPaginatedListAsync(dto.PageIndex, dto.PageSize);
         return Mapper.Map<PaginatedList<EquipTypeReadDto>>(entities);
     }
 }

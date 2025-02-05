@@ -69,9 +69,9 @@ public class EquipTypeCreateDto : CreateDto
     /// <summary>
     /// 上级Id
     /// </summary>
-    public Guid? ParentId { get; set; }
+    public Guid ParentId { get; set; } = Guid.Empty;
 
-    public bool State { get; set; }
+    public bool State { get; set; } = true;
 }
 
 public class EquipTypeUpdateDto : UpdateDto

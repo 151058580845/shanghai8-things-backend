@@ -1,6 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 
-namespace Hgzn.Mes.Application.Main.Dtos
+namespace Hgzn.Mes.Application.Main.Dtos.System
 {
     public class MenuReadDto : ReadDto
     {
@@ -35,7 +35,6 @@ namespace Hgzn.Mes.Application.Main.Dtos
         /// </summary>
         public string? Path { get; set; }
         public string? RouteName { get; set; }
-
         public string? ScopeCode { get; set; }
 
         public bool Visible { get; set; } = true;

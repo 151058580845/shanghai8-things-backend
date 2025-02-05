@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Domain.Entities.Base;
+﻿using System.ComponentModel;
+using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.ValueObjects.UserValue;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
@@ -25,6 +26,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public DateTime RegisterTime { get; set; }
         public Setting? Settings { get; set; }
         public Detail? Detail { get; set; }
+        
+        [Description("部门Id")]
+        public Guid? DepartmentId { get; set; }
 
         /// <summary>
         /// 年龄
@@ -65,6 +69,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
+            DepartmentId = Dept.JxDept1.Id,
+            State = true
         };
 
         public static readonly User AdminUser = new()
@@ -77,6 +83,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
+            DepartmentId = Dept.JxDept1.Id,
+            State = true
         };
 
         public static User[] Seeds { get; } =

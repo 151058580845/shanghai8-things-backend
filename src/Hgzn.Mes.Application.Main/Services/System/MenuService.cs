@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using System.Security.Claims;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared.Extensions;
 
@@ -132,7 +133,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public override async Task<IEnumerable<MenuReadDto>> GetListAsync(MenuQueryDto? queryDto)
         {
-            var entities = await Queryable.ToListAsync();
+            var entities = await Queryable.Where(t=>t.Name != "Root").ToListAsync();
             return Mapper.Map<IEnumerable<MenuReadDto>>(entities);
         }
     }

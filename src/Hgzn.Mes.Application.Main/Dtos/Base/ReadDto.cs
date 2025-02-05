@@ -2,5 +2,6 @@
 {
     public abstract class ReadDto
     {
+        public Guid Id { get; set; }
     }
 }

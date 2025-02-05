@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 
 namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.System

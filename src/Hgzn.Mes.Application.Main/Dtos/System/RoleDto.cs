@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.System;
 
 namespace Hgzn.Mes.Application.Main.Dtos
 {
@@ -14,6 +15,7 @@ namespace Hgzn.Mes.Application.Main.Dtos
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
+        public bool State { get; set; }
         public IEnumerable<MenuReadDto> Menus { get; set; } = null!;
     }
 

@@ -1,6 +1,7 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using System.Security.Claims;
+using Hgzn.Mes.Application.Main.Dtos.System;
 
 namespace Hgzn.Mes.Application.Main.Services.System.IService
 {

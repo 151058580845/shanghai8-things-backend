@@ -35,6 +35,7 @@ namespace Hgzn.Mes.Application.Main.Dtos
         public UserSettingReadDto? Settings { get; set; }
 
         public UserDetailReadDto? Detail { get; set; }
+        public bool State { get; set; }
     }
 
     public class UserScopeReadDto : ReadDto
@@ -114,6 +115,9 @@ namespace Hgzn.Mes.Application.Main.Dtos
 
     public class UserQueryDto : PaginatedQueryDto
     {
+        public Guid? DeptId{get;set;}
+        public string? UserName{get;set;}
+        public string? Phone{get;set;}
         public bool? State { get; set; }
         public string? Filter { get; set; }
     }

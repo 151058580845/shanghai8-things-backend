@@ -146,12 +146,12 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// <summary>
     /// 设备编号
     /// </summary>
-    public string EquipmentCode { get; set; } = null!;
+    public string EquipCode { get; set; } = null!;
 
     /// <summary>
     /// 设备名称
     /// </summary>
-    public string EquipmentName { get; set; } = null!;
+    public string EquipName { get; set; } = null!;
 
     /// <summary>
     /// 设备类型ID

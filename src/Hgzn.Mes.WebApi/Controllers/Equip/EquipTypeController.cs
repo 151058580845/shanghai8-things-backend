@@ -24,9 +24,15 @@ public class EquipTypeController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("list")]
-    public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>?>> GetListAsync(EquipTypeQueryDto queryDto)
+    public async Task<ResponseWrapper<IEnumerable<EquipTypeReadDto>>> GetListAsync(EquipTypeQueryDto queryDto)
+        => (await _equipTypeService.GetListAsync(queryDto)).Wrap();
+    
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Route("page")]
+    public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>?>> GetPaginatedListAsync(EquipTypeQueryDto queryDto)
         => (await _equipTypeService.GetPaginatedListAsync(queryDto)).Wrap();
-
     /// <summary>
     /// 创建
     /// </summary>
@@ -34,7 +40,7 @@ public class EquipTypeController : ControllerBase
     /// <param name="input"></param>
     /// <returns></returns>
     [HttpPost]
-    [Route("{id:guid}")]
+    [Route("create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]

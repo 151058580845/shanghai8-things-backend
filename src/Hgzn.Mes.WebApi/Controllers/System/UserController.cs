@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Services.Base;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -61,14 +62,26 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// </summary>
         /// <param name="dto">用户名，昵称手机号</param>
         /// <returns>匹配的用户列表</returns>
-        [HttpGet]
-        [Route("where")]
+        [HttpPost]
+        [Route("list")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUsers(UserQueryDto dto) =>
             (await _userService.GetListAsync(dto)).Wrap();
-
+        /// <summary>
+        ///     模糊匹配用户名和昵称
+        ///     auth: super
+        /// </summary>
+        /// <param name="dto">用户名，昵称手机号</param>
+        /// <returns>匹配的用户列表</returns>
+        [HttpPost]
+        [Route("page")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<PaginatedList<UserReadDto>?>> GetPaginatedListAsync(UserQueryDto dto) =>
+            (await _userService.GetPaginatedListAsync(dto)).Wrap();
         /// <summary>
         ///     删除用户
         ///     auth: super

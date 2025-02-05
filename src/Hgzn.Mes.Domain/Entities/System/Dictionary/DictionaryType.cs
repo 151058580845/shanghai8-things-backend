@@ -6,41 +6,1150 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 {
     public class DictionaryType : UniversalEntity, ISoftDelete, IOrder, IState
     {
-        [Description("排序")]
-        public int OrderNum { get; set; } = 0;
+        [Description("排序")] public int OrderNum { get; set; } = 0;
 
-        [Description("状态")]
-        public bool State { get; set; } = true;
+        [Description("状态")] public bool State { get; set; } = true;
 
-        [Description("字典名称")]
-        public string DictName { get; set; } = string.Empty;
+        [Description("字典名称")] public string DictName { get; set; } = string.Empty;
 
-        [Description("字典类型")]
-        public string DictType { get; set; } = string.Empty;
+        [Description("字典类型")] public string DictType { get; set; } = string.Empty;
 
-        [Description("描述")]
-        public string? Remark { get; set; }
+        [Description("描述")] public string? Remark { get; set; }
 
-        [Description("创建时间")]
-        public DateTime CreationTime { get; set; }
+        [Description("创建时间")] public DateTime CreationTime { get; set; }
 
-        [Description("创建者ID")]
-        public Guid? CreatorId { get; set; }
+        [Description("创建者ID")] public Guid? CreatorId { get; set; }
 
-        [Description("最后修改者ID")]
-        public Guid? LastModifierId { get; set; }
+        [Description("最后修改者ID")] public Guid? LastModifierId { get; set; }
 
-        [Description("最后修改时间")]
-        public DateTime? LastModificationTime { get; set; }
+        [Description("最后修改时间")] public DateTime? LastModificationTime { get; set; }
 
-        [Description("删除时间")]
-        public DateTime? DeleteTime { get; set; }
+        [Description("删除时间")] public DateTime? DeleteTime { get; set; }
 
-        [Description("逻辑删除")]
-        public bool SoftDeleted { get; set; }
+        [Description("逻辑删除")] public bool SoftDeleted { get; set; }
 
         [Description("与 DictionaryEntity 的一对多关系")]
         [NotMapped]
         public ICollection<DictionaryInfo>? DictionaryEntities { get; set; }
+
+
+        #region EquipMaintenance
+
+        public static readonly DictionaryType EquipMaintenanceType = new DictionaryType()
+        {
+            Id = Guid.Parse("d1c3f0fb-f716-4059-bd23-99a1bbfa503d"), // 使用 Guid.Parse 生成的 Guid
+            DictName = "Equipment Maintenance Type",
+            DictType = "EquipMaintenanceType",
+            OrderNum = 1,
+            Remark = "Type of equipment maintenance",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Check = new DictionaryInfo()
+        {
+            Id = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"), // 使用 Guid.Parse 生成的 Guid
+            DictLabel = "点检",
+            DictValue = "Check",
+            ParentId = EquipMaintenanceType.Id,
+            OrderNum = 73,
+            Remark = "点检",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Maintenance = new DictionaryInfo()
+        {
+            Id = Guid.Parse("c0a70d2c-e9c1-4b5b-b6da-607db13ea1c0"), // 使用 Guid.Parse 生成的 Guid
+            DictLabel = "保养",
+            DictValue = "Maintenance",
+            ParentId = EquipMaintenanceType.Id,
+            OrderNum = 74,
+            Remark = "保养",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+
+        #region PlanStatus
+
+        public static readonly DictionaryType PlanStatus = new DictionaryType()
+        {
+            Id = Guid.Parse("f1b1c3c9-6319-47ea-8c5e-f8d4e8faec51"), // 固定的 Guid 值
+            DictName = "Plan Status",
+            DictType = "PlanStatus",
+            OrderNum = 2,
+            Remark = "Status of the plan",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo NotStarted = new DictionaryInfo()
+        {
+            Id = Guid.Parse("2c1a3c4b-8d91-41c4-92a0-b65fbd79f207"), // 固定的 Guid 值
+            DictLabel = "未开始",
+            DictValue = "NotStarted",
+            ParentId = PlanStatus.Id,
+            OrderNum = 70,
+            Remark = "未开始",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo InProgress = new DictionaryInfo()
+        {
+            Id = Guid.Parse("9c61c1e7-7fe2-46f7-b4ed-22b5203c14ed"), // 固定的 Guid 值
+            DictLabel = "进行中",
+            DictValue = "InProgress",
+            ParentId = PlanStatus.Id,
+            OrderNum = 71,
+            Remark = "进行中",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Completed = new DictionaryInfo()
+        {
+            Id = Guid.Parse("72f9f8c1-3e2b-4a7a-9c7f-dc698a11d89f"), // 固定的 Guid 值
+            DictLabel = "已完成",
+            DictValue = "Completed",
+            ParentId = PlanStatus.Id,
+            OrderNum = 72,
+            Remark = "已完成",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+
+        #region Frequency
+
+        public static readonly DictionaryType Frequency = new DictionaryType()
+        {
+            Id = Guid.Parse("a5b60a2b-9c5b-4cc7-97fa-8b7a1b6229c9"), // 固定的 Guid 值
+            DictName = "Frequency",
+            DictType = "Frequency",
+            OrderNum = 3,
+            Remark = "Frequency of data collection",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Hour = new DictionaryInfo()
+        {
+            Id = Guid.Parse("b27a7434-d4b1-4f8f-b052-3270c3a702dd"), // 固定的 Guid 值
+            DictLabel = "小时",
+            DictValue = "Hour",
+            ParentId = Frequency.Id,
+            OrderNum = 64,
+            Remark = "小时",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Day = new DictionaryInfo()
+        {
+            Id = Guid.Parse("fad38f88-c967-4c66-9274-b47c540edb71"), // 固定的 Guid 值
+            DictLabel = "天",
+            DictValue = "Day",
+            ParentId = Frequency.Id,
+            OrderNum = 65,
+            Remark = "天",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Week = new DictionaryInfo()
+        {
+            Id = Guid.Parse("9bc1f67b-fd73-46d7-ae84-56d42015325f"), // 固定的 Guid 值
+            DictLabel = "周",
+            DictValue = "Week",
+            ParentId = Frequency.Id,
+            OrderNum = 66,
+            Remark = "周",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Month = new DictionaryInfo()
+        {
+            Id = Guid.Parse("35ad989f-bc7c-4735-88c9-3bba1c65a7bc"), // 固定的 Guid 值
+            DictLabel = "月",
+            DictValue = "Month",
+            ParentId = Frequency.Id,
+            OrderNum = 67,
+            Remark = "月",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Quarter = new DictionaryInfo()
+        {
+            Id = Guid.Parse("b576b5da-1d5c-4577-95ff-62d132e23a51"), // 固定的 Guid 值
+            DictLabel = "季度",
+            DictValue = "Quarter",
+            ParentId = Frequency.Id,
+            OrderNum = 68,
+            Remark = "季度",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Year = new DictionaryInfo()
+        {
+            Id = Guid.Parse("11b726e2-2e12-4ca4-bc99-0fd0816a6886"), // 固定的 Guid 值
+            DictLabel = "年",
+            DictValue = "Year",
+            ParentId = Frequency.Id,
+            OrderNum = 69,
+            Remark = "年",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+
+        #region CodeRuleType
+
+        public static readonly DictionaryType CodeRuleType = new DictionaryType()
+        {
+            Id = Guid.Parse("d0a70d2c-cb3f-4c88-9142-5a7c51512c8d"), // 固定的 Guid 值
+            DictName = "Code Rule Type",
+            DictType = "CodeRuleType",
+            OrderNum = 4,
+            Remark = "Type of coding rule",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo SerialNumber = new DictionaryInfo()
+        {
+            Id = Guid.Parse("c6fb647b-b6c2-4726-b3f9-4772f9d6f75f"), // 固定的 Guid 值
+            DictLabel = "流水号",
+            DictValue = "SerialNumber",
+            ParentId = CodeRuleType.Id,
+            OrderNum = 60,
+            Remark = "流水号",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Constant1 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("f4d6049f-2a95-4855-a122-7a7c5c6899fc"), // 固定的 Guid 值
+            DictLabel = "常量",
+            DictValue = "Constant",
+            ParentId = CodeRuleType.Id,
+            OrderNum = 61,
+            Remark = "常量",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Date = new DictionaryInfo()
+        {
+            Id = Guid.Parse("8d659fd7-e63a-4670-a7ff-d2a0e52f02b5"), // 固定的 Guid 值
+            DictLabel = "日期",
+            DictValue = "Date",
+            ParentId = CodeRuleType.Id,
+            OrderNum = 62,
+            Remark = "日期",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo AttributeValue = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4c67a2ea-e6f1-44a4-bb36-779d918b537d"), // 固定的 Guid 值
+            DictLabel = "基础元素值",
+            DictValue = "AttributeValue",
+            ParentId = CodeRuleType.Id,
+            OrderNum = 63,
+            Remark = "基础元素值",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+
+        #region DateFormat
+        
+        public static readonly DictionaryType DateFormat = new DictionaryType()
+        {
+            Id = Guid.Parse("3e3d27d3-8b60-4b1a-b775-95e9e1b233d7"), // 固定的 Guid 值
+            DictName = "Date Format",
+            DictType = "DateFormat",
+            OrderNum = 5,
+            Remark = "Date format",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo YearMonthDay = new DictionaryInfo()
+        {
+            Id = Guid.Parse("7c728a49-d073-4a7a-a3b2-745d0c0d6e02"), // 固定的 Guid 值
+            DictLabel = "年月日",
+            DictValue = "yyyyMMdd",
+            ParentId = DateFormat.Id,
+            OrderNum = 59,
+            Remark = "日期格式：年月日（yyyyMMdd）",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+        #endregion
+        
+        #region EquipConnType
+
+        public static readonly DictionaryType EquipConnType = new DictionaryType()
+        {
+            Id = Guid.Parse("9f19eaf3-d6d5-4414-85fe-3d6d64b6a89c"), // 固定的 Guid 值
+            DictName = "Equipment Connection Protocol",
+            DictType = "EquipConnType",
+            OrderNum = 6,
+            Remark = "Protocol for equipment connection",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo ModbusTcp = new DictionaryInfo()
+        {
+            Id = Guid.Parse("bdb9c13c-0620-423b-ae97-e39705294b77"), // 固定的 Guid 值
+            DictLabel = "Modbus TCP",
+            DictValue = "ModbusTcp",
+            ParentId = EquipConnType.Id,
+            OrderNum = 50,
+            Remark = "Modbus TCP协议",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ModbusRtu = new DictionaryInfo()
+        {
+            Id = Guid.Parse("1fe64f24-6633-4a1f-a8f2-b51a50701fba"), // 固定的 Guid 值
+            DictLabel = "Modbus RTU",
+            DictValue = "ModbusRtu",
+            ParentId = EquipConnType.Id,
+            OrderNum = 51,
+            Remark = "Modbus RTU协议",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ModbusUdp = new DictionaryInfo()
+        {
+            Id = Guid.Parse("6d76f498-e1d1-4636-8de5-803f65907ab5"), // 固定的 Guid 值
+            DictLabel = "Modbus UDP",
+            DictValue = "ModbusUdp",
+            ParentId = EquipConnType.Id,
+            OrderNum = 52,
+            Remark = "Modbus UDP协议",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ModbusAscii = new DictionaryInfo()
+        {
+            Id = Guid.Parse("e01f1c48-e25a-4650-b4c0-d0bc53667ca6"), // 固定的 Guid 值
+            DictLabel = "Modbus ASCII",
+            DictValue = "ModbusAscii",
+            ParentId = EquipConnType.Id,
+            OrderNum = 53,
+            Remark = "Modbus ASCII协议",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Http = new DictionaryInfo()
+        {
+            Id = Guid.Parse("0ab9ef3b-6497-4335-88de-9d31d1d6fbe9"), // 固定的 Guid 值
+            DictLabel = "HTTP",
+            DictValue = "Http",
+            ParentId = EquipConnType.Id,
+            OrderNum = 54,
+            Remark = "HTTP协议",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Mqtt = new DictionaryInfo()
+        {
+            Id = Guid.Parse("e3820e1b-04b1-460a-8e5a-c9b1d7a6d6fe"), // 固定的 Guid 值
+            DictLabel = "MQTT",
+            DictValue = "Mqtt",
+            ParentId = EquipConnType.Id,
+            OrderNum = 55,
+            Remark = "MQTT协议",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo SerialPort = new DictionaryInfo()
+        {
+            Id = Guid.Parse("7daaa2cd-bbfc-4a1d-888e-d0f3b0b788d9"), // 固定的 Guid 值
+            DictLabel = "串口",
+            DictValue = "SerialPort",
+            ParentId = EquipConnType.Id,
+            OrderNum = 56,
+            Remark = "串口通信",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo TcpServer = new DictionaryInfo()
+        {
+            Id = Guid.Parse("722c4a1b-33d0-4cfc-8db2-d8f3f5c3b4b1"), // 固定的 Guid 值
+            DictLabel = "TcpServer",
+            DictValue = "TcpServer",
+            ParentId = EquipConnType.Id,
+            OrderNum = 57,
+            Remark = "TCP服务器",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo TcpClient = new DictionaryInfo()
+        {
+            Id = Guid.Parse("59d9a21b-bf2e-4e13-8776-6cf083d9ffb5"), // 固定的 Guid 值
+            DictLabel = "TcpClient",
+            DictValue = "TcpClient",
+            ParentId = EquipConnType.Id,
+            OrderNum = 58,
+            Remark = "TCP客户端",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo RfidReaderClient = new DictionaryInfo()
+        {
+            Id = Guid.Parse("a1c2e362-23d2-4dbf-9517-6e7c65b1f5a9"), // 固定的 Guid 值
+            DictLabel = "RfidReaderClient",
+            DictValue = "RfidReaderClient",
+            ParentId = EquipConnType.Id,
+            OrderNum = 59,
+            Remark = "RfidReader客户端",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+        #endregion
+        
+        #region BaudRate
+
+        public static readonly DictionaryType BaudRate = new DictionaryType()
+        {
+            Id = Guid.Parse("81a6c5d4-b9c1-4f93-b5be-c6f7c6dff0f3"), // 固定的 Guid 值
+            DictName = "Baud Rate",
+            DictType = "BaudRate",
+            OrderNum = 7,
+            Remark = "Communication baud rate",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo ABCD1 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("b12593a1-5d8f-4b6d-aee9-91e6250efb21"), // 固定的 Guid 值
+            DictLabel = "ABCD",
+            DictValue = "ABCD",
+            ParentId = BaudRate.Id,
+            OrderNum = 41,
+            Remark = "ABCD排列",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BADC1 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("b34c8319-78ab-4a3e-8b97-5c6f2e3fbc9d"), // 固定的 Guid 值
+            DictLabel = "BADC",
+            DictValue = "BADC",
+            ParentId = BaudRate.Id,
+            OrderNum = 42,
+            Remark = "BADC排列",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo CDAB1 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("53b5e9b4-0575-43c2-93cf-d199e7c8c9ea"), // 固定的 Guid 值
+            DictLabel = "CDAB",
+            DictValue = "CDAB",
+            ParentId = BaudRate.Id,
+            OrderNum = 43,
+            Remark = "CDAB排列",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo DCBA1 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("aab8035c-f1d7-4cc9-800e-d98758f1bc49"), // 固定的 Guid 值
+            DictLabel = "DCBA",
+            DictValue = "DCBA",
+            ParentId = BaudRate.Id,
+            OrderNum = 44,
+            Remark = "DCBA排列",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+
+        #region DataOrderType
+
+        public static readonly DictionaryType DataOrderType = new DictionaryType()
+        {
+            Id = Guid.Parse("48c7b6b8-9c96-4b49-b2de-b31f19f0f949"), // 固定的 Guid 值
+            DictName = "Data Order",
+            DictType = "DataOrderType",
+            OrderNum = 8,
+            Remark = "Data character order",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo ABCD = new DictionaryInfo()
+        {
+            Id = Guid.Parse("b39fa36d-62c1-4cc9-b67e-2767a6a86b71"), // 固定的 Guid 值
+            DictLabel = "ABCD",
+            DictValue = "ABCD",
+            ParentId = DataOrderType.Id,
+            OrderNum = 41,
+            Remark = "ABCD排列",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BADC = new DictionaryInfo()
+        {
+            Id = Guid.Parse("91d3c69e-6a84-4136-ae96-d1c4b5d1dca1"), // 固定的 Guid 值
+            DictLabel = "BADC",
+            DictValue = "BADC",
+            ParentId = DataOrderType.Id,
+            OrderNum = 42,
+            Remark = "BADC排列",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo CDAB = new DictionaryInfo()
+        {
+            Id = Guid.Parse("e933abf7-38a6-4425-bad5-c00f11b7c47e"), // 固定的 Guid 值
+            DictLabel = "CDAB",
+            DictValue = "CDAB",
+            ParentId = DataOrderType.Id,
+            OrderNum = 43,
+            Remark = "CDAB排列",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo DCBA = new DictionaryInfo()
+        {
+            Id = Guid.Parse("d5b0a014-7d8a-4d3c-98b9-e4b6d8d825cf"), // 固定的 Guid 值
+            DictLabel = "DCBA",
+            DictValue = "DCBA",
+            ParentId = DataOrderType.Id,
+            OrderNum = 44,
+            Remark = "DCBA排列",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+
+        #region OddEvenCheck
+
+        public static readonly DictionaryType OddEvenCheck = new DictionaryType()
+        {
+            Id = Guid.Parse("c8d5b789-e7f3-4414-81c6-70fce7ed5b8e"), // 固定的 Guid 值
+            DictName = "Odd/Even Check",
+            DictType = "OddEvenCheck",
+            OrderNum = 9,
+            Remark = "Parity check type",
+            SoftDeleted = false,
+            State = true
+        };
+
+        #endregion
+
+        #region ModbusReadType
+
+        public static readonly DictionaryType ModbusReadType = new DictionaryType()
+        {
+            Id = Guid.Parse("b520e2c5-7cd2-4ec5-8b84-24be0b60b8db"), // 固定的 Guid 值
+            DictName = "Modbus Read Type",
+            DictType = "ModbusReadType",
+            OrderNum = 10,
+            Remark = "Modbus read protocol type",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo ReadCoil = new DictionaryInfo()
+        {
+            Id = Guid.Parse("a0d9f0a7-b3f4-4b98-b6d7-126f8f212fd5"), // 固定的 Guid 值
+            DictLabel = "ReadCoil",
+            DictValue = "ReadCoil",
+            ParentId = ModbusReadType.Id,
+            OrderNum = 37,
+            Remark = "读线圈",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ReadDiscrete = new DictionaryInfo()
+        {
+            Id = Guid.Parse("5a9a8589-cfbb-4428-842d-4b7adcb59c9f"), // 固定的 Guid 值
+            DictLabel = "ReadDiscrete",
+            DictValue = "ReadDiscrete",
+            ParentId = ModbusReadType.Id,
+            OrderNum = 38,
+            Remark = "读离散量",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ReadInput = new DictionaryInfo()
+        {
+            Id = Guid.Parse("6b91e169-2d90-404b-bb7d-3ec5ed4bcf93"), // 固定的 Guid 值
+            DictLabel = "ReadInput",
+            DictValue = "ReadInput",
+            ParentId = ModbusReadType.Id,
+            OrderNum = 39,
+            Remark = "读输入寄存器",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ReadHoldingRegister = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4492b728-3277-4c4f-a307-98ec2e957ac6"), // 固定的 Guid 值
+            DictLabel = "ReadHoldingRegister",
+            DictValue = "ReadHoldingRegister",
+            ParentId = ModbusReadType.Id,
+            OrderNum = 40,
+            Remark = "读保持寄存器",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+        
+        #region ModbusWriteType
+
+        public static readonly DictionaryType ModbusWriteType = new DictionaryType()
+        {
+            Id = Guid.Parse("773db8e1-2062-4850-b6ac-019fced12831"), // 固定的 Guid 值
+            DictName = "Modbus Write Type",
+            DictType = "ModbusWriteType",
+            OrderNum = 11,
+            Remark = "Modbus write protocol type",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo WriteCoil = new DictionaryInfo()
+        {
+            Id = Guid.Parse("fd2b08b9-b945-4f56-9755-d28a1d4f1a92"), // 固定的 Guid 值
+            DictLabel = "WriteCoil",
+            DictValue = "WriteCoil",
+            ParentId = ModbusWriteType.Id,
+            OrderNum = 33,
+            Remark = "写线圈",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo WriteDiscrete = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4f1f6e58-1d94-466d-bae2-b990ccf8ec16"), // 固定的 Guid 值
+            DictLabel = "WriteDiscrete",
+            DictValue = "WriteDiscrete",
+            ParentId = ModbusWriteType.Id,
+            OrderNum = 34,
+            Remark = "写离散量",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo WriteInput = new DictionaryInfo()
+        {
+            Id = Guid.Parse("5cc23728-7ad6-4599-b4d7-774bb17b9d94"), // 固定的 Guid 值
+            DictLabel = "WriteInput",
+            DictValue = "WriteInput",
+            ParentId = ModbusWriteType.Id,
+            OrderNum = 35,
+            Remark = "写输入寄存器",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo WriteHoldingRegister = new DictionaryInfo()
+        {
+            Id = Guid.Parse("3ea57d4f-ece0-4021-b6ff-fdabba9113d9"), // 固定的 Guid 值
+            DictLabel = "WriteHoldingRegister",
+            DictValue = "WriteHoldingRegister",
+            ParentId = ModbusWriteType.Id,
+            OrderNum = 36,
+            Remark = "写保持寄存器",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+        
+        #region DataType
+
+        public static readonly DictionaryType DataType = new DictionaryType()
+        {
+            Id = Guid.Parse("22e5fd4f-282f-4f8f-9735-c62944e64c52"), // 固定的 Guid 值
+            DictName = "Data Type",
+            DictType = "DataType",
+            OrderNum = 12,
+            Remark = "Type of data format",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Int = new DictionaryInfo()
+        {
+            Id = Guid.Parse("40b2f3a4-7a27-4cf4-88fa-25ec7e2c54b2"), // 固定的 Guid 值
+            DictLabel = "Int",
+            DictValue = "Int",
+            ParentId = DataType.Id,
+            OrderNum = 31,
+            Remark = "整型",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo UInt = new DictionaryInfo()
+        {
+            Id = Guid.Parse("5e5783c5-3c19-45eb-b2f7-75e9fe38be1a"), // 固定的 Guid 值
+            DictLabel = "UInt",
+            DictValue = "UInt",
+            ParentId = DataType.Id,
+            OrderNum = 32,
+            Remark = "无符号整型",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+        
+        #region QualityOfServiceLevel
+
+        public static readonly DictionaryType QualityOfServiceLevel = new DictionaryType()
+        {
+            Id = Guid.Parse("d8b45f8c-8a52-48d7-84b1-52e900fd826e"), // 固定的 Guid 值
+            DictName = "Quality of Service Level",
+            DictType = "QualityOfServiceLevel",
+            OrderNum = 13,
+            Remark = "Service quality level",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo AtMostOnce = new DictionaryInfo()
+        {
+            Id = Guid.Parse("7e990d4b-9b43-48e2-b682-bfc2b0cc1c79"), // 固定的 Guid 值
+            DictLabel = "最多一次",
+            DictValue = "AtMostOnce",
+            ParentId = QualityOfServiceLevel.Id,
+            OrderNum = 28,
+            Remark = "最多一次交互",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo AtLeastOnce = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4c97ad67-c2a1-4643-88bb-d92e7ecfe9d6"), // 固定的 Guid 值
+            DictLabel = "最少一次",
+            DictValue = "AtLeastOnce",
+            ParentId = QualityOfServiceLevel.Id,
+            OrderNum = 29,
+            Remark = "最少一次交互",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ExactlyOnce = new DictionaryInfo()
+        {
+            Id = Guid.Parse("e548a221-bf69-47b2-b02b-9d98cba4d2ba"), // 固定的 Guid 值
+            DictLabel = "只传一次",
+            DictValue = "ExactlyOnce",
+            ParentId = QualityOfServiceLevel.Id,
+            OrderNum = 30,
+            Remark = "只传一次交互",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+
+        #region MqttSendType
+
+        public static readonly DictionaryType MqttSendType = new DictionaryType()
+        {
+            Id = Guid.Parse("be9c2d3e-6c76-47e1-bda3-e5c476beff84"), // 固定的 Guid 值
+            DictName = "MQTT Send Type",
+            DictType = "MqttSendType",
+            OrderNum = 14,
+            Remark = "MQTT data sending type",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Constant = new DictionaryInfo()
+        {
+            Id = Guid.Parse("c9c3f2fe-b051-4d7d-b0a0-cf1dbda2b30b"), // 固定的 Guid 值
+            DictLabel = "常量",
+            DictValue = "Constant",
+            ParentId = MqttSendType.Id,
+            OrderNum = 26,
+            Remark = "常量值",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Code = new DictionaryInfo()
+        {
+            Id = Guid.Parse("8cf0079d-5cf1-4a0f-960a-658967f3e302"), // 固定的 Guid 值
+            DictLabel = "点位编码",
+            DictValue = "Code",
+            ParentId = MqttSendType.Id,
+            OrderNum = 27,
+            Remark = "点位编码标识",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+        
+        #region StopBits
+
+        public static readonly DictionaryType StopBits = new DictionaryType()
+        {
+            Id = Guid.Parse("a58b28d3-5d75-4e69-a278-c1cdef6f7e31"), // 固定的 Guid 值
+            DictName = "Stop Bits",
+            DictType = "StopBits",
+            OrderNum = 15,
+            Remark = "Type of stop bits",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo None = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4ad2a35f-9937-43ec-9d95-c4b62d75b99f"), // 固定的 Guid 值
+            DictLabel = "None",
+            DictValue = "None",
+            ParentId = StopBits.Id,
+            OrderNum = 22,
+            Remark = "无",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo One = new DictionaryInfo()
+        {
+            Id = Guid.Parse("83d8a564-8e3c-48b1-b11a-e219dd0e2510"), // 固定的 Guid 值
+            DictLabel = "One",
+            DictValue = "One",
+            ParentId = StopBits.Id,
+            OrderNum = 23,
+            Remark = "一个",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Two = new DictionaryInfo()
+        {
+            Id = Guid.Parse("1f7cfed2-bd28-45e1-b8a2-97e9d5c3f62b"), // 固定的 Guid 值
+            DictLabel = "Two",
+            DictValue = "Two",
+            ParentId = StopBits.Id,
+            OrderNum = 24,
+            Remark = "两个",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo OnePointFive = new DictionaryInfo()
+        {
+            Id = Guid.Parse("a2e93bc1-4d3c-4699-88c3-f1d0551047ba"), // 固定的 Guid 值
+            DictLabel = "OnePointFive",
+            DictValue = "OnePointFive",
+            ParentId = StopBits.Id,
+            OrderNum = 25,
+            Remark = "1.5",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+        
+        #region Parity
+
+        public static readonly DictionaryType Parity = new DictionaryType()
+        {
+            Id = Guid.Parse("fe97729b-df77-4c6f-9a72-f97b4b8c3b42"), // 固定的 Guid 值
+            DictName = "Parity",
+            DictType = "Parity",
+            OrderNum = 16,
+            Remark = "Parity check type",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Odd = new DictionaryInfo()
+        {
+            Id = Guid.Parse("0d06ec6a-70a1-40ac-b36a-833773c2e8f2"), // 固定的 Guid 值
+            DictLabel = "Odd",
+            DictValue = "Odd",
+            ParentId = Parity.Id,
+            OrderNum = 26,
+            Remark = "奇数",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Even = new DictionaryInfo()
+        {
+            Id = Guid.Parse("a9be7052-c9eb-4fe5-b8fe-0157cfdd5d5f"), // 固定的 Guid 值
+            DictLabel = "Even",
+            DictValue = "Even",
+            ParentId = Parity.Id,
+            OrderNum = 27,
+            Remark = "偶数",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Mark = new DictionaryInfo()
+        {
+            Id = Guid.Parse("e222b6a5-8105-47e2-8c33-68a65a5c4d62"), // 固定的 Guid 值
+            DictLabel = "Mark",
+            DictValue = "Mark",
+            ParentId = Parity.Id,
+            OrderNum = 28,
+            Remark = "标记",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Space = new DictionaryInfo()
+        {
+            Id = Guid.Parse("3fe24db6-7b33-4207-9ad7-b6da36e9a0a0"), // 固定的 Guid 值
+            DictLabel = "Space",
+            DictValue = "Space",
+            ParentId = Parity.Id,
+            OrderNum = 29,
+            Remark = "空间",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ParityNone = new DictionaryInfo()
+        {
+            Id = Guid.Parse("b1f4a635-6267-4c67-9e67-71798c870ec3"), // 固定的 Guid 值
+            DictLabel = "None",
+            DictValue = "None",
+            ParentId = Parity.Id,
+            OrderNum = 29,
+            Remark = "空间",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+        
+        #region 房间类型
+
+        public static readonly DictionaryType RoomType = new DictionaryType()
+        {
+            Id = Guid.Parse("e7cd9d19-b3f5-4235-88d9-ada7ad2de52c"), // 固定的 Guid 值
+            DictName = "房间用途",
+            DictType = "RoomType",
+            OrderNum = 16,
+            Remark = "房间用途",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Laboratory = new DictionaryInfo()
+        {
+            Id = Guid.Parse("c5d83dbe-0246-4b89-9d43-227f020c464d"), // 固定的 Guid 值
+            DictLabel = "试验室",
+            DictValue = "Laboratory",
+            ParentId = RoomType.Id,
+            OrderNum = 26,
+            Remark = "试验室",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo MonitoringRoom = new DictionaryInfo()
+        {
+            Id = Guid.Parse("7b8b3956-5a99-464a-8b32-73879e0d1f39"), // 固定的 Guid 值
+            DictLabel = "监控室",
+            DictValue = "MonitoringRoom",
+            ParentId = RoomType.Id,
+            OrderNum = 26,
+            Remark = "监控室",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo StorageRoom = new DictionaryInfo()
+        {
+            Id = Guid.Parse("083b63b9-4ca5-4879-88a6-4f1f6ec84a36"), // 固定的 Guid 值
+            DictLabel = "杂物间",
+            DictValue = "StorageRoom",
+            ParentId = RoomType.Id,
+            OrderNum = 26,
+            Remark = "杂物间",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Office = new DictionaryInfo()
+        {
+            Id = Guid.Parse("fe3fe9fc-9b67-4b1d-ae34-22669f689be4"), // 固定的 Guid 值
+            DictLabel = "会议室",
+            DictValue = "Office",
+            ParentId = RoomType.Id,
+            OrderNum = 26,
+            Remark = "会议室",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BreakRoom = new DictionaryInfo()
+        {
+            Id = Guid.Parse("f303de2d-bd89-4ac5-8f0a-6eab017adba1"), // 固定的 Guid 值
+            DictLabel = "休息室",
+            DictValue = "BreakRoom",
+            ParentId = RoomType.Id,
+            OrderNum = 26,
+            Remark = "休息室",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Warehouse = new DictionaryInfo()
+        {
+            Id = Guid.Parse("963906f0-dcb7-42fe-bde8-2c7a0fcbe0ca"), // 固定的 Guid 值
+            DictLabel = "仓库",
+            DictValue = "Warehouse",
+            ParentId = RoomType.Id,
+            OrderNum = 26,
+            Remark = "仓库",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Restroom = new DictionaryInfo()
+        {
+            Id = Guid.Parse("ed8e08f9-cf62-4648-8aeb-06f7e27edec1"), // 固定的 Guid 值
+            DictLabel = "卫生间",
+            DictValue = "Restroom",
+            ParentId = RoomType.Id,
+            OrderNum = 26,
+            Remark = "试验室",
+            SoftDeleted = false,
+            State = true,
+            ListClass = "info"
+        };
+
+        #endregion
+
+        public static DictionaryType[] Seeds { get; } =
+        {
+            EquipMaintenanceType,
+            PlanStatus,
+            Frequency,
+            CodeRuleType,
+            DateFormat,
+            EquipConnType,
+            BaudRate,
+            DataOrderType,
+            OddEvenCheck,
+            ModbusReadType,
+            ModbusWriteType,
+            DataType,
+            QualityOfServiceLevel,
+            MqttSendType,
+            StopBits,
+            Parity,
+            RoomType
+        };
     }
 }
