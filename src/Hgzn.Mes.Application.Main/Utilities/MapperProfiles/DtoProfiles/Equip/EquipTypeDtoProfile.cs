@@ -9,6 +9,7 @@ namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.Equip
         public EquipTypeDtoProfile()
         {
             CreateMap<EquipTypeCreateDto, EquipType>();
+            CreateMap<EquipType, EquipTypeReadDto>();
         }
     }
 }

@@ -3,9 +3,6 @@ using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 
-public class EquipConnectDto
-{
-}
 
 public class EquipConnectReadDto : ReadDto
 {
