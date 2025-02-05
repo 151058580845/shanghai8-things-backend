@@ -9,7 +9,7 @@ using System.ComponentModel;
 
 namespace Hgzn.Mes.Application.Main.Dtos.Equip
 {
-    public class RfidEquipDto : UniversalEntity
+    public class RfidEquipReadDto : UniversalEntity
     {
         [Description("RFID的TID")]
 
