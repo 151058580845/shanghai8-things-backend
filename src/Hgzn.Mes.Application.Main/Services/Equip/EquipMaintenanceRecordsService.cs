@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipMaintenance;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
@@ -17,18 +18,20 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
     EquipMaintenanceRecordsCreateDto, EquipMaintenanceRecordsUpdateDto>,
     IEquipMaintenanceRecordsService
     {
-        public override Task<IEnumerable<EquipMaintenanceRecordsReadDto>> GetListAsync(EquipMaintenanceRecordsQueryDto? queryDto = null)
+        public async override Task<IEnumerable<EquipMaintenanceRecordsReadDto>> GetListAsync(EquipMaintenanceRecordsQueryDto? queryDto = null)
         {
-            throw new NotImplementedException();
+            RefAsync<int> total = 0;
+            var entities = await Queryable
+                .ToListAsync();
+            return Mapper.Map<IEnumerable<EquipMaintenanceRecordsReadDto>>(entities);
         }
 
         public async override Task<PaginatedList<EquipMaintenanceRecordsReadDto>> GetPaginatedListAsync(EquipMaintenanceRecordsQueryDto queryDto)
         {
             RefAsync<int> total = 0;
             var entities = await Queryable
-                .ToPageListAsync(queryDto.PageIndex, queryDto.PageSize, total);
-            List<EquipMaintenanceRecordsReadDto> map = Mapper.Map<List<EquipMaintenanceRecordsReadDto>>(entities);
-            return new PaginatedList<EquipMaintenanceRecordsReadDto>(map, total, queryDto.PageIndex, queryDto.PageSize);
+                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+            return Mapper.Map<PaginatedList<EquipMaintenanceRecordsReadDto>>(entities);
         }
     }
 }

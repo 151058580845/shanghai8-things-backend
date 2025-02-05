@@ -3,6 +3,7 @@ using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
@@ -18,18 +19,20 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
     CollectionConfigCreateDto, CollectionConfigUpdateDto>,
     ICollectionConfigService
     {
-        public override Task<IEnumerable<CollectionConfigReadDto>> GetListAsync(CollectionConfigQueryDto? queryDto = null)
+        public async override Task<IEnumerable<CollectionConfigReadDto>> GetListAsync(CollectionConfigQueryDto? queryDto = null)
         {
-            throw new NotImplementedException();
+            RefAsync<int> total = 0;
+            List<CollectionConfig> entities = await Queryable
+                .ToListAsync();
+            return Mapper.Map<IEnumerable<CollectionConfigReadDto>>(entities);
         }
 
         public async override Task<PaginatedList<CollectionConfigReadDto>> GetPaginatedListAsync(CollectionConfigQueryDto queryDto)
         {
             RefAsync<int> total = 0;
-            List<CollectionConfig> entities = await Queryable
-                .ToPageListAsync(queryDto.PageIndex, queryDto.PageSize, total);
-            List<CollectionConfigReadDto> map = Mapper.Map<List<CollectionConfigReadDto>>(entities);
-            return new PaginatedList<CollectionConfigReadDto>(map, total, queryDto.PageIndex, queryDto.PageSize);
+            PaginatedList<CollectionConfig> entities = await Queryable
+                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+            return Mapper.Map<PaginatedList<CollectionConfigReadDto>>(entities);
         }
     }
 }
