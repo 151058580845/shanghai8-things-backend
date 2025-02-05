@@ -23,9 +23,16 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Route("page")]
+        public async Task<ResponseWrapper<PaginatedList<CollectionConfigReadDto>?>> GetPaginatedListAsync(CollectionConfigQueryDto queryDto) =>
+         (await _collectionConfigService.GetPaginatedListAsync(queryDto)).Wrap();
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("list")]
-        public async Task<ResponseWrapper<PaginatedList<CollectionConfigReadDto>?>> GetPaginatedListAsync(CollectionConfigQueryDto queryDto)
-        => (await _collectionConfigService.GetPaginatedListAsync(queryDto)).Wrap();
+        public async Task<ResponseWrapper<IEnumerable<CollectionConfigReadDto>?>> GetListAsync(CollectionConfigQueryDto queryDto) =>
+             (await _collectionConfigService.GetListAsync(queryDto)).Wrap()!;
 
         /// <summary>
         /// 创建
@@ -34,7 +41,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("{id:guid}")]
+        [Route("create")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]

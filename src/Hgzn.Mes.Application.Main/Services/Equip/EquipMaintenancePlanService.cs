@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipMaintenance;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
@@ -26,9 +27,15 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             _planToTaskJob = planToTaskJob;
         }
 
-        public override Task<IEnumerable<EquipMaintenancePlanReadDto>> GetListAsync(EquipMaintenancePlanQueryDto? queryDto = null)
+        public async override Task<IEnumerable<EquipMaintenancePlanReadDto>> GetListAsync(EquipMaintenancePlanQueryDto? queryDto = null)
         {
-            throw new NotImplementedException();
+            RefAsync<int> total = 0;
+            var entities = await Queryable
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.PlanCode), x => x.PlanCode.Contains(queryDto.PlanCode))
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.PlanName), x => x.PlanName.Contains(queryDto.PlanName))
+                .OrderBy(x => x.OrderNum)
+                .ToListAsync();
+            return Mapper.Map<IEnumerable<EquipMaintenancePlanReadDto>>(entities);
         }
 
         public async override Task<PaginatedList<EquipMaintenancePlanReadDto>> GetPaginatedListAsync(EquipMaintenancePlanQueryDto queryDto)
@@ -38,10 +45,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .WhereIF(!string.IsNullOrEmpty(queryDto.PlanCode), x => x.PlanCode.Contains(queryDto.PlanCode))
                 .WhereIF(!string.IsNullOrEmpty(queryDto.PlanName), x => x.PlanName.Contains(queryDto.PlanName))
                 .OrderBy(x => x.OrderNum)
-                .ToPageListAsync(queryDto.PageIndex, queryDto.PageSize, total);
-
-            List<EquipMaintenancePlanReadDto> map = Mapper.Map<List<EquipMaintenancePlanReadDto>>(entities);
-            return new PaginatedList<EquipMaintenancePlanReadDto>(map, total, queryDto.PageIndex, queryDto.PageSize);
+                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+            return Mapper.Map<PaginatedList<EquipMaintenancePlanReadDto>>(entities);
         }
 
         public async override Task<EquipMaintenancePlanReadDto> CreateAsync(EquipMaintenancePlanCreateDto createDto)

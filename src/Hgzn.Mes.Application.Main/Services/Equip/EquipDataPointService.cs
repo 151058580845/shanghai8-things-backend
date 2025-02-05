@@ -4,6 +4,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.ProtocolManagers;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
@@ -25,9 +26,26 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
 
         }
 
-        public override Task<IEnumerable<EquipDataPointReadDto>> GetListAsync(EquipDataPointQueryDto? queryDto = null)
+        public async override Task<IEnumerable<EquipDataPointReadDto>> GetListAsync(EquipDataPointQueryDto? queryDto = null)
         {
-            throw new NotImplementedException();
+            RefAsync<int> total = 0;
+            var entites = await Queryable
+                .WhereIF(queryDto != null && queryDto.State == null, t => t.State == queryDto.State)
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto.Code))
+                .ToListAsync();
+            IEnumerable<EquipDataPointReadDto> outputs = Mapper.Map<IEnumerable<EquipDataPointReadDto>>(entites);
+            foreach (EquipDataPointReadDto entity in outputs)
+            {
+                if (entity.ConnectionId != null)
+                {
+                    //获取连接状态
+                    entity.ConnectState = await _equipConnService.IsConnectedAsync(entity.ConnectionId.Value);
+                    entity.CollectStatus = EquipControlHelp.GetStatusByPointId(entity.Id);
+                    // entity.Data = await RedieService.GetRedisDataAsync(entity.Code);
+                }
+            }
+
+            return outputs;
         }
 
         public async override Task<PaginatedList<EquipDataPointReadDto>> GetPaginatedListAsync(EquipDataPointQueryDto queryDto)
@@ -36,8 +54,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             var entites = await Queryable
                 .WhereIF(queryDto.State == null, t => t.State == queryDto.State)
                 .WhereIF(!string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto.Code))
-                .ToPageListAsync(queryDto.PageIndex, queryDto.PageSize, total);
-            List<EquipDataPointReadDto> outputs = Mapper.Map<List<EquipDataPointReadDto>>(entites);
+                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+            IEnumerable<EquipDataPointReadDto> outputs = Mapper.Map<IEnumerable<EquipDataPointReadDto>>(entites);
             foreach (EquipDataPointReadDto entity in outputs)
             {
                 if (entity.ConnectionId != null)

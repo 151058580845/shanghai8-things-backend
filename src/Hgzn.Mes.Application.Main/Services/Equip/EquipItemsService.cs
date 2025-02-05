@@ -29,7 +29,13 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
 
         public async override Task<IEnumerable<EquipItemsReadDto>> GetListAsync(EquipItemsQueryDto? queryDto = null)
         {
-            throw new NotImplementedException();
+            RefAsync<int> total = 0;
+            List<EquipItems> entities = await Queryable
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.ItemCode), x => x.ItemCode.Contains(queryDto.ItemCode))
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.ItemName), x => x.ItemName.Contains(queryDto.ItemName))
+                .ToListAsync();
+
+            return Mapper.Map<IEnumerable<EquipItemsReadDto>>(entities);
         }
 
         public async override Task<PaginatedList<EquipItemsReadDto>> GetPaginatedListAsync(EquipItemsQueryDto queryDto)
@@ -38,10 +44,9 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             var entities = await Queryable
                 .WhereIF(!string.IsNullOrEmpty(queryDto.ItemCode), x => x.ItemCode.Contains(queryDto.ItemCode))
                 .WhereIF(!string.IsNullOrEmpty(queryDto.ItemName), x => x.ItemName.Contains(queryDto.ItemName))
-                .ToListAsync();
+                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
 
-            List<EquipItemsReadDto> map = Mapper.Map<List<EquipItemsReadDto>>(entities);
-            return new PaginatedList<EquipItemsReadDto>(map, total, queryDto.PageIndex, queryDto.PageSize);
+            return Mapper.Map<PaginatedList<EquipItemsReadDto>>(entities);
         }
     }
 }
