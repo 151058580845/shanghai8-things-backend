@@ -57,9 +57,9 @@ public class EquipLedgerService : SugarCrudAppService<
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<RfidEquipDto>> GetRfidEquipsListAsync(Guid equipId)
+    public async Task<IEnumerable<RfidEquipReadDto>> GetRfidEquipsListAsync(Guid equipId)
     {
-        List<RfidEquipDto> list = await DbContext.Queryable<RfidEquipDto>().Where(t => t.EquipId == equipId).ToListAsync();
+        List<RfidEquipReadDto> list = await DbContext.Queryable<RfidEquipReadDto>().Where(t => t.EquipId == equipId).ToListAsync();
         return list;
     }
 }

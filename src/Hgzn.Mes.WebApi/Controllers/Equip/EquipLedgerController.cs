@@ -47,7 +47,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("RfidEquipsList")]
-        public async Task<ResponseWrapper<IEnumerable<RfidEquipDto>>> GetRfidEquipsListAsync(Guid equipId)
+        public async Task<ResponseWrapper<IEnumerable<RfidEquipReadDto>>> GetRfidEquipsListAsync(Guid equipId)
         => (await _equipLedgerService.GetRfidEquipsListAsync(equipId)).Wrap()!;
 
 

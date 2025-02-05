@@ -12,5 +12,5 @@ public interface IEquipLedgerService : ICrudAppService<
 {
     Task<IEnumerable<NameValueDto>> GetNameValueListAsync();
 
-    Task<IEnumerable<RfidEquipDto>> GetRfidEquipsListAsync(Guid equipId);
+    Task<IEnumerable<RfidEquipReadDto>> GetRfidEquipsListAsync(Guid equipId);
 }
