@@ -18,14 +18,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="DataAcquisition\Rs232\" />
-	  <Folder Include="DataAcquisition\Tcp\" />
-	  <Folder Include="DataAcquisition\RfidDevice\" />
 	  <Folder Include="Worker\" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Hgzn.Mes.Infrastructure\Hgzn.Mes.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="GReaderApi">
+	    <HintPath>dll\GReaderApi.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

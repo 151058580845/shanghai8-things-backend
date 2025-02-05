@@ -9,6 +9,10 @@ using StackExchange.Redis;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json.Nodes;
+using Hgzn.Mes.Application.Main.Utilities;
+using Hgzn.Mes.Iot.ProtocolManager;
+using Hgzn.Mes.Iot.ProtocolManager.RfidReader;
+using Hgzn.Mes.Iot.Redis;
 
 namespace Hgzn.Mes.Iot.Mqtt
 {
@@ -16,12 +20,15 @@ namespace Hgzn.Mes.Iot.Mqtt
     {
         public MqttMessageHandler(
             IConnectionMultiplexer connectionMultiplexer,
-            ILogger<MqttMessageHandler> logger)
+            ILogger<MqttMessageHandler> logger,
+            RedisService redisService)
         {
             _connectionMultiplexer = connectionMultiplexer;
             _logger = logger;
+            _redisService = redisService;
         }
 
+        private readonly RedisService _redisService;
         private readonly IConnectionMultiplexer _connectionMultiplexer;
         private readonly ILogger<MqttMessageHandler> _logger;
         private IMqttExplorer _mqttExplorer = null!;
@@ -62,10 +69,18 @@ namespace Hgzn.Mes.Iot.Mqtt
             }
         }
 
-        private Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
+        private async Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
         {
-            throw new NotImplementedException();
-
+            if (topic.ProgramId.IsNullOrEmpty())
+            {
+                return;
+            }
+            switch (topic.DeviceType)
+            {
+                case "rfidReader":
+                    await EquipControlHelp.AddDeviceManagerAsync(Guid.Parse(topic.ProgramId),new RfidReaderManages(message.ToString(), _redisService));
+                    break;
+            }
         }
 
         private Task HandleDataAsync(IotTopic topic, byte[] msg)
@@ -84,7 +99,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             var newTopic = topic;
             newTopic.Direction = MqttDirection.Down;
             await _mqttExplorer.PublishAsync(newTopic.ToString(), new DeviceCalibrationMsg().AsFrame());
-            _logger.LogInformation($"device: {topic.DeviceUri} time calibrate succeed");
+            _logger.LogInformation($"device: {topic.DeviceType} time calibrate succeed");
         }
     }
 }

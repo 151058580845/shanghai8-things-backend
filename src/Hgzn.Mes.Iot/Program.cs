@@ -16,7 +16,7 @@ var builder = Host.CreateApplicationBuilder(args);
 var logger = (new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration))
     .CreateLogger();
-
+IotMqttExplorer.ProgramId = builder.Configuration["ProgramId"];
 //builder.Logging.AddSerilog(logger);
 
 builder.Services.AddSerilog(logger);
