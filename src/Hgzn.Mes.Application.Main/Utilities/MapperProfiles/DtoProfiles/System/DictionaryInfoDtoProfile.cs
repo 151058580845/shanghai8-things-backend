@@ -6,14 +6,13 @@ using Hgzn.Mes.Domain.ValueObjects;
 
 namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.System;
 
-public class DictionaryDtoProfile:Profile
+public class DictionaryInfoDtoProfile:Profile
 {
-
-    public DictionaryDtoProfile()
+    public DictionaryInfoDtoProfile()
     {
-        CreateMap<DictionaryTypeCreateDto, DictionaryType>();
-        CreateMap<DictionaryTypeUpdateDto, DictionaryType>();
-        CreateMap<DictionaryType, DictionaryTypeReadDto>();
+        CreateMap<DictionaryInfoCreateDto, DictionaryInfo>();
+        CreateMap<DictionaryInfoUpdateDto, DictionaryInfo>();
+        CreateMap<DictionaryInfo, DictionaryInfoReadDto>();
         CreateMap<ScopeDefinition, ScopeDefReadDto>();
     }
 }

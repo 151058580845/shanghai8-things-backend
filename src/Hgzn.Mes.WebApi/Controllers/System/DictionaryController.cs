@@ -82,11 +82,22 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("page")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<PaginatedList<DictionaryInfoReadDto>?>> GetPaginatedListAsync(DictionaryInfoQueryDto input) =>
             (await _infoService.GetPaginatedListAsync(input)).Wrap();
-
+        /// <summary>
+        ///     分页查询
+        ///     auth: anonymous
+        /// </summary>
+        /// <param name="input">用于验证用户身份</param>
+        /// <returns>更换密码状态</returns>
+        [HttpPost]
+        [Route("list")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<IEnumerable<DictionaryInfoReadDto>>> GetListAsync(DictionaryInfoQueryDto input) =>
+            (await _infoService.GetListAsync(input)).Wrap();
         #endregion
 
         #region _inforule

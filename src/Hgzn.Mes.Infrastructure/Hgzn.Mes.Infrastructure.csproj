@@ -12,11 +12,15 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.2.0" />
+    <PackageReference Include="IPTools.Core" Version="1.6.0" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="CaseExtensions" Version="1.1.0" />
     <PackageReference Include="Ericc.EntityFrameworkCore.OpenGauss" Version="2.0.0" />
     <PackageReference Include="Hangfire" Version="1.8.17" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
     <PackageReference Include="MQTTnet" Version="4.3.7.1207" />
@@ -26,6 +30,7 @@
     <PackageReference Include="SqlSugarCore" Version="5.1.4.172" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.22" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="UAParser" Version="3.1.47" />
   </ItemGroup>
 
   <ItemGroup>
