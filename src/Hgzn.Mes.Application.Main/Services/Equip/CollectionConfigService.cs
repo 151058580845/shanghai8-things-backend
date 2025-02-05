@@ -26,7 +26,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public async override Task<PaginatedList<CollectionConfigReadDto>> GetPaginatedListAsync(CollectionConfigQueryDto queryDto)
         {
             RefAsync<int> total = 0;
-            var entities = await Queryable
+            List<CollectionConfig> entities = await Queryable
                 .ToPageListAsync(queryDto.PageIndex, queryDto.PageSize, total);
             List<CollectionConfigReadDto> map = Mapper.Map<List<CollectionConfigReadDto>>(entities);
             return new PaginatedList<CollectionConfigReadDto>(map, total, queryDto.PageIndex, queryDto.PageSize);
