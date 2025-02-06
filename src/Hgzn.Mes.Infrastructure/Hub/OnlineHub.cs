@@ -1,5 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Hub;
-using Hgzn.Mes.Domain.Entities.System.Log;
+using Hgzn.Mes.Domain.Entities.System.Monitor;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using IPTools.Core;
 using Microsoft.AspNetCore.Http;
@@ -26,8 +26,8 @@ public class OnlineHub:Microsoft.AspNetCore.SignalR.Hub
     {
         lock (objLock)
         {
-            var name = Context.User.Identity.Name;
-            var userId = Context.User.Claims.FirstOrDefault(x => x.Type == "id").Value;
+            var name = Context.User!.Identity!.Name;
+            var userId = Context.User.Claims.FirstOrDefault(x => x.Type == "id")!.Value;
             var loginUser = GetInfoByHttpContext(_httpContextAccessor);
             var user = new OnlineUser
             {
@@ -60,10 +60,10 @@ public class OnlineHub:Microsoft.AspNetCore.SignalR.Hub
     {
         lock (objLock)
         {
-            var userId = Context.User.Claims.FirstOrDefault(x => x.Type == "id").Value;
+            var userId = Context.User?.Claims.FirstOrDefault(x => x.Type == "id")?.Value;
             if (Context.UserIdentifier != null)
             {
-                OnlineUsers.RemoveAll(u => u.UserId == Guid.Parse(userId));
+                OnlineUsers.RemoveAll(u => u.UserId == Guid.Parse(userId!));
                 _logger.LogInformation($"用户{Context.User?.Identity?.Name}离开了，当前已连接{OnlineUsers.Count}个");
             }
             OnlineUsers.RemoveAll(u => u.ConnnectionId == Context.ConnectionId);

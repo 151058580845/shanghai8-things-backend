@@ -10,16 +10,14 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
-using Mysqlx.Crud;
 
 namespace Hgzn.Mes.Iot.Mqtt
 {
     public class IotMqttExplorer : IMqttExplorer
     {
-        public static string? ProgramId = "";
         private readonly IManagedMqttClient _mqttClient;
         private readonly ManagedMqttClientOptions _mqttClientOptions;
-        private ICollection<MqttTopicFilter> _mqttTopics;
+        private ICollection<MqttTopicFilter> _mqttTopics = null!;
         private readonly SqlSugarContext _context;
         
         public IotMqttExplorer(
@@ -135,7 +133,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         {
             var types = _context.DbContext.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             _mqttTopics = types
-                .Select(type => $"iot/{MqttDirection.Down}/+/{ProgramId}/+/+/+")
+                .Select(type => $"{TopicType.Iot:F}/+/{IotTopic.DevTypeName}/{type}/{IotTopic.DevUriName}/+/+".ToLower())
                 .Select(topic => new MqttTopicFilterBuilder().WithTopic(topic)
                     .WithExactlyOnceQoS()
                     .Build()).ToArray();
