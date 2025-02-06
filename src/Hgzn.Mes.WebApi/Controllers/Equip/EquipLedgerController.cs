@@ -28,12 +28,13 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("page")]
         public async Task<ResponseWrapper<PaginatedList<EquipLedgerReadDto>?>> GetPaginatedListAsync(EquipLedgerQueryDto queryDto)
         => (await _equipLedgerService.GetPaginatedListAsync(queryDto)).Wrap();
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("list")]
         public async Task<ResponseWrapper<IEnumerable<EquipLedgerReadDto>?>> GetListAsync(EquipLedgerQueryDto queryDto)
-            => (await _equipLedgerService.GetListAsync(queryDto)).Wrap();
+            => (await _equipLedgerService.GetListAsync(queryDto)).Wrap()!;
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]

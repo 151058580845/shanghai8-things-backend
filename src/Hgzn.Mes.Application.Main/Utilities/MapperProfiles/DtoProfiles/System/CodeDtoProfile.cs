@@ -8,7 +8,6 @@ namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.System;
 
 public class CodeDtoProfile:Profile
 {
-
     public CodeDtoProfile()
     {
         CreateMap<CodeRuleCreateDto, CodeRule>();

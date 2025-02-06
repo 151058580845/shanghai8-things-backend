@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
