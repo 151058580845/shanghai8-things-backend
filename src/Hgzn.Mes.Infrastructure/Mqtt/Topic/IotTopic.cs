@@ -6,12 +6,13 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
 {
     public class IotTopic : MqttTopic
     {
-        // public string[] SubTopics { get; set; } = { $"iot/+/{DevTypeName}/+/{DevUriName}/+/+" };
-        
-        public string DeviceType { get; set; }
-        public string IotId { get; set; }
-        public string ProgramId { get; set; }
-        
+        public static string[] SubTopics { get; set; } = { $"iot/+/{DevTypeName}/+/{DevUriName}/+/+" };
+
+        public const string DevTypeName = "type";
+        public const string DevUriName = "uri";
+        public string? DeviceType { get; set; }
+        public string? DeviceUri { get; set; }
+
         public static IotTopic FromIotString(string topic)
         {
             var nodes = topic.Split('/');
@@ -42,9 +43,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
             {
                 Prefix = prefix,
                 Direction = dir,
-                DeviceType = nodes[2],
-                IotId = nodes[3],
-                ProgramId = nodes[4],
+                DeviceType = nodes[3],
+                DeviceUri = nodes[5],
                 Tag = tag
             };
             return res;
@@ -55,9 +55,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
             var pre = Prefix.ToString("F").ToLower();
             var tag = Tag.ToString("F").ToLower();
             var dir = Direction.ToString("F").ToLower();
-            if (DeviceType is not null)
+            if (DeviceUri is not null)
             {
-                return $"{pre}/{dir}/{DeviceType}/{IotId}/{ProgramId}/{tag}/{State}";
+                return $"{pre}/{dir}/{DevTypeName}/{DeviceType}/{DevUriName}/{DeviceUri}/{tag}";
             }
             else
             {

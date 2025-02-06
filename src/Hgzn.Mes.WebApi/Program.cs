@@ -14,6 +14,7 @@ using System.Reflection;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Hub;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -152,7 +153,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<OnlineHub>("/hub/main");
-
+var mac = IpExtension.GetMacAddress();
+Console.WriteLine(mac.ToString());
 // app.Services.GetService<InitialDatabase>()?.Initialize();
 app.Services.GetService<SqlSugarContext>()?.InitTables();
 app.Services.GetService<IMqttExplorer>()?.StartAsync();

@@ -2,6 +2,7 @@
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Iot.Mqtt;
+using Hgzn.Mes.Iot.Redis;
 using Hgzn.Mes.Iot.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,9 +34,10 @@ builder.Services.AddHostedService<MqttWorker>();
 //});
 
 builder.Services.AddSingleton<IMqttExplorer, IotMqttExplorer>();
-builder.Services.AddSingleton<MqttMessageHandler>();
 builder.Services.AddSingleton<IConnectionMultiplexer, ConnectionMultiplexer>(instance =>
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+builder.Services.AddSingleton<RedisService>();
+builder.Services.AddSingleton<MqttMessageHandler>();
 var host = builder.Build();
 
 var loggerAdapter = host.Services.GetService<ILogger<LoggerAdapter>>()!;

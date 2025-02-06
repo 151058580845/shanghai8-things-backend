@@ -10,7 +10,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
         public TopicType Prefix { get; set; } = TopicType.Iot;
         public MqttDirection Direction { get; set; }
         public MqttTag Tag { get; set; }
-        public MqttState State { get; set; }
+
         public static MqttTopic FromString(string topic)
         {
             var nodes = topic.Split('/');
@@ -20,7 +20,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 "down" => MqttDirection.Down,
                 _ => throw new NotSupportedException()
             };
-            var tag = nodes[^2] switch
+            var tag = nodes[^1] switch
             {
                 "state" => MqttTag.State,
                 "data" => MqttTag.Data,
@@ -30,16 +30,11 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 "calibration" => MqttTag.Calibration,
                 _ => throw new NotSupportedException()
             };
-            var state = nodes[^1] switch
-            {
-                "Connected" => MqttState.Connected,
-                _ => throw new NotSupportedException()
-            };
+
             var res = new MqttTopic
             {
                 Direction = dir,
-                Tag = tag,
-                State = state
+                Tag = tag
             };
             return res;
         }

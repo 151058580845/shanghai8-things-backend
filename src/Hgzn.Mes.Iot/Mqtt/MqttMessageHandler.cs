@@ -71,14 +71,10 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         private async Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
         {
-            if (topic.ProgramId.IsNullOrEmpty())
-            {
-                return;
-            }
             switch (topic.DeviceType)
             {
                 case "rfidReader":
-                    await EquipControlHelp.AddDeviceManagerAsync(Guid.Parse(topic.ProgramId),new RfidReaderManages(message.ToString(), _redisService));
+                    await EquipControlHelp.AddDeviceManagerAsync(Guid.Parse(topic.DeviceUri),new RfidReaderManages(message.ToString(), _redisService));
                     break;
             }
         }

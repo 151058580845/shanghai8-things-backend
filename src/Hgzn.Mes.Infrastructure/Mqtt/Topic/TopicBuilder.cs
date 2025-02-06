@@ -38,8 +38,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
     public class IotTopicBuilder : TopicBuilder
     {
         private string _deviceType = null!;
-        public string _iotId = null!;
-        public string _connectId = null!;
+        private string _deviceUri = null!;
 
         private IotTopicBuilder()
         { }
@@ -68,11 +67,12 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
             return this;
         }
 
-        public IotTopicBuilder WithUri(string iotId)
+        public IotTopicBuilder WithUri(string uri)
         {
-            _iotId = iotId;
+            _deviceUri = uri;
             return this;
         }
+
         public override string Build() =>
             new IotTopic
             {
@@ -80,8 +80,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 Prefix = _prefix,
                 Tag = _tag,
                 DeviceType = _deviceType,
-                IotId = _iotId,
-                ProgramId = _connectId
+                DeviceUri = _deviceUri
             }.ToString();
 
         public static IotTopicBuilder CreateIotBuilder() => new();
