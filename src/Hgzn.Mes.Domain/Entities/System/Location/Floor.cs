@@ -7,7 +7,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Location;
 
 public class Floor : UniversalEntity, IOrder, IAudited
 {
-    [ForeignKey("Building")]  // 外键设置到 BuildingAggregateRoot
+    [Description("对应建筑物的ID")]
     public Guid ParentId { get; set; }  // 对应建筑物的ID
 
     [Description("楼层名称")]
@@ -24,7 +24,7 @@ public class Floor : UniversalEntity, IOrder, IAudited
 
     public ICollection<Room>? Rooms { get; set; } // 楼层和房间是 1 对多关系
 
-    public Building? Building { get; set; }  // 每个 FloorEntity 关联一个 BuildingAggregateRoot
+    public Building? Building { get; set; }  // 每个 FloorEntity 关联一个 Building
 
     public DateTime CreationTime { get; set; }
 

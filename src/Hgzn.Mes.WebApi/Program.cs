@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
+using Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Hub;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
@@ -132,7 +133,11 @@ builder.Services.AddSwaggerGen(option =>
 // });
 
 // Add mapper profiles
-builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<BaseProfile>();
+    config.AddMaps(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main"));
+});
 
 // Add mediatR
 builder.Services.AddMediatR(config =>
@@ -153,8 +158,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<OnlineHub>("/hub/main");
-var mac = IpExtension.GetMacAddress();
-Console.WriteLine(mac.ToString());
 // app.Services.GetService<InitialDatabase>()?.Initialize();
 app.Services.GetService<SqlSugarContext>()?.InitTables();
 app.Services.GetService<IMqttExplorer>()?.StartAsync();

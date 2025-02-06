@@ -2,6 +2,5 @@
 {
     public abstract class CreateDto
     {
-        public Guid Id { get; set; }
     }
 }
