@@ -11,10 +11,10 @@ public class Floor : UniversalEntity, IOrder, IAudited
     public Guid ParentId { get; set; }  // 对应建筑物的ID
 
     [Description("楼层名称")]
-    public string? Name { get; set; }
+    public string Name { get; set; }
 
     [Description("楼层编号")]
-    public string? Code { get; set; }
+    public string Code { get; set; }
 
     [Description("楼层面积（平方米）")]
     public double? Area { get; set; }
@@ -35,4 +35,21 @@ public class Floor : UniversalEntity, IOrder, IAudited
     public Guid? LastModifierId { get; set; }
 
     public int OrderNum { get; set; } = 100;
+    
+    #region static
+
+    public static Floor floor1 = new Floor()
+    {
+        Id = Guid.Parse("6EB67743-2A45-6108-F261-816B7899FE24"),
+        ParentId = Location.Building.test.Id,
+        CreationTime = DateTime.Now,
+        Name = "1楼",
+        Code = "1",
+        Area = 1233,
+        NumberOfRooms = 2
+    };
+
+    #endregion
+
+    public static Floor[] Seeds { get; } = [floor1];
 }

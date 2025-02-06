@@ -45,4 +45,21 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
     public DateTime? DeleteTime { get; set; } = null;
 
     #endregion delete filter
+    
+    #region static
+
+    public static Building test = new Building()
+    {
+        Id = Guid.Parse("CF89CCBA-5A39-8C7F-CEB5-3855519BE067"),
+        CreationTime = DateTime.Now,
+        Name = "实验室",
+        Code = "Test",
+        Address = "123321",
+        Latitude = 1.234,
+        Longitude = 1.234,
+    };
+
+    #endregion
+
+    public static Building[] Seeds { get; } = [test];
 }

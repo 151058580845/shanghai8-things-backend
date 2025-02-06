@@ -1278,6 +1278,64 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
 
         #endregion
 
+        #region 楼层管理
+
+        // 排班管理
+        public static Menu Location = new()
+        {
+            Id = Guid.Parse("A9816E1F-7561-541B-956E-B593A23C89ED"),
+            Name = "楼层管理",
+            Code = "location",
+            Type = MenuType.Catalogue,
+            Route = "/location",
+            IconUrl = "ri:settings-3-line",
+            OrderNum = 100,
+            ParentId = Root.Id
+        };
+
+        // 楼栋管理
+        public static Menu Building = new()
+        {
+            Id = Guid.Parse("A11CE7DB-3DBF-8CBE-D4B9-8CAC730B5D52"),
+            Name = "楼栋管理",
+            Code = "building",
+            ScopeCode = "location:building:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:management",
+            Route = "/location/building/index",
+            OrderNum = 95,
+            ParentId = Location.Id,
+            RouteName = "building"
+        };
+        // 楼栋管理
+        public static Menu Floor = new()
+        {
+            Id = Guid.Parse("110E536E-4D8E-11A8-2892-E4B68A13B448"),
+            Name = "楼层管理",
+            Code = "Floor",
+            ScopeCode = "location:floor:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:management",
+            Route = "/location/floor/index",
+            OrderNum = 95,
+            ParentId = Location.Id,
+            RouteName = "Floor"
+        };
+        // 楼栋管理
+        public static Menu Room = new()
+        {
+            Id = Guid.Parse("D0F66616-B831-0768-3054-F00B1D9A295B"),
+            Name = "房间管理",
+            Code = "Room",
+            ScopeCode = "location:room:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:management",
+            Route = "/location/room/index",
+            OrderNum = 95,
+            ParentId = Location.Id,
+            RouteName = "Room"
+        };
+        #endregion
         public static Menu[] Seeds { get; } = [
             Root,
             System,
@@ -1301,7 +1359,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             EquipRepair, EquipPlanRecord, EquipConfig, EquipDataConfig,
             Product, ProductPlan, ProductOrder, ProductSchedule,
             Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
-            Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar
+            Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
+            Location,Building,Floor,Room
         ];
 
         #endregion

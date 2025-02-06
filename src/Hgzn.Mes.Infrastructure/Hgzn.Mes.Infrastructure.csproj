@@ -27,6 +27,7 @@
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.3.7.1207" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="SqlSugarCore" Version="5.1.4.172" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.22" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
@@ -39,5 +40,11 @@
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="SkiaSharp">
+	    <HintPath>..\Hgzn.Mes.WebApi\bin\Debug\net8.0\SkiaSharp.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 </Project>
