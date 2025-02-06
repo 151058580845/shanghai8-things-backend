@@ -1,6 +1,7 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Code;
+using Hgzn.Mes.Domain.Entities.System.Notice;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Utilities;
 
@@ -31,4 +32,35 @@ public class CodeRuleDefineService : SugarCrudAppService<
             .ToPaginatedListAsync(input.PageIndex, input.PageSize);
         return Mapper.Map<PaginatedList<CodeRuleDefineReadDto>>(entities);
     }
+
+    public override Task<CodeRuleDefineReadDto?> GetAsync(Guid key)
+    {
+      
+        return base.GetAsync(key);
+    }
+
+    //public override async Task<CodeRuleDefineReadDto?> UpdateAsync(Guid key, CodeRuleDefineUpdateDto dto)
+    //{
+    //    var output = await base.UpdateAsync(key, dto);
+    //    if (output == null)
+    //    {
+    //        throw new ArgumentNullException(nameof(output));
+    //    }
+
+    //    //var list = new List<NoticeTarget>();
+    //    //if (dto is { TargetType: not null, TargetIds: not null })
+    //    //    list.AddRange(dto.TargetIds.Select(id => new NoticeTarget()
+    //    //    {
+    //    //        NoticeId = output.Id,
+    //    //        NoticeTargetType = dto.TargetType.Value,
+    //    //        NoticeObjectId = id,
+    //    //        NoticeTime = output.SendTime,
+    //    //    }));
+    //    await ModifyCodeRuleDefine(output.Id, list);
+    //    return output;
+    //}
+
+    
+
+
 }

@@ -43,7 +43,7 @@ public class DictionaryInfoService : SugarCrudAppService<
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
 
-    public async Task<List<NameValueDto>> GetNameValueByTypeAsync(string dictType)
+    public  async Task<List<NameValueDto>> GetNameValueByTypeAsync(string dictType)
     {
         var type = await DbContext.Queryable<DictionaryType>()
             .FirstAsync(t => t.DictType == dictType);
@@ -72,5 +72,6 @@ public class DictionaryInfoService : SugarCrudAppService<
                     Value = t.DictValue
                 }).ToListAsync();
     }
+
 
 }

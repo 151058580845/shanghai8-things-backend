@@ -1,4 +1,6 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.System;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.System;
+using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -161,6 +163,20 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         public async Task<ResponseWrapper<PaginatedList<DictionaryTypeReadDto>?>> GetPaginatedDefineListAsync(DictionaryTypeQueryDto input) =>
             (await _typeService.GetPaginatedListAsync(input)).Wrap();
 
+
+        /// <summary>
+        /// 返回对应的字典
+        /// </summary>
+        /// <param name="codeNumber"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("dic-label/{DictLabel}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:notice:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<List<NameValueDto>>> GetListByLabelAsync(string dictLabel)=>
+            (await _infoService.GetNameValueByTypeAsync(dictLabel)).Wrap();
+           
         #endregion
     }
 }
