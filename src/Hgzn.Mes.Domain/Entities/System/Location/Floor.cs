@@ -1,7 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
 
@@ -38,10 +37,10 @@ public class Floor : UniversalEntity, IOrder, IAudited
     
     #region static
 
-    public static Floor floor1 = new Floor()
+    public static Floor floor1 = new()
     {
         Id = Guid.Parse("6EB67743-2A45-6108-F261-816B7899FE24"),
-        ParentId = Location.Building.test.Id,
+        ParentId = Building.TestBuild.Id,
         CreationTime = DateTime.Now,
         Name = "1楼",
         Code = "1",

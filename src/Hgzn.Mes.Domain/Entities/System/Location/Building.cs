@@ -48,7 +48,7 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
     
     #region static
 
-    public static Building test = new Building()
+    public static Building TestBuild = new Building()
     {
         Id = Guid.Parse("CF89CCBA-5A39-8C7F-CEB5-3855519BE067"),
         CreationTime = DateTime.Now,
@@ -61,5 +61,5 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
 
     #endregion
 
-    public static Building[] Seeds { get; } = [test];
+    public static Building[] Seeds { get; } = [TestBuild];
 }
