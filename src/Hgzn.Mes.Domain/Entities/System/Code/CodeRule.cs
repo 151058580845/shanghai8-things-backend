@@ -36,7 +36,7 @@ public class CodeRule : UniversalEntity, ISoftDelete, IState, IOrder
     public string? Remark { get; set; }
 
     [Description("规则列表")]
-    public ICollection<CodeRuleDefine>? CodeRuleRules { get; set; }
+    public List<CodeRuleDefine>? CodeRuleRules { get; set; }
 
     #region delete filter
 

@@ -2,8 +2,12 @@
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Domain.Shared;
-using System.Text;
+using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
+
+using Microsoft.Extensions.Logging;
+
+using System.Text;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
 
@@ -16,6 +20,17 @@ public class CodeRuleService : SugarCrudAppService<
     CodeRuleCreateDto, CodeRuleUpdateDto>,
     ICodeRuleService
 {
+    public CodeRuleService(
+            ICodeRuleDefineService codeRuleDefineService,
+            ILogger<UserService> logger
+        )
+    {
+        _userDomainService = codeRuleDefineService;
+    }
+
+
+    private readonly ICodeRuleDefineService _userDomainService;
+
     public override async Task<PaginatedList<CodeRuleReadDto>> GetPaginatedListAsync(CodeRuleQueryDto input)
     {
         var entities = await Queryable
@@ -55,7 +70,7 @@ public class CodeRuleService : SugarCrudAppService<
             {
                 rule.CodeRuleId = code.Id;
                 switch (rule.CodeRuleType)
-                {
+                {   
                     case "SerialNumber":
                         rule.NowFlow++;
                         sb.Append((rule.NowFlow).ToString()?.PadLeft((int)rule.MaxFlow!, (char)rule.CodeCover!));
@@ -83,8 +98,135 @@ public class CodeRuleService : SugarCrudAppService<
         }
     }
 
-    public override Task<IEnumerable<CodeRuleReadDto>> GetListAsync(CodeRuleQueryDto? queryDto)
+    /// <summary>
+    /// 获取数据列表
+    /// </summary>
+    /// <param name="queryDto"></param>
+    /// <returns></returns>
+    public override async Task<IEnumerable<CodeRuleReadDto>> GetListAsync(CodeRuleQueryDto? queryDto)
     {
-        throw new NotImplementedException();
+        var users = await Queryable
+        .WhereIF(!string.IsNullOrEmpty(queryDto.CodeName), x => x.CodeName.Contains(queryDto.CodeName))
+        .WhereIF(!string.IsNullOrEmpty(queryDto.CodeNumber), x => x.CodeNumber.Contains(queryDto.CodeNumber))
+        .WhereIF(!string.IsNullOrEmpty(queryDto.BasicDomain), x => x.BasicDomain.Contains(queryDto.BasicDomain))
+        .OrderBy(x => x.OrderNum)
+        .ToArrayAsync();
+
+        return Mapper.Map<IEnumerable<CodeRuleReadDto>>(users);
     }
+
+    /// <summary>
+    /// 获取实例
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public override async Task<CodeRuleReadDto?> GetAsync(Guid key)
+    {
+        var user = await Queryable
+                 .Where(u => u.Id == key)
+                 .Includes(u => u.CodeRuleRules)
+                 .FirstAsync();
+
+        return Mapper.Map<CodeRuleReadDto>(user);
+    }
+
+    /// <summary>
+    /// 创建编码规则
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    public override async Task<CodeRuleReadDto> CreateAsync(CodeRuleCreateDto dto)
+    {
+        var entity = await base.CreateAsync(dto);
+        foreach (var rule in dto.codeRuleRules)
+        {
+            rule.CodeRuleId = entity.Id;
+            if (rule.Id.IsGuidEmpty())
+            {
+                rule.Id = new Guid();
+            }
+        }
+
+        // 修改编码
+        var list = new List<CodeRuleDefine>();
+        list.AddRange(dto.codeRuleRules.Select(id => new CodeRuleDefine() { 
+          CodeCover= id.CodeCover,
+            CodeRuleId = id.CodeRuleId.Value,
+            CodeRuleType = id.CodeRuleType,
+            OrderNum = id.OrderNum,
+            MaxFlow = id.MaxFlow,
+            NowFlow = id.NowFlow,
+            DateFormat = id.DateFormat,
+            ConstantChar = id.ConstantChar,
+            SourceKey = id.SourceKey,
+            SourceValue = id.SourceValue,
+
+        }));
+        await ModifyCodeRuleDefine(entity.Id, list);
+
+        return entity;
+    }
+
+    /// <summary>
+    /// 修改编码规则
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    public async override Task<CodeRuleReadDto?> UpdateAsync(Guid key, CodeRuleUpdateDto dto)
+    {
+        var entity = await base.UpdateAsync(key,dto);
+        foreach (var rule in dto.CodeRuleDefines)
+        {
+            rule.CodeRuleId = entity.Id;
+            if (rule.Id.IsGuidEmpty())
+            {
+                rule.Id = new Guid();
+            }
+        }
+
+        // 修改编码
+        var list = new List<CodeRuleDefine>();
+        list.AddRange(dto.CodeRuleDefines.Select(id => new CodeRuleDefine()
+        {
+            CodeCover = id.CodeCover,
+            CodeRuleId = id.CodeRuleId.Value,
+            CodeRuleType = id.CodeRuleType,
+            OrderNum = id.OrderNum,
+            MaxFlow = id.MaxFlow,
+            NowFlow = id.NowFlow,
+            DateFormat = id.DateFormat,
+            ConstantChar = id.ConstantChar,
+            SourceKey = id.SourceKey,
+            SourceValue = id.SourceValue,
+
+        }));
+        await ModifyCodeRuleDefine(entity.Id, list);
+
+        return entity;
+    }
+  
+
+    /// <summary>
+    /// 修改编码规则
+    /// </summary>
+    /// <param name="codeRuleId"></param>
+    /// <param name="targetsEntities"></param>
+    public async Task ModifyCodeRuleDefine(Guid codeRuleId, List<CodeRuleDefine> targetsEntities)
+    {
+        try
+        {
+            await DbContext.Ado.BeginTranAsync();
+            DbContext.Deleteable<CodeRuleDefine>().Where(t => t.CodeRuleId == codeRuleId);
+            DbContext.Insertable(targetsEntities);
+            await DbContext.Ado.CommitTranAsync();
+        }
+        catch
+        {
+            await DbContext.Ado.RollbackTranAsync();
+            throw;
+        }
+    }
+
+
 }

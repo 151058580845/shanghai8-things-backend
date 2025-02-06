@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Domain.Entities.System.Code;
 
 namespace Hgzn.Mes.Application.Main.Dtos.System;
 
@@ -37,6 +38,10 @@ public class CodeRuleReadDto : ReadDto
     /// 备注
     /// </summary>
     public string? Remark { get; set; }
+
+    public List<CodeRuleDefine>? CodeRuleDefines { get; set; } = new List<CodeRuleDefine>();
+
+
 }
 
 public class CodeRuleCreateDto : CreateDto
@@ -70,6 +75,70 @@ public class CodeRuleCreateDto : CreateDto
     /// 备注
     /// </summary>
     public string? Remark { get; set; }
+
+
+    public List<CodeRuleEntityCreateCodeRuleDefines>? codeRuleRules { get; set; } = new List<CodeRuleEntityCreateCodeRuleDefines>();
+}
+
+/// <summary>
+/// 编码规则规则定义表创建实体表
+///</summary>
+public class CodeRuleEntityCreateCodeRuleDefines
+{
+    /// <summary>
+    /// 主键
+    /// </summary>
+    public Guid? Id { get; set; }
+
+    /// <summary>
+    /// 编码规则
+    /// </summary>
+    public Guid? CodeRuleId { get; set; }
+
+    /// <summary>
+    /// 类型
+    /// </summary>
+    public string? CodeRuleType { get; set; }
+
+    /// <summary>
+    /// 排序号
+    /// </summary>
+    public int OrderNum { get; set; }
+
+    /// <summary>
+    /// 流水长度
+    /// </summary>
+    public int? MaxFlow { get; set; }
+
+    /// <summary>
+    /// 当前流水号
+    /// </summary>
+    public int? NowFlow { get; set; }
+
+    /// <summary>
+    /// 补位符
+    /// </summary>
+    public char? CodeCover { get; set; }
+
+    /// <summary>
+    /// 日期格式
+    /// </summary>
+    public string? DateFormat { get; set; }
+
+    /// <summary>
+    /// 常量
+    /// </summary>
+    public string? ConstantChar { get; set; }
+
+    /// <summary>
+    /// 元素键值
+    /// </summary>
+    public string? SourceKey { get; set; }
+
+    /// <summary>
+    /// 元素属性
+    /// </summary>
+    public string? SourceValue { get; set; }
 }
 
 public class CodeRuleUpdateDto : UpdateDto
@@ -103,6 +172,8 @@ public class CodeRuleUpdateDto : UpdateDto
     /// 备注
     /// </summary>
     public string? Remark { get; set; }
+
+    public List<CodeRuleEntityCreateCodeRuleDefines>? CodeRuleDefines { get; set; } = new List<CodeRuleEntityCreateCodeRuleDefines>();
 }
 
 public class CodeRuleQueryDto : PaginatedQueryDto

@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.System;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Entities.System.Dictionary;
 
 namespace Hgzn.Mes.Application.Main.Services.System.IService;
@@ -8,4 +9,6 @@ public interface IDictionaryTypeService : ICrudAppService<
     DictionaryTypeReadDto, DictionaryTypeQueryDto,
     DictionaryTypeCreateDto, DictionaryTypeUpdateDto>
 {
+
+ 
 }

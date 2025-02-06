@@ -40,3 +40,4 @@ public class DictionaryTypeQueryDto : PaginatedQueryDto
     public string? Remark { get; set; }
     public bool? State { get; set; }
 }
+
