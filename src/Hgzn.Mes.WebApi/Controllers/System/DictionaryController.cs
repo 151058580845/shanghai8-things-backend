@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.System;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -38,11 +39,21 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<DictionaryInfoReadDto?>> GetAsync(Guid id) =>
             (await _infoService.GetAsync(id)).Wrap();
-
+        /// <summary>
+        ///     获取
+        /// </summary>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("label/{label}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<List<NameValueDto>?>> GetAsync(string label) =>
+            (await _infoService.GetNameValueByTypeAsync(label)).Wrap();
         /// <summary>
         ///     删除
         /// </summary>
@@ -52,7 +63,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Remove}")]
         public async Task<ResponseWrapper<int>> DeleteAsync(Guid id) =>
             (await _infoService.DeleteAsync(id)).Wrap();
@@ -67,7 +77,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<DictionaryInfoReadDto?>> UpdateAsync(Guid id, DictionaryInfoUpdateDto input) =>
             (await _infoService.UpdateAsync(id, input)).Wrap();
@@ -111,7 +120,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("type/{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<DictionaryTypeReadDto?>> GetDefineAsync(Guid id) =>
             (await _typeService.GetAsync(id)).Wrap();
@@ -125,7 +133,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("type/{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Remove}")]
         public async Task<ResponseWrapper<int>> DeleteDefineAsync(Guid id) =>
             (await _typeService.DeleteAsync(id)).Wrap();
@@ -139,7 +146,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("type")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Add}")]
         public async Task<ResponseWrapper<DictionaryTypeReadDto?>> CreateDefineAsync(DictionaryTypeCreateDto input) =>
             (await _typeService.CreateAsync(input)).Wrap();
@@ -153,7 +159,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("type/{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<DictionaryTypeReadDto?>> UpdateDefineAsync(Guid id, DictionaryTypeUpdateDto input) =>
             (await _typeService.UpdateAsync(id, input)).Wrap();
@@ -167,7 +172,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("type/page")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<PaginatedList<DictionaryTypeReadDto>?>> GetPaginatedDefineListAsync(DictionaryTypeQueryDto input) =>
             (await _typeService.GetPaginatedListAsync(input)).Wrap();
