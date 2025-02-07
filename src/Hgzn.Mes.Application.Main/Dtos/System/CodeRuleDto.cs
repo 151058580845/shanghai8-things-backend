@@ -1,6 +1,8 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.Entities.System.Code;
 
+using System.Text.Json.Serialization;
+
 namespace Hgzn.Mes.Application.Main.Dtos.System;
 
 public class CodeRuleDto
@@ -39,7 +41,7 @@ public class CodeRuleReadDto : ReadDto
     /// </summary>
     public string? Remark { get; set; }
 
-    public List<CodeRuleDefine>? CodeRuleDefines { get; set; } = new List<CodeRuleDefine>();
+    public List<CodeRuleDefine>? CodeRuleRules { get; set; }
 
 
 }
@@ -76,8 +78,9 @@ public class CodeRuleCreateDto : CreateDto
     /// </summary>
     public string? Remark { get; set; }
 
+    //public CodeRuleDefineCreateDto? CodeRuleRulesTest { get; set; }
+    public IEnumerable<CodeRuleDefineCreateDto>? CodeRuleRules { get; set; }
 
-    public List<CodeRuleEntityCreateCodeRuleDefines>? codeRuleRules { get; set; } = new List<CodeRuleEntityCreateCodeRuleDefines>();
 }
 
 /// <summary>
@@ -173,7 +176,7 @@ public class CodeRuleUpdateDto : UpdateDto
     /// </summary>
     public string? Remark { get; set; }
 
-    public List<CodeRuleEntityCreateCodeRuleDefines>? CodeRuleDefines { get; set; } = new List<CodeRuleEntityCreateCodeRuleDefines>();
+    public IEnumerable<CodeRuleDefineCreateDto>? codeRuleRules { get; set; } 
 }
 
 public class CodeRuleQueryDto : PaginatedQueryDto
@@ -197,4 +200,9 @@ public class CodeRuleQueryDto : PaginatedQueryDto
     /// 基础元素
     /// </summary>
     public string? BasicDomain { get; set; }
+
+    /// <summary>
+    /// 备注
+    /// </summary>
+    public string? Remark { get; set; }
 }
