@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.2.0" />
+    <PackageReference Include="IPTools.China" Version="1.6.0" />
     <PackageReference Include="IPTools.Core" Version="1.6.0" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="AutoMapper" Version="13.0.1" />
@@ -28,6 +29,7 @@
     <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
     <PackageReference Include="SqlSugarCore" Version="5.1.4.172" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.22" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
@@ -46,5 +48,11 @@
 	  <Reference Include="SkiaSharp">
 	    <HintPath>..\Hgzn.Mes.WebApi\bin\Debug\net8.0\SkiaSharp.dll</HintPath>
 	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="ip2region.db">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>

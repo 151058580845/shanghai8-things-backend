@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared.Extensions;
+using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
@@ -30,7 +31,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public async Task<IEnumerable<MenuReaderRouterDto>> GetCurrentUserMenusAsTreeAsync(IEnumerable<Claim> claims)
         {
             var roleId = Guid.Parse(claims.FirstOrDefault(c =>
-                c.Type == CustomClaimsType.RoleId)!.Value);
+                c.Type == ClaimType.RoleId)!.Value);
             IEnumerable<Menu> entities;
             if (roleId == Role.DevRole.Id)
             {

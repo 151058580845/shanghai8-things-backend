@@ -8,30 +8,112 @@ using SqlSugar;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
+using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
 public sealed class SqlSugarContext
 {
+    private readonly ICurrentUser _currentUser;
     public ISqlSugarClient DbContext { get; set; } = null!;
     private readonly DbConnOptions _dbOptions;
     private readonly ILogger<SqlSugarContext> _logger;
 
     public SqlSugarContext(
-        ILogger<SqlSugarContext> logger, 
-        DbConnOptions dbOptions, 
-        ISqlSugarClient client
-        )
+        ILogger<SqlSugarContext> logger,
+        DbConnOptions dbOptions,
+        ISqlSugarClient client,
+        ICurrentUser currentUser
+    )
     {
         _dbOptions = dbOptions;
         _logger = logger;
         DbContext = client;
+        _currentUser = currentUser;
         OnSqlSugarClientConfig(DbContext);
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
+        DbContext.Aop.DataExecuting = DataExecuting;
+        // DbContext.Aop.DataExecuted = DataExecuted;
     }
+
+    private void DataExecuted(object oldValue, DataAfterModel entityInfo)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void DataExecuting(object oldValue, DataFilterModel entityInfo)
+    {
+        switch (entityInfo.OperationType)
+        {
+            case DataFilterType.UpdateByObject:
+                if (entityInfo.PropertyName.Equals(nameof(IAudited.LastModificationTime)))
+                {
+                    entityInfo.SetValue(DateTime.Now);
+                }
+
+                if (entityInfo.PropertyName.Equals(nameof(IAudited.LastModifierId)))
+                {
+                    if (_currentUser.Id != null)
+                    {
+                        entityInfo.SetValue(_currentUser.Id);
+                    }
+                }
+
+                break;
+            case DataFilterType.InsertByObject:
+                if (entityInfo.PropertyName.Equals(nameof(UniversalEntity.Id)))
+                {
+                    //主键为空或者为默认最小值
+                    if (Guid.Empty.Equals(oldValue))
+                    {
+                        entityInfo.SetValue(Guid.NewGuid());
+                    }
+                }
+
+                if (entityInfo.PropertyName.Equals(nameof(IAudited.CreationTime)))
+                {
+                    // if (!DateTime.MinValue.Equals(oldValue))
+                    // {
+                    entityInfo.SetValue(DateTime.Now);
+                    // }
+                }
+
+                if (entityInfo.PropertyName.Equals(nameof(IAudited.CreatorId)))
+                {
+                    if (_currentUser.Id != null)
+                    {
+                        entityInfo.SetValue(_currentUser.Id);
+                    }
+                }
+
+                break;
+            case DataFilterType.DeleteByObject:
+                if (entityInfo.PropertyName.Equals(nameof(UniversalEntity.Id)))
+                {
+                    if (entityInfo.EntityValue is ISoftDelete softDelete)
+                    {
+                        if (entityInfo.PropertyName.Equals(nameof(ISoftDelete.SoftDeleted)))
+                        {
+                            entityInfo.SetValue(1);
+                        }
+
+                        if (entityInfo.PropertyName.Equals(nameof(ISoftDelete.DeleteTime)))
+                        {
+                            entityInfo.SetValue(DateTime.Now);
+                        }
+                    }
+                }
+
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
 
     private const string DefaultConnectionStringName = "Default";
 
@@ -68,6 +150,7 @@ public sealed class SqlSugarContext
                     {
                         tablePrefix = name[4] + '_';
                     }
+
                     tableName = table != null ? table.Name : name?[^1].ToSnakeCase();
                     var tableDesc = t.GetCustomAttribute<DescriptionAttribute>();
 
@@ -93,10 +176,12 @@ public sealed class SqlSugarContext
                     {
                         c.IsNullable = true;
                     }
+
                     if (p.GetMethod!.IsStatic || !p.PropertyType.IsDatabaseType())
                     {
                         c.IsIgnore = true;
                     }
+
                     if (name == "id")
                     {
                         c.IsPrimarykey = true;
@@ -130,8 +215,8 @@ public sealed class SqlSugarContext
         {
             var methodGeneric = typeof(ISqlSugarClient).GetMethods()
                 .Where(me => me.Name == "Insertable" &&
-                me.GetParameters().Length == 1 &&
-                me.GetParameters()[0].ParameterType.IsArray);
+                             me.GetParameters().Length == 1 &&
+                             me.GetParameters()[0].ParameterType.IsArray);
             //获取静态种子属性
             var seeds = entity.GetProperty("Seeds", BindingFlags.Public | BindingFlags.Static);
             var value = seeds?.GetValue(null);
@@ -140,23 +225,22 @@ public sealed class SqlSugarContext
                 try
                 {
                     var data = methodGeneric.FirstOrDefault()?.MakeGenericMethod(entity)
-                    .Invoke(DbContext, [value]);
+                        .Invoke(DbContext, [value]);
                     var typeInsert = typeof(IInsertable<>).MakeGenericType(entity);
                     var typeTask = typeof(Task<>).MakeGenericType(typeof(int));
                     var excuteMethod = typeInsert.GetMethods()
                         .Where(me => me.Name == "ExecuteCommandAsync" &&
-                            me.GetParameters().Length == 0 &&
-                            me.ReturnType == typeTask)
+                                     me.GetParameters().Length == 0 &&
+                                     me.ReturnType == typeTask)
                         .FirstOrDefault();
                     var task = (Task?)excuteMethod?.Invoke(data, null);
                     task?.Wait();
                 }
                 //只捕获主键重复异常
                 catch (AggregateException)
-                {                    
+                {
                     _logger.LogWarning($"{entity.Name} data seeds exist");
                 }
-
             }
         }
     }
@@ -179,34 +263,33 @@ public sealed class SqlSugarContext
         {
             SeedData();
         }
-        
     }
 
-    /// <summary>
-    /// 软删除实现
-    /// </summary>
-    /// <param name="id"></param>
-    /// <typeparam name="T"></typeparam>
-    public async Task SoftDeleteAsync<T>(Guid id) where T : class, ISoftDelete, new()
-    {
-        var entity = await DbContext.Queryable<T>().In(id).SingleAsync();
-        if (entity is { SoftDeleted: false })
-        {
-            entity.SoftDeleted = true;
-            entity.DeleteTime = DateTime.Now;
-            await DbContext.Updateable(entity).ExecuteCommandAsync();
-        }
-    }
-
-    /// <summary>
-    /// 硬删除实现
-    /// </summary>
-    /// <param name="id"></param>
-    /// <typeparam name="T"></typeparam>
-    public async Task HardDeleteAsync<T>(Guid id) where T : class, new()
-    {
-        await DbContext.Deleteable<T>().In(id).ExecuteCommandAsync();
-    }
+    // /// <summary>
+    // /// 软删除实现
+    // /// </summary>
+    // /// <param name="id"></param>
+    // /// <typeparam name="T"></typeparam>
+    // public async Task SoftDeleteAsync<T>(Guid id) where T : class, ISoftDelete, new()
+    // {
+    //     var entity = await DbContext.Queryable<T>().In(id).SingleAsync();
+    //     if (entity is { SoftDeleted: false })
+    //     {
+    //         entity.SoftDeleted = true;
+    //         entity.DeleteTime = DateTime.Now;
+    //         await DbContext.Updateable(entity).ExecuteCommandAsync();
+    //     }
+    // }
+    //
+    // /// <summary>
+    // /// 硬删除实现
+    // /// </summary>
+    // /// <param name="id"></param>
+    // /// <typeparam name="T"></typeparam>
+    // public async Task HardDeleteAsync<T>(Guid id) where T : class, new()
+    // {
+    //     await DbContext.Deleteable<T>().In(id).ExecuteCommandAsync();
+    // }
 
     /// <summary>
     /// 日志
@@ -247,6 +330,7 @@ public sealed class SqlSugarContext
         {
             Directory.CreateDirectory(directory);
         }
+
         switch (_dbOptions.DbType)
         {
             case DbType.MySql:
@@ -269,6 +353,7 @@ public sealed class SqlSugarContext
             default:
                 throw new NotImplementedException("其他数据库备份未实现");
         }
+
         return Task.CompletedTask;
     }
 }

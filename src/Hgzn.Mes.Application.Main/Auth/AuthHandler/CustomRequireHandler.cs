@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
@@ -24,8 +25,8 @@ namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, CustomRequireScope requirement)
         {
             var dict = context.User.Claims.ToDictionary(key => key.Type, value => value.Value);
-            if (!dict.TryGetValue(CustomClaimsType.UserId, out var uId) ||
-                !dict.TryGetValue(CustomClaimsType.RoleId, out var rId))
+            if (!dict.TryGetValue(ClaimType.UserId, out var uId) ||
+                !dict.TryGetValue(ClaimType.RoleId, out var rId))
             {
                 _logger.LogWarning("invalid token claims");
                 context.Fail(new AuthorizationFailureReason(this, "invalid claims"));

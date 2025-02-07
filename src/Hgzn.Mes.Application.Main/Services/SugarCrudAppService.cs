@@ -3,6 +3,7 @@ using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Utilities;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services;
@@ -15,7 +16,8 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
     /// <summary>
     ///     aoc属性注入
     /// </summary>
-    public ISqlSugarClient DbContext { get; init; } = null!;
+    public SqlSugarContext SqlSugarContext { get; init; } = null!;
+    public ISqlSugarClient DbContext => SqlSugarContext.DbContext;
 
     protected ISugarQueryable<TEntity> Queryable
     {

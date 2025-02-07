@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
+using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
@@ -21,6 +22,7 @@ public class ScopeModule:Module
             .As<ISqlSugarClient>()
             .InstancePerLifetimeScope();
         #endregion
+
         base.Load(builder);
     }
 }

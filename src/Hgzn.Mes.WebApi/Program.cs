@@ -16,6 +16,8 @@ using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Hub;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Utilities;
+using Hgzn.Mes.Infrastructure.Utilities.Filter;
+using IPTools.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +46,10 @@ builder.Services.AddControllers().AddJsonOptions(config =>
 {
     config.JsonSerializerOptions.DefaultIgnoreCondition = Options.CustomJsonSerializerOptions.DefaultIgnoreCondition;
     config.JsonSerializerOptions.PropertyNameCaseInsensitive = Options.CustomJsonSerializerOptions.PropertyNameCaseInsensitive;
+});
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<OperLogFilterAttribute>();
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(options =>
@@ -132,6 +138,8 @@ builder.Services.AddSwaggerGen(option =>
 //     options.UseSnakeCaseNamingConvention();
 // });
 
+
+
 // Add mapper profiles
 builder.Services.AddAutoMapper(config =>
 {
@@ -142,6 +150,7 @@ builder.Services.AddAutoMapper(config =>
 // Add mediatR
 builder.Services.AddMediatR(config =>
     config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
