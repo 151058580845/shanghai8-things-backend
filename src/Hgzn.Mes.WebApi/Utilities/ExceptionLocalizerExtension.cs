@@ -1,6 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
-using Hgzn.Mes.WebApi.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Localization;
 

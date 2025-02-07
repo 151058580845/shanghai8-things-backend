@@ -3,7 +3,7 @@ using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Microsoft.Extensions.Localization;
 
-namespace Hgzn.Mes.WebApi.Exceptions
+namespace Hgzn.Mes.WebApi.Utilities
 {
     public static class ExceptionExtension
     {

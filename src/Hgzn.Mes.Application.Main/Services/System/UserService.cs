@@ -13,6 +13,7 @@ using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
+using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Microsoft.Extensions.Logging;
 
 namespace Hgzn.Mes.Application.Main.Services.System
@@ -63,8 +64,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var roleIds = string.Join(",", user.Roles.Select(r => r.Id));
             var token = JwtTokenUtil.GenerateJwtToken(SettingUtil.Jwt.Issuer, SettingUtil.Jwt.Audience,
                             SettingUtil.Jwt.ExpireMin,
-                            new Claim(CustomClaimsType.UserId, user.Id.ToString()),
-                            new Claim(CustomClaimsType.RoleId, roleIds)) ??
+                            new Claim(ClaimType.UserId, user.Id.ToString()),
+                            new Claim(ClaimType.UserName, user.Username),
+                            new Claim(ClaimType.RoleId, roleIds)) ??
                         throw new Exception("generate jwt token error");
 
             if (!await _userDomainService.VerifyTokenAsync(user.Id, token))
@@ -79,7 +81,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task LogoutAsync(IEnumerable<Claim> claims)
         {
-            var userId = claims.FirstOrDefault(c => c.Type == CustomClaimsType.UserId)!.Value;
+            var userId = claims.FirstOrDefault(c => c.Type == ClaimType.UserId)!.Value;
             await _userDomainService.DeleteTokenAsync(Guid.Parse(userId));
         }
 
@@ -94,7 +96,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<UserScopeReadDto?> GetCurrentUserAsync(IEnumerable<Claim> claims)
         {
-            var userId = Guid.Parse(claims.FirstOrDefault(c => c.Type == CustomClaimsType.UserId)!.Value);
+            var userId = Guid.Parse(claims.FirstOrDefault(c => c.Type == ClaimType.UserId)!.Value);
             var user = await Queryable
                 .Where(u => u.Id == userId)
                 .Includes(u => u.Roles, r => r.Menus)

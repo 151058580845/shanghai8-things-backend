@@ -6,6 +6,7 @@ using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,7 +54,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
                 if (entityEntry.Entity is ICreationAudited creationAudited)
                 {
                     var plain = _httpContextAccessor?.HttpContext?.User.Claims
-                        .First(c => CustomClaimsType.UserId == c.Type).Value;
+                        .First(c => ClaimType.UserId == c.Type).Value;
                     var userId = plain is null ? new Guid?() : Guid.Parse(plain);
                     creationAudited.CreationTime = DateTime.UtcNow;
                     creationAudited.CreatorId = userId;
@@ -61,7 +62,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
                 if (entityEntry.Entity is ILastModificationAudited lastModificationAudited)
                 {
                     var plain = _httpContextAccessor?.HttpContext?.User.Claims
-                        .First(c => CustomClaimsType.UserId == c.Type).Value;
+                        .First(c => ClaimType.UserId == c.Type).Value;
                     var userId = plain is null ? new Guid?() : Guid.Parse(plain);
                     lastModificationAudited.LastModificationTime = DateTime.UtcNow;
                     lastModificationAudited.LastModifierId = userId;
