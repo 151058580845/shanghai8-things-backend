@@ -30,15 +30,15 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
             builder.RegisterGeneric(typeof(PaginatedListConverter<,>));
 
             #region 注册sqlSugar
-
-            builder.Register(context =>
-                {
-                    var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))
-                        .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
-                    return new SqlSugarClient(SqlSugarContext.Build(setting));
-                })
-                .As<ISqlSugarClient>()
-                .SingleInstance();
+            
+            // builder.Register(context =>
+            //     {
+            //         var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))
+            //             .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
+            //         return new SqlSugarClient(SqlSugarContext.Build(setting));
+            //     })
+            //     .As<ISqlSugarClient>()
+            //     .SingleInstance();
             builder.Register(context =>
                 {
                     var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))
@@ -49,7 +49,7 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 })
                 .PropertiesAutowired()
                 .SingleInstance();
-
+            
             #endregion
 
             #region 注册Mqtt

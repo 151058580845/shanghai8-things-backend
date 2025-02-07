@@ -1,12 +1,12 @@
-﻿using Hgzn.Mes.Application.Main.Dtos;
+﻿using System.Security.Claims;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Entities.System.Account;
-using System.Security.Claims;
 
-namespace Hgzn.Mes.Application.Main.Services.Base
+namespace Hgzn.Mes.Application.Main.Services.System.IService
 {
     public interface IUserService : ICrudAppService<
         User, Guid,
-        UserReadDto, UserQueryDto>
+        UserReadDto, UserQueryDto,UserRegisterDto,UserUpdateDto>
     {
         Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto);
 

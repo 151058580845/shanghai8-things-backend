@@ -141,8 +141,8 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
             modelBuilder.Entity<User>()
                 .OwnsOne(u => u.Settings);
 
-            modelBuilder.Entity<User>()
-                .OwnsOne(u => u.Detail);
+            // modelBuilder.Entity<User>()
+            //     .OwnsOne(u => u.Detail);
 
             modelBuilder.Entity<UserRole>()
                 .HasData(UserRole.Seeds);

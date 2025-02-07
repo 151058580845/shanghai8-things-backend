@@ -1,5 +1,7 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Base;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
@@ -53,7 +55,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<UserReadDto?>> GetUser(Guid userId) =>
+        public async Task<ResponseWrapper<UserReadDto>> GetUser(Guid userId) =>
             (await _userService.GetAsync(userId)).Wrap();
 
         /// <summary>
@@ -126,6 +128,8 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         public async Task<ResponseWrapper<int>> ChangePassword(ChangePasswordDto passwordDto) =>
             (await _userService.ChangePasswordAsync(passwordDto)).Wrap();
 
+
+        
         /// <summary>
         ///     重置某个用户的密码
         ///     auth: admin
@@ -133,11 +137,11 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// <param name="userId">用户guid</param>
         /// <returns>重置状态</returns>
         [HttpPut]
-        [Route("{userId}/pwd")]
+        [Route("{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<int>> ResetPassword(Guid userId) =>
-            (await _userService.ResetPasswordAsync(userId)).Wrap();
+        public async Task<ResponseWrapper<UserReadDto>> ResetPassword(Guid userId,UserUpdateDto dto) =>
+            (await _userService.UpdateAsync(userId,dto)).Wrap();
     }
 }

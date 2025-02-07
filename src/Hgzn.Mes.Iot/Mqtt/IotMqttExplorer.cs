@@ -11,6 +11,7 @@ using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
 using Mysqlx.Crud;
+using SqlSugar;
 
 namespace Hgzn.Mes.Iot.Mqtt
 {
@@ -20,18 +21,18 @@ namespace Hgzn.Mes.Iot.Mqtt
         private readonly IManagedMqttClient _mqttClient;
         private readonly ManagedMqttClientOptions _mqttClientOptions;
         private ICollection<MqttTopicFilter> _mqttTopics;
-        private readonly SqlSugarContext _context;
+        public readonly ISqlSugarClient _SugarClient;
         
         public IotMqttExplorer(
             ILogger<IotMqttExplorer> logger,
             IConfiguration configuration,
-            SqlSugarContext context,
+            ISqlSugarClient sqlSugarClient,
             MqttMessageHandler mqttMessageParser)
         {
             _logger = logger;
             var mqtt = configuration.GetConnectionString("Mqtt")!.Split(':');
-            _context = context;
-            var types = context.DbContext.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
+            _SugarClient = sqlSugarClient;
+            var types = _SugarClient.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             RefreshTopicsAsync();
             _logger.LogInformation($"now subcribe to device type: {string.Join(',', types)}");
             _mqttClientOptions = new ManagedMqttClientOptionsBuilder()
@@ -117,7 +118,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         /// <returns></returns>
         public async Task RestartAsync()
         {
-            var types = _context.DbContext.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
+            var types = _SugarClient.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             await RefreshTopicsAsync();
             _logger.LogInformation($"restarting... subcribe to device type: {string.Join(',', types)}");
             await PublishAsync(TopicBuilder.CreateBuilder()
@@ -133,7 +134,7 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         public Task RefreshTopicsAsync(params string[] topics)
         {
-            var types = _context.DbContext.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
+            var types = _SugarClient.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             _mqttTopics = types
                 .Select(type => $"iot/{MqttDirection.Down}/+/{ProgramId}/+/+/+")
                 .Select(topic => new MqttTopicFilterBuilder().WithTopic(topic)

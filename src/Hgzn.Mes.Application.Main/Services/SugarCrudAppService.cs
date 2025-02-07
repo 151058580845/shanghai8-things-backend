@@ -17,7 +17,14 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
     /// </summary>
     public ISqlSugarClient DbContext { get; init; } = null!;
 
-    protected ISugarQueryable<TEntity> Queryable { get => DbContext.Queryable<TEntity>(); }
+    protected ISugarQueryable<TEntity> Queryable
+    {
+        get
+        {
+            Console.WriteLine((DbContext == null));
+            return DbContext.Queryable<TEntity>();
+        }
+    }
 
     /// <summary>
     /// 删除实体

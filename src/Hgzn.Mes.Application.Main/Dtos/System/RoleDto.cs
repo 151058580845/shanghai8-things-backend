@@ -6,6 +6,7 @@ namespace Hgzn.Mes.Application.Main.Dtos
     public class RoleCreateDto : CreateDto
     {
         public string Name { get; set; } = null!;
+        public string Code { get; set; } = null!;
         public string Description { get; set; } = null!;
         public IEnumerable<string> MenuIds { get; set; } = null!;
     }
@@ -14,6 +15,7 @@ namespace Hgzn.Mes.Application.Main.Dtos
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;
+        public string Code { get; set; } = null!;
         public string Description { get; set; } = null!;
         public bool State { get; set; }
         public IEnumerable<MenuReadDto> Menus { get; set; } = null!;

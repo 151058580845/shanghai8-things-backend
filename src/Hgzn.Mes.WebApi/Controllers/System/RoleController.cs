@@ -39,8 +39,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("{roleId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [AllowAnonymous]
-        //[Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<RoleReadDto?>> GetRole(Guid roleId) =>
             (await _roleService.GetAsync(roleId)).Wrap();
 
@@ -50,14 +49,24 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// </summary>
         /// <returns>角色列表</returns>
         [HttpPost]
+        [Route("list")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<IEnumerable<RoleReadDto>>> GetRolesList(RoleQueryDto? queryDto) =>
+            (await _roleService.GetListAsync(queryDto)).Wrap();
+        /// <summary>
+        ///     获取所有角色
+        ///     auth: super
+        /// </summary>
+        /// <returns>角色列表</returns>
+        [HttpPost]
         [Route("page")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [AllowAnonymous]
-        //[Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<PaginatedList<RoleReadDto>?>> GetRoles(RoleQueryDto queryDto) =>
             (await _roleService.GetPaginatedListAsync(queryDto)).Wrap();
-
         /// <summary>
         ///     创建新角色
         ///     auth: super
@@ -67,8 +76,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [AllowAnonymous]
-        //[Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<RoleReadDto?>> CreateRole(RoleCreateDto roleDto) =>
             (await _roleService.CreateAsync(roleDto)).Wrap();
 
@@ -83,8 +91,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("{roleId:guid}/menus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [AllowAnonymous]
-        //[Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<bool>> ModifyRoleMenu(Guid roleId, List<Guid> menus) =>
             (await _roleService.ModifyRoleMenuAsync(roleId, menus)).Wrap();
 

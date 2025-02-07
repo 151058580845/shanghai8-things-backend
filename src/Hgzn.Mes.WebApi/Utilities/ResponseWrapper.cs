@@ -23,7 +23,7 @@ namespace Hgzn.Mes.WebApi.Utilities
 
     public static class ReadDtoWrapperExtension
     {
-        public static ResponseWrapper<TRead?> Wrap<TRead>(this TRead? read,
+        public static ResponseWrapper<TRead> Wrap<TRead>(this TRead? read,
             string? info = null, int status = StatusCodes.Status200OK) =>
             new()
             {

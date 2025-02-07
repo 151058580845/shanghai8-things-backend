@@ -2,7 +2,9 @@
 using Hgzn.Mes.Application.Main.Captchas;
 using Hgzn.Mes.Application.Main.Captchas.Builder;
 using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Base;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Application.Main.Utilities;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Services;
@@ -17,7 +19,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 {
     public class UserService : SugarCrudAppService<
             User, Guid,
-            UserReadDto, UserQueryDto>,
+            UserReadDto, UserQueryDto,UserRegisterDto,UserUpdateDto>,
         IUserService
     {
         public UserService(
@@ -174,7 +176,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var users = await Queryable
                 .Where(u => u.Phone != null && (string.IsNullOrEmpty(query.Phone) || u.Phone.Contains(query.Phone)))
                 .Where(u => string.IsNullOrEmpty(query.UserName) || u.Username.Contains(query.UserName))
-                .Where(u => query.DeptId == null || u.DepartmentId == query.DeptId)
+                .Where(u => query.DeptId == null || u.DeptId == query.DeptId)
                 .Where(u => u.State == query.State)
                 .Includes(u => u.Roles)
                 .ToPaginatedListAsync(query.PageIndex, query.PageSize);
