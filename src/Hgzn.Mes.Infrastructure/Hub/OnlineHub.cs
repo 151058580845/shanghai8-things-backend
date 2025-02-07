@@ -1,5 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Hub;
-using Hgzn.Mes.Domain.Entities.System.Log;
+using Hgzn.Mes.Domain.Entities.System.Monitor;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using IPTools.Core;
 using Microsoft.AspNetCore.Http;

@@ -11,6 +11,16 @@ public class CodeDtoProfile:Profile
     public CodeDtoProfile()
     {
         CreateMap<CodeRuleCreateDto, CodeRule>();
+
+        CreateMap<CodeRuleReadDto, CodeRule>();
+        CreateMap<CodeRule, CodeRuleReadDto>();
+
+        CreateMap<CodeRuleReadDto, CodeRuleUpdateDto>();
+        CreateMap<CodeRuleUpdateDto, CodeRuleReadDto>();
+
+        CreateMap<CodeRuleDefineCreateDto, CodeRuleDefine>();
+
+
         CreateMap<CodeRule, CodeRuleReadDto>();
         CreateMap<ScopeDefinition, ScopeDefReadDto>();
     }

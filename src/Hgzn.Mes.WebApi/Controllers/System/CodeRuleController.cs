@@ -1,4 +1,6 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.System;
+﻿using AutoMapper;
+
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Domain.Shared;
@@ -93,7 +95,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:notice:{ScopeMethodType.Add}")]
+        //[AllowAnonymous]
         public async Task<ResponseWrapper<CodeRuleReadDto?>> PostCreateAsync(CodeRuleCreateDto dto)=>
         (await _codeRuleService.CreateAsync(dto)).Wrap();
 
@@ -113,5 +115,19 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         {
             return await _codeRuleService.GenerateCodeByCodeAsync(codeNumber);
         }
+
+        /// <summary>
+        /// 修改编码规则状态
+        /// </summary>
+        /// <param name="codeNumber"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id:guid}/state")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:notice:{ScopeMethodType.Edit}")]
+        public async Task<ResponseWrapper<CodeRuleReadDto?>> GetGenerateCodeByCodeAsync(Guid id, bool? state) =>
+             (await _codeRuleService.GetGenerateCodeByCodeAsync(id, state)).Wrap();
+
     }
 }
