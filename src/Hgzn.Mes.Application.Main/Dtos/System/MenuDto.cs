@@ -107,7 +107,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         /// <summary>
         ///     路由名称
         /// </summary>
-        public string? Route { get; set; }
+        public string? RouteName { get; set; }
 
         public string? ScopeCode { get; set; }
 
@@ -145,7 +145,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         /// <summary>
         ///     路由名称
         /// </summary>
-        public string? Route { get; set; }
+        public string? RouteName { get; set; }
 
         public string? ScopeCode { get; set; }
 

@@ -61,11 +61,11 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// <param name="force"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("id/{id:guid}")]
+        [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<int>> DeleteMenu(Guid id, bool force = false) =>
-            (await _menuService.DeleteMenuAsync(id, force)).Wrap();
+            (await _menuService.DeleteAsync(id)).Wrap();
 
         /// <summary>
         ///     添加菜单
@@ -77,5 +77,28 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<MenuReadDto>> CreateMenuAsync(MenuCreateDto dto) =>
             (await _menuService.CreateAsync(dto)).Wrap()!;
+        
+        /// <summary>
+        ///     获取菜单详情
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ResponseWrapper<MenuReadDto>> GetMenuAsync(Guid id) =>
+            (await _menuService.GetAsync(id)).Wrap();
+        /// <summary>
+        ///     获取菜单详情
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ResponseWrapper<MenuReadDto>> UpdateMenuAsync(Guid id,MenuUpdateDto dto) =>
+            (await _menuService.UpdateAsync(id,dto)).Wrap();
     }
 }
