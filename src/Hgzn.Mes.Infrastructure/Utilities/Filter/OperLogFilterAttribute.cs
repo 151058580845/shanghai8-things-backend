@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Log;
+﻿//using Hgzn.Mes.Domain.Entities.System.Log;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
@@ -31,17 +31,17 @@ public class OperLogFilterAttribute:ActionFilterAttribute
         var ipTool = IpTool.Search(ip);
         
         string location = ipTool.Province + "-" + ipTool.City;
-        
-        var logEntity = new OperatorLog
-        {
-            Id = Guid.NewGuid(),
-            OperIp = ip,
-            OperLocation = location,
-            RequestMethod = resultContext.HttpContext.Request.Method,
-            Method = resultContext.HttpContext.Request.Path.Value,
-            OperUser = _currentUser.UserName
-        };
+        // 临时注释
+        //var logEntity = new OperatorLog
+        //{
+        //    Id = Guid.NewGuid(),
+        //    OperIp = ip,
+        //    OperLocation = location,
+        //    RequestMethod = resultContext.HttpContext.Request.Method,
+        //    Method = resultContext.HttpContext.Request.Path.Value,
+        //    OperUser = _currentUser.UserName
+        //};
 
-        await _sugarContext.DbContext.Insertable(logEntity).ExecuteCommandAsync();
+        //await _sugarContext.DbContext.Insertable(logEntity).ExecuteCommandAsync();
     }
 }

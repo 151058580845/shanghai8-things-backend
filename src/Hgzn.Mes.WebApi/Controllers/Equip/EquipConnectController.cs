@@ -85,5 +85,45 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipConnectReadDto?>> GetAsync(Guid id) =>
             (await _equipConnectService.GetAsync(id)).Wrap()!;
+
+        /// <summary>
+        /// 开始连接
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id:guid}/startconnect")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
+        public async Task StartConnectAsync(Guid id) =>
+            await _equipConnectService.PutStartConnect(id);
+
+        /// <summary>
+        /// 停止连接
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id:guid}/stopconnect")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
+        public async Task StopConnectAsync(Guid id) =>
+            await _equipConnectService.StopConnectAsync(id);
+
+        /// <summary>
+        /// 测试连接
+        /// </summary>
+        /// <param name="protocolEnum"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("testconnection")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
+        public async Task StopConnectAsync(Domain.Shared.Enums.Protocol protocolEnum, string connectionString) =>
+            await _equipConnectService.TestConnection(protocolEnum, connectionString);
     }
 }

@@ -11,6 +11,7 @@ using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using SqlSugar;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -20,10 +21,10 @@ public class EquipConnService : SugarCrudAppService<
     EquipConnectCreateDto, EquipConnectUpdateDto>,
     IEquipConnService
 {
-    private readonly EquipLedgerService _equipLedgerService;
+    private readonly IEquipLedgerService _equipLedgerService;
     private readonly IMqttExplorer _mqttExplorer;
 
-    public EquipConnService(EquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer)
+    public EquipConnService(IEquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer)
     {
         _equipLedgerService = equipLedgerService;
         _mqttExplorer = mqttExplorer;
@@ -44,12 +45,16 @@ public class EquipConnService : SugarCrudAppService<
         var query = Queryable
             .Where(t => equipIds.Contains(t.EquipId));
         RefAsync<int> total = await query.CountAsync();
-        var entities = await query
-            .Skip(queryDto.PageIndex)
-            .Take(queryDto.PageSize)
-            .Includes(t => t.ForwardEntities)
-            .Includes(t => t.EquipLedger, eq => eq!.EquipTypeAggregate)
-            .ToListAsync();
+        List<EquipConnect> entities = new List<EquipConnect>();
+        try
+        {
+            entities = await query
+               .Skip(queryDto.PageIndex)
+               .Take(queryDto.PageSize)
+               .Includes(t => t.EquipLedger, eq => eq.EquipTypeAggregate)
+               .ToListAsync();
+        }
+        catch (Exception e) { }
         var outputs = await MapToGetListOutputDtosAsync(entities);
         var equipDictionary = entities
             .Select(t => t.EquipLedger)
@@ -101,8 +106,7 @@ public class EquipConnService : SugarCrudAppService<
         var entities = await query
             .Skip(queryDto.PageIndex)
             .Take(queryDto.PageSize)
-            .Includes(t => t.ForwardEntities)
-            .Includes(t => t.EquipLedger, eq => eq!.EquipTypeAggregate)
+            .Includes(t => t.EquipLedger, eq => eq.EquipTypeAggregate)
             .ToListAsync();
         var outputs = await MapToGetListOutputDtosAsync(entities);
         var equipDictionary = entities
@@ -160,8 +164,8 @@ public class EquipConnService : SugarCrudAppService<
                 .WithUri(connect.EquipId.ToString());
 
         ConnInfo<SocketConnInfo> info = new ConnInfo<SocketConnInfo>();
-        info.ConnType = ConnType.Scoket;
-        info.Content = new SocketConnInfo() { Address = "192.168.110.94", Port = 502 };
+        info.ConnType = connect.ProtocolEnum;
+        //info.Content = connect.ConnectStr;
         info.Type = CmdType.Conn;
         string socketDto = JsonSerializer.Serialize(info);
         byte[] msg = Encoding.UTF8.GetBytes(socketDto);

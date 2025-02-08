@@ -14,7 +14,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         }
         public static ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
 
-        public IEquipConnector AddEquip(Guid id, ConnType type)
+        public IEquipConnector AddEquip(Guid id, Protocol type)
         {
             if (Connections.TryGetValue(id, out var value))
             {
@@ -23,7 +23,7 @@ namespace Hgzn.Mes.Iot.EquipManager
             IEquipConnector? connector = null;
             switch (type)
             {
-                case ConnType.Scoket:
+                case Protocol.ModbusTcp:
                     connector = new RfidReaderConnector(_mqtt);
                     if (Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");

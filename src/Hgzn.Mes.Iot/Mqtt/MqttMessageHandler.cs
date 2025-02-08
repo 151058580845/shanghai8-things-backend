@@ -100,10 +100,10 @@ namespace Hgzn.Mes.Iot.Mqtt
                 case CmdType.Conn:
                     var connType = node.AsObject()
                         .FirstOrDefault(obj => obj.Key == "connType")
-                        .Value?.GetValue<ConnType>();
+                        .Value?.GetValue<Protocol>();
                     ConnInfoBase connInfo = connType switch
                     {
-                        ConnType.Scoket => jobj.GetValue<ConnInfo<SocketConnInfo>>(),
+                        Protocol.ModbusTcp => jobj.GetValue<ConnInfo<SocketConnInfo>>(),
                         _ => throw new ArgumentOutOfRangeException(nameof(connType))
                     };
                     var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, connType.Value);
