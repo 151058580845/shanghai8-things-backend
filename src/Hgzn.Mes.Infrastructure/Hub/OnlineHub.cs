@@ -1,51 +1,49 @@
 ﻿using Hgzn.Mes.Domain.Entities.Hub;
-using Hgzn.Mes.Domain.Entities.System.Monitor;
-using Hgzn.Mes.Domain.Entities.System.Audit;
 using Hgzn.Mes.Domain.Shared.Exceptions;
+using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using IPTools.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using UAParser;
-using LoginLog = Hgzn.Mes.Domain.Entities.System.Audit.LoginLog;
-
+using LoginLog = Hgzn.Mes.Domain.Entities.Audit.LoginLog;
 namespace Hgzn.Mes.Infrastructure.Hub;
 
 public class OnlineHub:Microsoft.AspNetCore.SignalR.Hub
 {
-    public static readonly List<OnlineUser> OnlineUsers = new();
-    public static readonly object objLock = new object();
-    private readonly HttpContext? _httpContextAccessor;
+    private static readonly List<OnlineUser> OnlineUsers = new();
+    private static readonly object ObjLock = new object();
+    private readonly HttpContext _httpContextAccessor;
     private readonly ILogger<OnlineHub> _logger;
 
     public OnlineHub(IHttpContextAccessor httpContextAccessor, ILogger<OnlineHub> hubContext)
     {
-        _httpContextAccessor = httpContextAccessor.HttpContext;
+        _httpContextAccessor = httpContextAccessor.HttpContext!;
         _logger = hubContext;
     }
 
     public override Task OnConnectedAsync()
     {
-        lock (objLock)
+        lock (ObjLock)
         {
-            var name = Context.User.Identity.Name;
-            var userId = Context.User.Claims.FirstOrDefault(x => x.Type == "id").Value;
+            var name = _httpContextAccessor.User.Identity?.Name;
+            var userId = _httpContextAccessor.User.FindUserId();
             var loginUser = GetInfoByHttpContext(_httpContextAccessor);
             var user = new OnlineUser
             {
                 Browser = loginUser.Browser,
-                LoginLocation = loginUser?.LoginLocation,
-                Ipaddr = loginUser?.LoginIp,
+                LoginLocation = loginUser.LoginLocation,
+                Ipaddr = loginUser.LoginIp,
                 LoginTime = DateTime.Now,
-                Os = loginUser?.Os,
+                Os = loginUser.Os,
                 UserName = name ?? "Null",
-                UserId = Guid.Parse(userId)
+                UserId = userId
             };
             //已登录
             if (Context.UserIdentifier != null)
             {
                 //先移除之前的用户id，一个用户只能一个
-                OnlineUsers.RemoveAll(u => u.UserId == Guid.Parse(userId));
+                OnlineUsers.RemoveAll(u => u.UserId == userId);
                 _logger.LogInformation($"{DateTime.Now}：{name},{Context.ConnectionId}连接服务端success，当前已连接{OnlineUsers.Count}个");
             }
             //全部移除之后，再进行添加
@@ -60,12 +58,12 @@ public class OnlineHub:Microsoft.AspNetCore.SignalR.Hub
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        lock (objLock)
+        lock (ObjLock)
         {
-            var userId = Context.User.Claims.FirstOrDefault(x => x.Type == "id").Value;
+            var userId = _httpContextAccessor.User.FindUserId();
             if (Context.UserIdentifier != null)
             {
-                OnlineUsers.RemoveAll(u => u.UserId == Guid.Parse(userId));
+                OnlineUsers.RemoveAll(u => u.UserId == userId);
                 _logger.LogInformation($"用户{Context.User?.Identity?.Name}离开了，当前已连接{OnlineUsers.Count}个");
             }
             OnlineUsers.RemoveAll(u => u.ConnnectionId == Context.ConnectionId);
@@ -74,7 +72,7 @@ public class OnlineHub:Microsoft.AspNetCore.SignalR.Hub
         return base.OnDisconnectedAsync(exception);
     }
 
-    public LoginLog GetInfoByHttpContext(HttpContext? context)
+    private LoginLog GetInfoByHttpContext(HttpContext? httpContext)
     {
         ClientInfo GetClientInfo(HttpContext? context)
         {
@@ -91,17 +89,9 @@ public class OnlineHub:Microsoft.AspNetCore.SignalR.Hub
             }
             return c;
         }
-        var ipAddr = context.GetClientIp();
-        IpInfo location;
-        if (ipAddr == "127.0.0.1")
-        {
-            location = new IpInfo() { Province = "本地", City = "本机" };
-        }
-        else
-        {
-            location = IpTool.Search(ipAddr);
-        }
-        ClientInfo clientInfo = GetClientInfo(context);
+        var ipAddr = httpContext.GetClientIp();
+        var location = ipAddr == "127.0.0.1" ? new IpInfo() { Province = "本地", City = "本机" } : IpTool.Search(ipAddr);
+        var clientInfo = GetClientInfo(httpContext);
         LoginLog entity = new()
         {
             Browser = clientInfo.Device.Family,

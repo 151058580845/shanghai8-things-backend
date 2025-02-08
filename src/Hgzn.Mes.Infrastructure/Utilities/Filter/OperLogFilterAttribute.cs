@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Audit;
+﻿using Hgzn.Mes.Domain.Entities.Audit;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
@@ -39,7 +39,8 @@ public class OperLogFilterAttribute:ActionFilterAttribute
             OperLocation = location,
             RequestMethod = resultContext.HttpContext.Request.Method,
             Method = resultContext.HttpContext.Request.Path.Value,
-            OperUser = _currentUser.UserName
+            OperUser = _currentUser.UserName,
+            RequestParam = resultContext.HttpContext.Request.QueryString.Value,
         };
 
         await _sugarContext.DbContext.Insertable(logEntity).ExecuteCommandAsync();

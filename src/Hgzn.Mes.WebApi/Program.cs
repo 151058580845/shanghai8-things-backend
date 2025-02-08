@@ -18,6 +18,7 @@ using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.Filter;
 using IPTools.Core;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -165,12 +166,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-// app.UseRouting();
 app.MapHub<OnlineHub>("/hub/online");
 // app.Services.GetService<InitialDatabase>()?.Initialize();
 app.Services.GetService<SqlSugarContext>()?.InitTables();

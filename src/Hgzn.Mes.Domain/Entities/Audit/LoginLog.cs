@@ -1,7 +1,7 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 
-namespace Hgzn.Mes.Domain.Entities.System.Audit;
+namespace Hgzn.Mes.Domain.Entities.Audit;
 
 public class LoginLog : UniversalEntity, ISoftDelete, IAudited
 {
