@@ -1,18 +1,16 @@
 ﻿using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
+using Hgzn.Mes.Domain.ValueObjects.Message.Commads;
+using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Hgzn.Mes.Iot.EquipManager;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
-using System.Text;
 using System.Text.Json.Nodes;
-using Hgzn.Mes.Application.Main.Utilities;
-using Hgzn.Mes.Iot.ProtocolManager;
-using Hgzn.Mes.Iot.ProtocolManager.RfidReader;
-using Hgzn.Mes.Iot.Redis;
 
 namespace Hgzn.Mes.Iot.Mqtt
 {
@@ -21,15 +19,15 @@ namespace Hgzn.Mes.Iot.Mqtt
         public MqttMessageHandler(
             IConnectionMultiplexer connectionMultiplexer,
             ILogger<MqttMessageHandler> logger,
-            RedisService redisService)
+            ConnManager manager)
         {
             _connectionMultiplexer = connectionMultiplexer;
             _logger = logger;
-            _redisService = redisService;
+            _manager = manager;
         }
 
-        private readonly RedisService _redisService;
         private readonly IConnectionMultiplexer _connectionMultiplexer;
+        private readonly ConnManager _manager;
         private readonly ILogger<MqttMessageHandler> _logger;
         private IMqttExplorer _mqttExplorer = null!;
         private static ConcurrentDictionary<string, List<(int heart, int breath)>> _rawDataPackage = new();
@@ -54,6 +52,11 @@ namespace Hgzn.Mes.Iot.Mqtt
                 case MqttTag.Data:
                     await HandleDataAsync(topic, message.PayloadSegment.Array!);
                     break;
+                    
+                case MqttTag.Cmd:
+                    var cmd = JsonNode.Parse(message.ConvertPayloadToString());
+                    await HandleCmdAsync(topic, cmd!);
+                    break;
 
                 case MqttTag.Health:
                     //var health = new DeviceHealthMsg(message.ConvertPayloadToString());
@@ -74,7 +77,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             switch (topic.DeviceType)
             {
                 case "rfidReader":
-                    await EquipControlHelp.AddDeviceManagerAsync(Guid.Parse(topic.DeviceUri),new RfidReaderManages(message.ToString(), _redisService));
+                    //await EquipControlHelp.AddDeviceManagerAsync(Guid.Parse(topic.DeviceUri),new RfidReaderManages(message.ToString(), _redisService));
                     break;
             }
         }
@@ -82,6 +85,37 @@ namespace Hgzn.Mes.Iot.Mqtt
         private Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
             throw new NotImplementedException();
+        }
+
+        private async Task HandleCmdAsync(IotTopic topic, JsonNode node)
+        {
+            var jobj = node.AsObject();
+            var cmdtype = node.AsObject()
+                .FirstOrDefault(obj => obj.Key == "type")
+                .Value?.GetValue<CmdType>();
+            var uri = Guid.Parse(topic.DeviceUri!);
+
+            switch (cmdtype)
+            {
+                case CmdType.Conn:
+                    var connType = node.AsObject()
+                        .FirstOrDefault(obj => obj.Key == "connType")
+                        .Value?.GetValue<ConnType>();
+                    ConnInfoBase connInfo = connType switch
+                    {
+                        ConnType.Scoket => jobj.GetValue<ConnInfo<SocketConnInfo>>(),
+                        _ => throw new ArgumentOutOfRangeException(nameof(connType))
+                    };
+                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, connType.Value);
+                    await equip.ConnectAsync(connInfo);
+                    await equip.StartAsync();
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(cmdtype));
+            }
+
+            
         }
 
         private void HandleHealthAsync(IotTopic topic,

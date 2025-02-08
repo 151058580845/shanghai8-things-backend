@@ -86,11 +86,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
         /// <summary>
         /// 编号
         /// </summary>
-        public string ItemCode { get; set; }
+        public string ItemCode { get; set; } = null!;
         /// <summary>
         /// 名称
         /// </summary>
-        public string ItemName { get; set; }
+        public string ItemName { get; set; } = null!;
         /// <summary>
         /// 类型
         /// </summary>
@@ -118,13 +118,9 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
     public class EquipItemsUpdateDto : UpdateDto
     {
         /// <summary>
-        /// 编号
-        /// </summary>
-        public string ItemCode { get; set; }
-        /// <summary>
         /// 名称
         /// </summary>
-        public string ItemName { get; set; }
+        public string? ItemName { get; set; }
         /// <summary>
         /// 类型
         /// </summary>

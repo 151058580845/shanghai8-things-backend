@@ -48,10 +48,9 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
     public class MenuReaderRouterDto : ReadDto
     {
-        public Guid Id { get; set; }
         public Guid? ParentId { get; set; }
-        public string Path { get; set; }
-        public string Name { get; set; }
+        public string? Path { get; set; }
+        public string? Name { get; set; }
         public MetaDto Meta { get; set; } = new MetaDto();
     
         public string? component { get; set; }
@@ -60,8 +59,8 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
     
     public class MetaDto : ReadDto
     {
-        public string Icon { get; set; }
-        public string Title { get; set; }
+        public string? Icon { get; set; }
+        public string? Title { get; set; }
 
         public List<string>? Roles { get; set; }
 

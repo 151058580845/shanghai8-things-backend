@@ -8,7 +8,7 @@ namespace Hgzn.Mes.Domain.Shared.Enums
 {
     public class EnumFieldInfo
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         public int Value { get; set; }
     }
 }

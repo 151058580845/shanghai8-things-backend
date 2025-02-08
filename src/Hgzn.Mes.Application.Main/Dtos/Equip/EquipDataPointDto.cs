@@ -1,21 +1,15 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.Shared.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Application.Main.Dtos.Equip
 {
     public class EquipDataPointReadDto : ReadDto
     {
-        public Guid Id { get; set; }
-        public string Code { get; set; }
+        public string Code { get; set; } = null!;
 
-        public string EquipName { get; set; }
+        public string EquipName { get; set; } = null!;
 
-        public string EquipCode { get; set; }
+        public string EquipCode { get; set; } = null!;
 
         public string? Remark { get; set; }
 
@@ -41,7 +35,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
 
     public class EquipDataPointCreateDto : CreateDto
     {
-        public string Code { get; set; }
+        public string Code { get; set; } = null!;
 
         public Guid ConnectionId { get; set; }
 
@@ -57,7 +51,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
 
     public class EquipDataPointUpdateDto : UpdateDto
     {
-        public string Code { get; set; }
+        public string Code { get; set; } = null!;
 
         public Guid ConnectionId { get; set; }
 

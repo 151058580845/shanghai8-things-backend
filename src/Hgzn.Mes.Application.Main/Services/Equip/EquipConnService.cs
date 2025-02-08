@@ -1,7 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
-using Hgzn.Mes.Domain.ProtocolManagers;
 using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
@@ -17,12 +16,10 @@ public class EquipConnService : SugarCrudAppService<
     IEquipConnService
 {
     private readonly EquipLedgerService _equipLedgerService;
-    private readonly IMemoryCacheDomainService _memoryCacheDomainService;
 
-    public EquipConnService(EquipLedgerService equipLedgerService, IMemoryCacheDomainService memoryCacheDomainService)
+    public EquipConnService(EquipLedgerService equipLedgerService)
     {
-        this._equipLedgerService = equipLedgerService;
-        this._memoryCacheDomainService = memoryCacheDomainService;
+        _equipLedgerService = equipLedgerService;
     }
 
 
@@ -59,8 +56,6 @@ public class EquipConnService : SugarCrudAppService<
                 outputDto.EquipCode = entity?.EquipCode;
                 outputDto.EquipName = entity?.EquipCode;
                 outputDto.TypeName = entity?.EquipTypeAggregate?.TypeName;
-                outputDto.ConnectState = await IsConnectedAsync(outputDto.EquipId);
-                outputDto.ConnectStateStr = outputDto.ConnectState ? "已连接" : "未连接";
                 // 判断是否为 RFID 设备，并填充状态
                 if (outputDto.ProtocolEnum == Protocol.RfidReaderClient)
                 {
@@ -80,19 +75,6 @@ public class EquipConnService : SugarCrudAppService<
     {
         var dots = Mapper.Map<List<EquipConnectReadDto>>(equipLedgerQueryDtos);
         return await Task.FromResult(dots);
-    }
-
-    public async Task<bool> IsConnectedAsync(Guid connectionId)
-    {
-        var entity = await _memoryCacheDomainService.GetOrAddAsync(
-            connectionId.ToString(),
-            async () => new EquipStatus
-            {
-                ConnectId = connectionId,
-                ConnectStatus = await EquipControlHelp.IsConnectedAsync(connectionId)
-            });
-
-        return entity.ConnectStatus;
     }
 
     public override Task<IEnumerable<EquipConnectReadDto>> GetListAsync(EquipConnectQueryDto? queryDto)
