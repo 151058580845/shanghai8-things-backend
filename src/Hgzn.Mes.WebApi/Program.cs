@@ -80,7 +80,10 @@ builder.Services.AddAuthorization(options =>
 );
 
 //注册SignalR
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    // options.EnableDetailedErrors = true;
+});
 
 //注册hangfire
 // builder.Services.AddHangfireServer();
@@ -158,6 +161,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
@@ -166,7 +170,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<OnlineHub>("/hub/main");
+// app.UseRouting();
+app.MapHub<OnlineHub>("/hub/online");
 // app.Services.GetService<InitialDatabase>()?.Initialize();
 app.Services.GetService<SqlSugarContext>()?.InitTables();
 app.Services.GetService<IMqttExplorer>()?.StartAsync();

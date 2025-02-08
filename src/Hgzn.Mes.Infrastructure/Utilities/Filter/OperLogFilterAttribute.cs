@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Log;
+﻿using Hgzn.Mes.Domain.Entities.System.Audit;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;

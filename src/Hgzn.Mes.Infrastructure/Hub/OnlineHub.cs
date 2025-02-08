@@ -1,11 +1,13 @@
 ﻿using Hgzn.Mes.Domain.Entities.Hub;
 using Hgzn.Mes.Domain.Entities.System.Monitor;
+using Hgzn.Mes.Domain.Entities.System.Audit;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using IPTools.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using UAParser;
+using LoginLog = Hgzn.Mes.Domain.Entities.System.Audit.LoginLog;
 
 namespace Hgzn.Mes.Infrastructure.Hub;
 
