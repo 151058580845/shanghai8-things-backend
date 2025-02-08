@@ -2,15 +2,9 @@
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
-using Hgzn.Mes.Domain.ProtocolManagers;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip
 {
@@ -30,8 +24,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         {
             RefAsync<int> total = 0;
             var entites = await Queryable
-                .WhereIF(queryDto != null && queryDto.State == null, t => t.State == queryDto.State)
-                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto.Code))
+                .WhereIF(queryDto != null && queryDto.State == null, t => t.State == queryDto!.State)
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto!.Code!))
                 .ToListAsync();
             IEnumerable<EquipDataPointReadDto> outputs = Mapper.Map<IEnumerable<EquipDataPointReadDto>>(entites);
             foreach (EquipDataPointReadDto entity in outputs)
@@ -39,8 +33,6 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 if (entity.ConnectionId != null)
                 {
                     //获取连接状态
-                    entity.ConnectState = await _equipConnService.IsConnectedAsync(entity.ConnectionId.Value);
-                    entity.CollectStatus = EquipControlHelp.GetStatusByPointId(entity.Id);
                     // entity.Data = await RedieService.GetRedisDataAsync(entity.Code);
                 }
             }
@@ -53,7 +45,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             RefAsync<int> total = 0;
             var entites = await Queryable
                 .WhereIF(queryDto.State == null, t => t.State == queryDto.State)
-                .WhereIF(!string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto.Code))
+                .WhereIF(!string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto!.Code!))
                 .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
             IEnumerable<EquipDataPointReadDto> outputs = Mapper.Map<IEnumerable<EquipDataPointReadDto>>(entites);
             foreach (EquipDataPointReadDto entity in outputs)
@@ -61,8 +53,6 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 if (entity.ConnectionId != null)
                 {
                     //获取连接状态
-                    entity.ConnectState = await _equipConnService.IsConnectedAsync(entity.ConnectionId.Value);
-                    entity.CollectStatus = EquipControlHelp.GetStatusByPointId(entity.Id);
                     // entity.Data = await RedieService.GetRedisDataAsync(entity.Code);
                 }
             }

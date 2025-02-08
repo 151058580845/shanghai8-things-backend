@@ -31,8 +31,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         {
             RefAsync<int> total = 0;
             var entities = await Queryable
-                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.PlanCode), x => x.PlanCode.Contains(queryDto.PlanCode))
-                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.PlanName), x => x.PlanName.Contains(queryDto.PlanName))
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.PlanCode), x => x.PlanCode!.Contains(queryDto.PlanCode))
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.PlanName), x => x.PlanName!.Contains(queryDto.PlanName))
                 .OrderBy(x => x.OrderNum)
                 .ToListAsync();
             return Mapper.Map<IEnumerable<EquipMaintenancePlanReadDto>>(entities);

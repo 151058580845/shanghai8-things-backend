@@ -181,14 +181,14 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// <summary>
         /// 返回对应的字典
         /// </summary>
-        /// <param name="codeNumber"></param>
+        /// <param name="dictLabel"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("dic-label/{DictLabel}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:notice:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<List<NameValueDto>>> GetListByLabelAsync(string dictLabel)=>
+        public async Task<ResponseWrapper<List<NameValueDto>?>> GetListByLabelAsync(string dictLabel)=>
             (await _infoService.GetNameValueByTypeAsync(dictLabel)).Wrap();
            
         #endregion

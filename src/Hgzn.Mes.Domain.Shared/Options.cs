@@ -8,7 +8,7 @@ namespace Hgzn.Mes.Domain.Shared
         public static JsonSerializerOptions CustomJsonSerializerOptions { get; set; } = new JsonSerializerOptions
         {
             AllowTrailingCommas = true,
-            PropertyNameCaseInsensitive = false,
+            PropertyNameCaseInsensitive = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
     }

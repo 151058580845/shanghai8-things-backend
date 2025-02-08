@@ -1,10 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.Base.Audited;
-using Hgzn.Mes.Domain.Entities.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Hgzn.Mes.Domain.Entities.Base;
 using System.ComponentModel;
 
 namespace Hgzn.Mes.Application.Main.Dtos.Equip
@@ -13,7 +7,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
     {
         [Description("RFID的TID")]
 
-        public string RfidTid { get; set; }
+        public string RfidTid { get; set; } = null!;
 
         [Description("设备编号")]
 

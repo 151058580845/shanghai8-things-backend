@@ -20,9 +20,9 @@ public class Attachment : UniversalEntity, ISoftDelete, IAudited
     /// <summary>
     /// 文件名 
     ///</summary>
-    public string FileName { get; set; }
+    public string? FileName { get; set; }
     /// <summary>
     /// 文件路径 
     ///</summary>
-    public string FilePath { get; set; }
+    public string? FilePath { get; set; }
 }

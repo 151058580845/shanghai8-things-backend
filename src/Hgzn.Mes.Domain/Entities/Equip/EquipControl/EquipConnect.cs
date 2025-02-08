@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared.Enums;
 using System.ComponentModel;
@@ -9,7 +10,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 /// 设备采集信息配置表
 /// </summary>
 [Description("设备采集信息配置表")]
-public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder
+public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudited
 {
     public DateTime CreationTime { get; set; }
     public Guid? CreatorId { get; set; }
