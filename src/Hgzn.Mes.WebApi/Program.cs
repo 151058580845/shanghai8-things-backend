@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Hgzn.Mes.Application.Main.Auth;
@@ -11,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
+using System.Text.Json;
 using Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Hub;
@@ -19,6 +21,7 @@ using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.Filter;
 using IPTools.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
+using SqlSugar;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,7 +73,23 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidAudience = SettingUtil.Jwt.Audience,
         RequireExpirationTime = true,
-        ValidateLifetime = true
+        ValidateLifetime = true,
+    };
+// 监听 Token 验证成功事件
+    option.Events = new JwtBearerEvents()
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            //WebSocket不支持自定义报文头，所以把JWT通过url中的QueryString传递
+            var path = context.HttpContext.Request.Path;
+            //如果是MyHub的请求，就在服务器端的OnMessageReceived中把QueryString中的JWT读出来赋值给context.Token
+            if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/hub")))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -83,7 +102,7 @@ builder.Services.AddAuthorization(options =>
 //注册SignalR
 builder.Services.AddSignalR(options =>
 {
-    // options.EnableDetailedErrors = true;
+    options.EnableDetailedErrors = true;
 });
 
 //注册hangfire
@@ -164,12 +183,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.UseDeveloperExceptionPage();
 }
-
-app.UseHttpsRedirection();
 app.UseRouting();
+app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+//ORM源码：
+if (StaticConfig.AppContext_ConvertInfinityDateTime == false)
+{
+    AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+    AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+}
 app.MapControllers();
 app.MapHub<OnlineHub>("/hub/online");
 // app.Services.GetService<InitialDatabase>()?.Initialize();

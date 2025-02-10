@@ -16,7 +16,7 @@ public class OperatorLog:UniversalEntity,ICreationAudited
     /// 操作类型 
     ///</summary>
     [Description("OperType")]
-    public OperEnum OperType { get; set; }
+    public string OperType { get; set; }
     /// <summary>
     /// 请求方法 
     ///</summary>
