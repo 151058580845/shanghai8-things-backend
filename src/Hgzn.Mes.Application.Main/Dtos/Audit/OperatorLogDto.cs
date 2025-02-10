@@ -17,7 +17,7 @@ public class OperatorLogReadDto : ReadDto
     /// <summary>
     /// 操作类型 
     ///</summary>
-    public OperEnum OperType { get; set; }
+    public string? OperType { get; set; }
     /// <summary>
     /// 请求方法 
     ///</summary>

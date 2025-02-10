@@ -1,7 +1,9 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Audit;
 using Hgzn.Mes.Application.Main.Services.Audit.IService;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hgzn.Mes.WebApi.Controllers.Audit;
@@ -21,6 +23,7 @@ public class OperatorLogController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("page")]
+    [Authorize(Policy = $"audit:operatorlog:{ScopeMethodType.Query}")]
     public async Task<ResponseWrapper<PaginatedList<OperatorLogReadDto>>> GetPaginatedListAsync(OperatorLogQueryDto queryDto) =>
         (await _operLogService.GetPaginatedListAsync(queryDto)).Wrap();
 
@@ -28,6 +31,7 @@ public class OperatorLogController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("list")]
+    [Authorize(Policy = $"audit:operatorlog:{ScopeMethodType.Query}")]
     public async Task<ResponseWrapper<IEnumerable<OperatorLogReadDto>?>> GetListAsync(OperatorLogQueryDto queryDto) =>
         (await _operLogService.GetListAsync(queryDto)).Wrap()!;
 }

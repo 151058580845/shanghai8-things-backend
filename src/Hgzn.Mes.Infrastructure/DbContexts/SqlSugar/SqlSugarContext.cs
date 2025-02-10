@@ -33,9 +33,9 @@ public sealed class SqlSugarContext
     {
         _dbOptions = dbOptions;
         _logger = logger;
-        // DbContext = client;
+        DbContext = client;
         _currentUser = currentUser;
-        DbContext = new SqlSugarClient(Build(dbOptions));
+        // DbContext = new SqlSugarClient(Build(dbOptions));
         OnSqlSugarClientConfig(DbContext);
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
