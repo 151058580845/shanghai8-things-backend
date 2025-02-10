@@ -12,7 +12,7 @@ public class ScopeModule:Module
     protected override void Load(ContainerBuilder builder)
     {
         #region 注册sqlSugar
-
+        
         builder.Register(context =>
             {
                 var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))
@@ -20,6 +20,17 @@ public class ScopeModule:Module
                 return new SqlSugarClient(SqlSugarContext.Build(setting));
             })
             .As<ISqlSugarClient>()
+            .InstancePerLifetimeScope();
+        builder.Register(context =>
+            {
+                var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))
+                    .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
+                var logger = context.Resolve<ILogger<SqlSugarContext>>();
+                var client = context.Resolve<ISqlSugarClient>();
+                var user = context.Resolve<ICurrentUser>();
+                return new SqlSugarContext(logger, setting,client, user);
+            })
+            .PropertiesAutowired()
             .InstancePerLifetimeScope();
         #endregion
 

@@ -65,7 +65,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<RoleReadDto>?>> GetRoles(RoleQueryDto queryDto) =>
+        public async Task<ResponseWrapper<PaginatedList<RoleReadDto>>> GetPaginatedListAsync(RoleQueryDto queryDto) =>
             (await _roleService.GetPaginatedListAsync(queryDto)).Wrap();
         /// <summary>
         ///     创建新角色
