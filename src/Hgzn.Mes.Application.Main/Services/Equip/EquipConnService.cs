@@ -165,7 +165,7 @@ public class EquipConnService : SugarCrudAppService<
 
         ConnInfo<SocketConnInfo> info = new ConnInfo<SocketConnInfo>();
         info.ConnType = connect.ProtocolEnum;
-        //info.Content = connect.ConnectStr;
+        info.ConnString = connect.ConnectStr;
         info.Type = CmdType.Conn;
         string socketDto = JsonSerializer.Serialize(info);
         byte[] msg = Encoding.UTF8.GetBytes(socketDto);
