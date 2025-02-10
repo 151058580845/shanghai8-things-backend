@@ -605,4 +605,8 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/csharp,visualstudio,visualstudiocode
+<<<<<<< HEAD
 HGZNTest.db
+=======
+/src/Hgzn.Mes.WebApi/HGZNTest.db
+>>>>>>> xa
