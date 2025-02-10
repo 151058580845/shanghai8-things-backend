@@ -1,8 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Hub;
-<<<<<<< HEAD
-=======
 using Hgzn.Mes.Domain.Entities.System.Monitor;
->>>>>>> xa
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using IPTools.Core;
