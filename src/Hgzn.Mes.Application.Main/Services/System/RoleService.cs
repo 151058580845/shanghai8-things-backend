@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
+using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
@@ -37,18 +38,21 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<bool> ModifyRoleMenuAsync(Guid roleId, List<Guid> menuIds)
         {
-            var roleMenuns = menuIds.Select(m => new RoleMenu
+            var roleMenuns = await menuIds.Select(m => new RoleMenu
             {
                 RoleId = roleId,
                 MenuId = m
-            });
+            }).ToListAsync();
             var role = await GetAsync(roleId) ??
                 throw new NotFoundException("role is not exist");
+            
             var result = await DbContext.Ado.UseTranAsync(async () =>
             {
-                // 获取现有的菜单 ID
+                // 删除角色菜单
                 await DbContext.Deleteable<RoleMenu>().Where(s => s.RoleId == roleId).ExecuteCommandAsync();
-                await DbContext.Insertable<RoleMenu>(roleMenuns).ExecuteCommandAsync();
+    
+                // 插入新的角色菜单
+                await DbContext.Insertable(roleMenuns).ExecuteCommandAsync(); 
             });
             if (result.IsSuccess)
             {
@@ -73,6 +77,31 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Select(r => r.Users ?? Array.Empty<User>())
                 .ToArrayAsync();
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
+        }
+
+        public async Task<bool> ModifyRoleUserAsync(Guid roleId, List<Guid> userIds)
+        {
+            var roleUsers = await userIds.Select(m => new UserRole()
+            {
+                RoleId = roleId,
+                UserId = m
+            }).ToListAsync();
+            var role = await GetAsync(roleId) ??
+                       throw new NotFoundException("role is not exist");
+            
+            var result = await DbContext.Ado.UseTranAsync(async () =>
+            {
+                // 删除角色菜单
+                await DbContext.Deleteable<UserRole>().Where(s => s.RoleId == roleId).ExecuteCommandAsync();
+    
+                // 插入新的角色菜单
+                await DbContext.Insertable(roleUsers).ExecuteCommandAsync(); 
+            });
+            if (result.IsSuccess)
+            {
+                return true;
+            }
+            throw result.ErrorException;
         }
 
         public override async Task<IEnumerable<RoleReadDto>> GetListAsync(RoleQueryDto? queryDto = null)

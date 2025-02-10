@@ -9,6 +9,7 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
+using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
@@ -111,6 +112,12 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public Task<int> SetMenuRouteAsync()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<MenuReadDto>> GetMenuByRoleIdAsync(Guid id)
+        {
+           var list = await Queryable.Where(t=> SqlFunc.Subqueryable<RoleMenu>().Where(m=>m.RoleId == id && m.MenuId == t.Id).Any()).ToListAsync();
+           return Mapper.Map<IEnumerable<MenuReadDto>>(list);
         }
 
         public async Task<int> DeleteMenuAsync(Guid id, bool force)

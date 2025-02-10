@@ -15,6 +15,7 @@ using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Microsoft.Extensions.Logging;
+using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
 {
@@ -107,13 +108,12 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public override async Task<IEnumerable<UserReadDto>> GetListAsync(UserQueryDto? query)
         {
             var users = await Queryable
-                .Where(u => query == null || (query.Filter == null ||
-                                              (u.Phone != null && u.Phone.Contains(query.Filter)) ||
-                                              u.Username.Contains(query.Filter) ||
-                                              (u.Nick != null && u.Nick.Contains(query.Filter)))
-                    && u.State == query.State)
+                .Where(u => u.Phone != null && (string.IsNullOrEmpty(query.Phone) || u.Phone.Contains(query.Phone)))
+                .Where(u => string.IsNullOrEmpty(query.UserName) || u.Username.Contains(query.UserName))
+                .Where(u => query.DeptId == null || u.DeptId == query.DeptId)
+                .Where(u =>query.State == null || u.State == query.State)
                 .Includes(u => u.Roles)
-                .ToArrayAsync();
+                .ToListAsync();
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
         }
 
@@ -173,13 +173,19 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return await DbContext.Updateable(user).ExecuteCommandAsync();
         }
 
+        public async Task<IEnumerable<UserReadDto>> GetUserListByRoleId(Guid roleId)
+        {
+           var list = await Queryable.Where(t=>SqlFunc.Subqueryable<UserRole>().Where(m=>m.RoleId == roleId && m.UserId == t.Id).Any()).ToListAsync();
+           return Mapper.Map<IEnumerable<UserReadDto>>(list);
+        }
+
         public override async Task<PaginatedList<UserReadDto>> GetPaginatedListAsync(UserQueryDto query)
         {
             var users = await Queryable
                 .Where(u => u.Phone != null && (string.IsNullOrEmpty(query.Phone) || u.Phone.Contains(query.Phone)))
                 .Where(u => string.IsNullOrEmpty(query.UserName) || u.Username.Contains(query.UserName))
                 .Where(u => query.DeptId == null || u.DeptId == query.DeptId)
-                .Where(u => u.State == query.State)
+                .Where(u =>query.State == null || u.State == query.State)
                 .Includes(u => u.Roles)
                 .ToPaginatedListAsync(query.PageIndex, query.PageSize);
             return Mapper.Map<PaginatedList<UserReadDto>>(users);

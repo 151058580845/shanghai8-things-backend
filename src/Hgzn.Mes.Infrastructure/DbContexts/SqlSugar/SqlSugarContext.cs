@@ -172,7 +172,7 @@ public sealed class SqlSugarContext
                         .ManyToMany(t => t.Menus, typeof(RoleMenu), nameof(RoleMenu.RoleId), nameof(RoleMenu.MenuId));
                     c.IfTable<CodeRule>()
                      .OneToMany(t => t.CodeRuleRules, nameof(CodeRuleDefine.CodeRuleId), nameof(CodeRule.Id));
-
+                    
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();
@@ -187,10 +187,14 @@ public sealed class SqlSugarContext
                         c.IsIgnore = true;
                     }
 
+                    // if (c.EntityName == nameof(RoleMenu))
+                    // {
+                    //     Console.WriteLine("asdasd");
+                    // }
                     if (name == "id")
                     {
                         c.IsPrimarykey = true;
-                        c.IsIdentity = p.GetType() == typeof(int) || p.GetType() == typeof(long);
+                        c.IsIdentity = p.PropertyType == typeof(int) || p.PropertyType == typeof(long);
                     }
                 }
             }

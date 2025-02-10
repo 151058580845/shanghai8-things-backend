@@ -100,5 +100,17 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<MenuReadDto>> UpdateMenuAsync(Guid id,MenuUpdateDto dto) =>
             (await _menuService.UpdateAsync(id,dto)).Wrap();
+        
+        /// <summary>
+        ///     获取菜单详情
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("role-id/{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetMenuByRoleIdAsync(Guid id) =>
+            (await _menuService.GetMenuByRoleIdAsync(id)).Wrap();
     }
 }

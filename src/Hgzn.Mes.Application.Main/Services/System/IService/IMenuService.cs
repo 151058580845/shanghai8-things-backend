@@ -17,5 +17,6 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
         Task<int> DeleteMenuAsync(Guid id, bool force);
 
         Task<int> SetMenuRouteAsync();
+        Task<IEnumerable<MenuReadDto>> GetMenuByRoleIdAsync(Guid id);
     }
 }

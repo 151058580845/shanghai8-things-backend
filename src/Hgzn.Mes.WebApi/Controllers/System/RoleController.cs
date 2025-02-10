@@ -85,16 +85,29 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         ///     auth: super
         /// </summary>
         /// <param name="roleId">角色id</param>
-        /// <param name="menus">权限列表</param>
+        /// <param name="menuIds">权限列表</param>
         /// <returns>已编辑权限数</returns>
         [HttpPut]
         [Route("{roleId:guid}/menus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<bool>> ModifyRoleMenu(Guid roleId, List<Guid> menus) =>
-            (await _roleService.ModifyRoleMenuAsync(roleId, menus)).Wrap();
-
+        public async Task<ResponseWrapper<bool>> ModifyRoleMenu(Guid roleId, List<Guid> menuIds) =>
+            (await _roleService.ModifyRoleMenuAsync(roleId, menuIds)).Wrap();
+        /// <summary>
+        ///     编辑角色权限范围
+        ///     auth: super
+        /// </summary>
+        /// <param name="roleId">角色id</param>
+        /// <param name="userIds">权限列表</param>
+        /// <returns>已编辑权限数</returns>
+        [HttpPut]
+        [Route("{roleId:guid}/users")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<bool>> ModifyRoleUser(Guid roleId, List<Guid> userIds) =>
+            (await _roleService.ModifyRoleUserAsync(roleId, userIds)).Wrap();
         /// <summary>
         ///     获取支持的权限范围
         ///     auth: admin

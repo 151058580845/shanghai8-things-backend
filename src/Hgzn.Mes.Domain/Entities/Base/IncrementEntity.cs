@@ -7,6 +7,6 @@ namespace Hgzn.Mes.Domain.Entities.Base
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
+        public int Id { get; set; }
     }
 }

@@ -23,5 +23,6 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
         Task<int> ChangePasswordAsync(ChangePasswordDto passwordDto);
 
         Task<int> ResetPasswordAsync(Guid userId);
+        Task<IEnumerable<UserReadDto>> GetUserListByRoleId(Guid roleId);
     }
 }
