@@ -1,5 +1,4 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
-using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -42,7 +41,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("create")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Add}")]
         public async Task<ResponseWrapper<EquipConnectReadDto?>> CreateAsync(EquipConnectCreateDto input) =>
             (await _equipConnectService.CreateAsync(input)).Wrap()!;
 
@@ -55,7 +54,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Remove}")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Remove}")]
         public async Task<ResponseWrapper<int>> DeleteAsync(Guid id) =>
             (await _equipConnectService.DeleteAsync(id)).Wrap();
 
@@ -69,7 +68,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<EquipConnectReadDto?>> UpdateAsync(Guid id, EquipConnectUpdateDto input) =>
             (await _equipConnectService.UpdateAsync(id, input)).Wrap()!;
 
@@ -82,7 +81,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipConnectReadDto?>> GetAsync(Guid id) =>
             (await _equipConnectService.GetAsync(id)).Wrap()!;
 
@@ -95,7 +94,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}/startconnect")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
         public async Task StartConnectAsync(Guid id) =>
             await _equipConnectService.PutStartConnect(id);
 
@@ -108,7 +107,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}/stopconnect")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
         public async Task StopConnectAsync(Guid id) =>
             await _equipConnectService.StopConnectAsync(id);
 
@@ -122,7 +121,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("testconnection")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
         public async Task StopConnectAsync(Domain.Shared.Enums.Protocol protocolEnum, string connectionString) =>
             await _equipConnectService.TestConnection(protocolEnum, connectionString);
     }

@@ -1,6 +1,5 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.System;
-using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -41,7 +40,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<DictionaryInfoReadDto?>> GetAsync(Guid id) =>
+        public async Task<ResponseWrapper<DictionaryInfoReadDto>> GetAsync(Guid id) =>
             (await _infoService.GetAsync(id)).Wrap();
         /// <summary>
         ///     获取
@@ -53,7 +52,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<List<NameValueDto>?>> GetAsync(string label) =>
+        public async Task<ResponseWrapper<List<NameValueDto>>> GetAsync(string label) =>
             (await _infoService.GetNameValueByTypeAsync(label)).Wrap();
         /// <summary>
         ///     删除
@@ -79,7 +78,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<DictionaryInfoReadDto?>> UpdateAsync(Guid id, DictionaryInfoUpdateDto input) =>
+        public async Task<ResponseWrapper<DictionaryInfoReadDto>> UpdateAsync(Guid id, DictionaryInfoUpdateDto input) =>
             (await _infoService.UpdateAsync(id, input)).Wrap();
 
         /// <summary>
@@ -93,7 +92,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<DictionaryInfoReadDto>?>> GetPaginatedListAsync(DictionaryInfoQueryDto input) =>
+        public async Task<ResponseWrapper<PaginatedList<DictionaryInfoReadDto>>> GetPaginatedListAsync(DictionaryInfoQueryDto input) =>
             (await _infoService.GetPaginatedListAsync(input)).Wrap();
         /// <summary>
         ///     分页查询
@@ -122,7 +121,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<DictionaryTypeReadDto?>> GetDefineAsync(Guid id) =>
+        public async Task<ResponseWrapper<DictionaryTypeReadDto>> GetDefineAsync(Guid id) =>
             (await _typeService.GetAsync(id)).Wrap();
 
         /// <summary>
@@ -148,7 +147,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Add}")]
-        public async Task<ResponseWrapper<DictionaryTypeReadDto?>> CreateDefineAsync(DictionaryTypeCreateDto input) =>
+        public async Task<ResponseWrapper<DictionaryTypeReadDto>> CreateDefineAsync(DictionaryTypeCreateDto input) =>
             (await _typeService.CreateAsync(input)).Wrap();
         /// <summary>
         ///     更新
@@ -161,7 +160,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<DictionaryTypeReadDto?>> UpdateDefineAsync(Guid id, DictionaryTypeUpdateDto input) =>
+        public async Task<ResponseWrapper<DictionaryTypeReadDto>> UpdateDefineAsync(Guid id, DictionaryTypeUpdateDto input) =>
             (await _typeService.UpdateAsync(id, input)).Wrap();
         /// <summary>
         ///     分页查询
@@ -174,7 +173,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:dictionary:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<DictionaryTypeReadDto>?>> GetPaginatedDefineListAsync(DictionaryTypeQueryDto input) =>
+        public async Task<ResponseWrapper<PaginatedList<DictionaryTypeReadDto>>> GetPaginatedDefineListAsync(DictionaryTypeQueryDto input) =>
             (await _typeService.GetPaginatedListAsync(input)).Wrap();
 
 
@@ -188,7 +187,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:notice:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<List<NameValueDto>?>> GetListByLabelAsync(string dictLabel)=>
+        public async Task<ResponseWrapper<List<NameValueDto>>> GetListByLabelAsync(string dictLabel)=>
             (await _infoService.GetNameValueByTypeAsync(dictLabel)).Wrap();
            
         #endregion

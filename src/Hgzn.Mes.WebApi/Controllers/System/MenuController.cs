@@ -1,5 +1,4 @@
-﻿using Hgzn.Mes.Application.Main.Dtos;
-using Hgzn.Mes.Application.Main.Dtos.System;
+﻿using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -76,7 +75,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<MenuReadDto>> CreateMenuAsync(MenuCreateDto dto) =>
-            (await _menuService.CreateAsync(dto)).Wrap()!;
+            (await _menuService.CreateAsync(dto)).Wrap();
         
         /// <summary>
         ///     获取菜单详情
@@ -93,6 +92,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         ///     获取菜单详情
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="dto"></param>
         /// <returns></returns>
         [HttpPut]
         [Route("{id:guid}")]

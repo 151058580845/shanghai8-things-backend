@@ -35,7 +35,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:building:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<BuildingReadDto?>> GetBuildingAsync(Guid id) =>
+    public async Task<ResponseWrapper<BuildingReadDto>> GetBuildingAsync(Guid id) =>
         (await _buildingService.GetAsync(id)).Wrap();
 
     /// <summary>
@@ -61,7 +61,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:building:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<BuildingReadDto?>> CreateBuildingAsync(BuildingCreateDto dto) =>
+    public async Task<ResponseWrapper<BuildingReadDto>> CreateBuildingAsync(BuildingCreateDto dto) =>
         (await _buildingService.CreateAsync(dto)).Wrap();
 
     /// <summary>
@@ -75,7 +75,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:building:{ScopeMethodType.Edit}")]
-    public async Task<ResponseWrapper<BuildingReadDto?>> UpdateBuildingAsync(Guid id, BuildingUpdateDto input) =>
+    public async Task<ResponseWrapper<BuildingReadDto>> UpdateBuildingAsync(Guid id, BuildingUpdateDto input) =>
         (await _buildingService.UpdateAsync(id, input)).Wrap();
 
     /// <summary>
@@ -87,7 +87,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:building:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<PaginatedList<BuildingReadDto>?>> GetBuildingPaginatedListAsync(
+    public async Task<ResponseWrapper<PaginatedList<BuildingReadDto>>> GetBuildingPaginatedListAsync(
         BuildingQueryDto input) =>
         (await _buildingService.GetPaginatedListAsync(input)).Wrap();
 
@@ -118,7 +118,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:floor:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<FloorReadDto?>> GetFloorAsync(Guid id) =>
+    public async Task<ResponseWrapper<FloorReadDto>> GetFloorAsync(Guid id) =>
         (await _floorService.GetAsync(id)).Wrap();
 
     /// <summary>
@@ -144,7 +144,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:floor:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<FloorReadDto?>> CreateFloorAsync(FloorCreateDto dto) =>
+    public async Task<ResponseWrapper<FloorReadDto>> CreateFloorAsync(FloorCreateDto dto) =>
         (await _floorService.CreateAsync(dto)).Wrap();
 
     /// <summary>
@@ -158,7 +158,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:floor:{ScopeMethodType.Edit}")]
-    public async Task<ResponseWrapper<FloorReadDto?>> UpdateFloorAsync(Guid id, FloorUpdateDto input) =>
+    public async Task<ResponseWrapper<FloorReadDto>> UpdateFloorAsync(Guid id, FloorUpdateDto input) =>
         (await _floorService.UpdateAsync(id, input)).Wrap();
 
     /// <summary>
@@ -170,7 +170,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:floor:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<PaginatedList<FloorReadDto>?>> GetFloorPaginatedListAsync(
+    public async Task<ResponseWrapper<PaginatedList<FloorReadDto>>> GetFloorPaginatedListAsync(
         FloorQueryDto input) =>
         (await _floorService.GetPaginatedListAsync(input)).Wrap();
 
@@ -200,7 +200,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:room:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<RoomReadDto?>> GetRoomAsync(Guid id) =>
+    public async Task<ResponseWrapper<RoomReadDto>> GetRoomAsync(Guid id) =>
         (await _roomService.GetAsync(id)).Wrap();
 
     /// <summary>
@@ -226,7 +226,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:room:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<RoomReadDto?>> CreateFloorAsync(RoomCreateDto dto) =>
+    public async Task<ResponseWrapper<RoomReadDto>> CreateFloorAsync(RoomCreateDto dto) =>
         (await _roomService.CreateAsync(dto)).Wrap();
 
     /// <summary>
@@ -240,7 +240,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:room:{ScopeMethodType.Edit}")]
-    public async Task<ResponseWrapper<RoomReadDto?>> UpdateRoomAsync(Guid id, RoomUpdateDto input) =>
+    public async Task<ResponseWrapper<RoomReadDto>> UpdateRoomAsync(Guid id, RoomUpdateDto input) =>
         (await _roomService.UpdateAsync(id, input)).Wrap();
 
     /// <summary>
@@ -254,7 +254,7 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:room:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<PaginatedList<RoomReadDto>?>> GetRoomPaginatedListAsync(RoomQueryDto input) =>
+    public async Task<ResponseWrapper<PaginatedList<RoomReadDto>>> GetRoomPaginatedListAsync(RoomQueryDto input) =>
         (await _roomService.GetPaginatedListAsync(input)).Wrap();
 
     /// <summary>

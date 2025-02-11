@@ -1,8 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
-using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
-using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
@@ -26,7 +24,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("page")]
-        public async Task<ResponseWrapper<PaginatedList<EquipLedgerReadDto>?>> GetPaginatedListAsync(EquipLedgerQueryDto queryDto)
+        public async Task<ResponseWrapper<PaginatedList<EquipLedgerReadDto>>> GetPaginatedListAsync(EquipLedgerQueryDto queryDto)
         => (await _equipLedgerService.GetPaginatedListAsync(queryDto)).Wrap();
 
         [HttpPost]
@@ -41,7 +39,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("namevaluelist")]
         public async Task<ResponseWrapper<IEnumerable<NameValueDto>>> GetNameValueListAsync()
-        => (await _equipLedgerService.GetNameValueListAsync()).Wrap()!;
+        => (await _equipLedgerService.GetNameValueListAsync()).Wrap();
 
 
         /// <summary>
@@ -54,7 +52,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("RfidEquipsList")]
         public async Task<ResponseWrapper<IEnumerable<RfidEquipReadDto>>> GetRfidEquipsListAsync(Guid equipId)
-        => (await _equipLedgerService.GetRfidEquipsListAsync(equipId)).Wrap()!;
+        => (await _equipLedgerService.GetRfidEquipsListAsync(equipId)).Wrap();
 
 
         ///// <summary>
@@ -79,8 +77,8 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("create")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Add}")]
-        public async Task<ResponseWrapper<EquipLedgerReadDto?>> CreateAsync(EquipLedgerCreateDto input) =>
+        [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Add}")]
+        public async Task<ResponseWrapper<EquipLedgerReadDto>> CreateAsync(EquipLedgerCreateDto input) =>
             (await _equipLedgerService.CreateAsync(input)).Wrap();
 
         /// <summary>
@@ -92,7 +90,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Remove}")]
+        [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Remove}")]
         public async Task<ResponseWrapper<int>> DeleteAsync(Guid id) =>
             (await _equipLedgerService.DeleteAsync(id)).Wrap();
 
@@ -106,8 +104,8 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<EquipLedgerReadDto?>> UpdateAsync(Guid id, EquipLedgerUpdateDto input) =>
+        [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Edit}")]
+        public async Task<ResponseWrapper<EquipLedgerReadDto>> UpdateAsync(Guid id, EquipLedgerUpdateDto input) =>
             (await _equipLedgerService.UpdateAsync(id, input)).Wrap();
 
         /// <summary>
@@ -119,8 +117,8 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<EquipLedgerReadDto?>> GetAsync(Guid id) =>
+        [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<EquipLedgerReadDto>> GetAsync(Guid id) =>
             (await _equipLedgerService.GetAsync(id)).Wrap();
     }
 }

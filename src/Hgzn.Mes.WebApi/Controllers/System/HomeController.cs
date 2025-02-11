@@ -1,6 +1,4 @@
-﻿using Hgzn.Mes.Application.Main.Dtos;
-using Hgzn.Mes.Application.Main.Dtos.System;
-using Hgzn.Mes.Application.Main.Services.Base;
+﻿using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -33,7 +31,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("captcha")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ResponseWrapper<CaptchaReadDto?>> GetCaptcha() =>
+        public async Task<ResponseWrapper<CaptchaReadDto>> GetCaptcha() =>
             (await _userService.GenerateCaptchaAsync()).Wrap();
 
         /// <summary>
@@ -48,7 +46,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<string>> Login(UserLoginDto credential) =>
-            (await _userService.LoginAsync(credential)).Wrap()!;
+            (await _userService.LoginAsync(credential)).Wrap();
 
         /// <summary>
         ///     用户登出
@@ -73,7 +71,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ResponseWrapper<UserReadDto?>> Register(UserRegisterDto registerDto) =>
+        public async Task<ResponseWrapper<UserReadDto>> Register(UserRegisterDto registerDto) =>
             (await _userService.RegisterAsync(registerDto)).Wrap();
     }
 }

@@ -40,7 +40,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<CodeRuleReadDto?>> GetAsync(Guid id) =>
+        public async Task<ResponseWrapper<CodeRuleReadDto>> GetAsync(Guid id) =>
             (await _codeService.GetAsync(id)).Wrap();
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<CodeRuleReadDto?>> UpdateAsync(Guid id, CodeRuleUpdateDto input) =>
+        public async Task<ResponseWrapper<CodeRuleReadDto>> UpdateAsync(Guid id, CodeRuleUpdateDto input) =>
             (await _codeService.UpdateAsync(id, input)).Wrap();
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<CodeRuleReadDto>?>> GetPaginatedListAsync(CodeRuleQueryDto input) =>
+        public async Task<ResponseWrapper<PaginatedList<CodeRuleReadDto>>> GetPaginatedListAsync(CodeRuleQueryDto input) =>
             (await _codeService.GetPaginatedListAsync(input)).Wrap();
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<string?>> GenerateCodeByCodeAsync(string codeNumber) =>
+        public async Task<ResponseWrapper<string>> GenerateCodeByCodeAsync(string codeNumber) =>
             (await _codeService.GenerateCodeByCodeAsync(codeNumber)).Wrap();
 
         #endregion
@@ -111,7 +111,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<CodeRuleDefineReadDto?>> GetDefineAsync(Guid id) =>
+        public async Task<ResponseWrapper<CodeRuleDefineReadDto>> GetDefineAsync(Guid id) =>
             (await _defineService.GetAsync(id)).Wrap();
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<CodeRuleDefineReadDto?>> UpdateDefineAsync(Guid id, CodeRuleDefineUpdateDto input) =>
+        public async Task<ResponseWrapper<CodeRuleDefineReadDto>> UpdateDefineAsync(Guid id, CodeRuleDefineUpdateDto input) =>
             (await _defineService.UpdateAsync(id, input)).Wrap();
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<CodeRuleDefineReadDto>?>> GetPaginatedDefineListAsync(CodeRuleDefineQueryDto input) =>
+        public async Task<ResponseWrapper<PaginatedList<CodeRuleDefineReadDto>>> GetPaginatedDefineListAsync(CodeRuleDefineQueryDto input) =>
             (await _defineService.GetPaginatedListAsync(input)).Wrap();
 
         #endregion

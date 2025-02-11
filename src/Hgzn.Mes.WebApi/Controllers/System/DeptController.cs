@@ -29,7 +29,7 @@ public class DeptController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    // [Authorize(Policy = $"system:user:{ScopeMethodType.List}")]
+    [Authorize(Policy = $"system:user:{ScopeMethodType.List}")]
     public async Task<ResponseWrapper<IEnumerable<DepartmentReadDto>>> GetListAsync([FromQuery]DepartmentQueryDto queryDto) =>
         (await _departmentService.GetListAsync(queryDto)).Wrap();
 
@@ -43,8 +43,8 @@ public class DeptController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    // [Authorize(Policy = $"system:user:{ScopeMethodType.List}")]
-    public async Task<ResponseWrapper<List<Guid>?>> GetChildListAsync(Guid id) =>
+    [Authorize(Policy = $"system:user:{ScopeMethodType.List}")]
+    public async Task<ResponseWrapper<List<Guid>>> GetChildListAsync(Guid id) =>
         (await _departmentService.GetChildListAsync(id)).Wrap();
 
     /// <summary>
@@ -57,8 +57,8 @@ public class DeptController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    // [Authorize(Policy = $"system:dept:{ScopeMethodType.List}")]
-    public async Task<ResponseWrapper<PaginatedList<DepartmentReadDto>?>> GetPaginatedListAsync(DepartmentQueryDto queryDto) =>
+    [Authorize(Policy = $"system:dept:{ScopeMethodType.List}")]
+    public async Task<ResponseWrapper<PaginatedList<DepartmentReadDto>>> GetPaginatedListAsync(DepartmentQueryDto queryDto) =>
         (await _departmentService.GetPaginatedListAsync(queryDto)).Wrap();
 
     /// <summary>
@@ -72,7 +72,7 @@ public class DeptController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:dept:{ScopeMethodType.Edit}")]
-    public async Task<ResponseWrapper<DepartmentReadDto?>> UpdateAsync(Guid id, DepartmentUpdateDto dto) =>
+    public async Task<ResponseWrapper<DepartmentReadDto>> UpdateAsync(Guid id, DepartmentUpdateDto dto) =>
         (await _departmentService.UpdateAsync(id, dto)).Wrap();
 
     /// <summary>
@@ -86,7 +86,7 @@ public class DeptController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:dept:{ScopeMethodType.Add}")]
-    public async Task<ResponseWrapper<DepartmentReadDto?>> CreateAsync(DepartmentCreateDto dto) =>
+    public async Task<ResponseWrapper<DepartmentReadDto>> CreateAsync(DepartmentCreateDto dto) =>
         (await _departmentService.CreateAsync(dto)).Wrap();
     
     /// <summary>
@@ -112,6 +112,6 @@ public class DeptController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"system:dept:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<DepartmentReadDto?>> GetAsync(Guid id) =>
+    public async Task<ResponseWrapper<DepartmentReadDto>> GetAsync(Guid id) =>
         (await _departmentService.GetAsync(id)).Wrap();
 }

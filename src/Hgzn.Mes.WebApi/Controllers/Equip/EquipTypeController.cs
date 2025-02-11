@@ -1,5 +1,4 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
-using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -31,20 +30,19 @@ public class EquipTypeController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("page")]
-    public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>?>> GetPaginatedListAsync(EquipTypeQueryDto queryDto)
+    public async Task<ResponseWrapper<PaginatedList<EquipTypeReadDto>>> GetPaginatedListAsync(EquipTypeQueryDto queryDto)
         => (await _equipTypeService.GetPaginatedListAsync(queryDto)).Wrap();
     /// <summary>
     /// 创建
     /// </summary>
-    /// <param name="id"></param>
     /// <param name="input"></param>
     /// <returns></returns>
     [HttpPost]
     [Route("create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
-    public async Task<ResponseWrapper<EquipTypeReadDto?>> CreateAsync(EquipTypeCreateDto input) =>
+    [Authorize(Policy = $"equip:equiptype:{ScopeMethodType.Edit}")]
+    public async Task<ResponseWrapper<EquipTypeReadDto>> CreateAsync(EquipTypeCreateDto input) =>
         (await _equipTypeService.CreateAsync(input)).Wrap();
 
     /// <summary>
@@ -56,7 +54,7 @@ public class EquipTypeController : ControllerBase
     [Route("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Policy = $"system:code:{ScopeMethodType.Remove}")]
+    [Authorize(Policy = $"equip:equiptype:{ScopeMethodType.Remove}")]
     public async Task<ResponseWrapper<int>> DeleteAsync(Guid id) =>
         (await _equipTypeService.DeleteAsync(id)).Wrap();
 
@@ -70,8 +68,8 @@ public class EquipTypeController : ControllerBase
     [Route("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Policy = $"system:code:{ScopeMethodType.Edit}")]
-    public async Task<ResponseWrapper<EquipTypeReadDto?>> UpdateAsync(Guid id, EquipTypeUpdateDto input) =>
+    [Authorize(Policy = $"equip:equiptype:{ScopeMethodType.Edit}")]
+    public async Task<ResponseWrapper<EquipTypeReadDto>> UpdateAsync(Guid id, EquipTypeUpdateDto input) =>
         (await _equipTypeService.UpdateAsync(id, input)).Wrap();
 
     /// <summary>
@@ -83,7 +81,7 @@ public class EquipTypeController : ControllerBase
     [Route("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
-    public async Task<ResponseWrapper<EquipTypeReadDto?>> GetAsync(Guid id) =>
+    [Authorize(Policy = $"equip:equiptype:{ScopeMethodType.Query}")]
+    public async Task<ResponseWrapper<EquipTypeReadDto>> GetAsync(Guid id) =>
         (await _equipTypeService.GetAsync(id)).Wrap();
 }

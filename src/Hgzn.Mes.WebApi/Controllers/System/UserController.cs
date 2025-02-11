@@ -1,6 +1,4 @@
-﻿using Hgzn.Mes.Application.Main.Dtos;
-using Hgzn.Mes.Application.Main.Dtos.System;
-using Hgzn.Mes.Application.Main.Services.Base;
+﻿using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -40,7 +38,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ResponseWrapper<UserScopeReadDto?>> GetCurrentUser() =>
+        public async Task<ResponseWrapper<UserScopeReadDto>> GetCurrentUser() =>
             (await _userService.GetCurrentUserAsync(HttpContext.User.Claims)).Wrap();
 
         /// <summary>
@@ -90,7 +88,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<UserReadDto>?>> GetPaginatedListAsync(UserQueryDto dto) =>
+        public async Task<ResponseWrapper<PaginatedList<UserReadDto>>> GetPaginatedListAsync(UserQueryDto dto) =>
             (await _userService.GetPaginatedListAsync(dto)).Wrap();
         /// <summary>
         ///     删除用户
@@ -118,7 +116,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<UserReadDto?>> ModifyRole(Guid userId, IEnumerable<Guid> roleIds) =>
+        public async Task<ResponseWrapper<UserReadDto>> ModifyRole(Guid userId, IEnumerable<Guid> roleIds) =>
             (await _userService.ChangeRoleAsync(userId, roleIds)).Wrap();
 
         /// <summary>
@@ -143,6 +141,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         ///     auth: admin
         /// </summary>
         /// <param name="userId">用户guid</param>
+        /// <param name="dto"></param>
         /// <returns>重置状态</returns>
         [HttpPut]
         [Route("{userId}")]

@@ -36,7 +36,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:notice:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<NoticeReadDto?>> GetAsync(Guid id) =>
+        public async Task<ResponseWrapper<NoticeReadDto>> GetAsync(Guid id) =>
             (await _noticeService.GetAsync(id)).Wrap();
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:notice:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<NoticeReadDto?>> UpdateAsync(Guid id, NoticeUpdateDto input) =>
+        public async Task<ResponseWrapper<NoticeReadDto>> UpdateAsync(Guid id, NoticeUpdateDto input) =>
             (await _noticeService.UpdateAsync(id, input)).Wrap();
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:notice:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<NoticeReadDto>?>> GetPaginatedListAsync(NoticeQueryDto input) =>
+        public async Task<ResponseWrapper<PaginatedList<NoticeReadDto>>> GetPaginatedListAsync(NoticeQueryDto input) =>
             (await _noticeService.GetPaginatedListAsync(input)).Wrap();
 
         #endregion

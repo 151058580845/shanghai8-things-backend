@@ -40,7 +40,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<RoleReadDto?>> GetRole(Guid roleId) =>
+        public async Task<ResponseWrapper<RoleReadDto>> GetRole(Guid roleId) =>
             (await _roleService.GetAsync(roleId)).Wrap();
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<RoleReadDto?>> CreateRole(RoleCreateDto roleDto) =>
+        public async Task<ResponseWrapper<RoleReadDto>> CreateRole(RoleCreateDto roleDto) =>
             (await _roleService.CreateAsync(roleDto)).Wrap();
 
         /// <summary>
