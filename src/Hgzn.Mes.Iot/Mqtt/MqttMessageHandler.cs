@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Domain.Shared.Enums;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads;
@@ -57,7 +58,6 @@ namespace Hgzn.Mes.Iot.Mqtt
                     
                 case MqttTag.Cmd:
                     var conn = JsonSerializer.Deserialize<ConnInfo>(message.ConvertPayloadToString());
-                    conn!.EquipType = topic.EquipType!;
                     await HandleCmdAsync(topic, conn!);
                     break;
 
@@ -98,7 +98,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             {
                 case CmdType.Conn:
 
-                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, info.ConnType);
+                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, info.ConnType, topic.EquipType!);
                     await SwitchEquipAsync(equip);
                     break;
 

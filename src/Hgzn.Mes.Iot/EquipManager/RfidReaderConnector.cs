@@ -17,13 +17,17 @@ namespace Hgzn.Mes.Iot.EquipManager;
 public class RfidReaderConnector : IEquipConnector
 {
     private GClient _client = new ();
-    private string? SerialNum { get; set; }
+    private string? _uri;
+    private string? _serialNum { get; set; }
     private readonly IMqttExplorer _mqtt;
+    private string? _equipType;
 
     public RfidReaderConnector(
-        IMqttExplorer mqtt)
+        IMqttExplorer mqtt, string uri, string equipType)
     {
         _mqtt = mqtt;
+        _uri = uri;
+        _equipType = equipType;
     }
 
     public async Task StartAsync()
@@ -47,12 +51,9 @@ public class RfidReaderConnector : IEquipConnector
         throw new NotImplementedException();
     }
 
-
     public async Task<bool> ConnectAsync(ConnInfo connInfo)
     {
             if (connInfo?.ConnString is null) throw new ArgumentNullException("connIfo");
-            if(connInfo.EquipType is not null)
-            {
                 switch (connInfo.ConnType)
                 {
                     case ConnType.Socket:
@@ -68,8 +69,8 @@ public class RfidReaderConnector : IEquipConnector
                             if (readerInfo.RtCode == 0)
                             {
                                 LoggerAdapter.LogTrace("ger reader info success");
-                                SerialNum = readerInfo.Imei;
-                            await UpdateStateAsync(ConnStateType.On);
+                                _serialNum = readerInfo.Imei;
+                                await UpdateStateAsync(ConnStateType.On);
                             }
                             return true;
                         }
@@ -77,7 +78,6 @@ public class RfidReaderConnector : IEquipConnector
                     default :
                         return false;
                 }
-            }
 
             return false;
     }
@@ -130,21 +130,24 @@ public class RfidReaderConnector : IEquipConnector
             Userdata = msg.logBaseEpcInfo.Userdata
         };
         var plain = JsonSerializer.Serialize(data);
-        await _mqtt.PublishAsync(TopicBuilder
-            .CreateBuilder()
+        await _mqtt.PublishAsync(IotTopicBuilder
+            .CreateIotBuilder()
             .WithPrefix(TopicType.Iot)
             .WithDirection(MqttDirection.Up)
             .WithTag(MqttTag.Data)
+            .WithUri(_uri!)
+            .WithDeviceType(_equipType!)
             .Build(), Encoding.UTF8.GetBytes(plain));
     }
 
     private async Task UpdateStateAsync(ConnStateType stateType)
     {
-        await _mqtt.PublishAsync(TopicBuilder
-        .CreateBuilder()
+        await _mqtt.PublishAsync(UserTopicBuilder
+        .CreateUserBuilder()
         .WithPrefix(TopicType.App)
         .WithDirection(MqttDirection.Up)
         .WithTag(MqttTag.State)
+        .WithUri(_uri!)
         .Build(), BitConverter.GetBytes((int)stateType));
     }
 }

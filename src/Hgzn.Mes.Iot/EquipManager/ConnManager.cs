@@ -15,7 +15,7 @@ namespace Hgzn.Mes.Iot.EquipManager
             _mqtt = mqttExplorer;
         }
 
-        public IEquipConnector AddEquip(Guid id, ConnType type)
+        public IEquipConnector AddEquip(Guid id, ConnType type, string equipType)
         {
             if (Connections.TryGetValue(id, out var value))
             {
@@ -25,7 +25,7 @@ namespace Hgzn.Mes.Iot.EquipManager
             switch (type)
             {
                 case ConnType.Socket:
-                    connector = new RfidReaderConnector(_mqtt);
+                    connector = new RfidReaderConnector(_mqtt, id.ToString(), equipType);
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;

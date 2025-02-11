@@ -111,9 +111,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
             return this;
         }
 
-        public UserTopicBuilder WithPatientCode(string patientCode)
+        public UserTopicBuilder WithUri(string uri)
         {
-            _patientCode = patientCode;
+            _patientCode = uri;
             return this;
         }
 
