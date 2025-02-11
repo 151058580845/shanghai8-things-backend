@@ -38,17 +38,13 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
 
         public override string ToString()
         {
-            var prefix = $"{Prefix:F}".ToLower();
-            var tag = Tag.ToString("F").ToLower();
-            var dir = Direction.ToString("F").ToLower();
-            if (!string.IsNullOrEmpty(UserCode))
-            {
-                return $"{Prefix}/{dir}/{UserCodeName}/{UserCode}/{tag}";
-            }
-            else
-            {
-                return $"{prefix}/{dir}/{tag}";
-            }
+            var prefix = $"{Prefix:F}";
+            var tag = Tag.ToString("F");
+            var dir = Direction.ToString("F");
+            var result = !string.IsNullOrEmpty(UserCode) ?
+                $"{Prefix}/{dir}/{UserCodeName}/{UserCode}/{tag}" :
+                $"{prefix}/{dir}/{tag}";
+            return result.ToLower();
         }
     }
 }

@@ -69,8 +69,8 @@ public class RfidReaderConnector : IEquipConnector
                             {
                                 LoggerAdapter.LogTrace("ger reader info success");
                                 SerialNum = readerInfo.Imei;
-                            }
                             await UpdateStateAsync(ConnStateType.On);
+                            }
                             return true;
                         }
                         break;
@@ -143,7 +143,7 @@ public class RfidReaderConnector : IEquipConnector
         await _mqtt.PublishAsync(TopicBuilder
         .CreateBuilder()
         .WithPrefix(TopicType.App)
-        .WithDirection(MqttDirection.Down)
+        .WithDirection(MqttDirection.Up)
         .WithTag(MqttTag.State)
         .Build(), BitConverter.GetBytes((int)stateType));
     }

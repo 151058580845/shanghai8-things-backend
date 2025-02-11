@@ -52,17 +52,13 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
 
         public override string ToString()
         {
-            var pre = Prefix.ToString("F").ToLower();
-            var tag = Tag.ToString("F").ToLower();
-            var dir = Direction.ToString("F").ToLower();
-            if (ConnUri is not null)
-            {
-                return $"{pre}/{dir}/{EquipTypeName}/{EquipType}/{ConnUriName}/{ConnUri}/{tag}";
-            }
-            else
-            {
-                return $"{pre}/{dir}/{tag}";
-            }
+            var pre = Prefix.ToString("F");
+            var tag = Tag.ToString("F");
+            var dir = Direction.ToString("F");
+            var result = ConnUri is not null ?
+                $"{pre}/{dir}/{EquipTypeName}/{EquipType}/{ConnUriName}/{ConnUri}/{tag}" :
+                $"{pre}/{dir}/{tag}";
+            return result.ToLower();
         }
     }
 }

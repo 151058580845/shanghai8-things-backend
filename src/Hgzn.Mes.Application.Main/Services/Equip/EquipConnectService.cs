@@ -115,30 +115,37 @@ public class EquipConnectService : SugarCrudAppService<
     /// <returns></returns>
     public async Task PutStartConnect(Guid id)
     {
-        EquipConnect connect = await Queryable.Where(it => it.Id == id)
+        var connect = await Queryable.Where(it => it.Id == id)
            .Includes(t => t.EquipLedger, le => le.EquipType)
            .FirstAsync();
-        IotTopicBuilder iotTopicBuilder = IotTopicBuilder.CreateIotBuilder()
-                .WithPrefix(TopicType.Iot)
-                .WithDirection(MqttDirection.Down)
-                .WithTag(MqttTag.Cmd)
-                .WithDeviceType(connect.EquipLedger?.EquipType?.TypeCode ??
-                    throw new ArgumentNullException("equip type not exist"))
-                .WithUri(connect.EquipId.ToString());
 
-        var info = new ConnInfo
+        var conninfo = new ConnInfo
         {
             ConnType = connect.ProtocolEnum,
             ConnString = connect.ConnectStr,
             Type = CmdType.Conn,
             StateType = ConnStateType.On,
         };
-        string socketDto = JsonSerializer.Serialize(info);
-        byte[] msg = Encoding.UTF8.GetBytes(socketDto);
-        string topic = iotTopicBuilder.Build();
+        var startInfo = new ConnInfo
+        {
+            ConnType = connect.ProtocolEnum,
+            ConnString = connect.ConnectStr,
+            Type = CmdType.Conn,
+            StateType = ConnStateType.Run,
+        };
+
+        var topic = IotTopicBuilder.CreateIotBuilder()
+                .WithPrefix(TopicType.Iot)
+                .WithDirection(MqttDirection.Down)
+                .WithTag(MqttTag.Cmd)
+                .WithDeviceType(connect.EquipLedger?.EquipType?.TypeCode ??
+                    throw new ArgumentNullException("equip type not exist"))
+                .WithUri(connect.Id.ToString()).Build();
         if (await _mqttExplorer.IsConnectedAsync())
         {
-            await _mqttExplorer.PublishAsync(topic, msg);
+            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(conninfo)));
+            await Task.Delay(5 * 100);
+            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(startInfo)));
         }
     }
 

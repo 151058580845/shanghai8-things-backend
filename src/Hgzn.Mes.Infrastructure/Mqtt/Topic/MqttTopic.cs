@@ -41,9 +41,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
 
         public override string ToString()
         {
-            var tag = Tag!.ToString("F").ToLower();
-            var dir = Direction.ToString("F").ToLower();
-            return $"{Prefix}/{dir}/{tag}";
+            var tag = Tag!.ToString("F");
+            var dir = Direction.ToString("F");
+            return $"{Prefix}/{dir}/{tag}".ToLower();
         }
     }
     
