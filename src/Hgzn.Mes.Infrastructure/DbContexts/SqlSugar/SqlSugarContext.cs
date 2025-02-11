@@ -144,7 +144,7 @@ public sealed class SqlSugarContext
             Console.WriteLine($"Database '{newDatabaseName}' does not exist. Creating it...");
             // 如果数据库不存在，创建数据库
             string createDbQuery = $"CREATE DATABASE {newDatabaseName}";
-             client.Ado.SqlQuery<string>(createDbQuery);
+            client.Ado.SqlQuery<string>(createDbQuery);
             Console.WriteLine($"Database '{newDatabaseName}' created.");
         }
         else
