@@ -4,6 +4,7 @@ using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,19 +31,6 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .SingleInstance();
             builder.RegisterGeneric(typeof(PaginatedListConverter<,>));
 
-            #region 注册sqlSugar
-
-            // builder.Register(context =>
-            //     {
-            //         var setting = context.Resolve<IConfiguration>().GetSection(nameof(DbConnOptions))
-            //             .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
-            //         return new SqlSugarClient(SqlSugarContext.Build(setting));
-            //     })
-            //     .As<ISqlSugarClient>()
-            //     .SingleInstance();
-
-            #endregion
-
             #region 注册Mqtt
 
             builder.RegisterType<ApiMqttPub>()
@@ -53,6 +41,10 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
             
             builder.RegisterType<ThreadCurrentPrincipalAccessor>()
                 .As<ICurrentPrincipalAccessor>()
+                .SingleInstance();
+
+            builder.RegisterType<ActionContextAccessor>()
+                .As<IActionContextAccessor>()
                 .SingleInstance();
         }
     }

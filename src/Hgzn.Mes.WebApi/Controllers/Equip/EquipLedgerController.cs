@@ -39,7 +39,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Route("NameValueList")]
+        [Route("namevaluelist")]
         public async Task<ResponseWrapper<IEnumerable<NameValueDto>>> GetNameValueListAsync()
         => (await _equipLedgerService.GetNameValueListAsync()).Wrap()!;
 

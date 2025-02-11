@@ -6,6 +6,6 @@ namespace Hgzn.Mes.Domain.ValueObjects.Message.Commads
 {
     public class ConnInfoBase : CommandBase, IConnInfo
     {
-        public ConnType ConnType { get; set; }
+        public Protocol ConnType { get; set; }
     }
 }

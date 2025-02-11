@@ -13,6 +13,7 @@ using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
+using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -32,9 +33,9 @@ public sealed class SqlSugarContext
     {
         _dbOptions = dbOptions;
         _logger = logger;
-        // DbContext = client;
+        DbContext = client;
         _currentUser = currentUser;
-        DbContext = new SqlSugarClient(Build(dbOptions));
+        // DbContext = new SqlSugarClient(Build(dbOptions));
         OnSqlSugarClientConfig(DbContext);
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
@@ -162,6 +163,10 @@ public sealed class SqlSugarContext
                 EntityService = (p, c) =>
                 {
                     //配置表外键
+                    c.IfTable<EquipConnect>()
+                        .OneToOne(t => t.EquipLedger, nameof(EquipConnect.EquipId));
+                    c.IfTable<EquipLedger>()
+                        .OneToOne(t => t.EquipTypeAggregate, nameof(EquipLedger.TypeId));
                     c.IfTable<EquipLedger>()
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
                     c.IfTable<NoticeInfo>()
