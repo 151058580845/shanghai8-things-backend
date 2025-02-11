@@ -23,7 +23,7 @@ public class OnlineHub : Microsoft.AspNetCore.SignalR.Hub
     private static readonly object ObjLock = new object();
     private readonly ILogger<OnlineHub> _logger;
     private readonly HubConnectionContext _context;
-    public OnlineHub(ILogger<OnlineHub> logger)
+  
 
     public static List<OnlineUser> OnlineUserInfos
     {
@@ -36,7 +36,7 @@ public class OnlineHub : Microsoft.AspNetCore.SignalR.Hub
         }
     }
 
-    public OnlineHub(IHttpContextAccessor httpContextAccessor, ILogger<OnlineHub> hubContext)
+    public OnlineHub(ILogger<OnlineHub> logger)
     {
         _logger = logger;
     }
