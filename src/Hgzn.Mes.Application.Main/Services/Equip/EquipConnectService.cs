@@ -15,7 +15,7 @@ using System.Text.Json.Nodes;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipConnService : SugarCrudAppService<
+public class EquipConnectService : SugarCrudAppService<
     EquipConnect, Guid,
     EquipConnectReadDto, EquipConnectQueryDto,
     EquipConnectCreateDto, EquipConnectUpdateDto>,
@@ -24,7 +24,7 @@ public class EquipConnService : SugarCrudAppService<
     private readonly IEquipLedgerService _equipLedgerService;
     private readonly IMqttExplorer _mqttExplorer;
 
-    public EquipConnService(IEquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer)
+    public EquipConnectService(IEquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer)
     {
         _equipLedgerService = equipLedgerService;
         _mqttExplorer = mqttExplorer;
@@ -33,6 +33,8 @@ public class EquipConnService : SugarCrudAppService<
 
     public override async Task<PaginatedList<EquipConnectReadDto>> GetPaginatedListAsync(EquipConnectQueryDto queryDto)
     {
+        var qu = await Queryable.Includes(t => t.EquipLedger,eq=>eq.EquipTypeAggregate)
+            .ToListAsync();
         var equips = await (await _equipLedgerService.GetEquipsListAsync(queryDto.EquipCode, queryDto.EquipName))
             .OrderBy(t => t.OrderNum)
             .ToListAsync();

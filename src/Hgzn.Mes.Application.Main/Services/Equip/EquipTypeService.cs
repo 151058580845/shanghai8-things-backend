@@ -15,8 +15,8 @@ public class EquipTypeService : SugarCrudAppService<
     public override async Task<IEnumerable<EquipTypeReadDto>> GetListAsync(EquipTypeQueryDto? dto)
     {
         var entities = await Queryable
-            .Where(m =>string.IsNullOrEmpty(dto.TypeName) || dto.TypeName == m.TypeName)
-            .Where(m => string.IsNullOrEmpty(dto.TypeCode)|| dto.TypeCode == m.TypeCode)
+            .WhereIF(!string.IsNullOrEmpty(dto.TypeName) ,m => dto.TypeName == m.TypeName)
+            .WhereIF(!string.IsNullOrEmpty(dto.TypeCode),m => dto.TypeCode == m.TypeCode)
             .OrderBy(m => m.OrderNum)
             .ToListAsync();
         return Mapper.Map<IEnumerable<EquipTypeReadDto>>(entities);
@@ -25,8 +25,8 @@ public class EquipTypeService : SugarCrudAppService<
     public override async Task<PaginatedList<EquipTypeReadDto>> GetPaginatedListAsync(EquipTypeQueryDto dto)
     {
         var entities = await Queryable
-            .Where(m =>string.IsNullOrEmpty(dto.TypeName) || dto.TypeName == m.TypeName)
-            .Where(m => string.IsNullOrEmpty(dto.TypeCode)|| dto.TypeCode == m.TypeCode)
+            .WhereIF(!string.IsNullOrEmpty(dto.TypeName) ,m => dto.TypeName == m.TypeName)
+            .WhereIF(!string.IsNullOrEmpty(dto.TypeCode),m => dto.TypeCode == m.TypeCode)
             .OrderBy(m => m.OrderNum)
             .ToPaginatedListAsync(dto.PageIndex, dto.PageSize);
         return Mapper.Map<PaginatedList<EquipTypeReadDto>>(entities);

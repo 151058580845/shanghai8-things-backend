@@ -116,7 +116,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.Office,
             DictionaryType.BreakRoom,
             DictionaryType.Warehouse,
-            DictionaryType.Restroom
+            DictionaryType.Restroom,
+            
+            DictionaryType.Normal,
+            DictionaryType.Lost,
+            DictionaryType.InUse,
         };
 
     }

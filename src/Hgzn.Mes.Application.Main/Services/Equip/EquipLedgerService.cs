@@ -44,11 +44,12 @@ public class EquipLedgerService : SugarCrudAppService<
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
         var entities = await Queryable
-            .Where(m =>string.IsNullOrEmpty(query.EquipName) || m.EquipName.Contains(query.EquipName))
-            .Where(m => query.TypeId.IsGuidEmpty() || m.TypeId.Equals(query.TypeId))
-            .Where(m => query.RoomId.IsGuidEmpty() || m.RoomId.Equals(query.RoomId))
-            .Where(m => query.StartTime == null || m.CreationTime >= query.StartTime)
-            .Where(m => query.EndTime == null || m.CreationTime <= query.EndTime)
+            .WhereIF(!string.IsNullOrEmpty(query.EquipName),m => m.EquipName.Contains(query.EquipName!))
+            .WhereIF(!string.IsNullOrEmpty(query.EquipCode),m => m.EquipName.Contains(query.EquipCode!))
+            .WhereIF(!query.TypeId.IsGuidEmpty(),m => m.TypeId.Equals(query.TypeId))
+            .WhereIF(!query.RoomId.IsGuidEmpty(),m => m.RoomId.Equals(query.RoomId))
+            .WhereIF(query.StartTime != null ,m => m.CreationTime >= query.StartTime)
+            .WhereIF(query.EndTime != null ,m => m.CreationTime <= query.EndTime)
             .Includes(t => t.Room)
             .OrderByDescending(m => m.OrderNum)
             .ToPaginatedListAsync(query.PageIndex, query.PageSize);
@@ -58,11 +59,12 @@ public class EquipLedgerService : SugarCrudAppService<
     public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto? query = null)
     {
         var entities = await Queryable
-            .Where(m =>query != null && (string.IsNullOrEmpty(query.EquipName) || m.EquipName.Contains(query.EquipName)))
-            .Where(m => query != null && (query.TypeId.IsGuidEmpty() || m.TypeId.Equals(query.TypeId)))
-            .Where(m => query != null && (query.RoomId.IsGuidEmpty() || m.RoomId.Equals(query.RoomId)))
-            .Where(m => query != null && (query.StartTime == null || m.CreationTime >= query.StartTime))
-            .Where(m => query != null && (query.EndTime == null || m.CreationTime <= query.EndTime))
+            .WhereIF(!string.IsNullOrEmpty(query.EquipName),m => m.EquipName.Contains(query.EquipName!))
+            .WhereIF(!string.IsNullOrEmpty(query.EquipCode),m => m.EquipName.Contains(query.EquipCode!))
+            .WhereIF(!query.TypeId.IsGuidEmpty(),m => m.TypeId.Equals(query.TypeId))
+            .WhereIF(!query.RoomId.IsGuidEmpty(),m => m.RoomId.Equals(query.RoomId))
+            .WhereIF(query.StartTime != null ,m => m.CreationTime >= query.StartTime)
+            .WhereIF(query.EndTime != null ,m => m.CreationTime <= query.EndTime)
             .Includes(t => t.Room)
             .OrderByDescending(m => m.OrderNum)
             .ToListAsync();

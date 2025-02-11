@@ -305,7 +305,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         #endregion
 
         #region DateFormat
-        
+
         public static readonly DictionaryType DateFormat = new DictionaryType()
         {
             Id = Guid.Parse("3e3d27d3-8b60-4b1a-b775-95e9e1b233d7"), // 固定的 Guid 值
@@ -330,8 +330,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+
         #endregion
-        
+
         #region EquipConnType
 
         public static readonly DictionaryType EquipConnType = new DictionaryType()
@@ -484,8 +485,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+
         #endregion
-        
+
         #region BaudRate
 
         public static readonly DictionaryType BaudRate = new DictionaryType()
@@ -713,7 +715,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         };
 
         #endregion
-        
+
         #region ModbusWriteType
 
         public static readonly DictionaryType ModbusWriteType = new DictionaryType()
@@ -784,7 +786,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         };
 
         #endregion
-        
+
         #region DataType
 
         public static readonly DictionaryType DataType = new DictionaryType()
@@ -827,7 +829,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         };
 
         #endregion
-        
+
         #region QualityOfServiceLevel
 
         public static readonly DictionaryType QualityOfServiceLevel = new DictionaryType()
@@ -927,7 +929,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         };
 
         #endregion
-        
+
         #region StopBits
 
         public static readonly DictionaryType StopBits = new DictionaryType()
@@ -998,7 +1000,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         };
 
         #endregion
-        
+
         #region Parity
 
         public static readonly DictionaryType Parity = new DictionaryType()
@@ -1083,7 +1085,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         };
 
         #endregion
-        
+
         #region 房间类型
 
         public static readonly DictionaryType RoomType = new DictionaryType()
@@ -1197,6 +1199,63 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 
         #endregion
 
+        #region 设备状态
+
+        public static readonly DictionaryType DeviceStatus = new DictionaryType()
+        {
+            Id = Guid.Parse("d92d83f5-cb9f-4a6f-a7de-b1f95b682f1f"), // 固定的 Guid 值
+            DictName = "设备状态",
+            DictType = "DeviceStatus",
+            OrderNum = 1,
+            Remark = "设备状态",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Normal = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4fa00430-542e-4636-bad6-fc684af50836"), // 固定的 Guid 值
+            DictLabel = "正常",
+            DictValue = "Normal",
+            ParentId = DeviceStatus.Id,
+            OrderNum = 1,
+            Remark = "设备正常运行",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Lost = new DictionaryInfo()
+        {
+            Id = Guid.Parse("8c6f2117-9f3a-4f6f-b26f-82be592fbd31"), // 固定的 Guid 值
+            DictLabel = "丢失",
+            DictValue = "Lost",
+            ParentId = DeviceStatus.Id,
+            OrderNum = 2,
+            Remark = "设备丢失",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo InUse = new DictionaryInfo()
+        {
+            Id = Guid.Parse("bc9b3897-b6f1-4203-b6b1-82a46f3e6c6e"), // 固定的 Guid 值
+            DictLabel = "使用中",
+            DictValue = "InUse",
+            ParentId = DeviceStatus.Id,
+            OrderNum = 3,
+            Remark = "设备正在使用中",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        #endregion 设备状态
+
         public static DictionaryType[] Seeds { get; } =
         {
             EquipMaintenanceType,
@@ -1215,7 +1274,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             MqttSendType,
             StopBits,
             Parity,
-            RoomType
+            RoomType,
+            DeviceStatus
         };
     }
 }
