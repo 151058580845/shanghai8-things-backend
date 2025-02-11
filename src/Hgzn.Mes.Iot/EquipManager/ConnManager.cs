@@ -24,9 +24,9 @@ namespace Hgzn.Mes.Iot.EquipManager
             IEquipConnector? connector = null;
             switch (type)
             {
-                case ConnType.ModbusTcp:
+                case ConnType.Socket:
                     connector = new RfidReaderConnector(_mqtt);
-                    if (Connections.TryAdd(id, connector))
+                    if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;
             }

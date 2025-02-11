@@ -1,5 +1,6 @@
 ﻿using GDotnet.Reader.Api.DAL;
 using GDotnet.Reader.Api.Protocol.Gx;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Domain.ValueObjects.Message.Base;
@@ -7,6 +8,7 @@ using Hgzn.Mes.Domain.ValueObjects.Message.Commads;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 
@@ -18,20 +20,27 @@ public class RfidReaderConnector : IEquipConnector
     private string? SerialNum { get; set; }
     private readonly IMqttExplorer _mqtt;
 
-    public RfidReaderConnector(IMqttExplorer mqtt)
+    public RfidReaderConnector(
+        IMqttExplorer mqtt)
     {
         _mqtt = mqtt;
     }
 
-    public async Task StartAsync() =>
-        await Task.Run(() => StartReadingTag(_client));
+    public async Task StartAsync()
+    {
+        StartReadingTag(_client);
+        await UpdateStateAsync(ConnStateType.Run);
+
+    }
 
     /// <summary>
     /// 全部停止采集
     /// </summary>
-    public async Task StopAsync() =>
-        await Task.Run(() => StopReadingTag(_client));
-
+    public async Task StopAsync()
+    {
+        StopReadingTag(_client);
+        await UpdateStateAsync(ConnStateType.Stop);
+    }
 
     public Task SendDataAsync(byte[] buffer)
     {
@@ -41,15 +50,13 @@ public class RfidReaderConnector : IEquipConnector
 
     public async Task<bool> ConnectAsync(ConnInfo connInfo)
     {
-        return await Task.Run(() =>
-        {
             if (connInfo?.ConnString is null) throw new ArgumentNullException("connIfo");
             if(connInfo.EquipType is not null)
             {
                 switch (connInfo.ConnType)
                 {
                     case ConnType.Socket:
-                        var conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString) 
+                        var conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions) 
                         ?? throw new ArgumentNullException("conn");
                         if (_client.OpenTcp(conn.Address + ":" + conn.Port, 5000, out var status) &&
                             status == eConnectionAttemptEventStatusType.OK)
@@ -60,23 +67,25 @@ public class RfidReaderConnector : IEquipConnector
                             _client.SendSynMsg(readerInfo);
                             if (readerInfo.RtCode == 0)
                             {
-                                Console.WriteLine("ger reader info success");
+                                LoggerAdapter.LogTrace("ger reader info success");
                                 SerialNum = readerInfo.Imei;
                             }
+                            await UpdateStateAsync(ConnStateType.On);
                             return true;
                         }
                         break;
+                    default :
+                        return false;
                 }
             }
 
             return false;
-        });
-
     }
 
     public async Task CloseConnectionAsync()
     {
-        await Task.Run(() => _client?.Close());
+        _client?.Close();
+        await UpdateStateAsync(ConnStateType.Stop);
     }
 
     private void StartReadingTag(GClient client)
@@ -98,7 +107,7 @@ public class RfidReaderConnector : IEquipConnector
         client.SendSynMsg(msgBaseInventoryEpc);
         if (0 != msgBaseInventoryEpc.RtCode)
         {
-            throw new Exception("inventory epc error.");
+            LoggerAdapter.LogWarning("inventory epc error.");
         }
     }
 
@@ -109,7 +118,7 @@ public class RfidReaderConnector : IEquipConnector
         client.SendSynMsg(msgBaseStop);
         if (0 != msgBaseStop.RtCode)
         {
-            throw new Exception("epc stop error.");
+            LoggerAdapter.LogWarning("epc stop error.");
         }
     }
 
@@ -127,5 +136,15 @@ public class RfidReaderConnector : IEquipConnector
             .WithDirection(MqttDirection.Up)
             .WithTag(MqttTag.Data)
             .Build(), Encoding.UTF8.GetBytes(plain));
+    }
+
+    private async Task UpdateStateAsync(ConnStateType stateType)
+    {
+        await _mqtt.PublishAsync(TopicBuilder
+        .CreateBuilder()
+        .WithPrefix(TopicType.App)
+        .WithDirection(MqttDirection.Down)
+        .WithTag(MqttTag.State)
+        .Build(), BitConverter.GetBytes((int)stateType));
     }
 }

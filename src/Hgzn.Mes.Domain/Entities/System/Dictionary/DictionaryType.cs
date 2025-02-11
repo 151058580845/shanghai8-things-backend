@@ -416,14 +416,14 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             ListClass = "info"
         };
 
-        public static readonly DictionaryInfo Mqtt = new DictionaryInfo()
+        public static readonly DictionaryInfo Socket = new DictionaryInfo()
         {
             Id = Guid.Parse("e3820e1b-04b1-460a-8e5a-c9b1d7a6d6fe"), // 固定的 Guid 值
-            DictLabel = "MQTT",
-            DictValue = "Mqtt",
+            DictLabel = "Socket",
+            DictValue = "Socket",
             ParentId = EquipConnType.Id,
             OrderNum = 55,
-            Remark = "MQTT协议",
+            Remark = "Socket协议",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,
@@ -452,34 +452,6 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             ParentId = EquipConnType.Id,
             OrderNum = 57,
             Remark = "TCP服务器",
-            SoftDeleted = false,
-            State = true,
-            CreationTime = DateTime.Now,
-            ListClass = "info"
-        };
-
-        public static readonly DictionaryInfo TcpClient = new DictionaryInfo()
-        {
-            Id = Guid.Parse("59d9a21b-bf2e-4e13-8776-6cf083d9ffb5"), // 固定的 Guid 值
-            DictLabel = "TcpClient",
-            DictValue = "TcpClient",
-            ParentId = EquipConnType.Id,
-            OrderNum = 58,
-            Remark = "TCP客户端",
-            SoftDeleted = false,
-            State = true,
-            CreationTime = DateTime.Now,
-            ListClass = "info"
-        };
-
-        public static readonly DictionaryInfo RfidReaderClient = new DictionaryInfo()
-        {
-            Id = Guid.Parse("a1c2e362-23d2-4dbf-9517-6e7c65b1f5a9"), // 固定的 Guid 值
-            DictLabel = "RfidReaderClient",
-            DictValue = "RfidReaderClient",
-            ParentId = EquipConnType.Id,
-            OrderNum = 59,
-            Remark = "RfidReader客户端",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,

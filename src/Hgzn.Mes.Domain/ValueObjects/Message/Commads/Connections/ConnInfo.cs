@@ -9,6 +9,8 @@ namespace Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections
 
         public string EquipType { get; set; } = null!;
 
+        public ConnStateType StateType { get; set; }
+
         public string? ConnString { get; set; }
     }
 }

@@ -8,11 +8,12 @@ namespace Hgzn.Mes.Domain.Shared.Enums
         Conn,
     }
 
-    public enum ConnOperationType
+    public enum ConnStateType
     {
-        Open,
-        Close,
-        Start
+        On,
+        Off,
+        Run,
+        Stop
     }
 
     /// <summary>
@@ -53,7 +54,7 @@ namespace Hgzn.Mes.Domain.Shared.Enums
         /// <summary>
         /// Socket 协议
         /// </summary>
-        [Description("MQTT")]
+        [Description("Socket")]
         Socket = 6,
 
         /// <summary>
@@ -67,12 +68,6 @@ namespace Hgzn.Mes.Domain.Shared.Enums
         /// </summary>
         [Description("TcpServer")]
         TcpServer = 8,
-
-        /// <summary>
-        /// TcpClient
-        /// </summary>
-        [Description("TcpClient")]
-        TcpClient = 9,
 
     }
 }

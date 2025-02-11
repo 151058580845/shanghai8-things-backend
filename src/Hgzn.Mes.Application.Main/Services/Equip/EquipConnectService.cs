@@ -10,13 +10,14 @@ using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 using System.Text;
 using System.Text.Json;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
-public class EquipConnService : SugarCrudAppService<
+public class EquipConnectService : SugarCrudAppService<
     EquipConnect, Guid,
     EquipConnectReadDto, EquipConnectQueryDto,
     EquipConnectCreateDto, EquipConnectUpdateDto>,
@@ -25,7 +26,7 @@ public class EquipConnService : SugarCrudAppService<
     private readonly IEquipLedgerService _equipLedgerService;
     private readonly IMqttExplorer _mqttExplorer;
 
-    public EquipConnService(IEquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer)
+    public EquipConnectService(IEquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer)
     {
         _equipLedgerService = equipLedgerService;
         _mqttExplorer = mqttExplorer;
@@ -35,13 +36,11 @@ public class EquipConnService : SugarCrudAppService<
     public override async Task<PaginatedList<EquipConnectReadDto>> GetPaginatedListAsync(EquipConnectQueryDto queryDto)
     {
         var querable = await DbContext.Queryable<EquipConnect>()
-            .Includes(eq => eq.EquipLedger, el => el == null ? null : el.EquipType)
-            .WhereIF(queryDto.EquipName.IsNullOrEmpty(),
-                eq => eq.EquipLedger != null && eq.EquipLedger.EquipName == queryDto.EquipName)
-            .WhereIF(queryDto.EquipCode.IsNullOrEmpty(),
-                eq => eq.EquipLedger != null && eq.EquipLedger.EquipCode == queryDto.EquipCode)
+            .Includes(eq => eq.EquipLedger, el => el.EquipType)
+            .WhereIF(!queryDto.EquipName.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipName.Contains(queryDto.EquipName!))
+            .WhereIF(!queryDto.EquipCode.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipCode.Contains(queryDto.EquipCode!))
             .OrderBy(t => t.OrderNum)
-            .ToPageListAsync(queryDto.PageIndex, queryDto.PageSize);
+            .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
 
         return Mapper.Map<PaginatedList<EquipConnectReadDto>>(querable);
     }
@@ -131,7 +130,8 @@ public class EquipConnService : SugarCrudAppService<
         {
             ConnType = connect.ProtocolEnum,
             ConnString = connect.ConnectStr,
-            Type = CmdType.Conn
+            Type = CmdType.Conn,
+            StateType = ConnStateType.On,
         };
         string socketDto = JsonSerializer.Serialize(info);
         byte[] msg = Encoding.UTF8.GetBytes(socketDto);

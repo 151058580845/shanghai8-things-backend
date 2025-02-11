@@ -43,7 +43,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         public async Task HandleAsync(MqttApplicationMessage message)
         {
             var topic = IotTopic.FromIotString(message.Topic);
-            if (topic.Direction == MqttDirection.Down) return;
+            if (topic.Direction == MqttDirection.Up) return;
             switch (topic.Tag)
             {
                 case MqttTag.State:
@@ -57,6 +57,7 @@ namespace Hgzn.Mes.Iot.Mqtt
                     
                 case MqttTag.Cmd:
                     var conn = JsonSerializer.Deserialize<ConnInfo>(message.ConvertPayloadToString());
+                    conn!.EquipType = topic.EquipType!;
                     await HandleCmdAsync(topic, conn!);
                     break;
 
@@ -76,7 +77,7 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         private async Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
         {
-            switch (topic.DeviceType)
+            switch (topic.EquipType)
             {
                 case "rfidReader":
                     //await EquipControlHelp.AddDeviceManagerAsync(Guid.Parse(topic.DeviceUri),new RfidReaderManages(message.ToString(), _redisService));
@@ -91,22 +92,31 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         private async Task HandleCmdAsync(IotTopic topic, ConnInfo info)
         {
-            var uri = Guid.Parse(topic.DeviceUri!);
+            var uri = Guid.Parse(topic.ConnUri!);
 
             switch (info.Type)
             {
                 case CmdType.Conn:
 
                     var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, info.ConnType);
-                    await equip.ConnectAsync(info);
-                    await equip.StartAsync();
+                    await SwitchEquipAsync(equip);
                     break;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(info.Type));
             }
 
-            
+            async Task SwitchEquipAsync(IEquipConnector equip)
+            {
+                var task = info.StateType switch
+                {
+                    ConnStateType.On => equip.ConnectAsync(info),
+                    ConnStateType.Run => equip.StartAsync(),
+                    ConnStateType.Off => equip.StopAsync(),
+                    _ => throw new NotImplementedException()
+                };
+                await task;
+            }
         }
 
         private void HandleHealthAsync(IotTopic topic,
@@ -120,7 +130,8 @@ namespace Hgzn.Mes.Iot.Mqtt
             var newTopic = topic;
             newTopic.Direction = MqttDirection.Down;
             await _mqttExplorer.PublishAsync(newTopic.ToString(), new DeviceCalibrationMsg().AsFrame());
-            _logger.LogInformation($"device: {topic.DeviceType} time calibrate succeed");
+            _logger.LogInformation($"device: {topic.EquipType} time calibrate succeed");
         }
+
     }
 }

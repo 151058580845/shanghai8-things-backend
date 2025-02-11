@@ -79,8 +79,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 Direction = _direction,
                 Prefix = _prefix,
                 Tag = _tag,
-                DeviceType = _deviceType,
-                DeviceUri = _deviceUri
+                EquipType = _deviceType,
+                ConnUri = _deviceUri
             }.ToString();
 
         public static IotTopicBuilder CreateIotBuilder() => new();

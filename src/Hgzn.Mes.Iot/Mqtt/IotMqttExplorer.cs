@@ -133,7 +133,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         {
             var types = _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             _mqttTopics = types
-                .Select(type => $"{TopicType.Iot:F}/+/{IotTopic.DevTypeName}/{type}/{IotTopic.DevUriName}/+/+".ToLower())
+                .Select(type => $"{TopicType.Iot:F}/+/{IotTopic.EquipTypeName}/{type}/{IotTopic.ConnUriName}/+/+".ToLower())
                 .Select(topic => new MqttTopicFilterBuilder().WithTopic(topic)
                     .WithExactlyOnceQoS()
                     .Build()).ToArray();
