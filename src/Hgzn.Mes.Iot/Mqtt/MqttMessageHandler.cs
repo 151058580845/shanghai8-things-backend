@@ -98,7 +98,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             {
                 case CmdType.Conn:
 
-                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, info.ConnType, topic.EquipType!);
+                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, topic.EquipType!);
                     await SwitchEquipAsync(equip);
                     break;
 

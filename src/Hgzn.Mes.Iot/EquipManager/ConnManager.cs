@@ -15,16 +15,16 @@ namespace Hgzn.Mes.Iot.EquipManager
             _mqtt = mqttExplorer;
         }
 
-        public IEquipConnector AddEquip(Guid id, ConnType type, string equipType)
+        public IEquipConnector AddEquip(Guid id, string equipType)
         {
             if (Connections.TryGetValue(id, out var value))
             {
                 return value;
             }
             IEquipConnector? connector = null;
-            switch (type)
+            switch (equipType)
             {
-                case ConnType.Socket:
+                case "rfid-reader":
                     connector = new RfidReaderConnector(_mqtt, id.ToString(), equipType);
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
