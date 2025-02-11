@@ -15,5 +15,5 @@ public interface IEquipConnService : ICrudAppService<
 
     Task StopConnectAsync(Guid connectId);
 
-    Task TestConnection(Protocol protocolEnum, string connectionString);
+    Task TestConnection(ConnType protocolEnum, string connectionString);
 }

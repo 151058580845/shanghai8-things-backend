@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
 using System.ComponentModel;
@@ -17,7 +18,7 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     public string EquipName { get; set; } = null!;
 
     [Description("设备类型ID")]
-    [ForeignKey(nameof(EquipTypeAggregate))]
+    [ForeignKey(nameof(EquipType))]
     public Guid? TypeId { get; set; }
 
     [Description("规格型号")]
@@ -57,7 +58,8 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     /// 设备类型
     /// </summary>
     // [Navigate(NavigateType.OneToOne, nameof(TypeId))]
-    public EquipType? EquipTypeAggregate { get; set; }
+    public EquipType? EquipType { get; set; }
+    public EquipConnect? EquipConnect { get; set; }
 
     // /// <summary>
     // /// 部门

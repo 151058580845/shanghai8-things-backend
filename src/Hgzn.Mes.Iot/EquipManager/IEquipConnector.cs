@@ -1,9 +1,9 @@
-﻿using Hgzn.Mes.Domain.ValueObjects.Message.Commads;
+﻿using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 namespace Hgzn.Mes.Iot.EquipManager;
 
 public interface IEquipConnector
 {
-    Task<bool> ConnectAsync(ConnInfoBase connInfo);
+    Task<bool> ConnectAsync(ConnInfo connInfo);
     Task CloseConnectionAsync();
     Task StartAsync();
     //Task StartAsync(Guid dataPointId);

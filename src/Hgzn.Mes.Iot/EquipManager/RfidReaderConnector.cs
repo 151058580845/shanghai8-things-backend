@@ -2,6 +2,7 @@
 using GDotnet.Reader.Api.Protocol.Gx;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
+using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
@@ -38,26 +39,36 @@ public class RfidReaderConnector : IEquipConnector
     }
 
 
-    public async Task<bool> ConnectAsync(ConnInfoBase connInfo)
+    public async Task<bool> ConnectAsync(ConnInfo connInfo)
     {
         return await Task.Run(() =>
         {
-            var info = connInfo as ConnInfo<SocketConnInfo>;
-            if (info?.Content is null) throw new ArgumentNullException(nameof(info));
-            if (_client.OpenTcp(info.Content.Address + ":" + info.Content.Port, 5000, out var status) &&
-                status == eConnectionAttemptEventStatusType.OK)
+            if (connInfo?.ConnString is null) throw new ArgumentNullException("connIfo");
+            if(connInfo.EquipType is not null)
             {
-                _client.OnEncapedTagEpcLog = TagEpcLogEncapedHandler;
-                // 获得读写器信息
-                var readerInfo = new MsgAppGetReaderInfo();
-                _client.SendSynMsg(readerInfo);
-                if (readerInfo.RtCode == 0)
+                switch (connInfo.ConnType)
                 {
-                    Console.WriteLine("ger reader info success");
-                    SerialNum = readerInfo.Imei;   
+                    case ConnType.Socket:
+                        var conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString) 
+                        ?? throw new ArgumentNullException("conn");
+                        if (_client.OpenTcp(conn.Address + ":" + conn.Port, 5000, out var status) &&
+                            status == eConnectionAttemptEventStatusType.OK)
+                        {
+                            _client.OnEncapedTagEpcLog = TagEpcLogEncapedHandler;
+                            // 获得读写器信息
+                            var readerInfo = new MsgAppGetReaderInfo();
+                            _client.SendSynMsg(readerInfo);
+                            if (readerInfo.RtCode == 0)
+                            {
+                                Console.WriteLine("ger reader info success");
+                                SerialNum = readerInfo.Imei;
+                            }
+                            return true;
+                        }
+                        break;
                 }
-                return true;
             }
+
             return false;
         });
 

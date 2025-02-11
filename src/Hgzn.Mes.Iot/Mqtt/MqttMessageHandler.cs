@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
+using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using MQTTnet;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 
 namespace Hgzn.Mes.Iot.Mqtt
 {
@@ -35,6 +36,7 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         public void Initialize(IMqttExplorer mqttExplorer)
         {
+            _manager.Initialize(mqttExplorer);
             _mqttExplorer = mqttExplorer;
         }
 
@@ -54,8 +56,8 @@ namespace Hgzn.Mes.Iot.Mqtt
                     break;
                     
                 case MqttTag.Cmd:
-                    var cmd = JsonNode.Parse(message.ConvertPayloadToString());
-                    await HandleCmdAsync(topic, cmd!);
+                    var conn = JsonSerializer.Deserialize<ConnInfo>(message.ConvertPayloadToString());
+                    await HandleCmdAsync(topic, conn!);
                     break;
 
                 case MqttTag.Health:
@@ -87,32 +89,21 @@ namespace Hgzn.Mes.Iot.Mqtt
             throw new NotImplementedException();
         }
 
-        private async Task HandleCmdAsync(IotTopic topic, JsonNode node)
+        private async Task HandleCmdAsync(IotTopic topic, ConnInfo info)
         {
-            var jobj = node.AsObject();
-            var cmdtype = node.AsObject()
-                .FirstOrDefault(obj => obj.Key == "type")
-                .Value?.GetValue<CmdType>();
             var uri = Guid.Parse(topic.DeviceUri!);
 
-            switch (cmdtype)
+            switch (info.Type)
             {
                 case CmdType.Conn:
-                    var connType = node.AsObject()
-                        .FirstOrDefault(obj => obj.Key == "connType")
-                        .Value?.GetValue<Protocol>();
-                    ConnInfoBase connInfo = connType switch
-                    {
-                        Protocol.ModbusTcp => jobj.GetValue<ConnInfo<SocketConnInfo>>(),
-                        _ => throw new ArgumentOutOfRangeException(nameof(connType))
-                    };
-                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, connType.Value);
-                    await equip.ConnectAsync(connInfo);
+
+                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, info.ConnType);
+                    await equip.ConnectAsync(info);
                     await equip.StartAsync();
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(cmdtype));
+                    throw new ArgumentOutOfRangeException(nameof(info.Type));
             }
 
             

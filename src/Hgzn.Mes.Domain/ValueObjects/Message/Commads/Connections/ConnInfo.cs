@@ -1,14 +1,14 @@
-﻿using Hgzn.Mes.Domain.ValueObjects.Message.Base;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 
 namespace Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections
 {
-    public class ConnInfo<TContent> : ConnInfoBase
-        where TContent : IConnInfo
+    public class ConnInfo : CommandBase, IConnInfo
     {
-        public TContent? Content { get => ConnString is null ? default : JsonSerializer.Deserialize<TContent>(ConnString); }
-        [JsonIgnore]
+        public ConnType ConnType { get; set; }
+
+        public string EquipType { get; set; } = null!;
+
         public string? ConnString { get; set; }
     }
 }

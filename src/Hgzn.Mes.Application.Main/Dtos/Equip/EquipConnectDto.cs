@@ -37,7 +37,7 @@ public class EquipConnectReadDto : ReadDto
     /// <summary>
     /// 采集协议
     /// </summary>
-    public Protocol? ProtocolEnum { get; set; }
+    public ConnType? ProtocolEnum { get; set; }
 
     /// <summary>
     /// 连接参数

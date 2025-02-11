@@ -121,8 +121,8 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("testconnection")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
-        public async Task StopConnectAsync(Domain.Shared.Enums.Protocol protocolEnum, string connectionString) =>
+        [Authorize(Policy = $"system:code:{ScopeMethodType.Query}")]
+        public async Task StopConnectAsync(Domain.Shared.Enums.ConnType protocolEnum, string connectionString) =>
             await _equipConnectService.TestConnection(protocolEnum, connectionString);
     }
 }

@@ -29,5 +29,11 @@
 	  <Reference Include="GReaderCore6">
 	    <HintPath>dependency\GReaderCore6.dll</HintPath>
 	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>	  
 </Project>

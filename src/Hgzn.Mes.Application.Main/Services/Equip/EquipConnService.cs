@@ -1,6 +1,8 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Application.Main.Utilities;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
@@ -11,7 +13,6 @@ using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using SqlSugar;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -33,54 +34,16 @@ public class EquipConnService : SugarCrudAppService<
 
     public override async Task<PaginatedList<EquipConnectReadDto>> GetPaginatedListAsync(EquipConnectQueryDto queryDto)
     {
-        var equips = await (await _equipLedgerService.GetEquipsListAsync(queryDto.EquipCode, queryDto.EquipName))
+        var querable = await DbContext.Queryable<EquipConnect>()
+            .Includes(eq => eq.EquipLedger, el => el == null ? null : el.EquipType)
+            .WhereIF(queryDto.EquipName.IsNullOrEmpty(),
+                eq => eq.EquipLedger != null && eq.EquipLedger.EquipName == queryDto.EquipName)
+            .WhereIF(queryDto.EquipCode.IsNullOrEmpty(),
+                eq => eq.EquipLedger != null && eq.EquipLedger.EquipCode == queryDto.EquipCode)
             .OrderBy(t => t.OrderNum)
-            .ToListAsync();
-        var equipIds = equips.Select(t => t.Id).ToList();
-        if (equipIds.Count == 0)
-        {
-            return new PaginatedList<EquipConnectReadDto>((Enumerable.Empty<EquipConnectReadDto>()), 0, queryDto.PageIndex, queryDto.PageSize);
-        }
+            .ToPageListAsync(queryDto.PageIndex, queryDto.PageSize);
 
-        var query = Queryable
-            .Where(t => equipIds.Contains(t.EquipId));
-        RefAsync<int> total = await query.CountAsync();
-        List<EquipConnect> entities = new List<EquipConnect>();
-        try
-        {
-            entities = await query
-               .Skip(queryDto.PageIndex)
-               .Take(queryDto.PageSize)
-               .Includes(t => t.EquipLedger, eq => eq.EquipTypeAggregate)
-               .ToListAsync();
-        }
-        catch (Exception e) { }
-        var outputs = await MapToGetListOutputDtosAsync(entities);
-        var equipDictionary = entities
-            .Select(t => t.EquipLedger)
-            .GroupBy(t => t!.Id)
-            .ToDictionary(g => g.Key, g => g.First()); // 获取每组的第一个实体;
-
-        foreach (EquipConnectReadDto outputDto in outputs)
-        {
-            if (equipDictionary.TryGetValue(outputDto.EquipId, out var entity))
-            {
-                outputDto.EquipCode = entity?.EquipCode;
-                outputDto.EquipName = entity?.EquipCode;
-                outputDto.TypeName = entity?.EquipTypeAggregate?.TypeName;
-                // 判断是否为 RFID 设备，并填充状态
-                if (outputDto.ProtocolEnum == Protocol.RfidReaderClient)
-                {
-                    outputDto.CollectionModel = outputDto.CollectionExtension switch
-                    {
-                        1 => "绑定Rfid标签",
-                        2 => "解绑Rfid标签",
-                        _ => "采集数据"
-                    };
-                }
-            }
-        }
-        return new PaginatedList<EquipConnectReadDto>(outputs, total, queryDto.PageIndex, queryDto.PageSize);
+        return Mapper.Map<PaginatedList<EquipConnectReadDto>>(querable);
     }
 
     public async Task<List<EquipConnectReadDto>> MapToGetListOutputDtosAsync(List<EquipConnect> equipLedgerQueryDtos)
@@ -106,7 +69,7 @@ public class EquipConnService : SugarCrudAppService<
         var entities = await query
             .Skip(queryDto.PageIndex)
             .Take(queryDto.PageSize)
-            .Includes(t => t.EquipLedger, eq => eq.EquipTypeAggregate)
+            .Includes(t => t.EquipLedger, eq => eq.EquipType)
             .ToListAsync();
         var outputs = await MapToGetListOutputDtosAsync(entities);
         var equipDictionary = entities
@@ -120,9 +83,9 @@ public class EquipConnService : SugarCrudAppService<
             {
                 outputDto.EquipCode = entity?.EquipCode;
                 outputDto.EquipName = entity?.EquipCode;
-                outputDto.TypeName = entity?.EquipTypeAggregate?.TypeName;
+                outputDto.TypeName = entity?.EquipType?.TypeName;
                 // 判断是否为 RFID 设备，并填充状态
-                if (outputDto.ProtocolEnum == Protocol.RfidReaderClient)
+                if (outputDto.ProtocolEnum == ConnType.Socket)
                 {
                     outputDto.CollectionModel = outputDto.CollectionExtension switch
                     {
@@ -154,19 +117,22 @@ public class EquipConnService : SugarCrudAppService<
     public async Task PutStartConnect(Guid id)
     {
         EquipConnect connect = await Queryable.Where(it => it.Id == id)
-           .Includes(t => t.EquipLedger)
+           .Includes(t => t.EquipLedger, le => le.EquipType)
            .FirstAsync();
         IotTopicBuilder iotTopicBuilder = IotTopicBuilder.CreateIotBuilder()
                 .WithPrefix(TopicType.Iot)
                 .WithDirection(MqttDirection.Down)
                 .WithTag(MqttTag.Cmd)
-                .WithDeviceType(connect.ProtocolEnum.ToString())
+                .WithDeviceType(connect.EquipLedger?.EquipType?.TypeCode ??
+                    throw new ArgumentNullException("equip type not exist"))
                 .WithUri(connect.EquipId.ToString());
 
-        ConnInfo<SocketConnInfo> info = new ConnInfo<SocketConnInfo>();
-        info.ConnType = connect.ProtocolEnum;
-        info.ConnString = connect.ConnectStr;
-        info.Type = CmdType.Conn;
+        var info = new ConnInfo
+        {
+            ConnType = connect.ProtocolEnum,
+            ConnString = connect.ConnectStr,
+            Type = CmdType.Conn
+        };
         string socketDto = JsonSerializer.Serialize(info);
         byte[] msg = Encoding.UTF8.GetBytes(socketDto);
         string topic = iotTopicBuilder.Build();
@@ -199,7 +165,7 @@ public class EquipConnService : SugarCrudAppService<
     /// <param name="connectionString"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public async Task TestConnection(Protocol protocolEnum, string connectionString)
+    public async Task TestConnection(ConnType protocolEnum, string connectionString)
     {
         var guid = Guid.NewGuid();
         var connect = new EquipConnect()

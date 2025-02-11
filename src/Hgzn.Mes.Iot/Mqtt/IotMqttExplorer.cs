@@ -1,5 +1,4 @@
-﻿using Hangfire.States;
-using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
@@ -10,29 +9,27 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
-using Mysqlx.Crud;
 using SqlSugar;
 
 namespace Hgzn.Mes.Iot.Mqtt
 {
     public class IotMqttExplorer : IMqttExplorer
     {
-        public static string? ProgramId = "";
         private readonly IManagedMqttClient _mqttClient;
         private readonly ManagedMqttClientOptions _mqttClientOptions;
-        private ICollection<MqttTopicFilter> _mqttTopics;
-        public readonly ISqlSugarClient _SugarClient;
+        private ICollection<MqttTopicFilter> _mqttTopics = null!;
+        private readonly ISqlSugarClient _client;
         
         public IotMqttExplorer(
             ILogger<IotMqttExplorer> logger,
             IConfiguration configuration,
-            ISqlSugarClient sqlSugarClient,
+            ISqlSugarClient client,
             MqttMessageHandler mqttMessageParser)
         {
             _logger = logger;
             var mqtt = configuration.GetConnectionString("Mqtt")!.Split(':');
-            _SugarClient = sqlSugarClient;
-            var types = _SugarClient.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
+            _client = client; 
+            var types = _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             RefreshTopicsAsync();
             _logger.LogInformation($"now subcribe to device type: {string.Join(',', types)}");
             _mqttClientOptions = new ManagedMqttClientOptionsBuilder()
@@ -118,7 +115,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         /// <returns></returns>
         public async Task RestartAsync()
         {
-            var types = _SugarClient.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
+            var types = _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             await RefreshTopicsAsync();
             _logger.LogInformation($"restarting... subcribe to device type: {string.Join(',', types)}");
             await PublishAsync(TopicBuilder.CreateBuilder()
@@ -134,9 +131,9 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         public Task RefreshTopicsAsync(params string[] topics)
         {
-            var types = _SugarClient.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
+            var types = _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             _mqttTopics = types
-                .Select(type => $"iot/{MqttDirection.Down}/+/{ProgramId}/+/+/+")
+                .Select(type => $"{TopicType.Iot:F}/+/{IotTopic.DevTypeName}/{type}/{IotTopic.DevUriName}/+/+".ToLower())
                 .Select(topic => new MqttTopicFilterBuilder().WithTopic(topic)
                     .WithExactlyOnceQoS()
                     .Build()).ToArray();

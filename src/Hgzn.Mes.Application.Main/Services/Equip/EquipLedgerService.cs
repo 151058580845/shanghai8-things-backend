@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
+using SqlSugar;
 using StackExchange.Redis;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
@@ -43,12 +44,18 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
+        var startTime = query.StartTime is null ? DateTime.UnixEpoch :
+            query.StartTime.Value.ToUniversalTime();
+
+        var endTime = query.EndTime is null ? DateTime.UtcNow :
+            query.EndTime.Value.ToUniversalTime();
+
         var entities = await Queryable
-            .Where(m =>string.IsNullOrEmpty(query.EquipName) || m.EquipName.Contains(query.EquipName))
-            .Where(m => query.TypeId.IsGuidEmpty() || m.TypeId.Equals(query.TypeId))
-            .Where(m => query.RoomId.IsGuidEmpty() || m.RoomId.Equals(query.RoomId))
-            .Where(m => query.StartTime == null || m.CreationTime >= query.StartTime)
-            .Where(m => query.EndTime == null || m.CreationTime <= query.EndTime)
+            .Where(m => ((string.IsNullOrEmpty(query.EquipName) || m.EquipName.Contains(query.EquipName)) &&
+            (query.TypeId.IsGuidEmpty() || m.TypeId.Equals(query.TypeId)) &&
+            (query.RoomId.IsGuidEmpty() || m.RoomId.Equals(query.RoomId))))
+            .WhereIF(query.StartTime is not null, m => m.CreationTime >= startTime)
+            .WhereIF(query.EndTime is not null, m => m.CreationTime <= endTime)
             .Includes(t => t.Room)
             .OrderByDescending(m => m.OrderNum)
             .ToPaginatedListAsync(query.PageIndex, query.PageSize);
@@ -57,12 +64,15 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto? query = null)
     {
+        var startTime = new DateTime(DateOnly.FromDateTime(query!.StartTime!.Value), TimeOnly.FromDateTime(query.StartTime.Value), DateTimeKind.Utc);
+        var endTime = new DateTime(DateOnly.FromDateTime(query!.EndTime!.Value), TimeOnly.FromDateTime(query.EndTime.Value), DateTimeKind.Utc);
         var entities = await Queryable
-            .Where(m =>query != null && (string.IsNullOrEmpty(query.EquipName) || m.EquipName.Contains(query.EquipName)))
-            .Where(m => query != null && (query.TypeId.IsGuidEmpty() || m.TypeId.Equals(query.TypeId)))
-            .Where(m => query != null && (query.RoomId.IsGuidEmpty() || m.RoomId.Equals(query.RoomId)))
-            .Where(m => query != null && (query.StartTime == null || m.CreationTime >= query.StartTime))
-            .Where(m => query != null && (query.EndTime == null || m.CreationTime <= query.EndTime))
+            .Where(m => query == null ||
+            ((string.IsNullOrEmpty(query.EquipName) || m.EquipName.Contains(query.EquipName)) &&
+            (query.TypeId.IsGuidEmpty() || m.TypeId.Equals(query.TypeId)) &&
+            (query.RoomId.IsGuidEmpty() || m.RoomId.Equals(query.RoomId)) &&
+            (query.StartTime == null || m.CreationTime >= startTime) &&
+            (query.EndTime == null || m.CreationTime <= endTime)))
             .Includes(t => t.Room)
             .OrderByDescending(m => m.OrderNum)
             .ToListAsync();

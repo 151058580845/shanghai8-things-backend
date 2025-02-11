@@ -6,15 +6,16 @@ namespace Hgzn.Mes.Iot.EquipManager
 {
     public class ConnManager
     {
-        private readonly IMqttExplorer _mqtt;
+        private IMqttExplorer _mqtt = null!;
 
-        public ConnManager(IMqttExplorer mqtt)
-        {
-            _mqtt = mqtt;
-        }
         public static ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
 
-        public IEquipConnector AddEquip(Guid id, Protocol type)
+        public void Initialize(IMqttExplorer mqttExplorer)
+        {
+            _mqtt = mqttExplorer;
+        }
+
+        public IEquipConnector AddEquip(Guid id, ConnType type)
         {
             if (Connections.TryGetValue(id, out var value))
             {
@@ -23,7 +24,7 @@ namespace Hgzn.Mes.Iot.EquipManager
             IEquipConnector? connector = null;
             switch (type)
             {
-                case Protocol.ModbusTcp:
+                case ConnType.ModbusTcp:
                     connector = new RfidReaderConnector(_mqtt);
                     if (Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");

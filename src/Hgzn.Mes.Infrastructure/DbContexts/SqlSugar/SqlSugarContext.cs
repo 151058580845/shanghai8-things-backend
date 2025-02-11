@@ -166,7 +166,7 @@ public sealed class SqlSugarContext
                     c.IfTable<EquipConnect>()
                         .OneToOne(t => t.EquipLedger, nameof(EquipConnect.EquipId));
                     c.IfTable<EquipLedger>()
-                        .OneToOne(t => t.EquipTypeAggregate, nameof(EquipLedger.TypeId));
+                        .OneToOne(t => t.EquipType, nameof(EquipLedger.TypeId));
                     c.IfTable<EquipLedger>()
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
                     c.IfTable<NoticeInfo>()
