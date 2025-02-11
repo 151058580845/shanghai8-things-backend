@@ -40,3 +40,10 @@ public enum EquipOperationStatus
     Paused,//暂停
     Stopped //停止
 }
+
+public enum DeviceStatus
+{
+    Normal, // 正常
+    Lost, // 丢失
+    InUse, // 使用中
+}

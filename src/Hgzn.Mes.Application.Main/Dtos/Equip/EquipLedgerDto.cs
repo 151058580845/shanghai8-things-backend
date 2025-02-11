@@ -34,7 +34,8 @@ public class EquipLedgerReadDto : ReadDto
 
     public Room? Room { get; set; }
 
-    [Description("状态（在用/停用/报废）")] public EquipOperationStatus? EquipOperationStatus { get; set; }
+    [Description("设备状态(正常/丢失/使用中)")]
+    public DeviceStatus? DeviceStatus { get; set; }
 
     [Description("有效期时间")] public DateTime? ValidityDate { get; set; }
 
@@ -121,9 +122,9 @@ public class EquipLedgerCreateDto : CreateDto
     public Guid? RoomId { get; set; }
 
     /// <summary>
-    /// 状态（在用/停用/报废）
+    /// 设备状态(正常/丢失/使用中)
     /// </summary>
-    public EquipOperationStatus? EquipOperationStatus { get; set; }
+    public string? DeviceStatus { get; set; }
 
     /// <summary>
     /// 有效期时间
@@ -189,9 +190,9 @@ public class EquipLedgerUpdateDto : UpdateDto
     public string? Location { get; set; }
 
     /// <summary>
-    /// 状态（在用/停用/报废）
+    /// 设备状态(正常/丢失/使用中
     /// </summary>
-    public EquipOperationStatus? EquipOperationStatus { get; set; }
+    public string? DeviceStatus { get; set; }
 
     /// <summary>
     /// 有效期时间
