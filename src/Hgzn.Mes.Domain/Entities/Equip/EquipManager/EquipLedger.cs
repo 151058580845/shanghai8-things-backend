@@ -42,8 +42,8 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     // [Navigate(NavigateType.OneToOne,nameof(RoomId))]
     public Room? Room { get; set; }
 
-    [Description("状态（在用/停用/报废）")]
-    public EquipOperationStatus? EquipOperationStatus { get; set; }
+    [Description("设备状态(正常/丢失/使用中)")]
+    public DeviceStatus? DeviceStatus { get; set; }
 
     [Description("有效期时间")]
     public DateTime? ValidityDate { get; set; }
