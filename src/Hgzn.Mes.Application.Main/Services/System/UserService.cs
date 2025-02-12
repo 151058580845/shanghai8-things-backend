@@ -3,6 +3,7 @@ using Hgzn.Mes.Application.Main.Captchas;
 using Hgzn.Mes.Application.Main.Captchas.Builder;
 using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Dtos.System;
+using Hgzn.Mes.Application.Main.Services.Audit.IService;
 using Hgzn.Mes.Application.Main.Services.Base;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Application.Main.Utilities;
@@ -12,8 +13,12 @@ using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
+using Hgzn.Mes.Infrastructure.Hub;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 
@@ -27,14 +32,21 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public UserService(
             IUserDomainService userDomainService,
             ILogger<UserService> logger
+            , ILoginLogService loginLogService,
+            IHttpContextAccessor httpContextAccessor
         )
         {
             _userDomainService = userDomainService;
             _logger = logger;
+            _loginLogService = loginLogService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
+        private  ILoginLogService  _loginLogService;
         private readonly IUserDomainService _userDomainService;
         private readonly ILogger<UserService> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
 
         public async Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto)
         {
@@ -75,6 +87,23 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 //throw new ForbiddenException("user was logged in elsewhere");
                 _logger.LogWarning("user was logged in elsewhere");
             }
+
+            // 登录成功后插入登录记录
+            // 获取 HTTP 请求相关信息
+            var httpContext = _httpContextAccessor.HttpContext;
+            var ipAddress = httpContext?.Connection.RemoteIpAddress?.ToString();
+            var loginUser = _loginLogService.GetInfoByHttpContext(httpContext);
+            
+     
+            await _loginLogService.CreateAsync(new Dtos.Audit.LoginLogCreateDto() { 
+                   Browser= loginUser.Browser,
+                   Os = loginUser.Os,
+                   CreationTime = DateTime.UtcNow,
+                   LoginIp= ipAddress,
+                   LoginLocation= loginUser.LoginLocation,
+                   LoginUser= user.Username,
+                   LogMsg= user.Id.ToString()
+            });
 
             await _userDomainService.CacheTokenAsync(user.Id, token);
             return token;
