@@ -90,7 +90,7 @@ public class EquipConnectService : SugarCrudAppService<
             ConnType = connect.ProtocolEnum,
             ConnString = connect.ConnectStr,
             Type = CmdType.Conn,
-            StateType = ConnStateType.On,
+            StateType = ConnStateType.Run,
         };
         var startInfo = new ConnInfo
         {

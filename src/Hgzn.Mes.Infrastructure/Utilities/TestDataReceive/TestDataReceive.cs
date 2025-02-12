@@ -1,6 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
 using Hgzn.Mes.Domain.Events;
-using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using MediatR;
 using SqlSugar;
 using System;
@@ -9,13 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Hgzn.Mes.Application.Main.EventHandlers
+namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
 {
-    public class TestDataReceiveNotificationHandler : INotificationHandler<TestDataReceiveNotification>
+    public class TestDataReceive
     {
         public ISqlSugarClient SqlSugarClient;
 
-        public TestDataReceiveNotificationHandler(ISqlSugarClient _client)
+        public TestDataReceive(ISqlSugarClient _client)
         {
             this.SqlSugarClient = _client;
         }
@@ -30,13 +29,13 @@ namespace Hgzn.Mes.Application.Main.EventHandlers
         /// workStyle       字节10    不固定
         /// devHealthState   字节8     不固定
         /// acquData        字节2800  不固定
-        public async Task Handle(TestDataReceiveNotification notification, CancellationToken cancellationToken)
+        public async Task Handle(byte[] msg)
         {
-            string data = Encoding.UTF8.GetString(notification.Data);
+            string data = Encoding.UTF8.GetString(msg);
             Console.WriteLine(data);
 
             // 使用 eventData.Data 作为 buffer
-            byte[] buffer = notification.Data;
+            byte[] buffer = msg;
 
             // 仿真试验系统识别编码
             byte simuTestSysId = buffer[0];

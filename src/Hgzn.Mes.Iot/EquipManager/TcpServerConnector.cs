@@ -1,8 +1,15 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Events;
 using Hgzn.Mes.Domain.ProtocolManagers.TcpServer;
+using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
 using MediatR;
 using NetCoreServer;
+using SqlSugar;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,25 +22,21 @@ namespace Hgzn.Mes.Iot.EquipManager
 {
     public class TcpServerConnector : TcpSession
     {
-        private readonly string _heartBeatMessage;
-
-        private readonly string _heartBeatAck;
-
         // private readonly Timer _timer;
-        private readonly IMediator _mediator;
-        private readonly EquipConnect _equipConnect;
-        private string Ip;
-        private string Mac;
+        private readonly EquipConnect? _equipConnect;
+        private readonly ISqlSugarClient _client;
+        private readonly IMqttExplorer _mqttExplorer;
+        private string? Ip;
+        private string? Mac;
         // 多少个转一个（从前端配置进行）
         private int _forwardLength = 10;
 
-        public TcpServerConnector(EquipTcpServer server, string heartBeatMessage, string heartBeatAck, int heartTime,
-            IMediator mediator, EquipConnect equipConnect) : base(server)
+        public TcpServerConnector(EquipTcpServer server,
+             EquipConnect equipConnect, ISqlSugarClient client, IMqttExplorer mqttExplorer) : base(server)
         {
-            _heartBeatMessage = heartBeatMessage;
-            _heartBeatAck = heartBeatAck;
-            _mediator = mediator;
             _equipConnect = equipConnect;
+            _client = client;
+            this._mqttExplorer = mqttExplorer;
             if (equipConnect.ForwardRate != null)
                 _forwardLength = equipConnect.ForwardRate.Value;
         }
@@ -82,32 +85,26 @@ namespace Hgzn.Mes.Iot.EquipManager
                         List<Guid> list = _equipConnect.ForwardEntities.Select(x => x.Id).ToList();
                         if (_forwardNum % _forwardLength == 0)
                         {
-                            // TODO 用MQTT转发
-                            ////因为基本上下一条的地址只会有一个两个，就不并行了，也不合并发布数据
-                            //if (list.Count > 0)
-                            //{
-                            //    foreach (var guid in list)
-                            //    {
-                            //        await _mediator.Publish(new EquipForwardNotification()
-                            //        {
-                            //            OriginId = _equipConnect.Id,
-                            //            TargetId = guid,
-                            //            Buffer = buffer
-                            //        });
-                            //    }
-                            //}
+                            foreach (var guid in list)
+                            {
+                                var topic = IotTopicBuilder.CreateIotBuilder()
+                                    .WithPrefix(TopicType.Iot)
+                                    .WithDirection(MqttDirection.Down)
+                                    .WithTag(MqttTag.Data)
+                                    .WithDeviceType("tcp-server").Build();
+                                // .WithUri(connect.Id.ToString()).Build();
+                                if (await _mqttExplorer.IsConnectedAsync())
+                                {
+                                    await _mqttExplorer.PublishAsync(topic, buffer);
+                                }
+                            }
                             _forwardNum = 1;
                         }
                     }
 
                     //本地解析数据
-                    await _mediator.Publish(new TestDataReceiveNotification()
-                    {
-                        ConnectionId = _equipConnect.Id,
-                        EquipId = _equipConnect.EquipId,
-                        Data = buffer,
-                        Ip = Ip
-                    });
+                    TestDataReceive testDataReceive = new TestDataReceive(_client);
+                    await testDataReceive.Handle(buffer);
                 }
                 _hasData = false;
             }
@@ -132,6 +129,42 @@ namespace Hgzn.Mes.Iot.EquipManager
                 var token = cancellationTokenSource.Token;
                 _ = Task.Run(async () => await ProcessDataAsync(token), token);
             }
+        }
+
+        public Task<bool> ConnectAsync(ConnInfo connInfo)
+        {
+            //IPEndPoint? ipEndPoint = this.Socket.RemoteEndPoint as IPEndPoint;
+            //if (ipEndPoint == null) return Task.FromResult(false);
+            //Ip = ipEndPoint.ToString();
+            //Mac = ipEndPoint.Address.ToString();
+
+            //Ip = connInfo.ConnString; // TODO 这里还需要解析出IP
+
+            Ip = "127.0.0.1";
+            this.StartAsync();
+            base.OnConnected();
+            return Task.FromResult(true);
+        }
+
+        public Task CloseConnectionAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task StartAsync()
+        {
+            base.Server.Start();
+            return Task.FromResult(true);
+        }
+
+        public Task StopAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SendDataAsync(byte[] buffer)
+        {
+            throw new NotImplementedException();
         }
     }
 }

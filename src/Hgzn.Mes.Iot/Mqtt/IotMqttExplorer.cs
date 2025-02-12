@@ -19,7 +19,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         private readonly ManagedMqttClientOptions _mqttClientOptions;
         private ICollection<MqttTopicFilter> _mqttTopics = null!;
         private readonly ISqlSugarClient _client;
-        
+
         public IotMqttExplorer(
             ILogger<IotMqttExplorer> logger,
             IConfiguration configuration,
@@ -28,7 +28,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         {
             _logger = logger;
             var mqtt = configuration.GetConnectionString("Mqtt")!.Split(':');
-            _client = client; 
+            _client = client;
             var types = _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
             RefreshTopicsAsync();
             _logger.LogInformation($"now subcribe to device type: {string.Join(',', types)}");
@@ -174,6 +174,17 @@ namespace Hgzn.Mes.Iot.Mqtt
         public Task<bool> IsConnectedAsync()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task UpdateStateAsync(ConnStateType stateType, string uri)
+        {
+            await PublishAsync(UserTopicBuilder
+            .CreateUserBuilder()
+            .WithPrefix(TopicType.App)
+            .WithDirection(MqttDirection.Up)
+            .WithTag(MqttTag.State)
+            .WithUri(uri!)
+            .Build(), BitConverter.GetBytes((int)stateType));
         }
     }
 }

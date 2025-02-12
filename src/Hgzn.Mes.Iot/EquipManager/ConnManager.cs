@@ -1,21 +1,34 @@
-﻿using Hgzn.Mes.Domain.Shared.Enums;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.ProtocolManagers.TcpServer;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using SqlSugar;
 using System.Collections.Concurrent;
+using System.Net;
 
 namespace Hgzn.Mes.Iot.EquipManager
 {
     public class ConnManager
     {
         private IMqttExplorer _mqtt = null!;
+        private readonly ISqlSugarClient _client;
+        private readonly IMqttExplorer _mqttExplorer;
 
         public static ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
+
+        public ConnManager(ISqlSugarClient client)
+        {
+            this._client = client;
+        }
 
         public void Initialize(IMqttExplorer mqttExplorer)
         {
             _mqtt = mqttExplorer;
         }
 
-        public IEquipConnector AddEquip(Guid id, string equipType)
+        public async Task<IEquipConnector> AddEquip(Guid id, string equipType)
         {
             if (Connections.TryGetValue(id, out var value))
             {
@@ -29,6 +42,12 @@ namespace Hgzn.Mes.Iot.EquipManager
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;
+                case "tcp-server":
+                    EquipConnect connect = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == id);
+                    connector = new EquipTcpServer("127.0.0.1", 1111, id.ToString(), connect, _client, _mqtt);
+                    if (!Connections.TryAdd(id, connector))
+                        throw new Exception("equip exist");
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException("equipType");
             }
@@ -37,7 +56,7 @@ namespace Hgzn.Mes.Iot.EquipManager
 
         public IEquipConnector? GetEquip(Guid id)
         {
-            if(Connections.TryGetValue(id, out var connector))
+            if (Connections.TryGetValue(id, out var connector))
             {
                 return connector;
             }
