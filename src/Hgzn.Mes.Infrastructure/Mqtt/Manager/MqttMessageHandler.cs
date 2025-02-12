@@ -94,7 +94,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                         return;
                     }
                     await HandleRfidMsgAsync(uri, rfid);
-
+                    break;
+                case "tcp-server":
+                        //解析逻辑
                     break;
 
             }

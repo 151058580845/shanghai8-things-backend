@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Worker\" />
+	  <Folder Include="WebServices\" />
 	</ItemGroup>
 
 	<ItemGroup>
