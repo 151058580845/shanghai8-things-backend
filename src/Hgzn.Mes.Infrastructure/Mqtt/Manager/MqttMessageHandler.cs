@@ -1,15 +1,16 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
-using Hgzn.Mes.Domain.ValueObjects.Message.Base;
-using Hgzn.Mes.Domain.ValueObjects.Message.Commads;
-using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
+using SqlSugar;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
@@ -18,14 +19,17 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
     {
         public MqttMessageHandler(
             IConnectionMultiplexer connectionMultiplexer,
-            ILogger<MqttMessageHandler> logger)
+            ILogger<MqttMessageHandler> logger,
+            ISqlSugarClient client)
         {
             _connectionMultiplexer = connectionMultiplexer;
             _logger = logger;
+            _client = client;
         }
 
         private readonly IConnectionMultiplexer _connectionMultiplexer;
         private readonly ILogger<MqttMessageHandler> _logger;
+        private readonly ISqlSugarClient _client;
         private IMqttExplorer _mqttExplorer = null!;
         private static ConcurrentDictionary<string, List<(int heart, int breath)>> _rawDataPackage = new();
         private const int countIndex = 60;
@@ -77,9 +81,52 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             }
         }
 
-        private Task HandleDataAsync(IotTopic topic, byte[] msg)
+        private async Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
-            throw new NotImplementedException();
+            var uri = Guid.Parse(topic.ConnUri!);
+            switch (topic.EquipType)
+            {
+                case "rfid-reader":
+                    var rfid = JsonSerializer.Deserialize<RfidMsg>(msg, Options.CustomJsonSerializerOptions);
+                    if(rfid is null)
+                    {
+                        _logger.LogWarning("unexpected device msg");
+                        return;
+                    }
+                    await HandleRfidMsgAsync(uri, rfid);
+
+                    break;
+
+            }
+        }
+
+        private async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
+        {
+            var targetId = Guid.Parse(msg.Userdata ?? throw new ArgumentNullException("userdata not exist"));
+            // 读写器所在房间
+            var rfidRoom = await _client.Queryable<EquipLedger>()
+                .Select(el => el.RoomId)
+                .FirstAsync(id => id == uri);
+            if (rfidRoom is null)
+            {
+                _logger.LogError("rfid device not bind to room");
+                return;
+            }
+            // 查找标签所在设备
+            var equip = await _client.Queryable<EquipLedger>()
+                .Includes(eq => eq.Room)
+                .FirstAsync(x => x!.Id == targetId);
+            //原先设备已绑定则解绑
+            if (equip.RoomId is not null)
+            {
+                equip.RoomId = null;
+            }
+            else //未绑定设备绑定至新房间
+            {
+                equip.RoomId = rfidRoom;
+            }
+
+            await _client.Updateable<EquipLedger>(equip).ExecuteCommandAsync();
         }
 
         private void HandleHealthAsync(IotTopic topic,

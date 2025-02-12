@@ -29,6 +29,8 @@ namespace Hgzn.Mes.Iot.EquipManager
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException("equipType");
             }
             return connector ?? throw new ArgumentNullException();
         }

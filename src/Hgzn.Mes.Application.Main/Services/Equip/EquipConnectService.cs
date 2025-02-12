@@ -53,49 +53,15 @@ public class EquipConnectService : SugarCrudAppService<
 
     public async override Task<IEnumerable<EquipConnectReadDto>> GetListAsync(EquipConnectQueryDto? queryDto)
     {
-        var equips = await (await _equipLedgerService.GetEquipsListAsync(queryDto.EquipCode, queryDto.EquipName))
+        var querable = queryDto is null ? DbContext.Queryable<EquipConnect>() : DbContext.Queryable<EquipConnect>()
+            .WhereIF(!queryDto.EquipName.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipName.Contains(queryDto.EquipName!))
+            .WhereIF(!queryDto.EquipCode.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipCode.Contains(queryDto.EquipCode!));
+
+        var result = await querable
+            .Includes(eq => eq.EquipLedger, el => el.EquipType)
             .OrderBy(t => t.OrderNum)
-            .ToListAsync();
-        var equipIds = equips.Select(t => t.Id).ToList();
-        if (equipIds.Count == 0)
-        {
-            return new List<EquipConnectReadDto>();
-        }
-
-        var query = Queryable
-            .Where(t => equipIds.Contains(t.EquipId));
-        RefAsync<int> total = await query.CountAsync();
-        var entities = await query
-            .Skip(queryDto.PageIndex)
-            .Take(queryDto.PageSize)
-            .Includes(t => t.EquipLedger, eq => eq.EquipType)
-            .ToListAsync();
-        var outputs = await MapToGetListOutputDtosAsync(entities);
-        var equipDictionary = entities
-            .Select(t => t.EquipLedger)
-            .GroupBy(t => t!.Id)
-            .ToDictionary(g => g.Key, g => g.First()); // 获取每组的第一个实体;
-
-        foreach (EquipConnectReadDto outputDto in outputs)
-        {
-            if (equipDictionary.TryGetValue(outputDto.EquipId, out var entity))
-            {
-                outputDto.EquipCode = entity?.EquipCode;
-                outputDto.EquipName = entity?.EquipCode;
-                outputDto.TypeName = entity?.EquipType?.TypeName;
-                // 判断是否为 RFID 设备，并填充状态
-                if (outputDto.ProtocolEnum == ConnType.Socket)
-                {
-                    outputDto.CollectionModel = outputDto.CollectionExtension switch
-                    {
-                        1 => "绑定Rfid标签",
-                        2 => "解绑Rfid标签",
-                        _ => "采集数据"
-                    };
-                }
-            }
-        }
-        return new List<EquipConnectReadDto>(outputs);
+            .ToArrayAsync();
+        return Mapper.Map<IEnumerable<EquipConnectReadDto>>(result);
     }
 
     public async override Task<EquipConnectReadDto?> UpdateAsync(Guid key, EquipConnectUpdateDto dto)
