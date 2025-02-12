@@ -10,7 +10,7 @@ namespace Hgzn.Mes.Domain.Shared.Enums
 
     public enum ConnStateType
     {
-        On,
+        On=1,
         Off,
         Run,
         Stop
