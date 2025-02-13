@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.System;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -258,7 +259,7 @@ public class LocationController : ControllerBase
         (await _roomService.GetPaginatedListAsync(input)).Wrap();
 
     /// <summary>
-    ///     分页查询
+    ///     查询
     ///     auth: anonymous
     /// </summary>
     /// <param name="input">用于验证用户身份</param>
@@ -271,5 +272,18 @@ public class LocationController : ControllerBase
     public async Task<ResponseWrapper<IEnumerable<RoomReadDto>>> GetRoomListAsync(RoomQueryDto? input) =>
         (await _roomService.GetListAsync(input)).Wrap();
 
+    /// <summary>
+    ///     查询
+    ///     auth: anonymous
+    /// </summary>
+    /// <param name="input">用于验证用户身份</param>
+    /// <returns>更换密码状态</returns>
+    [HttpPost]
+    [Route("room/list/AllChoose")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = $"system:room:{ScopeMethodType.Query}")]
+    public async Task<ResponseWrapper<IEnumerable<NameValueListDto>>> GetRoomListAllAsync(RoomQueryDto? input) =>
+        (await _roomService.GetRoomListAllAsync(input)).Wrap();
     #endregion
 }

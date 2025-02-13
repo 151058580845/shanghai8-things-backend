@@ -96,6 +96,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .WhereIF(query.StartTime != null ,m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null ,m => m.CreationTime <= query.EndTime)
             .Includes(t => t.Room)
+            .Includes(t=>t.EquipType)
             .OrderByDescending(m => m.OrderNum)
             .ToPaginatedListAsync(query.PageIndex, query.PageSize);
         return Mapper.Map<PaginatedList<EquipLedgerReadDto>>(entities);
@@ -111,6 +112,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .WhereIF(query.StartTime != null ,m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null ,m => m.CreationTime <= query.EndTime)
             .Includes(t => t.Room)
+            .Includes(t=>t.EquipType)
             .OrderByDescending(m => m.OrderNum)
             .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);

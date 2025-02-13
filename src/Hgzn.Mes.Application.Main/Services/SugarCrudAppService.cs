@@ -55,6 +55,25 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         return Mapper.Map<TReadDto>(entity);
     }
+    
+    /// <summary>
+    /// 修改实体
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="state"></param>
+    /// <returns></returns>
+    [ScopeDefinition(ScopeMethodType.Edit)]
+    public virtual async Task<TReadDto?> UpdateStateAsync(TKey key, bool state)
+    {
+        var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
+        if (entity == null)
+        {
+            return default;
+        }
+        entity.GetType().GetProperty("state")?.SetValue(state,entity);
+        await DbContext.Updateable(entity).ExecuteCommandAsync();
+        return Mapper.Map<TReadDto>(entity);
+    }
 }
 
 public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto> :

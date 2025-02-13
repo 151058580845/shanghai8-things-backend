@@ -510,10 +510,10 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("d0a35a0d-c697-4699-975f-2fe9d40c11ef"),
             Name = "字典管理",
             Code = "dict",
-            ScopeCode = "system:dict:list",
+            ScopeCode = "system:dictionarytype:list",
             Type = MenuType.Menu,
             IconUrl = "ep:reading",
-            Route = "/system/dictionarytype/index",
+            Route = "/system/dict/index",
             OrderNum = 95,
             ParentId = System.Id,
             RouteName = "SystemDict"

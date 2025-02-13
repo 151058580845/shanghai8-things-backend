@@ -34,6 +34,11 @@ public abstract class CrudAppService<TEntity, TKey, TReadDto> : BaseService,
         return 0;
     }
 
+    public Task<TReadDto?> UpdateStateAsync(TKey key, bool state)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// 根据主键获取实体
     /// </summary>

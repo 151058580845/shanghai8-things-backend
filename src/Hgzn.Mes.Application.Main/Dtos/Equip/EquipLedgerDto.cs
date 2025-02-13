@@ -3,6 +3,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
 using System.ComponentModel;
+using Hgzn.Mes.Application.Main.Dtos.System;
 
 namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 
@@ -17,36 +18,25 @@ public class EquipLedgerReadDto : ReadDto
 
     [Description("设备名称")] public string EquipName { get; set; } = null!;
 
-    [Description("设备类型ID")] public Guid? TypeId { get; set; }
-
+    [Description("设备类型ID")] 
+    public Guid? TypeId { get; set; }
+    public string TypeName { get; set; }
     [Description("规格型号")] public string? Model { get; set; }
 
     [Description("购置日期")] public DateTime? PurchaseDate { get; set; }
-
-    [Description("供应商ID")] public Guid? SupplierId { get; set; }
-
+    
     [Description("资产编号")] public string? AssetNumber { get; set; }
-
-    [Description("使用部门ID")] public Guid? DepartmentId { get; set; }
-
+    
     [Description("安装地点")] //若是rfidReader则不可为null
     public Guid? RoomId { get; set; }
-
-    public Room? Room { get; set; }
-
+    [Description("安装地点")] //若是rfidReader则不可为null
+    public string? RoomName { get; set; }
     [Description("设备状态(正常/丢失/使用中)")]
     public DeviceStatus? DeviceStatus { get; set; }
 
     [Description("有效期时间")] public DateTime? ValidityDate { get; set; }
 
-    [Description("设备资源集（需要做文档管理功能）")] public Guid? ResourceId { get; set; }
-
     [Description("备注")] public string? Remark { get; set; }
-
-    /// <summary>
-    /// 设备类型
-    /// </summary>
-    public EquipType? EquipTypeAggregate { get; set; }
 
     /// <summary>
     /// 是否在移动中
