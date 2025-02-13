@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.ComponentModel;
+using System.Text.Json.Nodes;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 
 namespace Hgzn.Mes.Domain.ValueObjects.Message
@@ -6,14 +8,26 @@ namespace Hgzn.Mes.Domain.ValueObjects.Message
     /// <summary>
     /// 设备状态消息内容
     /// </summary>
-    public class DeviceStateMsg : IJsonMessage
+    public class DeviceStateMsg : IBinaryMessage
     {
-        public DeviceStateMsg(string raw)
+        public DeviceStateMsg(ArraySegment<byte> raw)
         {
-            Node = JsonNode.Parse(raw) ??
-                throw new ArgumentException("can't parse json node");
+            State = (ConnStateType)raw[0];
         }
 
-        public JsonNode? Node { get; set; }
+        public ConnStateType State { get; set; }
+        
+        public byte[] FrameHeader { get; set; }
+        public byte FrameType { get; set; }
+        public byte[] FrameData { get; set; }
+        public byte[] AsFrame()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Verify(byte[] raw)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

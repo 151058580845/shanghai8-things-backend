@@ -9,12 +9,14 @@ public class EquipLedgerDtoProfile : Profile
 {
     public EquipLedgerDtoProfile()
     {
-        CreateMap<EquipLedgerCreateDto, EquipLedger>()
-            .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceStatus!)));
-        CreateMap<EquipLedgerUpdateDto, EquipLedger>()
-            .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceStatus!)));
+        // CreateMap<EquipLedgerCreateDto, EquipLedger>()
+        //     .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceStatus!)));
+        // CreateMap<EquipLedgerUpdateDto, EquipLedger>()
+        //     .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceStatus!)));
         CreateMap<EquipLedger, EquipLedgerReadDto>()
-            .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => x.DeviceStatus.ToString()));
+            .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => x.DeviceStatus.ToString()))
+            .ForMember(d=>d.TypeName,opt=>opt.MapFrom(x=>x.EquipType == null?"":x.EquipType!.TypeName))
+            .ForMember(d=>d.RoomName,opt=>opt.MapFrom(x=>x.Room==null?"":x.Room!.Name));
 
     }
 

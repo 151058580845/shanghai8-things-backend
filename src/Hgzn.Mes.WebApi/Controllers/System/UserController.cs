@@ -150,5 +150,19 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<UserReadDto>> ResetPassword(Guid userId,UserUpdateDto dto) =>
             (await _userService.UpdateAsync(userId,dto)).Wrap();
+        
+        /// <summary>
+        /// 修改状态
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id:guid}/{state:bool}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
+        public async Task<ResponseWrapper<UserReadDto>> UpdateStateAsync(Guid id, bool state) =>
+            (await _userService.UpdateStateAsync(id, state)).Wrap();
     }
 }

@@ -120,5 +120,19 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         //[Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public ResponseWrapper<IEnumerable<ScopeDefReadDto>> GetSupportedScopes() =>
             _roleService.GetScopes().Wrap();
+        
+        /// <summary>
+        /// 修改状态
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id:guid}/{state:bool}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Edit}")]
+        public async Task<ResponseWrapper<RoleReadDto>> UpdateStateAsync(Guid id, bool state) =>
+            (await _roleService.UpdateStateAsync(id, state)).Wrap();
     }
 }

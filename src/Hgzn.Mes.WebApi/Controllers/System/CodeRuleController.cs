@@ -119,12 +119,12 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// <param name="state"></param>
         /// <returns></returns>
         [HttpPut]
-        [Route("{id:guid}/state")]
+        [Route("{id:guid}/{state:bool}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:coderule:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<CodeRuleReadDto>> GetGenerateCodeByCodeAsync(Guid id, bool? state) =>
-             (await _codeRuleService.GetGenerateCodeByCodeAsync(id, state)).Wrap();
+        public async Task<ResponseWrapper<CodeRuleReadDto>> GetGenerateCodeByCodeAsync(Guid id, bool state) =>
+             (await _codeRuleService.UpdateStateAsync(id, state)).Wrap();
 
     }
 }

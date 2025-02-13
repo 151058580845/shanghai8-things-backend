@@ -110,7 +110,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("31b9f2b2-48f4-4eb8-bf3d-f1c5a53236cd"),
             Name = "在线用户",
             Code = "online",
-            ScopeCode = "monitor:online:list",
+            ScopeCode = "system:onlinehub:list",
             Type = MenuType.Menu,
             Route = "monitor/online/index",
             IconUrl = "ri:user-voice-line",
@@ -313,7 +313,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("d537cc7f-0c35-4d9d-8039-126698a1d1f6"),
             Name = "部门管理",
             Code = "dept",
-            ScopeCode = "system:dept:list",
+            ScopeCode = "system:department:list",
             Type = MenuType.Menu,
             Route = "/system/dept/index",
             IconUrl = "ri:git-branch-line",
@@ -327,7 +327,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("3a8575b9-0c2d-4cd1-a129-6495c3e86f74"),
             Name = "部门查询",
             Code = "deptQuery",
-            ScopeCode = "system:dept:query",
+            ScopeCode = "system:department:query",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = Dept.Id
@@ -338,7 +338,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("8c3c7c38-6795-4c7d-8b26-c4c34f464307"),
             Name = "部门新增",
             Code = "deptAdd",
-            ScopeCode = "system:dept:add",
+            ScopeCode = "system:department:add",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = Dept.Id
@@ -349,7 +349,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("d0f234b0-fcc1-4f86-b57f-8b598d163118"),
             Name = "部门修改",
             Code = "deptEdit",
-            ScopeCode = "system:dept:edit",
+            ScopeCode = "system:department:edit",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = Dept.Id
@@ -360,7 +360,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("b2709f13-9351-4d79-bab0-5d78c57260fc"),
             Name = "部门删除",
             Code = "deptRemove",
-            ScopeCode = "system:dept:remove",
+            ScopeCode = "system:department:remove",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = Dept.Id
@@ -431,7 +431,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("6d0362a1-d89d-4973-a592-75e949abf28d"),
             Name = "操作日志",
             Code = "operationLog",
-            ScopeCode = "monitor:operlog:list",
+            ScopeCode = "audit:operatorlog:list",
             Type = MenuType.Menu,
             Route = "/monitor/operation-logs",
             IconUrl = "ri:history-fill",
@@ -446,7 +446,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("b7c36c6b-f8d7-4f8b-b139-e020f34cc544"),
             Name = "操作查询",
             Code = "operationLogQuery",
-            ScopeCode = "monitor:operlog:query",
+            ScopeCode = "audit:operatorlog:query",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = OperationLog.Id
@@ -457,7 +457,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("0f6a9b4b-3170-4b7c-a34e-8d7f7d306ba0"),
             Name = "操作删除",
             Code = "operationLogRemove",
-            ScopeCode = "monitor:operlog:remove",
+            ScopeCode = "audit:operatorlog:remove",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = OperationLog.Id
@@ -469,7 +469,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("bfedbb92-678d-4cc5-8d88-3cb32b30dfbf"),
             Name = "登录日志",
             Code = "loginLog",
-            ScopeCode = "monitor:logininfor:list",
+            ScopeCode = "audit:loginlog:list",
             Type = MenuType.Menu,
             Route = "/monitor/login-logs",
             Visible = true,
@@ -487,7 +487,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("36e8e2e2-35fa-4bb0-bb44-b9a8e09ff795"),
             Name = "登录查询",
             Code = "loginLogQuery",
-            ScopeCode = "monitor:logininfor:query",
+            ScopeCode = "audit:loginlog:query",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = LoginLog.Id
@@ -498,7 +498,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("05a5aeaf-4b26-42b8-8269-d6d740fa21f7"),
             Name = "登录删除",
             Code = "loginLogRemove",
-            ScopeCode = "monitor:logininfor:remove",
+            ScopeCode = "audit:loginlog:remove",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = LoginLog.Id
@@ -510,7 +510,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("d0a35a0d-c697-4699-975f-2fe9d40c11ef"),
             Name = "字典管理",
             Code = "dict",
-            ScopeCode = "system:dict:list",
+            ScopeCode = "system:dictionarytype:list",
             Type = MenuType.Menu,
             IconUrl = "ep:reading",
             Route = "/system/dict/index",
@@ -524,7 +524,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("baf8191b-4b9b-4643-9b3b-8ab5a9b972fb"),
             Name = "字典查询",
             Code = "dictQuery",
-            ScopeCode = "system:dict:query",
+            ScopeCode = "system:dictionarytype:query",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = Dict.Id
@@ -535,7 +535,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("e75bfe27-8f39-4b24-8f8f-cd2065d6399a"),
             Name = "字典新增",
             Code = "dictAdd",
-            ScopeCode = "system:dict:add",
+            ScopeCode = "system:dictionarytype:add",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = Dict.Id
@@ -546,7 +546,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("02e6a4b3-cb2e-456d-979e-63d6ac7e4c8a"),
             Name = "字典修改",
             Code = "dictEdit",
-            ScopeCode = "system:dict:edit",
+            ScopeCode = "system:dictionarytype:edit",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = Dict.Id
@@ -557,7 +557,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("4e3a97bc-b2f1-47b4-a35e-75b8d7c2f146"),
             Name = "字典删除",
             Code = "dictRemove",
-            ScopeCode = "system:dict:remove",
+            ScopeCode = "system:dictionarytype:remove",
             Type = MenuType.Component,
             OrderNum = 100,
             ParentId = Dict.Id
@@ -689,7 +689,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("3b9b8f3e-8ff0-4e7b-94ff-d53d5682f780"),
             Name = "编码管理",
             Code = "sysCode",
-            ScopeCode = "system:code:list",
+            ScopeCode = "system:coderule:list",
             Type = MenuType.Menu,
             IconUrl = "ri:barcode-box-fill",
             Route = "/system/code/index",
@@ -931,7 +931,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("0e1c18ae-b6ff-4a29-9b7e-639bb078b3b2"),
             Name = "设备类型",
             Code = "equipType",
-            ScopeCode = "equip:type:list",
+            ScopeCode = "equip:equiptype:list",
             Type = MenuType.Menu,
             IconUrl = "ri:equalizer-line",
             Route = "/equip/type/index",
@@ -946,7 +946,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("34931d71-8f6f-4018-933b-dc9cd8cb6b9f"),
             Name = "设备台账",
             Code = "equipLedger",
-            ScopeCode = "equip:ledger:list",
+            ScopeCode = "equip:equipledger:list",
             Type = MenuType.Menu,
             IconUrl = "ri:equal-fill",
             Route = "/equip/ledger/index",
@@ -960,7 +960,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("B46B7ECC-E9B9-4AE4-5B67-6902BBCE1B8B"),
             Name = "设备历史记录",
             Code = "equipLedgerHistory",
-            ScopeCode = "equip:history:list",
+            ScopeCode = "equip:equipledgerhistory:list",
             Type = MenuType.Menu,
             IconUrl = "fa-solid:history",
             Route = "/equip/history/index",
@@ -974,7 +974,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("3C05CB50-0046-5418-F28E-ACB61E58CB68"),
             Name = "设备通知",
             Code = "equipNotice",
-            ScopeCode = "equip:notice:list",
+            ScopeCode = "equip:equipnotice:list",
             Type = MenuType.Menu,
             IconUrl = "ri:alarm-warning-line",
             Route = "/equip/notice/index",
@@ -1063,7 +1063,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("62a7f52b-1df2-462d-a4b6-0816c603e6fd"),
             Name = "设备参数配置",
             Code = "equipConfig",
-            ScopeCode = "equip:connect:list",
+            ScopeCode = "equip:equipconnect:list",
             Type = MenuType.Menu,
             IconUrl = "ep:connection",
             Route = "/equip/connect/index",
@@ -1307,15 +1307,15 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
 
         #region 楼层管理
 
-        // 排班管理
+        // 地点管理
         public static Menu Location = new()
         {
             Id = Guid.Parse("A9816E1F-7561-541B-956E-B593A23C89ED"),
-            Name = "楼层管理",
+            Name = "地点管理",
             Code = "location",
             Type = MenuType.Catalogue,
             Route = "/location",
-            IconUrl = "ri:settings-3-line",
+            IconUrl = "ep:location",
             OrderNum = 100,
             ParentId = Root.Id
         };
@@ -1326,39 +1326,39 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Id = Guid.Parse("A11CE7DB-3DBF-8CBE-D4B9-8CAC730B5D52"),
             Name = "楼栋管理",
             Code = "building",
-            ScopeCode = "location:building:list",
+            ScopeCode = "system:building:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ep:office-building",
             Route = "/location/building/index",
-            OrderNum = 95,
+            OrderNum = 99,
             ParentId = Location.Id,
             RouteName = "building"
         };
-        // 楼栋管理
+        // 楼层管理
         public static Menu Floor = new()
         {
             Id = Guid.Parse("110E536E-4D8E-11A8-2892-E4B68A13B448"),
             Name = "楼层管理",
             Code = "Floor",
-            ScopeCode = "location:floor:list",
+            ScopeCode = "system:floor:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ri:flood-fill",
             Route = "/location/floor/index",
-            OrderNum = 95,
+            OrderNum = 98,
             ParentId = Location.Id,
             RouteName = "Floor"
         };
-        // 楼栋管理
+        // 房间管理
         public static Menu Room = new()
         {
             Id = Guid.Parse("D0F66616-B831-0768-3054-F00B1D9A295B"),
             Name = "房间管理",
             Code = "Room",
-            ScopeCode = "location:room:list",
+            ScopeCode = "system:room:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "fa-solid:crosshairs",
             Route = "/location/room/index",
-            OrderNum = 95,
+            OrderNum = 97,
             ParentId = Location.Id,
             RouteName = "Room"
         };
@@ -1388,7 +1388,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Product, ProductPlan, ProductOrder, ProductSchedule,
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
-            //Location,Building,Floor,Room
+            Location,Building,Floor,Room
         ];
 
         #endregion

@@ -13,7 +13,7 @@ public class EquipNotice:UniversalEntity
     public DateTime SendTime { get; set; }
     
     [Description("设备通知类型")]
-    public EquipNoticeEnum NoticeType { get; set; }
+    public ConnStateType NoticeType { get; set; }
     
     [Description("通知标题")]
     public string? Title { get; set; }
