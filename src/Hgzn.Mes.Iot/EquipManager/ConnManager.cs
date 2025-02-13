@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SqlSugar;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Text.Json.Nodes;
 
 namespace Hgzn.Mes.Iot.EquipManager
 {
@@ -28,12 +29,12 @@ namespace Hgzn.Mes.Iot.EquipManager
             _mqtt = mqttExplorer;
         }
 
-        public async Task<IEquipConnector> AddEquip(Guid id, string equipType)
+        public async Task<IEquipConnector> AddEquip(Guid id, string equipType, string connectStr)
         {
             if (Connections.TryGetValue(id, out var value))
             {
                 return value;
-            }
+            }   
             IEquipConnector? connector = null;
             switch (equipType)
             {
@@ -44,7 +45,11 @@ namespace Hgzn.Mes.Iot.EquipManager
                     break;
                 case "tcp-server":
                     EquipConnect connect = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == id);
-                    connector = new EquipTcpServer("127.0.0.1", 1111, id.ToString(), connect, _client, _mqtt);
+                    JsonNode? jn = GetJsonNode(connectStr);
+                    if (jn == null) break;
+                    string? address = jn["address"]?.ToString();
+                    if (address == null || !int.TryParse(jn["port"]?.ToString(), out int port)) break;
+                    connector = new EquipTcpServer(address, port, id.ToString(), connect, _client, _mqtt);
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;
@@ -61,6 +66,12 @@ namespace Hgzn.Mes.Iot.EquipManager
                 return connector;
             }
             return null;
+        }
+
+        public JsonNode? GetJsonNode(string conStr)
+        {
+            JsonNode? jn = JsonNode.Parse(conStr);
+            return jn;
         }
     }
 }

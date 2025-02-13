@@ -130,41 +130,5 @@ namespace Hgzn.Mes.Iot.EquipManager
                 _ = Task.Run(async () => await ProcessDataAsync(token), token);
             }
         }
-
-        public Task<bool> ConnectAsync(ConnInfo connInfo)
-        {
-            //IPEndPoint? ipEndPoint = this.Socket.RemoteEndPoint as IPEndPoint;
-            //if (ipEndPoint == null) return Task.FromResult(false);
-            //Ip = ipEndPoint.ToString();
-            //Mac = ipEndPoint.Address.ToString();
-
-            //Ip = connInfo.ConnString; // TODO 这里还需要解析出IP
-
-            Ip = "127.0.0.1";
-            this.StartAsync();
-            base.OnConnected();
-            return Task.FromResult(true);
-        }
-
-        public Task CloseConnectionAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task StartAsync()
-        {
-            base.Server.Start();
-            return Task.FromResult(true);
-        }
-
-        public Task StopAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SendDataAsync(byte[] buffer)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

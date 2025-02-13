@@ -90,7 +90,7 @@ public class EquipConnectService : SugarCrudAppService<
             ConnType = connect.ProtocolEnum,
             ConnString = connect.ConnectStr,
             Type = CmdType.Conn,
-            StateType = ConnStateType.Run,
+            StateType = ConnStateType.On,
         };
         var startInfo = new ConnInfo
         {
@@ -109,9 +109,9 @@ public class EquipConnectService : SugarCrudAppService<
                 .WithUri(connect.Id.ToString()).Build();
         if (await _mqttExplorer.IsConnectedAsync())
         {
-            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(conninfo)));
-            await Task.Delay(5 * 100);
             await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(startInfo)));
+            await Task.Delay(5 * 100);
+            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(conninfo)));
         }
     }
 
@@ -122,13 +122,29 @@ public class EquipConnectService : SugarCrudAppService<
     /// <returns></returns>
     public async Task StopConnectAsync(Guid connectId)
     {
+        var connect = await Queryable.Where(it => it.Id == connectId)
+           .Includes(t => t.EquipLedger, le => le.EquipType)
+           .FirstAsync();
+
         IotTopicBuilder iotTopicBuilder = IotTopicBuilder.CreateIotBuilder()
                 .WithPrefix(TopicType.Iot)
                 .WithDirection(MqttDirection.Down)
                 .WithTag(MqttTag.Cmd)
-                .WithUri(connectId.ToString());
+                .WithDeviceType(connect.EquipLedger?.EquipType?.TypeCode ??
+                    throw new ArgumentNullException("equip type not exist"))
+                .WithUri(connect.Id.ToString());
+
         string topic = iotTopicBuilder.Build();
-        await _mqttExplorer.PublishAsync(topic, null);
+
+        var stopInfo = new ConnInfo
+        {
+            ConnType = connect.ProtocolEnum,
+            ConnString = connect.ConnectStr,
+            Type = CmdType.Conn,
+            StateType = ConnStateType.Off,
+        };
+
+        await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(stopInfo)));
     }
 
     /// <summary>

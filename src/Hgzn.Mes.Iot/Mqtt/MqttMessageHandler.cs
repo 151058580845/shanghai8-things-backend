@@ -99,7 +99,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             {
                 case CmdType.Conn:
 
-                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.EquipType!);
+                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.EquipType!, info.ConnString);
                     await SwitchEquipAsync(equip);
                     break;
 
@@ -113,7 +113,8 @@ namespace Hgzn.Mes.Iot.Mqtt
                 {
                     ConnStateType.On => equip.ConnectAsync(info),
                     ConnStateType.Run => equip.StartAsync(),
-                    ConnStateType.Off => equip.StopAsync(),
+                    ConnStateType.Stop => equip.StopAsync(),
+                    ConnStateType.Off => equip.CloseConnectionAsync(),
                     _ => throw new NotImplementedException()
                 };
                 await task;
