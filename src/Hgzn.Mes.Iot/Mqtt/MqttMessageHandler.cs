@@ -7,9 +7,11 @@ using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
 using Hgzn.Mes.Iot.EquipManager;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
+using SqlSugar;
 using StackExchange.Redis;
 using System;
 using System.Collections.Concurrent;
@@ -22,16 +24,19 @@ namespace Hgzn.Mes.Iot.Mqtt
         public MqttMessageHandler(
             IConnectionMultiplexer connectionMultiplexer,
             ILogger<MqttMessageHandler> logger,
+            ISqlSugarClient client,
             ConnManager manager)
         {
             _connectionMultiplexer = connectionMultiplexer;
             _logger = logger;
+            _client = client;
             _manager = manager;
         }
 
         private readonly IConnectionMultiplexer _connectionMultiplexer;
         private readonly ConnManager _manager;
         private readonly ILogger<MqttMessageHandler> _logger;
+        ISqlSugarClient _client;
         private IMqttExplorer _mqttExplorer = null!;
         private static ConcurrentDictionary<string, List<(int heart, int breath)>> _rawDataPackage = new();
         private const int countIndex = 60;
@@ -86,9 +91,10 @@ namespace Hgzn.Mes.Iot.Mqtt
             }
         }
 
-        private Task HandleDataAsync(IotTopic topic, byte[] msg)
+        private async Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
-            throw new NotImplementedException();
+            TestDataReceive testDataReceive = new TestDataReceive(_client);
+            await testDataReceive.Handle(msg);
         }
 
         private async Task HandleCmdAsync(IotTopic topic, ConnInfo info)
@@ -99,10 +105,9 @@ namespace Hgzn.Mes.Iot.Mqtt
             {
                 case CmdType.Conn:
 
-                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.EquipType!, info.ConnString);
+                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.EquipType!, info.ConnString!);
                     await SwitchEquipAsync(equip);
                     break;
-
                 default:
                     throw new ArgumentOutOfRangeException(nameof(info.Type));
             }

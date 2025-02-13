@@ -18,7 +18,7 @@ var builder = Host.CreateApplicationBuilder(args);
 var logger = (new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration))
     .CreateLogger();
-builder.Configuration.AddJsonFile( Path.Combine(Environment.CurrentDirectory, "appsettings.json"));
+builder.Configuration.AddJsonFile(Path.Combine(Environment.CurrentDirectory, "appsettings.json"));
 //builder.Logging.AddSerilog(logger);
 builder.Services.AddSingleton<ConnManager>();
 builder.Services.AddSingleton<IConnectionMultiplexer, ConnectionMultiplexer>(_ =>
@@ -29,7 +29,7 @@ builder.Services.AddScoped<ISqlSugarClient, SqlSugarClient>(context =>
         .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
     return new SqlSugarClient(SqlSugarContext.Build(setting));
 });
-// builder.Services.AddSingleton<MqttMessageHandler>();
+builder.Services.AddSingleton<MqttMessageHandler>();
 builder.Services.AddSingleton<IMqttExplorer, IotMqttExplorer>();
 builder.Services.AddSingleton<ConnManager>();
 

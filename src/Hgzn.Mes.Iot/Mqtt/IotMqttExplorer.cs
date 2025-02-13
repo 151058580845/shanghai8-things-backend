@@ -1,4 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.System.Account;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
@@ -8,7 +10,9 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
+using Mysqlx.Expr;
 using SqlSugar;
+using StackExchange.Redis;
 
 namespace Hgzn.Mes.Iot.Mqtt
 {
@@ -17,16 +21,19 @@ namespace Hgzn.Mes.Iot.Mqtt
         private readonly IManagedMqttClient _mqttClient;
         private readonly ManagedMqttClientOptions _mqttClientOptions;
         private readonly ISqlSugarClient _client;
+        private readonly IConnectionMultiplexer _connectionMultiplexer;
 
         public IotMqttExplorer(
             ILogger<IotMqttExplorer> logger,
             IConfiguration configuration,
             ISqlSugarClient client,
+            IConnectionMultiplexer connectionMultiplexer,
             MqttMessageHandler mqttMessageParser)
         {
             _logger = logger;
             var mqtt = configuration.GetConnectionString("Mqtt")!.Split(':');
-            _client = client; 
+            _client = client;
+            this._connectionMultiplexer = connectionMultiplexer;
             _mqttClientOptions = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(10))
                 .WithClientOptions(new MqttClientOptionsBuilder()
@@ -141,12 +148,12 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         public async Task UnSubscribeAsync(string topic)
         {
-            await _mqttClient.SubscribeAsync(topic);
+            await _mqttClient.UnsubscribeAsync(topic);
         }
 
         public async Task SubscribeAsync(string topic)
         {
-            await _mqttClient.UnsubscribeAsync(topic);
+            await _mqttClient.SubscribeAsync(topic);
         }
 
         public Task<bool> IsConnectedAsync()
@@ -156,6 +163,11 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         public async Task UpdateStateAsync(ConnStateType stateType, string uri)
         {
+            // 记录到redis服务器
+            var database = _connectionMultiplexer.GetDatabase();
+            var key = string.Format("connectState", uri);
+            await database.StringSetAsync(key, stateType == ConnStateType.On ? "1" : "0");
+
             await PublishAsync(UserTopicBuilder
             .CreateUserBuilder()
             .WithPrefix(TopicType.App)

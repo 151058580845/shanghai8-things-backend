@@ -85,14 +85,14 @@ namespace Hgzn.Mes.Iot.EquipManager
                         List<Guid> list = _equipConnect.ForwardEntities.Select(x => x.Id).ToList();
                         if (_forwardNum % _forwardLength == 0)
                         {
-                            foreach (var guid in list)
+                            foreach (Guid guid in list)
                             {
                                 var topic = IotTopicBuilder.CreateIotBuilder()
                                     .WithPrefix(TopicType.Iot)
                                     .WithDirection(MqttDirection.Down)
                                     .WithTag(MqttTag.Data)
-                                    .WithDeviceType("tcp-server").Build();
-                                // .WithUri(connect.Id.ToString()).Build();
+                                    .WithDeviceType("tcp-server")
+                                    .WithUri(guid.ToString()).Build();
                                 if (await _mqttExplorer.IsConnectedAsync())
                                 {
                                     await _mqttExplorer.PublishAsync(topic, buffer);

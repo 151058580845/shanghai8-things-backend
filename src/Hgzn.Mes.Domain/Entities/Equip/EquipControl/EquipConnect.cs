@@ -54,6 +54,8 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
 
     [Description("转发频率")]
     public int? ForwardRate { get; set; }
+    [Description("连接状态")]
+    public bool ConnectState { get; set; }
 
     public bool SoftDeleted { get; set; }
     public DateTime? DeleteTime { get; set; }

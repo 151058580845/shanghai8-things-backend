@@ -12,6 +12,7 @@ using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
+using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 
@@ -25,22 +26,34 @@ public class EquipConnectService : SugarCrudAppService<
 {
     private readonly IEquipLedgerService _equipLedgerService;
     private readonly IMqttExplorer _mqttExplorer;
+    private readonly IConnectionMultiplexer _connectionMultiplexer;
 
-    public EquipConnectService(IEquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer)
+    public EquipConnectService(IEquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer, IConnectionMultiplexer connectionMultiplexer)
     {
         _equipLedgerService = equipLedgerService;
         _mqttExplorer = mqttExplorer;
+        this._connectionMultiplexer = connectionMultiplexer;
     }
 
 
     public override async Task<PaginatedList<EquipConnectReadDto>> GetPaginatedListAsync(EquipConnectQueryDto queryDto)
     {
-        var querable = await DbContext.Queryable<EquipConnect>()
+        IDatabase database = _connectionMultiplexer.GetDatabase();
+
+        PaginatedList<EquipConnect> querable = await DbContext.Queryable<EquipConnect>()
             .Includes(eq => eq.EquipLedger, el => el.EquipType)
             .WhereIF(!queryDto.EquipName.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipName.Contains(queryDto.EquipName!))
             .WhereIF(!queryDto.EquipCode.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipCode.Contains(queryDto.EquipCode!))
             .OrderBy(t => t.OrderNum)
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+
+        // 从redis里查出来赋值给ReadDto
+        foreach (EquipConnect item in querable.Items)
+        {
+            bool connectState = database.StringGet(string.Format("connectState", item.Id)) == "1" ? true : false;
+            item.ConnectState = connectState;
+        }
+        querable = new PaginatedList<EquipConnect>(querable.Items, querable.Items.Count(), queryDto.PageIndex, queryDto.PageSize);
 
         return Mapper.Map<PaginatedList<EquipConnectReadDto>>(querable);
     }
