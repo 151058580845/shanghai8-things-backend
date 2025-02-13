@@ -10,16 +10,15 @@ using MQTTnet;
 using SqlSugar;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
-using System.Text;
 using System.Text.Json;
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 {
-    public class MqttMessageHandler
+    public class IotMessageHandler
     {
-        public MqttMessageHandler(
+        public IotMessageHandler(
             IConnectionMultiplexer connectionMultiplexer,
-            ILogger<MqttMessageHandler> logger,
+            ILogger<IotMessageHandler> logger,
             ISqlSugarClient client)
         {
             _connectionMultiplexer = connectionMultiplexer;
@@ -28,7 +27,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         }
 
         private readonly IConnectionMultiplexer _connectionMultiplexer;
-        private readonly ILogger<MqttMessageHandler> _logger;
+        private readonly ILogger<IotMessageHandler> _logger;
         private readonly ISqlSugarClient _client;
         private IMqttExplorer _mqttExplorer = null!;
         private static ConcurrentDictionary<string, List<(int heart, int breath)>> _rawDataPackage = new();
@@ -116,17 +115,23 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             var equip = await _client.Queryable<EquipLedger>()
                 .Includes(eq => eq.Room)
                 .FirstAsync(x => x!.Id == targetId);
+
+            var tids = equip.PosTags is null ? null : equip.PosTags.Split(';');
+
             //原先设备已绑定则解绑
             if (equip.RoomId is not null)
             {
                 equip.RoomId = null;
+                equip.IsMoving = true;
+                equip.LastMoveTime = DateTime.UtcNow;
             }
             else //未绑定设备绑定至新房间
             {
                 equip.RoomId = rfidRoom;
+                equip.LastMoveTime = DateTime.UtcNow;
             }
 
-            await _client.Updateable<EquipLedger>(equip).ExecuteCommandAsync();
+            await _client.Updateable(equip).ExecuteCommandAsync();
         }
 
         private void HandleHealthAsync(IotTopic topic,

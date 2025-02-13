@@ -1,4 +1,5 @@
 ﻿using MQTTnet.Client;
+using MQTTnet.Packets;
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 {
@@ -37,6 +38,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         /// <param name="topic"></param>
         /// <returns></returns>
         Task SubscribeAsync(string topic);
+
+        Task<ICollection<MqttTopicFilter>> GetSubscribeTopicsAsync();
 
         /// <summary>
         /// 重新连接
