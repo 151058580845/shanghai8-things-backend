@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using SqlSugar;
@@ -96,13 +97,16 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             {
                 case "rfid-reader":
                     var rfid = JsonSerializer.Deserialize<RfidMsg>(msg, Options.CustomJsonSerializerOptions);
-                    if(rfid is null)
+                    if (rfid is null)
                     {
                         _logger.LogWarning("unexpected device msg");
                         return;
                     }
                     await HandleRfidMsgAsync(uri, rfid);
-
+                    break;
+                case "tcp-server":
+                    TestDataReceive testDataReceive = new TestDataReceive(_client);
+                    await testDataReceive.Handle(msg);
                     break;
 
             }

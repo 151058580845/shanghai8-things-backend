@@ -1,4 +1,5 @@
-﻿using MQTTnet.Client;
+﻿using Hgzn.Mes.Domain.Shared.Enums;
+using MQTTnet.Client;
 using MQTTnet.Packets;
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
@@ -56,6 +57,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         /// </summary>
         /// <returns></returns>
         Task<bool> IsConnectedAsync();
+
+
+        Task UpdateStateAsync(ConnStateType stateType, string uri);
 
     }
 }

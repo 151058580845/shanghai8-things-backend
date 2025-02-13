@@ -195,4 +195,9 @@ public class ApiMqttExplorer : IMqttExplorer
     {
         return Task.FromResult(_mqttClient.IsConnected);
     }
+
+    public Task UpdateStateAsync(ConnStateType stateType, string uri)
+    {
+        throw new NotImplementedException();
+    }
 }

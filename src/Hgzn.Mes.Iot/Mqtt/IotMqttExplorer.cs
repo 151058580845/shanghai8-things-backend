@@ -17,7 +17,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         private readonly IManagedMqttClient _mqttClient;
         private readonly ManagedMqttClientOptions _mqttClientOptions;
         private readonly ISqlSugarClient _client;
-        
+
         public IotMqttExplorer(
             ILogger<IotMqttExplorer> logger,
             IConfiguration configuration,
@@ -152,6 +152,17 @@ namespace Hgzn.Mes.Iot.Mqtt
         public Task<bool> IsConnectedAsync()
         {
             return Task.FromResult(_mqttClient.IsConnected);
+        }
+
+        public async Task UpdateStateAsync(ConnStateType stateType, string uri)
+        {
+            await PublishAsync(UserTopicBuilder
+            .CreateUserBuilder()
+            .WithPrefix(TopicType.App)
+            .WithDirection(MqttDirection.Up)
+            .WithTag(MqttTag.State)
+            .WithUri(uri!)
+            .Build(), BitConverter.GetBytes((int)stateType));
         }
     }
 }

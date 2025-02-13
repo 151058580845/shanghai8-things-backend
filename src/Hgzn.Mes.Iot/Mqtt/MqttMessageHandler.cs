@@ -11,6 +11,7 @@ using Hgzn.Mes.Iot.EquipManager;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using StackExchange.Redis;
+using System;
 using System.Collections.Concurrent;
 using System.Text.Json;
 
@@ -55,7 +56,7 @@ namespace Hgzn.Mes.Iot.Mqtt
                 case MqttTag.Data:
                     await HandleDataAsync(topic, message.PayloadSegment.Array!);
                     break;
-                    
+
                 case MqttTag.Cmd:
                     var conn = JsonSerializer.Deserialize<ConnInfo>(message.ConvertPayloadToString());
                     await HandleCmdAsync(topic, conn!);
@@ -98,7 +99,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             {
                 case CmdType.Conn:
 
-                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, topic.EquipType!);
+                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.EquipType!, info.ConnString);
                     await SwitchEquipAsync(equip);
                     break;
 
@@ -112,7 +113,8 @@ namespace Hgzn.Mes.Iot.Mqtt
                 {
                     ConnStateType.On => equip.ConnectAsync(info),
                     ConnStateType.Run => equip.StartAsync(),
-                    ConnStateType.Off => equip.StopAsync(),
+                    ConnStateType.Stop => equip.StopAsync(),
+                    ConnStateType.Off => equip.CloseConnectionAsync(),
                     _ => throw new NotImplementedException()
                 };
                 await task;
@@ -132,6 +134,5 @@ namespace Hgzn.Mes.Iot.Mqtt
             await _mqttExplorer.PublishAsync(newTopic.ToString(), new DeviceCalibrationMsg().AsFrame());
             _logger.LogInformation($"device: {topic.EquipType} time calibrate succeed");
         }
-
     }
 }
