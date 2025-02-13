@@ -87,7 +87,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue,
             Route = "/system",
             IconUrl = "ri:settings-3-line",
-            OrderNum = 99,
+            OrderNum = 98,
             ParentId = Root.Id
         };
 
@@ -512,7 +512,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "dict",
             ScopeCode = "system:dict:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ep:reading",
             Route = "/system/dict/index",
             OrderNum = 95,
             ParentId = System.Id,
@@ -571,7 +571,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "notice",
             ScopeCode = "system:notice:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ep:chat-line-round",
             Route = "/system/notice/index",
             OrderNum = 95,
             ParentId = System.Id,
@@ -691,7 +691,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "sysCode",
             ScopeCode = "system:code:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ri:barcode-box-fill",
             Route = "/system/code/index",
             OrderNum = 95,
             ParentId = System.Id,
@@ -933,7 +933,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "equipType",
             ScopeCode = "equip:type:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ri:equalizer-line",
             Route = "/equip/type/index",
             OrderNum = 100,
             ParentId = Equip.Id,
@@ -948,7 +948,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "equipLedger",
             ScopeCode = "equip:ledger:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ri:equal-fill",
             Route = "/equip/ledger/index",
             OrderNum = 99,
             ParentId = Equip.Id,
@@ -962,9 +962,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "equipLedgerHistory",
             ScopeCode = "equip:history:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "fa-solid:history",
             Route = "/equip/history/index",
-            OrderNum = 99,
+            OrderNum = 97,
             ParentId = Equip.Id,
             RouteName = "EquipLedgerHistory"
         };
@@ -976,9 +976,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "equipNotice",
             ScopeCode = "equip:notice:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ri:alarm-warning-line",
             Route = "/equip/notice/index",
-            OrderNum = 99,
+            OrderNum = 96,
             ParentId = Equip.Id,
             RouteName = "EquipNotice"
         };
@@ -1065,9 +1065,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "equipConfig",
             ScopeCode = "equip:connect:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ep:connection",
             Route = "/equip/connect/index",
-            OrderNum = 90,
+            OrderNum = 98,
             ParentId = Equip.Id,
             RouteName = "EquipConfig"
         };
