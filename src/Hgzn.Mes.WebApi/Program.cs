@@ -244,8 +244,7 @@ if (StaticConfig.AppContext_ConvertInfinityDateTime == false)
 app.MapControllers();
 app.MapHub<OnlineHub>("/hub/online");
 // app.Services.GetService<InitialDatabase>()?.Initialize();
-app.Services.GetService<SqlSugarContext>()?.InitDatabase(app.Services.GetService<IConfiguration>().GetSection(nameof(DbConnOptions))
-    .Get<DbConnOptions>());
+app.Services.GetService<SqlSugarContext>()?.InitDatabase();
 app.Services.GetService<IMqttExplorer>()?.StartAsync();
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>

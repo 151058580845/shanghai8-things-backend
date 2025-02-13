@@ -120,9 +120,9 @@ public sealed class SqlSugarContext
 
     private const string DefaultConnectionStringName = "Default";
 
-    public void InitDatabase(DbConnOptions dbOptions)
+    public void InitDatabase()
     {
-        var uri = dbOptions.Url!.Split(";");
+        var uri = _dbOptions.Url!.Split(";");
         var newDatabaseName = uri[1].Substring(uri[1].IndexOf('=') + 1);
         uri[1] = "DATABASE=postgres";
         string connectionString = string.Join(";", uri);
@@ -130,7 +130,7 @@ public sealed class SqlSugarContext
         var connConfig = new ConnectionConfig()
         {
             ConfigId = DefaultConnectionStringName,
-            DbType = dbOptions.DbType ?? DbType.Sqlite,
+            DbType = _dbOptions.DbType ?? DbType.Sqlite,
             ConnectionString = connectionString,
             InitKeyType = InitKeyType.Attribute,
             IsAutoCloseConnection = true

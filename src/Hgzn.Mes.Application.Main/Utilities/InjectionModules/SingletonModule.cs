@@ -37,8 +37,11 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .AsImplementedInterfaces()
                 .SingleInstance();
 
+            builder.RegisterType<IotMessageHandler>()
+                .SingleInstance();
+
             #endregion
-            
+
             builder.RegisterType<ThreadCurrentPrincipalAccessor>()
                 .As<ICurrentPrincipalAccessor>()
                 .SingleInstance();
