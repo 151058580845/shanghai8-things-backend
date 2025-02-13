@@ -19,7 +19,6 @@ public class NoticeService : SugarCrudAppService<
     public override async Task<IEnumerable<NoticeReadDto>> GetListAsync(NoticeQueryDto? input)
     {
         var entities = await Queryable
-            .WhereIF(input is { Type: not null }, x => input != null && x.NoticeShowType == input.Type)
             .WhereIF(!string.IsNullOrEmpty(input?.Title), x => input != null && x.Title.Contains(input.Title!))
             .WhereIF(input is { StartTime: not null, EndTime: not null },
                 x => input != null && x.CreationTime >= input.StartTime && x.CreationTime <= input.EndTime)
@@ -29,7 +28,7 @@ public class NoticeService : SugarCrudAppService<
 
     public override async Task<PaginatedList<NoticeReadDto>> GetPaginatedListAsync(NoticeQueryDto input)
     {
-        var entities = await Queryable.WhereIF(input.Type is not null, x => x.NoticeShowType == input.Type)
+        var entities = await Queryable
             .WhereIF(!string.IsNullOrEmpty(input.Title), x => x.Title.Contains(input.Title!))
             .WhereIF(input.StartTime is not null && input.EndTime is not null,
                 x => x.CreationTime >= input.StartTime && x.CreationTime <= input.EndTime)

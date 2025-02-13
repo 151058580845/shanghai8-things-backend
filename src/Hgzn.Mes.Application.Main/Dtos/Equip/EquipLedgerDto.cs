@@ -209,7 +209,73 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// </summary>
     public string? Remarks { get; set; }
 }
+public class EquipLedgerAppUpdateDto : UpdateDto
+{
+    /// <summary>
+    /// 设备主键
+    /// </summary>
+    public string EquipId { get; set; } = null!;
 
+    /// <summary>
+    /// 房间主键
+    /// </summary>
+    public string RoomId { get; set; } = null!;
+
+    /// <summary>
+    /// 设备类型ID
+    /// </summary>
+    public Guid? TypeId { get; set; }
+
+    /// <summary>
+    /// 规格型号
+    /// </summary>
+    public string? Model { get; set; }
+
+    /// <summary>
+    /// 购置日期
+    /// </summary>
+    public DateTime? PurchaseDate { get; set; }
+
+    /// <summary>
+    /// 供应商ID
+    /// </summary>
+    public Guid? SupplierId { get; set; }
+
+    /// <summary>
+    /// 资产编号
+    /// </summary>
+    public string? AssetNumber { get; set; }
+
+    /// <summary>
+    /// 使用部门ID
+    /// </summary>
+    public Guid? DepartmentId { get; set; }
+
+    /// <summary>
+    /// 安装地点
+    /// </summary>
+    public string? Location { get; set; }
+
+    /// <summary>
+    /// 状态（在用/停用/报废）
+    /// </summary>
+    public EquipOperationStatus? EquipOperationStatus { get; set; }
+
+    /// <summary>
+    /// 有效期时间
+    /// </summary>
+    public DateTime? ValidityDate { get; set; }
+
+    /// <summary>
+    /// 设备资源集（需要做文档管理功能）
+    /// </summary>
+    public Guid? ResourceId { get; set; }
+
+    /// <summary>
+    /// 备注
+    /// </summary>
+    public string? Remarks { get; set; }
+}
 public class EquipLedgerQueryDto : PaginatedQueryDto
 {
     /// <summary>

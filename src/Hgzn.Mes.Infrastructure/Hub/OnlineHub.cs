@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Security.Claims;
 using Hgzn.Mes.Domain.Entities.Hub;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Monitor;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
@@ -12,7 +13,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using UAParser;
 using LoginLog = Hgzn.Mes.Domain.Entities.Audit.LoginLog;
-
 namespace Hgzn.Mes.Infrastructure.Hub;
 
 
@@ -23,6 +23,19 @@ public class OnlineHub : Microsoft.AspNetCore.SignalR.Hub
     private static readonly object ObjLock = new object();
     private readonly ILogger<OnlineHub> _logger;
     private readonly HubConnectionContext _context;
+  
+
+    public static List<OnlineUser> OnlineUserInfos
+    {
+        get
+        {
+            lock (ObjLock) // 如果需要线程安全，可以加锁
+            {
+                return OnlineUsers;
+            }
+        }
+    }
+
     public OnlineHub(ILogger<OnlineHub> logger)
     {
         _logger = logger;
@@ -39,7 +52,7 @@ public class OnlineHub : Microsoft.AspNetCore.SignalR.Hub
             var user = new OnlineUser
             {
                 Browser = loginUser.Browser,
-                LoginLocation = loginUser.LoginLocation,
+                    LoginLocation = loginUser.LoginLocation,
                 Ipaddr = loginUser.LoginIp,
                 LoginTime = DateTime.Now,
                 Os = loginUser.Os,
@@ -64,6 +77,11 @@ public class OnlineHub : Microsoft.AspNetCore.SignalR.Hub
         }
 
         return base.OnConnectedAsync();
+    }
+
+    public static void RemoveByUserId(Guid userId) {
+         OnlineUsers.RemoveAll(u => u.UserId == userId);
+      //  _logger.LogInformation($"{DateTime.Now}：{userId},{Context.ConnectionId}已经删除！");
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)

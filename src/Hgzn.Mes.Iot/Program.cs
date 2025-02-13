@@ -29,7 +29,7 @@ builder.Services.AddScoped<ISqlSugarClient, SqlSugarClient>(context =>
         .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
     return new SqlSugarClient(SqlSugarContext.Build(setting));
 });
-builder.Services.AddSingleton<Hgzn.Mes.Iot.Mqtt.MqttMessageHandler>();
+// builder.Services.AddSingleton<MqttMessageHandler>();
 builder.Services.AddSingleton<IMqttExplorer, IotMqttExplorer>();
 builder.Services.AddSingleton<ConnManager>();
 

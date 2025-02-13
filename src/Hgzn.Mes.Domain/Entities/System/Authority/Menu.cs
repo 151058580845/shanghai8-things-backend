@@ -87,7 +87,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue,
             Route = "/system",
             IconUrl = "ri:settings-3-line",
-            OrderNum = 99,
+            OrderNum = 98,
             ParentId = Root.Id
         };
 
@@ -512,7 +512,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "dict",
             ScopeCode = "system:dict:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ep:reading",
             Route = "/system/dict/index",
             OrderNum = 95,
             ParentId = System.Id,
@@ -571,7 +571,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "notice",
             ScopeCode = "system:notice:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ep:chat-line-round",
             Route = "/system/notice/index",
             OrderNum = 95,
             ParentId = System.Id,
@@ -691,7 +691,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "sysCode",
             ScopeCode = "system:code:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ri:barcode-box-fill",
             Route = "/system/code/index",
             OrderNum = 95,
             ParentId = System.Id,
@@ -933,7 +933,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "equipType",
             ScopeCode = "equip:type:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ri:equalizer-line",
             Route = "/equip/type/index",
             OrderNum = 100,
             ParentId = Equip.Id,
@@ -948,13 +948,40 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "equipLedger",
             ScopeCode = "equip:ledger:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ri:equal-fill",
             Route = "/equip/ledger/index",
             OrderNum = 99,
             ParentId = Equip.Id,
             RouteName = "EquipLedger"
         };
-
+        // 设备历史记录
+        public static Menu EquipLedgerHistory = new()
+        {
+            Id = Guid.Parse("B46B7ECC-E9B9-4AE4-5B67-6902BBCE1B8B"),
+            Name = "设备历史记录",
+            Code = "equipLedgerHistory",
+            ScopeCode = "equip:history:list",
+            Type = MenuType.Menu,
+            IconUrl = "fa-solid:history",
+            Route = "/equip/history/index",
+            OrderNum = 97,
+            ParentId = Equip.Id,
+            RouteName = "EquipLedgerHistory"
+        };
+        // 设备通知信息
+        public static Menu EquipNotice = new()
+        {
+            Id = Guid.Parse("3C05CB50-0046-5418-F28E-ACB61E58CB68"),
+            Name = "设备通知",
+            Code = "equipNotice",
+            ScopeCode = "equip:notice:list",
+            Type = MenuType.Menu,
+            IconUrl = "ri:alarm-warning-line",
+            Route = "/equip/notice/index",
+            OrderNum = 96,
+            ParentId = Equip.Id,
+            RouteName = "EquipNotice"
+        };
         // 设备项目
         public static Menu EquipItems = new()
         {
@@ -1038,9 +1065,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "equipConfig",
             ScopeCode = "equip:connect:list",
             Type = MenuType.Menu,
-            IconUrl = "ep:management",
+            IconUrl = "ep:connection",
             Route = "/equip/connect/index",
-            OrderNum = 90,
+            OrderNum = 98,
             ParentId = Equip.Id,
             RouteName = "EquipConfig"
         };
@@ -1345,22 +1372,23 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Role, RoleQuery, RoleAdd, RoleEdit, RoleRemove,
             MenuRoot, MenuQuery, MenuAdd, MenuEdit, MenuRemove,
             Dept, DeptQuery, DeptAdd, DeptEdit, DeptRemove,
-            Post, PostQuery, PostAdd, PostEdit, PostRemove,
+            // Post, PostQuery, PostAdd, PostEdit, PostRemove,
             OperationLog, OperationLogQuery, OperationLogRemove,
             LoginLog, LoginLogQuery, LoginLogRemove,
             Dict, DictQuery, DictAdd, DictEdit, DictRemove,
             Notice, NoticeQuery, NoticeAdd, NoticeEdit, NoticeRemove,
-            Config, ConfigQuery, ConfigAdd, ConfigEdit, ConfigRemove,
+            // Config, ConfigQuery, ConfigAdd, ConfigEdit, ConfigRemove,
             SysCode,
-            MainData, UnitManage, CustomerManage, SupplierManage,
-            Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
-            ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipItems, EquipPlan, EquipPlanDone,
-            EquipRepair, EquipPlanRecord, EquipConfig, EquipDataConfig,
-            Product, ProductPlan, ProductOrder, ProductSchedule,
-            Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
-            Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
-            Location,Building,Floor,Room
+            //MainData, UnitManage, CustomerManage, SupplierManage,
+            //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
+            //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
+            Equip, EquipType, EquipLedger, EquipLedgerHistory,EquipNotice,
+            //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,
+            EquipConfig,// EquipDataConfig,
+            //Product, ProductPlan, ProductOrder, ProductSchedule,
+            //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
+            //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
+            //Location,Building,Floor,Room
         ];
 
         #endregion

@@ -68,7 +68,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
 
         /// <summary>
         ///     分页查询
-        ///     auth: anonymous
         /// </summary>
         /// <param name="input">用于验证用户身份</param>
         /// <returns>更换密码状态</returns>
@@ -80,6 +79,18 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         public async Task<ResponseWrapper<PaginatedList<NoticeReadDto>>> GetPaginatedListAsync(NoticeQueryDto input) =>
             (await _noticeService.GetPaginatedListAsync(input)).Wrap();
 
+        /// <summary>
+        ///     分页查询
+        /// </summary>
+        /// <param name="input">用于验证用户身份</param>
+        /// <returns>更换密码状态</returns>
+        [HttpPost]
+        [Route("list")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:notice:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<IEnumerable<NoticeReadDto>>> GetListAsync(NoticeQueryDto? input) =>
+            (await _noticeService.GetListAsync(input)).Wrap();
         #endregion
     }
 }

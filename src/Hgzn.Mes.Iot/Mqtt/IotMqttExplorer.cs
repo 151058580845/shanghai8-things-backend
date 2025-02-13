@@ -1,6 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared.Enums;
-using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +16,6 @@ namespace Hgzn.Mes.Iot.Mqtt
     {
         private readonly IManagedMqttClient _mqttClient;
         private readonly ManagedMqttClientOptions _mqttClientOptions;
-        private ICollection<MqttTopicFilter> _mqttTopics = null!;
         private readonly ISqlSugarClient _client;
 
         public IotMqttExplorer(
@@ -28,10 +26,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         {
             _logger = logger;
             var mqtt = configuration.GetConnectionString("Mqtt")!.Split(':');
-            _client = client;
-            var types = _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
-            RefreshTopicsAsync();
-            _logger.LogInformation($"now subcribe to device type: {string.Join(',', types)}");
+            _client = client; 
             _mqttClientOptions = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(10))
                 .WithClientOptions(new MqttClientOptionsBuilder()
@@ -44,7 +39,7 @@ namespace Hgzn.Mes.Iot.Mqtt
                         .WithDirection(MqttDirection.Up)
                         .WithTag(MqttTag.State)
                         .Build())
-                    .WithWillPayload(new byte[] { (byte)MqttState.Will })
+                    .WithWillPayload([(byte)MqttState.Will])
                     .WithCleanSession()
                     .Build())
                 .Build();
@@ -58,7 +53,7 @@ namespace Hgzn.Mes.Iot.Mqtt
                     .WithDirection(MqttDirection.Up)
                     .WithTag(MqttTag.State)
                     .Build(),
-                    new byte[] { (byte)MqttState.Connected });
+                    [(byte)MqttState.Connected]);
             };
             _mqttClient.DisconnectedAsync += async _ =>
                 await Task.Run(() => { _logger.LogWarning("mqtt disconnected"); });
@@ -88,24 +83,9 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         public async Task StartAsync()
         {
-            await _mqttClient.SubscribeAsync(_mqttTopics);
-            await _mqttClient.StartAsync(_mqttClientOptions);
-        }
-
-        public async Task ResetAsync(params string[] topics)
-        {
-            var mqttTopics = topics
-                .Select(topic => new MqttTopicFilterBuilder().WithTopic(topic)
-                    .WithExactlyOnceQoS()
-                    .Build()).ToArray();
-            await PublishAsync(TopicBuilder.CreateBuilder()
-                .WithPrefix(TopicType.Sys)
-                .WithDirection(MqttDirection.Up)
-                .WithTag(MqttTag.State)
-                .Build(),
-                new byte[] { (byte)MqttState.Restart });
-            await _mqttClient.StopAsync();
-            await _mqttClient.SubscribeAsync(mqttTopics);
+            var topics = await GetSubscribeTopicsAsync();
+            _logger.LogInformation($"restarting... subcribe to topics: {string.Join(";\r\n", topics.Select(t => t.Topic))}");
+            await _mqttClient.SubscribeAsync(topics);
             await _mqttClient.StartAsync(_mqttClientOptions);
         }
 
@@ -115,29 +95,27 @@ namespace Hgzn.Mes.Iot.Mqtt
         /// <returns></returns>
         public async Task RestartAsync()
         {
-            var types = _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
-            await RefreshTopicsAsync();
-            _logger.LogInformation($"restarting... subcribe to device type: {string.Join(',', types)}");
+            var topics = await GetSubscribeTopicsAsync();
+            _logger.LogInformation($"restarting... subcribe to topics: {string.Join(";\r\n", topics.Select(t => t.Topic))}");
             await PublishAsync(TopicBuilder.CreateBuilder()
                 .WithPrefix(TopicType.Sys)
                 .WithDirection(MqttDirection.Up)
                 .WithTag(MqttTag.State)
                 .Build(),
-                new byte[] { (byte)MqttState.Restart });
+                [(byte)MqttState.Restart]);
             await _mqttClient.StopAsync();
-            await _mqttClient.SubscribeAsync(_mqttTopics);
+            await _mqttClient.SubscribeAsync(topics);
             await _mqttClient.StartAsync(_mqttClientOptions);
         }
 
-        public Task RefreshTopicsAsync(params string[] topics)
+        public async Task<ICollection<MqttTopicFilter>> GetSubscribeTopicsAsync()
         {
-            var types = _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArray();
-            _mqttTopics = types
+            var types = await _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArrayAsync();
+            return types
                 .Select(type => $"{TopicType.Iot:F}/+/{IotTopic.EquipTypeName}/{type}/{IotTopic.ConnUriName}/+/+".ToLower())
                 .Select(topic => new MqttTopicFilterBuilder().WithTopic(topic)
                     .WithExactlyOnceQoS()
                     .Build()).ToArray();
-            return Task.CompletedTask;
         }
 
         public async Task StopAsync()
@@ -147,7 +125,7 @@ namespace Hgzn.Mes.Iot.Mqtt
                 .WithDirection(MqttDirection.Up)
                 .WithTag(MqttTag.State)
                 .Build(),
-                new byte[] { (byte)MqttState.Stop });
+                [(byte)MqttState.Stop]);
             await _mqttClient.StopAsync();
         }
 
@@ -161,19 +139,19 @@ namespace Hgzn.Mes.Iot.Mqtt
             await _mqttClient.EnqueueAsync(message);
         }
 
-        public Task UnSubscribeAsync(string topic)
+        public async Task UnSubscribeAsync(string topic)
         {
-            throw new NotImplementedException();
+            await _mqttClient.SubscribeAsync(topic);
         }
 
-        public Task SubscribeAsync(string topic)
+        public async Task SubscribeAsync(string topic)
         {
-            throw new NotImplementedException();
+            await _mqttClient.UnsubscribeAsync(topic);
         }
 
         public Task<bool> IsConnectedAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(_mqttClient.IsConnected);
         }
 
         public async Task UpdateStateAsync(ConnStateType stateType, string uri)

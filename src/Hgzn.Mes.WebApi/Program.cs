@@ -1,27 +1,30 @@
-using System.IdentityModel.Tokens.Jwt;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+
 using Hgzn.Mes.Application.Main.Auth;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
+using Hgzn.Mes.Infrastructure.Hub;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
+using Hgzn.Mes.Infrastructure.Utilities.Filter;
 using Hgzn.Mes.WebApi.Utilities;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+
 using Serilog;
-using System.Reflection;
-using System.Text.Json;
-using Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles;
-using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
-using Hgzn.Mes.Infrastructure.Hub;
-using Hgzn.Mes.Infrastructure.Mqtt.Manager;
-using Hgzn.Mes.Infrastructure.Utilities;
-using Hgzn.Mes.Infrastructure.Utilities.Filter;
-using IPTools.Core;
-using Microsoft.AspNetCore.Mvc.Filters;
+
 using SqlSugar;
+
+using StackExchange.Redis;
+
+using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,7 +81,7 @@ builder.Services.AddAuthentication(options =>
 // 监听 Token 验证成功事件
     option.Events = new JwtBearerEvents()
     {
-        OnMessageReceived = context =>
+        OnMessageReceived = async context =>
         {
             var accessToken = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
             //WebSocket不支持自定义报文头，所以把JWT通过url中的QueryString传递
@@ -88,7 +91,50 @@ builder.Services.AddAuthentication(options =>
             {
                 context.Token = accessToken;
             }
-            return Task.CompletedTask;
+
+            // 获取 JWT Token 解析器
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            // 解析 token 并验证
+            var key = new ECDsaSecurityKey(CryptoUtil.PublicECDsa); // 使用与生成 token 时相同的公钥
+            var validationParameters = option.TokenValidationParameters;
+
+            try
+            {
+                if (accessToken != null)
+                {
+                    // 验证 token 并解析，获取 ClaimsPrincipal
+                    var principal = tokenHandler.ValidateToken(accessToken, validationParameters, out var validatedToken);
+
+                    // 从 ClaimsPrincipal 中提取 user.Username
+                    var userNameClaim = principal.FindFirst(ClaimType.UserId);
+                    // 如果用户名存在，返回用户名
+                    if (userNameClaim != null)
+                    {
+                        var userid = Guid.Parse(userNameClaim.Value);
+                        var myService = context.HttpContext.RequestServices.GetRequiredService<IConnectionMultiplexer>();
+
+                        var database = myService.GetDatabase();
+                        var userKey = string.Format(CacheKeyFormatter.Token, userid);
+                        var raw = (await database.StringGetAsync(userKey));
+                        // var udService = builder.Services.BuildServiceProvider().GetService<UserDomainService>();
+                       // var tokenData = await myService.VerifyTokenAsync(userid, accessToken);
+                        if (!raw.HasValue)
+                        {
+                            context.Fail("Token is no longer valid or has expired.");
+                            return; // 直接返回，不再继续处理
+                        }
+                    }
+                }
+            }
+            catch (SecurityTokenException ex)
+            {
+                // Token 验证失败
+                context.Fail($"Token validation failed: {ex.Message}");
+                return;
+            }
+
+            await Task.CompletedTask;
         }
     };
 });
@@ -198,8 +244,7 @@ if (StaticConfig.AppContext_ConvertInfinityDateTime == false)
 app.MapControllers();
 app.MapHub<OnlineHub>("/hub/online");
 // app.Services.GetService<InitialDatabase>()?.Initialize();
-app.Services.GetService<SqlSugarContext>()?.InitDatabase(app.Services.GetService<IConfiguration>().GetSection(nameof(DbConnOptions))
-    .Get<DbConnOptions>());
+app.Services.GetService<SqlSugarContext>()?.InitDatabase();
 app.Services.GetService<IMqttExplorer>()?.StartAsync();
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>

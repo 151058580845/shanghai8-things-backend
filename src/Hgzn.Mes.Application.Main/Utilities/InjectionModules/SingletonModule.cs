@@ -33,12 +33,15 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 
             #region 注册Mqtt
 
-            builder.RegisterType<ApiMqttPub>()
+            builder.RegisterType<ApiMqttExplorer>()
                 .AsImplementedInterfaces()
                 .SingleInstance();
 
+            builder.RegisterType<IotMessageHandler>()
+                .SingleInstance();
+
             #endregion
-            
+
             builder.RegisterType<ThreadCurrentPrincipalAccessor>()
                 .As<ICurrentPrincipalAccessor>()
                 .SingleInstance();

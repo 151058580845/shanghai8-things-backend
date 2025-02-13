@@ -41,6 +41,39 @@ public class EquipLedgerService : SugarCrudAppService<
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
+    public Task<int> UpdateEquipRoomId(Dictionary<Guid, Guid> equipIds)
+    {
+        var list = Queryable.Where(t => equipIds.ContainsKey(t.Id)).ToList();
+        foreach (var equipLedger in list)
+        {
+            equipLedger.RoomId = equipIds[equipLedger.Id];   
+        }
+
+        return DbContext.Updateable(list).ExecuteCommandAsync();
+    }
+
+
+    /// <summary>
+    /// 获取设备列表
+    /// </summary>
+    /// <param name="equipIds"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListInIdsAsync(List<Guid> equipIds)
+    {
+        var entities = await Queryable.Where(t => equipIds.Contains(t.Id)).ToListAsync();
+        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
+    }
+
+    /// <summary>
+    /// 获取待搜索记录
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IEnumerable<EquipLedgerReadDto>> GetAppSearchAsync()
+    {
+        var entities = await Queryable.Where(t => t.State == false).ToListAsync();
+        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
+    }
+
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
         var entities = await Queryable

@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+﻿using System.Collections;
+using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Shared;
@@ -120,5 +121,17 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipLedgerReadDto>> GetAsync(Guid id) =>
             (await _equipLedgerService.GetAsync(id)).Wrap();
+        
+        /// <summary>
+        /// 手持端获取搜索目标
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("app/search")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
+        public async Task<ResponseWrapper<IEnumerable<EquipLedgerReadDto>>> GetAppSearchAsync() =>
+            (await _equipLedgerService.GetAppSearchAsync()).Wrap();
     }
 }

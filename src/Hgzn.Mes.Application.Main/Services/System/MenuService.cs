@@ -49,7 +49,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 entities = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
                 if (!entities.Any()) return [];
             }
-            var allRoutes = await entities.Select(t => new MenuReaderRouterDto()
+            var allRoutes = await entities.OrderByDescending(t=>t.OrderNum).Select(t => new MenuReaderRouterDto()
             {
                 Path = t.Route == null ? "" : t.Route.StartsWith('/') ? t.Route : '/' + t.Route,
                 Name = t.IsLink ? "Link" : t.Name,
@@ -97,7 +97,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             {
                 parent.Children = menuReadDtos
                     .Where(m => m.ParentId == parent.Id)
-                    .OrderBy(m => m.OrderNum)
+                    .OrderByDescending(m => m.OrderNum)
                     .ThenBy(m => m.Level)
                     .Select(AsTree);
                 if (parent.Children.Count() == 0)

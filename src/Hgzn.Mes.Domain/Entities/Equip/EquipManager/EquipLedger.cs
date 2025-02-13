@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
 [Description("设备台账")]
-public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudited
+public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudited, ILocatable
 {
     [Description("设备编号")]
     public string EquipCode { get; set; } = null!;
@@ -41,6 +41,22 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
 
     // [Navigate(NavigateType.OneToOne,nameof(RoomId))]
     public Room? Room { get; set; }
+
+    /// <summary>
+    /// 是否移动中
+    /// </summary>
+    public bool IsMoving { get; set; }
+
+    /// <summary>
+    /// 最后移动时间
+    /// </summary>
+    public DateTime? LastMoveTime { get; set; }
+
+    /// <summary>
+    ///  位置标签唯一编码
+    ///  有多个用;分隔
+    /// </summary>
+    public string? PosTags { get; set; }
 
     [Description("设备状态(正常/丢失/使用中)")]
     public DeviceStatus? DeviceStatus { get; set; }
@@ -79,10 +95,6 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     // /// </summary>
     // [Navigate(NavigateType.OneToMany, nameof(EquipReceiveDataEntity.EquipId))]
     // public List<EquipReceiveDataEntity> ReceiveDataEntities { get; set; }
-    /// <summary>
-    /// 是否在移动中
-    /// </summary>
-    public bool HasMove { get; set; } = false;
 
     /// <summary>
     /// 设备当前的MAC地址
