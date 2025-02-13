@@ -74,6 +74,23 @@ public class EquipLedgerReadDto : ReadDto
     public DateTime? DeleteTime { get; set; }
 }
 
+public class EquipLedgerSearchReadDto : ReadDto
+{
+    public Guid Id { get; set; }
+    [Description("设备编号")] public string EquipCode { get; set; } = null!;
+
+    [Description("设备名称")] public string EquipName { get; set; } = null!;
+
+    [Description("设备类型ID")] public Guid? TypeId { get; set; }
+    [Description("设备类型ID")] public string? TypeName { get; set; }
+    [Description("规格型号")] public string? Model { get; set; }
+
+    [Description("资产编号")] public string? AssetNumber { get; set; }
+
+    [Description("安装地点")] 
+    public Guid? RoomId { get; set; }
+}
+
 public class EquipLedgerCreateDto : CreateDto
 {
     /// <summary>

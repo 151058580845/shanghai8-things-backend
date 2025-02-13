@@ -41,12 +41,13 @@ public class EquipLedgerService : SugarCrudAppService<
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
-    public Task<int> UpdateEquipRoomId(Dictionary<Guid, Guid> equipIds)
+    public Task<int> UpdateEquipRoomId(Dictionary<string, Guid> equipIds)
     {
-        var list = Queryable.Where(t => equipIds.ContainsKey(t.Id)).ToList();
+        var keys = equipIds.Keys.ToArray();
+        var list = Queryable.Where(t => keys.Contains(t.EquipCode)).ToList();
         foreach (var equipLedger in list)
         {
-            equipLedger.RoomId = equipIds[equipLedger.Id];   
+            equipLedger.RoomId = equipIds[equipLedger.EquipCode];   
         }
 
         return DbContext.Updateable(list).ExecuteCommandAsync();
@@ -68,10 +69,21 @@ public class EquipLedgerService : SugarCrudAppService<
     /// 获取待搜索记录
     /// </summary>
     /// <returns></returns>
-    public async Task<IEnumerable<EquipLedgerReadDto>> GetAppSearchAsync()
+    public async Task<IEnumerable<EquipLedgerSearchReadDto>> GetAppSearchAsync()
     {
-        var entities = await Queryable.Where(t => t.State == false).ToListAsync();
-        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
+        var entities = await Queryable.Where(t => t.State == false).Includes(t=>t.EquipType)
+            .Select<EquipLedgerSearchReadDto>(t=>new EquipLedgerSearchReadDto()
+            {
+                Id = t.Id,
+                EquipCode = t.EquipCode,
+                EquipName = t.EquipName,
+                TypeId = t.TypeId,
+                TypeName = t.EquipType!.TypeName,
+                Model = t.Model,
+                RoomId = t.RoomId,
+                AssetNumber = t.AssetNumber
+            }).ToListAsync();
+        return entities;
     }
 
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)

@@ -20,6 +20,7 @@ var logger = (new LoggerConfiguration()
     .CreateLogger();
 builder.Configuration.AddJsonFile( Path.Combine(Environment.CurrentDirectory, "appsettings.json"));
 //builder.Logging.AddSerilog(logger);
+builder.Services.AddSingleton<MqttMessageHandler>();
 builder.Services.AddSingleton<ConnManager>();
 builder.Services.AddSingleton<IConnectionMultiplexer, ConnectionMultiplexer>(_ =>
         ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));

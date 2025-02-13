@@ -36,12 +36,11 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
             builder.RegisterType<ApiMqttExplorer>()
                 .AsImplementedInterfaces()
                 .SingleInstance();
-
             builder.RegisterType<IotMessageHandler>()
+                .AsSelf()
                 .SingleInstance();
-
             #endregion
-
+            
             builder.RegisterType<ThreadCurrentPrincipalAccessor>()
                 .As<ICurrentPrincipalAccessor>()
                 .SingleInstance();

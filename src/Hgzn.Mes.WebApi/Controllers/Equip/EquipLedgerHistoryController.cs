@@ -64,7 +64,7 @@ public class EquipLedgerHistoryController : ControllerBase
     public async Task<ResponseWrapper<int>> PostAppStoreAsync(List<EquipLedgerHistoryCreateDto> list)
     {
         var result = (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
-        var dictionary =  list.Where(t=>t.RoomId != null).ToDictionary(t => t.EquipId, s => s.RoomId.Value);
+        var dictionary =  list.Where(t=>t.RoomId != null).ToDictionary(t => t.EquipCode, s => s.RoomId.Value);
         var equipList = await _equipLedgerService.UpdateEquipRoomId(dictionary);
         return equipList.Wrap();
     }

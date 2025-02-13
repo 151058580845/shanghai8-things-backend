@@ -17,16 +17,13 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
     public class IotMessageHandler
     {
         public IotMessageHandler(
-            IConnectionMultiplexer connectionMultiplexer,
             ILogger<IotMessageHandler> logger,
             ISqlSugarClient client)
         {
-            _connectionMultiplexer = connectionMultiplexer;
             _logger = logger;
             _client = client;
         }
 
-        private readonly IConnectionMultiplexer _connectionMultiplexer;
         private readonly ILogger<IotMessageHandler> _logger;
         private readonly ISqlSugarClient _client;
         private IMqttExplorer _mqttExplorer = null!;
@@ -45,7 +42,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             switch (topic.Tag)
             {
                 case MqttTag.State:
-                    var state = new DeviceStateMsg(message.ConvertPayloadToString());
+                    var state = new DeviceStateMsg(message.PayloadSegment);
                     await HandleStateAsync(topic, state);
                     break;
 
@@ -72,6 +69,18 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         private async Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
         {
+            var connId = Guid.Parse(topic.ConnUri!);
+            var equipId = (await _client.Queryable<EquipConnect>().FirstAsync(t => t.Id == connId)).EquipId;
+            _client.Insertable(new EquipNotice()
+            {
+                Id = Guid.NewGuid(),
+                EquipId = equipId,
+                SendTime = DateTime.Now,
+                Title = "设备连接操作",
+                Content = "",
+                Description = "",
+                NoticeType = message.State
+            });
             switch (topic.EquipType)
             {
                 case "rfidReader":
@@ -98,7 +107,6 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
             }
         }
-
         private async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
         {
             var targetId = Guid.Parse(msg.Userdata ?? throw new ArgumentNullException("userdata not exist"));

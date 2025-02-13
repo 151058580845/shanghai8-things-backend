@@ -131,7 +131,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [AllowAnonymous]
-        public async Task<ResponseWrapper<IEnumerable<EquipLedgerReadDto>>> GetAppSearchAsync() =>
+        public async Task<ResponseWrapper<IEnumerable<EquipLedgerSearchReadDto>>> GetAppSearchAsync() =>
             (await _equipLedgerService.GetAppSearchAsync()).Wrap();
     }
 }

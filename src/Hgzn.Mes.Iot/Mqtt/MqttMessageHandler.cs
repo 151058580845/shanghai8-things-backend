@@ -48,7 +48,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             switch (topic.Tag)
             {
                 case MqttTag.State:
-                    var state = new DeviceStateMsg(message.ConvertPayloadToString());
+                    var state = new DeviceStateMsg(message.PayloadSegment);
                     await HandleStateAsync(topic, state);
                     break;
 
