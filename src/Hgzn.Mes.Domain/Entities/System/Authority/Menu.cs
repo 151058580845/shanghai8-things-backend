@@ -954,7 +954,34 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Equip.Id,
             RouteName = "EquipLedger"
         };
-
+        // 设备历史记录
+        public static Menu EquipLedgerHistory = new()
+        {
+            Id = Guid.Parse("B46B7ECC-E9B9-4AE4-5B67-6902BBCE1B8B"),
+            Name = "设备历史记录",
+            Code = "equipLedgerHistory",
+            ScopeCode = "equip:history:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:management",
+            Route = "/equip/history/index",
+            OrderNum = 99,
+            ParentId = Equip.Id,
+            RouteName = "EquipLedgerHistory"
+        };
+        // 设备通知信息
+        public static Menu EquipNotice = new()
+        {
+            Id = Guid.Parse("3C05CB50-0046-5418-F28E-ACB61E58CB68"),
+            Name = "设备通知",
+            Code = "equipNotice",
+            ScopeCode = "equip:notice:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:management",
+            Route = "/equip/notice/index",
+            OrderNum = 99,
+            ParentId = Equip.Id,
+            RouteName = "EquipNotice"
+        };
         // 设备项目
         public static Menu EquipItems = new()
         {
@@ -1345,22 +1372,23 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Role, RoleQuery, RoleAdd, RoleEdit, RoleRemove,
             MenuRoot, MenuQuery, MenuAdd, MenuEdit, MenuRemove,
             Dept, DeptQuery, DeptAdd, DeptEdit, DeptRemove,
-            Post, PostQuery, PostAdd, PostEdit, PostRemove,
+            // Post, PostQuery, PostAdd, PostEdit, PostRemove,
             OperationLog, OperationLogQuery, OperationLogRemove,
             LoginLog, LoginLogQuery, LoginLogRemove,
             Dict, DictQuery, DictAdd, DictEdit, DictRemove,
             Notice, NoticeQuery, NoticeAdd, NoticeEdit, NoticeRemove,
-            Config, ConfigQuery, ConfigAdd, ConfigEdit, ConfigRemove,
+            // Config, ConfigQuery, ConfigAdd, ConfigEdit, ConfigRemove,
             SysCode,
-            MainData, UnitManage, CustomerManage, SupplierManage,
-            Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
-            ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipItems, EquipPlan, EquipPlanDone,
-            EquipRepair, EquipPlanRecord, EquipConfig, EquipDataConfig,
-            Product, ProductPlan, ProductOrder, ProductSchedule,
-            Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
-            Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
-            Location,Building,Floor,Room
+            //MainData, UnitManage, CustomerManage, SupplierManage,
+            //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
+            //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
+            Equip, EquipType, EquipLedger, EquipLedgerHistory,EquipNotice,
+            //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,
+            EquipConfig,// EquipDataConfig,
+            //Product, ProductPlan, ProductOrder, ProductSchedule,
+            //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
+            //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
+            //Location,Building,Floor,Room
         ];
 
         #endregion

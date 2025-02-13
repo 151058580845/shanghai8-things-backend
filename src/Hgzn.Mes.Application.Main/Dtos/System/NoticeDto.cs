@@ -66,5 +66,5 @@ public class NoticeUpdateDto : UpdateDto
 public class NoticeQueryDto : PaginatedQueryDto
 {
     public string? Title { get; set; }
-    public NoticeShow? Type { get; set; }
+    // public NoticeShow? Type { get; set; }
 }
