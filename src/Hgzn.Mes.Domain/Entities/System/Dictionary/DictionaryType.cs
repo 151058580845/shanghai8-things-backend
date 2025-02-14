@@ -1228,6 +1228,48 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 
         #endregion 设备状态
 
+        #region 试验系统
+
+        public static readonly DictionaryType testSystem = new DictionaryType()
+        {
+            Id = Guid.Parse("02D739AF-3A6C-D867-A96C-B5226116C543"), // 固定的 Guid 值
+            DictName = "试验系统",
+            DictType = "TestSystem",
+            OrderNum = 1,
+            Remark = "试验系统",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo testSystem1 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("331ADCC8-201D-294F-3745-77BDC37FCA7A"), // 固定的 Guid 值
+            DictLabel = "试验系统1",
+            DictValue = "test1",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "试验系统1",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+        public static readonly DictionaryInfo testSystem2 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("543025D1-5FFC-7C3A-4DD7-BB70E02FEBD8"), // 固定的 Guid 值
+            DictLabel = "试验系统2",
+            DictValue = "test2",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "试验系统2",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+        
+        #endregion 
+        
         public static DictionaryType[] Seeds { get; } =
         {
             EquipMaintenanceType,
@@ -1247,7 +1289,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             StopBits,
             Parity,
             RoomType,
-            DeviceStatus
+            DeviceStatus,
+            testSystem
         };
     }
 }

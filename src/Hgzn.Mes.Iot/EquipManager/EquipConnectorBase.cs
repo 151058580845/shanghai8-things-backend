@@ -1,8 +1,10 @@
-﻿using Hgzn.Mes.Domain.Shared;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using SqlSugar;
 using StackExchange.Redis;
 
 namespace Hgzn.Mes.Iot.EquipManager
@@ -11,13 +13,17 @@ namespace Hgzn.Mes.Iot.EquipManager
     {
         protected EquipConnectorBase(
             IConnectionMultiplexer connectionMultiplexer,
-            IMqttExplorer mqttExplorer)
+            IMqttExplorer mqttExplorer,
+            ISqlSugarClient sugarClient)
         {
             _connectionMultiplexer = connectionMultiplexer;
             _mqttExplorer = mqttExplorer;
+            _sqlSugarClient = sugarClient;
         }
         protected readonly IConnectionMultiplexer _connectionMultiplexer;
         protected readonly IMqttExplorer _mqttExplorer;
+        protected readonly ISqlSugarClient _sqlSugarClient;
+        protected EquipConnect _equipConnect;
         protected string? _equipType;
         protected string? _uri;
 

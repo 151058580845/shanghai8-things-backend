@@ -1,56 +1,50 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
-using Hgzn.Mes.Domain.Events;
+﻿using System.Collections.Concurrent;
+using System.Net;
+using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Shared.Enums;
-using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
-using MediatR;
 using NetCoreServer;
 using SqlSugar;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Buffer = System.Buffer;
 
-namespace Hgzn.Mes.Iot.EquipManager
+namespace Hgzn.Mes.Iot.TcpServer;
+
+public class EquipTcpSession : TcpSession
 {
-    public class TcpServerConnector : TcpSession
+    private readonly string _heartBeatMessage;
+
+    private readonly string _heartBeatAck;
+
+    // private readonly Timer _timer;
+    private string Ip;
+    private string Mac;
+    // 多少个转一个（从前端配置进行）
+    private int _forwardLength = 10;
+    private ISqlSugarClient _sqlSugarClient;
+    private EquipConnect _equipConnect;
+    private IMqttExplorer _mqttExplorer;
+    public EquipTcpSession(EquipTcpServer server,
+        ISqlSugarClient sqlSugarClient,
+        EquipConnect equipConnect,
+        IMqttExplorer mqttExplorer) : base(server)
     {
-        // private readonly Timer _timer;
-        private readonly EquipConnect? _equipConnect;
-        private readonly ISqlSugarClient _client;
-        private readonly IMqttExplorer _mqttExplorer;
-        private string? Ip;
-        private string? Mac;
-        // 多少个转一个（从前端配置进行）
-        private int _forwardLength = 10;
+        _sqlSugarClient = sqlSugarClient;
+        _equipConnect = equipConnect;
+        _mqttExplorer = mqttExplorer;
+    }
 
-        public TcpServerConnector(EquipTcpServer server,
-            EquipConnect equipConnect, ISqlSugarClient client, IMqttExplorer mqttExplorer) : base(server)
-        {
-            _equipConnect = equipConnect;
-            _client = client;
-            this._mqttExplorer = mqttExplorer;
-            if (equipConnect.ForwardRate != null)
-                _forwardLength = equipConnect.ForwardRate.Value;
-        }
+    private const int BodyStartIndex = 6;
+    //缓存数据
+    private readonly ConcurrentQueue<byte[]> _dataQueue = new();
+    //接收数据就开启
+    private volatile bool _hasData = false;
+    private volatile int _forwardNum = 1;
 
-        // public DataProcessor DataProcessor { get; set; }
-        private const int BodyStartIndex = 6;
-        //缓存数据
-        private readonly ConcurrentQueue<byte[]> _dataQueue = new();
-        //接收数据就开启
-        private volatile bool _hasData = false;
-        private volatile int _forwardNum = 1;
-
-        private async Task ProcessDataAsync(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
+    private async Task ProcessDataAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
             {
                 if (_dataQueue.TryDequeue(out var buffer))
                 {
@@ -97,37 +91,38 @@ namespace Hgzn.Mes.Iot.EquipManager
                                     await _mqttExplorer.PublishAsync(topic, buffer);
                                 }
                             }
+
                             _forwardNum = 1;
                         }
                     }
 
                     //本地解析数据
-                    TestDataReceive testDataReceive = new TestDataReceive(_client);
+                    TestDataReceive testDataReceive = new TestDataReceive(_sqlSugarClient);
                     await testDataReceive.Handle(buffer);
                 }
+
                 _hasData = false;
             }
-        }
+    }
 
-        protected override void OnConnected()
-        {
-            IPEndPoint? ipEndPoint = this.Socket.RemoteEndPoint as IPEndPoint;
-            if (ipEndPoint == null) return;
-            Ip = ipEndPoint.ToString();
-            Mac = ipEndPoint.Address.ToString();
-            base.OnConnected();
-        }
+    protected override void OnConnected()
+    {
+        var ipEndPoint = this.Socket.RemoteEndPoint as IPEndPoint;
+        if (ipEndPoint == null) return;
+        Ip = ipEndPoint.ToString();
+        Mac = ipEndPoint.Address.ToString();
+        base.OnConnected();
+    }
 
-        protected override void OnReceived(byte[] buffer, long offset, long size)
+    protected override async void OnReceived(byte[] buffer, long offset, long size)
+    {
+        _dataQueue.Enqueue(buffer);
+        if (!_hasData)
         {
-            _dataQueue.Enqueue(buffer);
-            if (!_hasData)
-            {
-                _hasData = true;
-                var cancellationTokenSource = new CancellationTokenSource();
-                var token = cancellationTokenSource.Token;
-                _ = Task.Run(async () => await ProcessDataAsync(token), token);
-            }
+            _hasData = true;
+            var cancellationTokenSource = new CancellationTokenSource();
+            var token = cancellationTokenSource.Token;
+            _ = Task.Run(async () => await ProcessDataAsync(token), token);
         }
     }
 }

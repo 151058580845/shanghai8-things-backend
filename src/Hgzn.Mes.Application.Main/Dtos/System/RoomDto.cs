@@ -42,7 +42,10 @@ public class RoomReadDto : ReadDto
     /// 用途
     /// </summary>
     public string? Purpose { get; set; }
-
+    /// <summary>
+    /// 用途
+    /// </summary>
+    public string? PurposeName { get; set; }
     /// <summary>
     /// 
     /// </summary>
@@ -60,6 +63,9 @@ public class RoomReadDto : ReadDto
     /// 房间二维码
     /// </summary>
     public string? QrCode { get; set; }
+    public bool IsTest { get; set; } = false;
+    public string? TestName { get; set; }
+    
 
     public override string ToString()
     {
@@ -130,6 +136,8 @@ public class RoomCreateDto : CreateDto
     /// 备注
     /// </summary>
     public string? Remark { get; set; }
+    public bool? IsTest { get; set; } = false;
+    public string? TestName { get; set; }
 }
 
 public class RoomUpdateDto : UpdateDto
@@ -172,6 +180,8 @@ public class RoomUpdateDto : UpdateDto
     /// 
     /// </summary>
     public int? OrderNum { get; set; }
+    public bool? IsTest { get; set; } = false;
+    public string? TestName { get; set; }
 }
 
 public class RoomQueryDto : PaginatedQueryDto
@@ -193,4 +203,6 @@ public class RoomQueryDto : PaginatedQueryDto
     /// 房间组
     /// </summary>
     public Guid? GroupId { get; set; }
+    public bool? IsTest { get; set; }
+    public string? TestName { get; set; }
 }

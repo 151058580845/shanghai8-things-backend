@@ -7,6 +7,7 @@ using SqlSugar;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json.Nodes;
+using StackExchange.Redis;
 
 namespace Hgzn.Mes.Iot.EquipManager
 {
@@ -15,7 +16,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         private IMqttExplorer _mqtt = null!;
         private readonly ISqlSugarClient _client;
         private readonly IMqttExplorer _mqttExplorer;
-
+        private IConnectionMultiplexer _connectionMultiplexer;
         public static ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
 
         public ConnManager(ISqlSugarClient client)
@@ -23,9 +24,10 @@ namespace Hgzn.Mes.Iot.EquipManager
             this._client = client;
         }
 
-        public void Initialize(IMqttExplorer mqttExplorer)
+        public void Initialize(IMqttExplorer mqttExplorer,IConnectionMultiplexer connectionMultiplexer)
         {
             _mqtt = mqttExplorer;
+            this._connectionMultiplexer = connectionMultiplexer;
         }
 
         public async Task<IEquipConnector> AddEquip(Guid id, string equipType, string connectStr)
@@ -38,17 +40,12 @@ namespace Hgzn.Mes.Iot.EquipManager
             switch (equipType)
             {
                 case "rfid-reader":
-                    connector = new RfidReaderConnector(_mqtt, id.ToString(), equipType);
+                    connector = new RfidReaderConnector(_connectionMultiplexer,_mqtt, _client,id.ToString(), equipType);
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;
                 case "tcp-server":
-                    EquipConnect connect = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == id);
-                    JsonNode? jn = GetJsonNode(connectStr);
-                    if (jn == null) break;
-                    string? address = jn["address"]?.ToString();
-                    if (address == null || !int.TryParse(jn["port"]?.ToString(), out int port)) break;
-                    connector = new EquipTcpServer(address, port, id.ToString(), connect, _client, _mqtt);
+                    connector = new TcpServer.TcpServerConnector(_connectionMultiplexer,_mqtt, _client,id.ToString(), equipType);
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;

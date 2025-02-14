@@ -40,10 +40,9 @@ namespace Hgzn.Mes.Iot.Mqtt
         private IMqttExplorer _mqttExplorer = null!;
         private static ConcurrentDictionary<string, List<(int heart, int breath)>> _rawDataPackage = new();
         private const int countIndex = 60;
-
         public void Initialize(IMqttExplorer mqttExplorer)
         {
-            _manager.Initialize(mqttExplorer);
+            _manager.Initialize(mqttExplorer,_connectionMultiplexer);
             _mqttExplorer = mqttExplorer;
         }
 

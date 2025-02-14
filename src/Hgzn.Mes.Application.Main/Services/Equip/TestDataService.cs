@@ -16,16 +16,16 @@ public class TestDataService : SugarCrudAppService<
     {
         var entities = await Queryable
             .WhereIF(!string.IsNullOrEmpty(queryDto.SysName),t=>t.SysName.Contains(queryDto.SysName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ProjectName),t=>t.SysName.Contains(queryDto.ProjectName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskName),t=>t.SysName.Contains(queryDto.TaskName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.DevPhase),t=>t.SysName.Contains(queryDto.DevPhase))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskStartTime),t=>t.SysName.Contains(queryDto.TaskStartTime))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskEndTime),t=>t.SysName.Contains(queryDto.TaskEndTime))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqDep),t=>t.SysName.Contains(queryDto.ReqDep))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManager),t=>t.SysName.Contains(queryDto.ReqManager))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuResp),t=>t.SysName.Contains(queryDto.SimuResp))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff),t=>t.SysName.Contains(queryDto.SimuStaff))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp),t=>t.SysName.Contains(queryDto.QncResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.ProjectName),t=>t.ProjectName.Contains(queryDto.ProjectName))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskName),t=>t.TaskName.Contains(queryDto.TaskName))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.DevPhase),t=>t.DevPhase.Contains(queryDto.DevPhase))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskStartTime),t=>t.TaskStartTime.Contains(queryDto.TaskStartTime))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskEndTime),t=>t.TaskEndTime.Contains(queryDto.TaskEndTime))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqDep),t=>t.ReqDep.Contains(queryDto.ReqDep))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManager),t=>t.ReqManager.Contains(queryDto.ReqManager))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuResp),t=>t.SimuResp.Contains(queryDto.SimuResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff),t=>t.SimuStaff.Contains(queryDto.SimuStaff))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp),t=>t.QncResp.Contains(queryDto.QncResp))
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }
@@ -34,16 +34,16 @@ public class TestDataService : SugarCrudAppService<
     {
         var entities = await Queryable
             .WhereIF(!string.IsNullOrEmpty(queryDto.SysName),t=>t.SysName.Contains(queryDto.SysName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ProjectName),t=>t.SysName.Contains(queryDto.ProjectName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskName),t=>t.SysName.Contains(queryDto.TaskName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.DevPhase),t=>t.SysName.Contains(queryDto.DevPhase))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskStartTime),t=>t.SysName.Contains(queryDto.TaskStartTime))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskEndTime),t=>t.SysName.Contains(queryDto.TaskEndTime))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqDep),t=>t.SysName.Contains(queryDto.ReqDep))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManager),t=>t.SysName.Contains(queryDto.ReqManager))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuResp),t=>t.SysName.Contains(queryDto.SimuResp))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff),t=>t.SysName.Contains(queryDto.SimuStaff))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp),t=>t.SysName.Contains(queryDto.QncResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.ProjectName),t=>t.ProjectName.Contains(queryDto.ProjectName))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskName),t=>t.TaskName.Contains(queryDto.TaskName))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.DevPhase),t=>t.DevPhase.Contains(queryDto.DevPhase))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskStartTime),t=>t.TaskStartTime.Contains(queryDto.TaskStartTime))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskEndTime),t=>t.TaskEndTime.Contains(queryDto.TaskEndTime))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqDep),t=>t.ReqDep.Contains(queryDto.ReqDep))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManager),t=>t.ReqManager.Contains(queryDto.ReqManager))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuResp),t=>t.SimuResp.Contains(queryDto.SimuResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff),t=>t.SimuStaff.Contains(queryDto.SimuStaff))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp),t=>t.QncResp.Contains(queryDto.QncResp))
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
         return Mapper.Map<PaginatedList<TestDataReadDto>>(entities);
     }

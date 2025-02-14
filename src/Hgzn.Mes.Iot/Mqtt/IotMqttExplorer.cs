@@ -1,6 +1,4 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Entities.System.Account;
-using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
@@ -10,9 +8,7 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
-using Mysqlx.Expr;
 using SqlSugar;
-using StackExchange.Redis;
 
 namespace Hgzn.Mes.Iot.Mqtt
 {

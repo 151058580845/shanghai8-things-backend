@@ -119,6 +119,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.Normal,
             DictionaryType.Lost,
             DictionaryType.InUse,
+            
+            DictionaryType.testSystem1,
+            DictionaryType.testSystem2,
         };
 
     }

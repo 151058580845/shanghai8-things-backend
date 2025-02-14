@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
+using SqlSugar;
 
 namespace Hgzn.Mes.Iot.EquipManager;
 
@@ -23,7 +24,7 @@ public class RfidReaderConnector : EquipConnectorBase
 
     public RfidReaderConnector(
         IConnectionMultiplexer connectionMultiplexer,
-        IMqttExplorer mqtt, string uri, string equipType) : base(connectionMultiplexer, mqtt)
+        IMqttExplorer mqtt,ISqlSugarClient sqlSugarClient, string uri, string equipType) : base(connectionMultiplexer, mqtt,sqlSugarClient)
     {
         _uri = uri;
         _equipType = equipType;

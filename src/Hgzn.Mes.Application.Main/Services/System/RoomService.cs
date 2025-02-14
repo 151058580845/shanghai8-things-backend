@@ -1,6 +1,7 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Domain.Entities.System.Dictionary;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Extensions;
@@ -62,12 +63,14 @@ public class RoomService : SugarCrudAppService<
         }).ToListAsync();
         foreach (var floor in list2)
         {
-            floor.Children.AddRange(await list3.Where(t=>t.ParentId == floor.Id).ToListAsync());
+            floor.Children.AddRange(await list3.Where(t => t.ParentId == floor.Id).ToListAsync());
         }
+
         foreach (var build in list1)
         {
-            build.Children.AddRange(await list2.Where(t=>t.ParentId == build.Id).ToListAsync());
+            build.Children.AddRange(await list2.Where(t => t.ParentId == build.Id).ToListAsync());
         }
+
         return list1;
     }
 

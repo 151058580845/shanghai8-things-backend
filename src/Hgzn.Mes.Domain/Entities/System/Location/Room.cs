@@ -45,8 +45,10 @@ public class Room : UniversalEntity, IOrder, IAudited
     /// 排序字段
     /// </summary>
     public int OrderNum { get; set; }
-    
-    
+
+    [Description("是否是试验系统")] public bool IsTest { get; set; } = false;
+    [Description("试验系统名称")]
+    public string? TestName { get; set; }
     #region static
 
     public static Room room1 = new()

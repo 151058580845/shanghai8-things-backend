@@ -269,7 +269,7 @@ public class EquipLedgerQueryDto : PaginatedQueryDto
     /// <summary>
     /// 设备状态
     /// </summary>
-    public bool State { get; set; }
+    public bool? State { get; set; }
 
     /// <summary>
     /// 设备类型
