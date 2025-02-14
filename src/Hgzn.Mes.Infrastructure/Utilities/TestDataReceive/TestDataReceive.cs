@@ -29,7 +29,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
         /// workStyle       字节10    不固定
         /// devHealthState   字节8     不固定
         /// acquData        字节2800  不固定
-        public async Task Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg)
         {
             string data = Encoding.UTF8.GetString(msg);
             Console.WriteLine(data);
@@ -113,7 +113,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
                 }
             }
 
-            SqlSugarClient.Insertable(entity);
+            var receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            return receive.Id;
         }
 
         // 定义状态位的枚举
@@ -146,28 +147,30 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
 
         // 定义异常信息
         private readonly Dictionary<(DevHealthState, SupplyVoltageState), string> ExceptionMessages = new()
-    {
-        {(DevHealthState.D0, SupplyVoltageState.D4), "解析器件5V/12V-12V电压异常"},
-        {(DevHealthState.D0, SupplyVoltageState.D5), "解析放大器15V电压异常"},
-        {(DevHealthState.D0, SupplyVoltageState.D6), "解析控制12V电压异常"},
-        {(DevHealthState.D0, SupplyVoltageState.D7), "解析风扇12V电压异常"},
-        {(DevHealthState.D1, SupplyVoltageState.D4), "精控器件5V/12V-12V电压异常"},
-        {(DevHealthState.D1, SupplyVoltageState.D5), "精控放大器15V电压异常"},
-        {(DevHealthState.D1, SupplyVoltageState.D6), "精控控制12V电压异常"},
-        {(DevHealthState.D1, SupplyVoltageState.D7), "精控风扇12V电压异常"},
-        {(DevHealthState.D2, SupplyVoltageState.D4), "粗控器件5V/12V-12V电压异常"},
-        {(DevHealthState.D2, SupplyVoltageState.D5), "粗控控制12V电压异常"},
-        {(DevHealthState.D2, SupplyVoltageState.D6), "粗控风扇12V电压异常"},
-        {(DevHealthState.D3, SupplyVoltageState.D4), "管理器件15V电压异常"},
-        {(DevHealthState.D3, SupplyVoltageState.D5), "管理控制12V电压异常"},
-        {(DevHealthState.D3, SupplyVoltageState.D6), "管理风扇12V电压异常"},
-    };
+        {
+            { (DevHealthState.D0, SupplyVoltageState.D4), "解析器件5V/12V-12V电压异常" },
+            { (DevHealthState.D0, SupplyVoltageState.D5), "解析放大器15V电压异常" },
+            { (DevHealthState.D0, SupplyVoltageState.D6), "解析控制12V电压异常" },
+            { (DevHealthState.D0, SupplyVoltageState.D7), "解析风扇12V电压异常" },
+            { (DevHealthState.D1, SupplyVoltageState.D4), "精控器件5V/12V-12V电压异常" },
+            { (DevHealthState.D1, SupplyVoltageState.D5), "精控放大器15V电压异常" },
+            { (DevHealthState.D1, SupplyVoltageState.D6), "精控控制12V电压异常" },
+            { (DevHealthState.D1, SupplyVoltageState.D7), "精控风扇12V电压异常" },
+            { (DevHealthState.D2, SupplyVoltageState.D4), "粗控器件5V/12V-12V电压异常" },
+            { (DevHealthState.D2, SupplyVoltageState.D5), "粗控控制12V电压异常" },
+            { (DevHealthState.D2, SupplyVoltageState.D6), "粗控风扇12V电压异常" },
+            { (DevHealthState.D3, SupplyVoltageState.D4), "管理器件15V电压异常" },
+            { (DevHealthState.D3, SupplyVoltageState.D5), "管理控制12V电压异常" },
+            { (DevHealthState.D3, SupplyVoltageState.D6), "管理风扇12V电压异常" },
+        };
 
         public string GetExceptionName(uint ulDevHealthState, uint ulSupplyVoltageState)
         {
             // 检查 ulSupplyVoltageState 的状态
             KeyValuePair<(DevHealthState, SupplyVoltageState), string> exception = ExceptionMessages
-                .FirstOrDefault(entry => (ulDevHealthState & (uint)entry.Key.Item1) != 0 && (ulSupplyVoltageState & (uint)entry.Key.Item2) != 0);
+                .FirstOrDefault(entry =>
+                    (ulDevHealthState & (uint)entry.Key.Item1) != 0 &&
+                    (ulSupplyVoltageState & (uint)entry.Key.Item2) != 0);
             if (exception.Value != null)
                 return exception.Value;
             // 检查通道和分区
@@ -194,6 +197,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
                 if ((ulSupplyVoltageState & (1 << (24 + i))) != 0) // D24~D31
                     return $"分区{i + 1}（仅粗控、阵列管理有效）";
             }
+
             return null; // 没有找到通道或分区异常
         }
     }

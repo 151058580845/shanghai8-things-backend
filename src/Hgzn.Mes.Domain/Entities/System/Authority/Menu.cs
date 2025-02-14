@@ -952,6 +952,63 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Equip.Id,
             RouteName = "EquipLedger"
         };
+        
+        // 设备参数配置
+        public static Menu EquipConfig = new()
+        {
+            Id = Guid.Parse("62a7f52b-1df2-462d-a4b6-0816c603e6fd"),
+            Name = "设备参数配置",
+            Code = "equipConfig",
+            ScopeCode = "equip:equipconnect:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:connection",
+            Route = "/equip/connect/index",
+            OrderNum = 98,
+            ParentId = Equip.Id,
+            RouteName = "EquipConfig"
+        };
+        // 设备采集数据
+        public static Menu EquipTestAnalyse = new()
+        {
+            Id = Guid.Parse("372A3414-DCC0-2AAB-E54D-5F26AA3CDB7F"),
+            Name = "试验数据",
+            Code = "equipTestAnalyse",
+            ScopeCode = "equip:testanalyse:list",
+            Type = MenuType.Menu,
+            IconUrl = "ri:alarm-warning-line",
+            Route = "/equip/test-analyse/index",
+            OrderNum = 98,
+            ParentId = Equip.Id,
+            RouteName = "EquipTestAnalyse"
+        };
+        // 设备采集配置
+        public static Menu EquipDataConfig = new()
+        {
+            Id = Guid.Parse("bc71d5b9-cbe1-4ff3-b8ae-8f8ae94a05ff"),
+            Name = "设备采集配置",
+            Code = "equipDataConfig",
+            ScopeCode = "equip:data:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:management",
+            Route = "/equip/data/index",
+            OrderNum = 89,
+            ParentId = Equip.Id,
+            RouteName = "EquipData"
+        };
+        // 设备采集配置
+        public static Menu TestData = new()
+        {
+            Id = Guid.Parse("77A29618-FBD4-5D95-5180-D3366B4E9064"),
+            Name = "实验计划数据",
+            Code = "testData",
+            ScopeCode = "equip:testdata:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:management",
+            Route = "/equip/test-data/index",
+            OrderNum = 89,
+            ParentId = Equip.Id,
+            RouteName = "TestData"
+        };
         // 设备历史记录
         public static Menu EquipLedgerHistory = new()
         {
@@ -1053,36 +1110,6 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             OrderNum = 94,
             ParentId = Equip.Id,
             RouteName = "EquipPlanRecord"
-        };
-
-        // 设备参数配置
-        public static Menu EquipConfig = new()
-        {
-            Id = Guid.Parse("62a7f52b-1df2-462d-a4b6-0816c603e6fd"),
-            Name = "设备参数配置",
-            Code = "equipConfig",
-            ScopeCode = "equip:equipconnect:list",
-            Type = MenuType.Menu,
-            IconUrl = "ep:connection",
-            Route = "/equip/connect/index",
-            OrderNum = 98,
-            ParentId = Equip.Id,
-            RouteName = "EquipConfig"
-        };
-
-        // 设备采集配置
-        public static Menu EquipDataConfig = new()
-        {
-            Id = Guid.Parse("bc71d5b9-cbe1-4ff3-b8ae-8f8ae94a05ff"),
-            Name = "设备采集配置",
-            Code = "equipDataConfig",
-            ScopeCode = "equip:data:list",
-            Type = MenuType.Menu,
-            IconUrl = "ep:management",
-            Route = "/equip/data/index",
-            OrderNum = 89,
-            ParentId = Equip.Id,
-            RouteName = "EquipData"
         };
 
         #endregion
@@ -1374,13 +1401,13 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             OperationLog, OperationLogQuery, OperationLogRemove,
             LoginLog, LoginLogQuery, LoginLogRemove,
             Dict, DictQuery, DictAdd, DictEdit, DictRemove,
-            Notice, NoticeQuery, NoticeAdd, NoticeEdit, NoticeRemove,
+            //Notice, NoticeQuery, NoticeAdd, NoticeEdit, NoticeRemove,
             // Config, ConfigQuery, ConfigAdd, ConfigEdit, ConfigRemove,
             SysCode,
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipLedgerHistory,EquipNotice,
+            Equip, EquipType, EquipLedger, EquipLedgerHistory,EquipNotice,EquipTestAnalyse,TestData,
             //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,
             EquipConfig,// EquipDataConfig,
             //Product, ProductPlan, ProductOrder, ProductSchedule,

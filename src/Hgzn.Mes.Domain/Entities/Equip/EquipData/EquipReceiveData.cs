@@ -1,45 +1,26 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
 {
-    public class EquipReceiveData : UniversalEntity
+    public class EquipReceiveData : UniversalEntity,ICreationAudited
     {
-        public EquipReceiveData()
-        {
-        }
-
-        public EquipReceiveData(Guid id)
-        {
-            Id = id;
-        }
-
-        public DateTime CreationTime { get; set; }
-
-        [Description("设备主键")]
+        [Description("设备主键")] 
         public Guid? EquipId { get; set; }
 
-        [Description("设备资产编号")]
-        public string? EquipAssetNumber { get; set; }
-
-        [Description("采集数据")]
+        [Description("连接编号")] 
+        public Guid? ConnectId { get; set; }
+        
+        [Description("数据主键")] 
+        public Guid? ReceiveDataId { get; set; }
+        
+        [Description("设备编号")] 
+        public string? EquipCode { get; set; }
+        
         public ReceiveData? ReceiveData { get; set; }
-
-        public bool IsDeleted { get; set; } = false;
-
-        [Description("最大值")]
-        public double? MaxValue { get; set; }
-
-        [Description("最小值")]
-        public double? MinValue { get; set; }
-
-        [Description("备注")]
-        public string? Remark { get; set; }
+        public Guid? CreatorId { get; set; }
+        public DateTime CreationTime { get; set; }
     }
 }

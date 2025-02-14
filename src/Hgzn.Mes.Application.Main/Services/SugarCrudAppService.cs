@@ -70,7 +70,8 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
         {
             return default;
         }
-        entity.GetType().GetProperty("state")?.SetValue(state,entity);
+        var t = entity.GetType().GetProperty("State");
+        t?.SetValue(entity,state);
         await DbContext.Updateable(entity).ExecuteCommandAsync();
         return Mapper.Map<TReadDto>(entity);
     }

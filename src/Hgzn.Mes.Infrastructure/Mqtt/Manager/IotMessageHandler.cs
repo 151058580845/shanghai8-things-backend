@@ -93,6 +93,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         private async Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
             var uri = Guid.Parse(topic.ConnUri!);
+            Guid? dataId = null;
             switch (topic.EquipType)
             {
                 case "rfid-reader":
@@ -106,10 +107,15 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     break;
                 case "tcp-server":
                     TestDataReceive testDataReceive = new TestDataReceive(_client);
-                    await testDataReceive.Handle(msg);
+                    dataId = await testDataReceive.Handle(msg);
                     break;
-
             }
+            
+        }
+
+        private async Task HandleDateAsync(IotTopic topic,Guid dataId)
+        {
+            // _client.Insertable<>()
         }
         private async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
         {
