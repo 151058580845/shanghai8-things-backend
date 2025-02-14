@@ -77,7 +77,7 @@ public class RoomService : SugarCrudAppService<
         var qrCode = Mapper.Map<RoomQrCode>(entity);
         //生成二维码
         entity.QrCode =
-            await QrCodeHelper.GetOrCreateQrCode(entity.Id.ToString(), JsonConvert.SerializeObject(qrCode), "Room");
+            await QrCodeHelper.GetOrCreateQrCode(entity.ToString(), JsonConvert.SerializeObject(qrCode), "Room");
         return entity;
     }
 }

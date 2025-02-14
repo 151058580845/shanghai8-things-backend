@@ -14,6 +14,7 @@ using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.System.Location;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -212,7 +213,10 @@ public sealed class SqlSugarContext
                         .ManyToMany(t => t.Menus, typeof(RoleMenu), nameof(RoleMenu.RoleId), nameof(RoleMenu.MenuId));
                     c.IfTable<CodeRule>()
                      .OneToMany(t => t.CodeRuleRules, nameof(CodeRuleDefine.CodeRuleId), nameof(CodeRule.Id));
-                    
+                    c.IfTable<Building>()
+                        .OneToMany(t => t.Floors, nameof(Floor.ParentId), nameof(Building.Id));
+                    c.IfTable<Floor>()
+                        .OneToMany(t => t.Rooms, nameof(Room.ParentId), nameof(Floor.Id));
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();

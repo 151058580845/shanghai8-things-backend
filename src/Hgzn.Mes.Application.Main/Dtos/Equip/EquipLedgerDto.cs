@@ -107,21 +107,13 @@ public class EquipLedgerCreateDto : CreateDto
     /// 购置日期
     /// </summary>
     public DateTime? PurchaseDate { get; set; }
-
-    /// <summary>
-    /// 供应商ID
-    /// </summary>
-    public Guid? SupplierId { get; set; }
+    
 
     /// <summary>
     /// 资产编号
     /// </summary>
     public string? AssetNumber { get; set; }
-
-    /// <summary>
-    /// 使用部门ID
-    /// </summary>
-    public Guid? DepartmentId { get; set; }
+    
 
     /// <summary>
     /// 安装地点
@@ -137,12 +129,6 @@ public class EquipLedgerCreateDto : CreateDto
     /// 有效期时间
     /// </summary>
     public DateTime? ValidityDate { get; set; }
-
-    /// <summary>
-    /// 设备资源集（需要做文档管理功能）
-    /// </summary>
-    public Guid? ResourceId { get; set; }
-
     /// <summary>
     /// 备注
     /// </summary>
@@ -175,29 +161,21 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// 购置日期
     /// </summary>
     public DateTime? PurchaseDate { get; set; }
-
-    /// <summary>
-    /// 供应商ID
-    /// </summary>
-    public Guid? SupplierId { get; set; }
+    
 
     /// <summary>
     /// 资产编号
     /// </summary>
     public string? AssetNumber { get; set; }
-
-    /// <summary>
-    /// 使用部门ID
-    /// </summary>
-    public Guid? DepartmentId { get; set; }
+    
 
     /// <summary>
     /// 安装地点
     /// </summary>
-    public string? Location { get; set; }
+    public Guid? RoomId { get; set; }
 
     /// <summary>
-    /// 设备状态(正常/丢失/使用中
+    /// 设备状态(正常/丢失/使用中)
     /// </summary>
     public string? DeviceStatus { get; set; }
 
@@ -205,16 +183,10 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// 有效期时间
     /// </summary>
     public DateTime? ValidityDate { get; set; }
-
-    /// <summary>
-    /// 设备资源集（需要做文档管理功能）
-    /// </summary>
-    public Guid? ResourceId { get; set; }
-
     /// <summary>
     /// 备注
     /// </summary>
-    public string? Remarks { get; set; }
+    public string? Remark { get; set; }
 }
 public class EquipLedgerAppUpdateDto : UpdateDto
 {

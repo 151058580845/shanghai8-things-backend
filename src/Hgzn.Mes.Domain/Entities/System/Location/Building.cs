@@ -27,7 +27,7 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
     [Description("建造日期")]
     public DateTime? ConstructionDate { get; set; }
 
-    public ICollection<Floor>? Floors { get; set; }
+    public List<Floor>? Floors { get; set; }
 
     public DateTime CreationTime { get; set; }
 

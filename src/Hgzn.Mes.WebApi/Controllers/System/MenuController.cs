@@ -89,6 +89,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// <param name="dto"></param>
         /// <returns></returns>
         [HttpPost]
+        [Route("create")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<MenuReadDto>> CreateMenuAsync(MenuCreateDto dto) =>

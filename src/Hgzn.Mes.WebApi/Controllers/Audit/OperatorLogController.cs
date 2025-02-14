@@ -44,8 +44,25 @@ public class OperatorLogController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Route("deleteAll")]
+    [Route("deletePage")]
     public async Task<ResponseWrapper<int>> DeleteAsync(List<Guid>? guids)
+    {
+        var dCount = 0;
+        if (guids != null && guids.Count() > 0)
+        {
+            foreach (var logId in guids)
+            {
+                dCount += await _operLogService.DeleteAsync(logId);
+            }
+        }
+
+        return dCount.Wrap();
+    }
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Route("deleteAll")]
+    public async Task<ResponseWrapper<int>> DeleteAllAsync(List<Guid>? guids)
     {
         var dCount = 0;
         if (guids != null && guids.Count() > 0)

@@ -98,7 +98,6 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 parent.Children = menuReadDtos
                     .Where(m => m.ParentId == parent.Id)
                     .OrderBy(m => m.OrderNum)
-                    .ThenBy(m => m.Level)
                     .Select(AsTree);
                 if (parent.Children.Count() == 0)
                 {

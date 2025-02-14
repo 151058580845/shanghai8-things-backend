@@ -16,7 +16,7 @@ public class FloorService : SugarCrudAppService<
     {
         var entities = await Queryable
             .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.Name), x=> x.Name.Contains(queryDto!.Name!))      
-            // .Includes(t=>t.Floors)
+            .Includes(t=>t.Rooms)
             .OrderBy(x=>x.OrderNum)
             .ToListAsync();
         return Mapper.Map<IEnumerable<Floor>, IEnumerable<FloorReadDto>>(entities);
@@ -26,7 +26,7 @@ public class FloorService : SugarCrudAppService<
     {
         var entities = await Queryable
             .WhereIF(!string.IsNullOrEmpty(queryDto.Name), x=> x.Name!.Contains(queryDto.Name!))
-            // .Includes(t=>t.Floors)
+            .Includes(t=>t.Rooms)
             .OrderBy(x=>x.OrderNum)
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
         return Mapper.Map<PaginatedList<Floor>, PaginatedList<FloorReadDto>>(entities);

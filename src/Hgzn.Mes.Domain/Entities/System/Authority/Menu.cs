@@ -8,7 +8,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
     {
         public string Name { get; set; } = null!;
 
-        public string Code { get; set; } = null!;
+        public string? Code { get; set; }
 
         public string? Description { get; set; }
 
@@ -17,9 +17,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         public MenuType Type { get; set; }
 
         public int OrderNum { get; set; } = -1;
-
-        public int Level { get; set; }
-
+        
         public string? IconUrl { get; set; }
 
         public bool IsLink { get; set; }

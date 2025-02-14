@@ -103,22 +103,17 @@ public class BuildingUpdateDto : UpdateDto
     /// <summary>
     /// 纬度
     /// </summary>
-    public decimal Latitude { get; set; }
+    public decimal? Latitude { get; set; }
 
     /// <summary>
     /// 经度
     /// </summary>
-    public decimal Longitude { get; set; }
+    public decimal? Longitude { get; set; }
 
     /// <summary>
     /// 建造日期
     /// </summary>
-    public DateTime ConstructionDate { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public int OrderNum { get; set; }
+    public DateTime? ConstructionDate { get; set; }
 }
 
 public class BuildingQueryDto : PaginatedQueryDto

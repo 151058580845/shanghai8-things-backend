@@ -103,7 +103,19 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Authorize(Policy = $"system:user:{ScopeMethodType.Remove}")]
         public async Task<ResponseWrapper<int>> Delete(Guid userId) =>
             (await _userService.DeleteAsync(userId)).Wrap();
-
+        /// <summary>
+        ///     删除用户
+        ///     auth: super
+        /// </summary>
+        /// <param name="userId">用户guid</param>
+        /// <returns>已删除用户数</returns>
+        [HttpPost]
+        [Route("create")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Remove}")]
+        public async Task<ResponseWrapper<UserReadDto>> Delete(UserRegisterDto dto) =>
+            (await _userService.CreateAsync(dto)).Wrap();
         /// <summary>
         ///     切换角色
         ///     auth: super

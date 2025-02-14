@@ -21,7 +21,7 @@ public class Floor : UniversalEntity, IOrder, IAudited
     [Description("房间数量")]
     public int? NumberOfRooms { get; set; }
 
-    public ICollection<Room>? Rooms { get; set; } // 楼层和房间是 1 对多关系
+    public List<Room>? Rooms { get; set; } // 楼层和房间是 1 对多关系
 
     public Building? Building { get; set; }  // 每个 FloorEntity 关联一个 Building
 

@@ -60,6 +60,11 @@ public class RoomReadDto : ReadDto
     /// 房间二维码
     /// </summary>
     public string? QrCode { get; set; }
+
+    public override string ToString()
+    {
+        return Id + Code + Name;
+    }
 }
 
 public class RoomQrCode
@@ -146,27 +151,27 @@ public class RoomUpdateDto : UpdateDto
     /// <summary>
     /// 房间长度（米）
     /// </summary>
-    public decimal Length { get; set; }
+    public decimal? Length { get; set; }
 
     /// <summary>
     /// 房间宽度（米）
     /// </summary>
-    public decimal Width { get; set; }
+    public decimal? Width { get; set; }
 
     /// <summary>
     /// 房间高度（米）
     /// </summary>
-    public decimal Height { get; set; }
+    public decimal? Height { get; set; }
 
     /// <summary>
     /// 用途
     /// </summary>
-    public string Purpose { get; set; }
+    public string? Purpose { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
-    public int OrderNum { get; set; }
+    public int? OrderNum { get; set; }
 }
 
 public class RoomQueryDto : PaginatedQueryDto

@@ -8,7 +8,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
         public string Name { get; set; } = null!;
 
-        public string Code { get; set; } = null!;
+        public string? Code { get; set; }
 
         public string? Description { get; set; }
 
@@ -79,7 +79,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
     {
         public string Name { get; set; } = null!;
 
-        public string Code { get; set; } = null!;
+        public string? Code { get; set; }
 
         public string? Description { get; set; }
 
@@ -88,9 +88,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public int Type { get; set; }
 
         public int Order { get; set; } = -1;
-
-        public int Level { get; set; }
-
+        
         public string Path { get; set; } = null!;
 
         /// <summary>
@@ -126,9 +124,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public int Type { get; set; }
 
         public int Order { get; set; } = -1;
-
-        public int Level { get; set; }
-
+        
         public string Path { get; set; } = null!;
 
         /// <summary>
