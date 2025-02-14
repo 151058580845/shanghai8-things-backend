@@ -1,12 +1,15 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Audit;
 using Hgzn.Mes.Application.Main.Services.Audit.IService;
 using Hgzn.Mes.Domain.Entities.Audit;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Infrastructure.Utilities;
 
 using IPTools.Core;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
 using UAParser;
 
 namespace Hgzn.Mes.Application.Main.Services.Audit
@@ -79,6 +82,21 @@ namespace Hgzn.Mes.Application.Main.Services.Audit
             return context.Request.Headers["User-Agent"]!;
         }
 
+        /// <summary>
+        /// 删除全部日志
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> DeleteAllLoginfo() {
+
+            var entities = await Queryable.Select(a => a.Id).ToListAsync();
+            var delcount = 0;
+            if (entities.Any())
+            {
+                delcount =  await DbContext.Deleteable<LoginLog>().Where(s => entities.Contains(s.Id)).ExecuteCommandAsync();
+            }
+
+            return delcount;
+        }
  
     }
 }
