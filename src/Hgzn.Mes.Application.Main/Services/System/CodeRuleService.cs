@@ -173,21 +173,21 @@ public class CodeRuleService : SugarCrudAppService<
     }
 
 
-    /// <summary>
-    /// 修改状态
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    public async Task<CodeRuleReadDto> UpdateStateAsync(Guid id, bool? state)
-    {
-        var oldRuleData = await GetAsync(id);
-        oldRuleData.State = state;
-        CodeRule info = Mapper.Map<CodeRule>(oldRuleData);
+    ///// <summary>
+    ///// 修改状态
+    ///// </summary>
+    ///// <param name="id"></param>
+    ///// <param name="state"></param>
+    ///// <returns></returns>
+    //public async Task<CodeRuleReadDto> UpdateStateAsync(Guid id, bool? state)
+    //{
+    //    var oldRuleData = await GetAsync(id);
+    //    oldRuleData.State = state;
+    //    CodeRule info = Mapper.Map<CodeRule>(oldRuleData);
 
-        var data = DbContext.Updateable<CodeRule>(info).ExecuteCommand();
-        return oldRuleData;
-    }
+    //    var data = DbContext.Updateable<CodeRule>(info).ExecuteCommand();
+    //    return oldRuleData;
+    //}
 
 
 }
