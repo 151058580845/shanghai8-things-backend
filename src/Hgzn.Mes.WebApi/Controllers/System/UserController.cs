@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.System;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -63,7 +63,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUserListByRoleId(Guid roleId) =>
-            (await _userService.GetUserListByRoleId(roleId)).Wrap();
+            (await _userService.GetListByRoleIdAsync(roleId)).Wrap();
         /// <summary>
         ///     模糊匹配用户名和昵称
         ///     auth: super

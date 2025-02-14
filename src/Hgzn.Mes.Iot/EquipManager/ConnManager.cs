@@ -1,5 +1,4 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
-using Hgzn.Mes.Domain.ProtocolManagers.TcpServer;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using MediatR;

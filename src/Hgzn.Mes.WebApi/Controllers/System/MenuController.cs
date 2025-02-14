@@ -1,6 +1,8 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.WebApi.Utilities;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hgzn.Mes.WebApi.Controllers.System
@@ -53,6 +55,21 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetListAsync() =>
             (await _menuService.GetListAsync()).Wrap();
+
+        /// <summary>
+        /// 获取菜单列表根据角色id
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{id:guid}/ByRoleId")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetMenuListByRoleidAsync(Guid id) =>
+        (await _menuService.GetListByRoleIdAsync(id)).Wrap();
+
+      
+
         /// <summary>
         ///     删除菜单
         /// </summary>
@@ -88,6 +105,8 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<MenuReadDto>> GetMenuAsync(Guid id) =>
             (await _menuService.GetAsync(id)).Wrap();
+
+
         /// <summary>
         ///     获取菜单详情
         /// </summary>
@@ -111,6 +130,6 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetMenuByRoleIdAsync(Guid id) =>
-            (await _menuService.GetMenuByRoleIdAsync(id)).Wrap();
+            (await _menuService.GetListByRoleIdAsync(id)).Wrap();
     }
 }

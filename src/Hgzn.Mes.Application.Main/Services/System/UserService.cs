@@ -8,6 +8,7 @@ using Hgzn.Mes.Application.Main.Services.Base;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Application.Main.Utilities;
 using Hgzn.Mes.Domain.Entities.System.Account;
+using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
@@ -219,5 +220,26 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .ToPaginatedListAsync(query.PageIndex, query.PageSize);
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
         }
+
+        /// <summary>
+        /// 用角色id查询用户列表  TODO：写到这里了接下来应该去写控制器然后对接接口了
+        /// </summary>
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<UserReadDto>> GetListByRoleIdAsync(Guid roleId)
+        {
+            var userids = await DbContext.Queryable<UserRole>()
+           .Where(t => t.RoleId == roleId)
+           .Select(a => a.UserId)
+           .ToListAsync();
+
+            var users = await DbContext.Queryable<User>()
+                .Where(t => userids.Contains(t.Id))
+                .ToListAsync();
+
+            return Mapper.Map<IEnumerable<UserReadDto>>(users);
+        }
+
+
     }
 }

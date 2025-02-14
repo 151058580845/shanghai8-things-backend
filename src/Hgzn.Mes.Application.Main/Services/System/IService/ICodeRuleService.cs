@@ -16,5 +16,5 @@ public interface ICodeRuleService : ICrudAppService<
     /// <param name="id"></param>
     /// <param name="state"></param>
     /// <returns></returns>
-    Task<CodeRuleReadDto> GetGenerateCodeByCodeAsync(Guid id, bool? state);
+    Task<CodeRuleReadDto> UpdateStateAsync(Guid id, bool? state);
 }

@@ -23,6 +23,10 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
             this._equipMaintenanceTaskService = equipMaintenanceTaskService;
         }
 
+        public EquipMaintenanceController()
+        {
+        }
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

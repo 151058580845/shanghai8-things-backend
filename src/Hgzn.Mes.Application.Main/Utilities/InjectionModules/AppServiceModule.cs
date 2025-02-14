@@ -1,6 +1,9 @@
 ﻿using Autofac;
 using Hgzn.Mes.Application.Main.Services;
+using Hgzn.Mes.Application.Main.Services.Equip;
+using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Services;
+using Hgzn.Mes.Domain.Services.System;
 using SqlSugar;
 using System.Reflection;
 
@@ -19,6 +22,9 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .Where(type => type.IsAssignableTo<IDomainService>())
                 .AsImplementedInterfaces()
                 .PropertiesAutowired();
+
+            builder.RegisterType<EquipLedgerService>().InstancePerLifetimeScope();
+            // builder.RegisterType<MemoryCacheDomainService>().As<IMemoryCacheDomainService>().InstancePerLifetimeScope();
         }
     }
 }

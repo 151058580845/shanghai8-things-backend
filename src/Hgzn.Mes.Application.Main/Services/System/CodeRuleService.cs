@@ -179,7 +179,7 @@ public class CodeRuleService : SugarCrudAppService<
     /// <param name="id"></param>
     /// <param name="state"></param>
     /// <returns></returns>
-    public async Task<CodeRuleReadDto> GetGenerateCodeByCodeAsync(Guid id, bool? state)
+    public async Task<CodeRuleReadDto> UpdateStateAsync(Guid id, bool? state)
     {
         var oldRuleData = await GetAsync(id);
         oldRuleData.State = state;

@@ -1,21 +1,11 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
-using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Events;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
-using Hgzn.Mes.Iot.EquipManager;
-using MediatR;
 using NetCoreServer;
 using SqlSugar;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Hgzn.Mes.Domain.ProtocolManagers.TcpServer
+namespace Hgzn.Mes.Iot.EquipManager
 {
     public class EquipTcpServer : NetCoreServer.TcpServer, IEquipConnector
     {

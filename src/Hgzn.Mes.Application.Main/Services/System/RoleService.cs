@@ -3,6 +3,7 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
+using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Extensions;
@@ -27,6 +28,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
         {
             return await GetAsync(id);
         }
+        
+
+
 
         public async Task<IEnumerable<RoleReadDto>> GetRolesAsync()
         {
@@ -115,9 +119,61 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public override async Task<PaginatedList<RoleReadDto>> GetPaginatedListAsync(RoleQueryDto queryDto)
         {
             var roles = await Queryable
+                .WhereIF(!string.IsNullOrEmpty(queryDto.Name), x => x.Name.Contains(queryDto.Name))
+                .WhereIF(!string.IsNullOrEmpty(queryDto.Code), x => x.Code.Contains(queryDto.Code))
+                .WhereIF(queryDto.State!=null , x => x.State== queryDto.State)
                 .Includes(r => r.Menus)
                 .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
             return Mapper.Map<PaginatedList<RoleReadDto>>(roles);
+        }
+
+        /// <summary>
+        /// 修改状态
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="state"></param> 
+        /// <returns></returns>
+        public async Task<RoleReadDto> UpdateStateAsync(Guid id, bool state)
+        {
+            var oldRoleData = await GetAsync(id);
+            oldRoleData.State = state;
+
+            Role info = Mapper.Map<Role>(oldRoleData);
+
+            var data = DbContext.Updateable<Role>(info).ExecuteCommand();
+            return oldRoleData;
+        }
+
+        public override Task<RoleReadDto?> UpdateAsync(Guid key, RoleUpdateDto dto)
+        {
+            var saverole= base.UpdateAsync(key, dto);
+            if (dto.MenuIds != null && dto.MenuIds.Count() > 0) {
+                List<RoleMenu> roleMenus = new List<RoleMenu>();
+                var deleteCount = DbContext.Deleteable<RoleMenu>().Where(a => a.RoleId == key).ExecuteCommand();
+                foreach (var item in dto.MenuIds)
+                {
+                    var data = DbContext.Insertable<RoleMenu>(new RoleMenu() { 
+                        MenuId = item, RoleId = key })
+                        .ExecuteCommand();
+                }
+            }
+
+            if (dto.UserIds != null && dto.UserIds.Count() > 0)
+            {
+                List<UserRole> roleMenus = new List<UserRole>();
+                var deleteCount = DbContext.Deleteable<UserRole>().Where(a => a.RoleId == key).ExecuteCommand();
+                foreach (var item in dto.UserIds)
+                {
+                    var data = DbContext.Insertable<UserRole>(new UserRole()
+                    {
+                        UserId = item,
+                        RoleId = key
+                    })
+                    .ExecuteCommand();
+                }
+            }
+
+            return saverole;
         }
     }
 }

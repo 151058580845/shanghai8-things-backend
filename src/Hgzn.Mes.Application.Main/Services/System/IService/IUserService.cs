@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using Hgzn.Mes.Application.Main.Dtos.System;
-using Hgzn.Mes.Domain.Entities.Hub;
 using Hgzn.Mes.Domain.Entities.System.Account;
 
 namespace Hgzn.Mes.Application.Main.Services.System.IService
@@ -24,6 +23,12 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
         Task<int> ChangePasswordAsync(ChangePasswordDto passwordDto);
 
         Task<int> ResetPasswordAsync(Guid userId);
-        Task<IEnumerable<UserReadDto>> GetUserListByRoleId(Guid roleId);
+
+        /// <summary>
+        /// 获取用户列表根据角色id
+        /// </summary>
+        /// <param name="roleId"></param>
+        /// <returns></returns>
+        Task<IEnumerable<UserReadDto>> GetListByRoleIdAsync(Guid roleId);
     }
 }

@@ -25,10 +25,12 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .SingleInstance();
             builder.RegisterType<InitialDatabase>()
                 .SingleInstance();
+
             builder.Register(context =>
                     ConnectionMultiplexer.Connect(context.Resolve<IConfiguration>().GetConnectionString("Redis")!))
                 .AsImplementedInterfaces()
                 .SingleInstance();
+
             builder.RegisterGeneric(typeof(PaginatedListConverter<,>));
 
             #region 注册Mqtt

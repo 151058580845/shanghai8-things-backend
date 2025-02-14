@@ -13,8 +13,20 @@ namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.Equip
     {
         public EquipItemsDtoProfile()
         {
-            CreateMap<EquipItems, EquipItemsReadDto>();
+            CreateMap<EquipItems, EquipItemsReadDto>()
+                .ForMember(dest => dest.EquipMaintenanceType, opt => opt.MapFrom(src => ConvertStringToEnum(src.EquipMaintenanceType)));
             CreateMap<EquipItemsCreateDto, EquipItems>();
+            CreateMap<EquipItemsUpdateDto, EquipItems>()
+                .ForMember(dest => dest.EquipMaintenanceType, opt => opt.MapFrom(src => src.EquipMaintenanceType.ToString()));
+        }
+
+        private EquipMaintenanceType ConvertStringToEnum(string status)
+        {
+            if (Enum.TryParse(status, true, out EquipMaintenanceType result))
+            {
+                return result;
+            }
+            throw new ArgumentException($"Invalid status: {status}");
         }
     }
 }
