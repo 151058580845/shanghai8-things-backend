@@ -13,7 +13,6 @@ public class EquipLedgerDto
 
 public class EquipLedgerReadDto : ReadDto
 {
-    public Guid Id { get; set; }
     [Description("设备编号")] public string EquipCode { get; set; } = null!;
 
     [Description("设备名称")] public string EquipName { get; set; } = null!;

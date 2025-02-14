@@ -309,7 +309,7 @@ public sealed class SqlSugarContext
                 .GetTypes()
                 .Where(t => (typeof(AggregateRoot)).IsAssignableFrom(t) && !t.Namespace!.Contains("Base"))
                 .ToArray();
-            DbContext.CodeFirst.InitTables(tables);
+            DbContext.CopyNew().CodeFirst.InitTables(tables);
         }
 
         if (_dbOptions.EnabledDbSeed)

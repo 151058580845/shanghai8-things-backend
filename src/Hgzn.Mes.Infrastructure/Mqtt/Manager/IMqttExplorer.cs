@@ -58,8 +58,5 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         /// <returns></returns>
         Task<bool> IsConnectedAsync();
 
-
-        Task UpdateStateAsync(ConnStateType stateType, string uri);
-
     }
 }

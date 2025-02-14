@@ -9,49 +9,48 @@ using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 
 namespace Hgzn.Mes.Iot.EquipManager;
 
-public class RfidReaderConnector : IEquipConnector
+public class RfidReaderConnector : EquipConnectorBase
 {
     private GClient _client = new();
-    private string? _uri;
     private string? _serialNum { get; set; }
-    private readonly IMqttExplorer _mqtt;
-    private string? _equipType;
+
 
     public RfidReaderConnector(
-        IMqttExplorer mqtt, string uri, string equipType)
+        IConnectionMultiplexer connectionMultiplexer,
+        IMqttExplorer mqtt, string uri, string equipType) : base(connectionMultiplexer, mqtt)
     {
-        _mqtt = mqtt;
         _uri = uri;
         _equipType = equipType;
     }
 
-    public async Task StartAsync()
+    public override async Task StartAsync()
     {
         StartReadingTag(_client);
-        await _mqtt.UpdateStateAsync(ConnStateType.Run, _uri!);
+        await UpdateStateAsync(ConnStateType.Run);
 
     }
 
     /// <summary>
     /// 全部停止采集
     /// </summary>
-    public async Task StopAsync()
+    public override async Task StopAsync()
     {
         StopReadingTag(_client);
-        await _mqtt.UpdateStateAsync(ConnStateType.Stop, _uri!);
+        await UpdateStateAsync(ConnStateType.Stop);
     }
 
-    public Task SendDataAsync(byte[] buffer)
+    public override Task SendDataAsync(byte[] buffer)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<bool> ConnectAsync(ConnInfo connInfo)
+    public override async Task<bool> ConnectAsync(ConnInfo connInfo)
     {
         if (connInfo?.ConnString is null) throw new ArgumentNullException("connIfo");
         switch (connInfo.ConnType)
@@ -70,7 +69,7 @@ public class RfidReaderConnector : IEquipConnector
                     {
                         LoggerAdapter.LogTrace("ger reader info success");
                         _serialNum = readerInfo.Imei;
-                        await _mqtt.UpdateStateAsync(ConnStateType.On, _uri!);
+                        await UpdateStateAsync(ConnStateType.On);
                     }
                     return true;
                 }
@@ -82,10 +81,10 @@ public class RfidReaderConnector : IEquipConnector
         return false;
     }
 
-    public async Task CloseConnectionAsync()
+    public override async Task CloseConnectionAsync()
     {
         _client?.Close();
-        await _mqtt.UpdateStateAsync(ConnStateType.Stop, _uri!);
+        await UpdateStateAsync(ConnStateType.Stop);
     }
 
     private void StartReadingTag(GClient client)
@@ -130,7 +129,7 @@ public class RfidReaderConnector : IEquipConnector
             Userdata = msg.logBaseEpcInfo.Userdata
         };
         var plain = JsonSerializer.Serialize(data);
-        await _mqtt.PublishAsync(IotTopicBuilder
+        await _mqttExplorer.PublishAsync(IotTopicBuilder
             .CreateIotBuilder()
             .WithPrefix(TopicType.Iot)
             .WithDirection(MqttDirection.Up)

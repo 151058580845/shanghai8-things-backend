@@ -31,7 +31,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         private int _forwardLength = 10;
 
         public TcpServerConnector(EquipTcpServer server,
-             EquipConnect equipConnect, ISqlSugarClient client, IMqttExplorer mqttExplorer) : base(server)
+            EquipConnect equipConnect, ISqlSugarClient client, IMqttExplorer mqttExplorer) : base(server)
         {
             _equipConnect = equipConnect;
             _client = client;

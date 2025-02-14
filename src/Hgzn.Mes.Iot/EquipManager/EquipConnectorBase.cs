@@ -1,0 +1,50 @@
+﻿using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using StackExchange.Redis;
+
+namespace Hgzn.Mes.Iot.EquipManager
+{
+    public abstract class EquipConnectorBase : IEquipConnector
+    {
+        protected EquipConnectorBase(
+            IConnectionMultiplexer connectionMultiplexer,
+            IMqttExplorer mqttExplorer)
+        {
+            _connectionMultiplexer = connectionMultiplexer;
+            _mqttExplorer = mqttExplorer;
+        }
+        protected readonly IConnectionMultiplexer _connectionMultiplexer;
+        protected readonly IMqttExplorer _mqttExplorer;
+        protected string? _equipType;
+        protected string? _uri;
+
+        public abstract Task CloseConnectionAsync();
+
+        public abstract Task<bool> ConnectAsync(ConnInfo connInfo);
+
+        public abstract Task SendDataAsync(byte[] buffer);
+
+        public abstract Task StartAsync();
+
+        public abstract Task StopAsync();
+
+        public async Task UpdateStateAsync(ConnStateType stateType)
+        {
+            // 记录到redis服务器
+            var database = _connectionMultiplexer.GetDatabase();
+            var key = string.Format(CacheKeyFormatter.EquipState, _equipType, _uri);
+            await database.StringSetAsync(key, (int)ConnStateType.On);
+
+            await _mqttExplorer.PublishAsync(UserTopicBuilder
+            .CreateUserBuilder()
+            .WithPrefix(TopicType.App)
+            .WithDirection(MqttDirection.Up)
+            .WithTag(MqttTag.State)
+            .WithUri(_uri!)
+            .Build(), BitConverter.GetBytes((int)stateType));
+        }
+    }
+}

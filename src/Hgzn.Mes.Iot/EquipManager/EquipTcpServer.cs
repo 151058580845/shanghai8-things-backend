@@ -4,82 +4,72 @@ using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using NetCoreServer;
 using SqlSugar;
+using StackExchange.Redis;
 
 namespace Hgzn.Mes.Iot.EquipManager
 {
-    public class EquipTcpServer : NetCoreServer.TcpServer, IEquipConnector
+    public class EquipTcpServer : EquipConnectorBase
     {
-        private readonly List<TcpSession> _tcpSessions = [];
-        private readonly string _heartBeatMessage;
-        private readonly string _heartBeatAck;
-        private readonly int _heartTime;
         private readonly EquipConnect _equipConnect;
         private readonly ISqlSugarClient _sqlSugarClient;
-        private readonly IMqttExplorer _mqttExplorer;
-        private readonly string _uri;
 
-        public EquipTcpServer(string address, int port, string uri,
-            EquipConnect connect, ISqlSugarClient client, IMqttExplorer mqttExplorer) : base(address, port)
+        private readonly TcpServer _tcpServer;
+
+        public EquipTcpServer(
+            string address, int port, string uri,
+            IConnectionMultiplexer connectionMultiplexer,
+            IMqttExplorer mqttExplorer,
+            EquipConnect connect, 
+            ISqlSugarClient client) : base(connectionMultiplexer, mqttExplorer)
         {
+            _tcpServer = new TcpServer(address, port);
             _uri = uri;
             _sqlSugarClient = client;
-            _mqttExplorer = mqttExplorer;
             _equipConnect = connect;
         }
 
-        protected override TcpSession CreateSession()
+        protected TcpSession CreateSession()
         {
             return new TcpServerConnector(this, _equipConnect, _sqlSugarClient, _mqttExplorer);
         }
 
-        protected override void OnConnected(TcpSession session)
-        {
-            _tcpSessions.Add(session);
-            base.OnConnected(session);
-        }
 
-        protected override void OnDisconnected(TcpSession session)
+        public override async Task<bool> ConnectAsync(ConnInfo connInfo)
         {
-            _tcpSessions.Remove(session);
-            base.OnDisconnected(session);
-        }
-
-        public async Task<bool> ConnectAsync(ConnInfo connInfo)
-        {
-            TcpClient tcpClient = new TcpClient(Address, Port);
+            TcpClient tcpClient = new TcpClient(_tcpServer.Address, _tcpServer.Port);
             bool successConnect = tcpClient.ConnectAsync();
             if (!successConnect) return successConnect;
-            await _mqttExplorer.UpdateStateAsync(ConnStateType.On, _uri);
+            await UpdateStateAsync(ConnStateType.On);
             return successConnect;
         }
 
-        public async Task CloseConnectionAsync()
+        public override async Task CloseConnectionAsync()
         {
-            if (base.Stop())
+            if (_tcpServer.Stop())
             {
-                await _mqttExplorer.UpdateStateAsync(ConnStateType.Off, _uri);
+                await UpdateStateAsync(ConnStateType.Off);
             }
         }
 
-        public async Task StartAsync()
+        public override async Task StartAsync()
         {
-            if (IsStarted) return;
-            if (base.Start())
+            if (_tcpServer.IsStarted) return;
+            if (_tcpServer.Start())
             {
-                await _mqttExplorer.UpdateStateAsync(ConnStateType.Run, _uri);
+                await UpdateStateAsync(ConnStateType.Run);
             }
         }
 
-        public async Task StopAsync()
+        public override async Task StopAsync()
         {
-            if (!IsStarted) return;
-            if (base.Stop())
+            if (!_tcpServer.IsStarted) return;
+            if (_tcpServer.Stop())
             {
-                await _mqttExplorer.UpdateStateAsync(ConnStateType.Stop, _uri);
+                await UpdateStateAsync(ConnStateType.Stop);
             }
         }
 
-        public Task SendDataAsync(byte[] buffer)
+        public override Task SendDataAsync(byte[] buffer)
         {
             return Task.CompletedTask;
         }

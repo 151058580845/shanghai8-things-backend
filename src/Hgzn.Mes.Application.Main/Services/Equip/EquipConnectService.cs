@@ -28,7 +28,10 @@ public class EquipConnectService : SugarCrudAppService<
     private readonly IMqttExplorer _mqttExplorer;
     private readonly IConnectionMultiplexer _connectionMultiplexer;
 
-    public EquipConnectService(IEquipLedgerService equipLedgerService, IMqttExplorer mqttExplorer, IConnectionMultiplexer connectionMultiplexer)
+    public EquipConnectService(
+        IEquipLedgerService equipLedgerService,
+        IMqttExplorer mqttExplorer,
+        IConnectionMultiplexer connectionMultiplexer)
     {
         _equipLedgerService = equipLedgerService;
         _mqttExplorer = mqttExplorer;

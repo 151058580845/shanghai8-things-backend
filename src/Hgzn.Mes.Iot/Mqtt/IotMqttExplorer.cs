@@ -21,19 +21,16 @@ namespace Hgzn.Mes.Iot.Mqtt
         private readonly IManagedMqttClient _mqttClient;
         private readonly ManagedMqttClientOptions _mqttClientOptions;
         private readonly ISqlSugarClient _client;
-        private readonly IConnectionMultiplexer _connectionMultiplexer;
 
         public IotMqttExplorer(
             ILogger<IotMqttExplorer> logger,
             IConfiguration configuration,
             ISqlSugarClient client,
-            IConnectionMultiplexer connectionMultiplexer,
             MqttMessageHandler mqttMessageParser)
         {
             _logger = logger;
             var mqtt = configuration.GetConnectionString("Mqtt")!.Split(':');
             _client = client;
-            this._connectionMultiplexer = connectionMultiplexer;
             _mqttClientOptions = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(10))
                 .WithClientOptions(new MqttClientOptionsBuilder()
@@ -159,22 +156,6 @@ namespace Hgzn.Mes.Iot.Mqtt
         public Task<bool> IsConnectedAsync()
         {
             return Task.FromResult(_mqttClient.IsConnected);
-        }
-
-        public async Task UpdateStateAsync(ConnStateType stateType, string uri)
-        {
-            // 记录到redis服务器
-            var database = _connectionMultiplexer.GetDatabase();
-            var key = string.Format("connectState", uri);
-            await database.StringSetAsync(key, stateType == ConnStateType.On ? "1" : "0");
-
-            await PublishAsync(UserTopicBuilder
-            .CreateUserBuilder()
-            .WithPrefix(TopicType.App)
-            .WithDirection(MqttDirection.Up)
-            .WithTag(MqttTag.State)
-            .WithUri(uri!)
-            .Build(), BitConverter.GetBytes((int)stateType));
         }
     }
 }
