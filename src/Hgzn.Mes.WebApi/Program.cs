@@ -34,7 +34,6 @@ RequireScopeUtil.Initialize();
 SettingUtil.Initialize(builder.Configuration);
 CryptoUtil.Initialize(SettingUtil.Jwt.KeyFolder);
 #endregion util Initialize
-
 // Change container to autoFac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(config =>
@@ -220,6 +219,7 @@ builder.Services.AddAutoMapper(config =>
 builder.Services.AddMediatR(config =>
     config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
 
+builder.Services.AddHttpClient(); // 注册 IHttpClientFactory
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

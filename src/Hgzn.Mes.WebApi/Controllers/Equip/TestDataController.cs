@@ -66,6 +66,54 @@ public class TestDataController : ControllerBase
     }
 
     /// <summary>
+    /// Api批量导入
+    /// </summary>
+    /// <param name="apiUrl"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("importByApi")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = $"equip:testdata:{ScopeMethodType.Add}")]
+    public async Task<ResponseWrapper<int>> CreateAsync(string apiUrl)=>
+         (await _testDataService.GetDataFromThirdPartyAsync(apiUrl)).Wrap();
+
+    [HttpGet]
+    [Route("getTestData")]
+    [Authorize]
+    public List<TestDataCreateDto> GetTestData(string apiUrl)
+    {
+        var detilData = new List<TestDataProductCreateDto>();
+        detilData.Add(new TestDataProductCreateDto()
+        {
+            Name = "ces0",
+            Code = "123",
+            TechnicalStatus = ""
+        });
+
+        TestDataCreateDto testDataCreateDto = new TestDataCreateDto()
+        {
+            SysName = "ce",
+            ProjectName = "ce",
+            TaskName = "ce",
+            DevPhase = "ce",
+            TaskStartTime = "2025-01-01",
+            TaskEndTime = "2025-01-01",
+            ReqDep = "ce",
+            ReqManager = "ce",
+            SimuResp = "ce",
+            SimuStaff = "ce",
+            QncResp = "ce",
+            Products = detilData
+        };
+
+        var allData = new List<TestDataCreateDto>();
+        allData.Add(testDataCreateDto);
+
+        return allData;
+    }
+
+    /// <summary>
     /// 删除
     /// </summary>
     /// <param name="id"></param>
