@@ -52,7 +52,8 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var allRoutes = await entities.Select(t => new MenuReaderRouterDto()
             {
                 Path = t.Route == null ? "" : t.Route.StartsWith('/') ? t.Route : '/' + t.Route,
-                Name = t.IsLink ? "Link" : t.Name,
+                // Name = t.IsLink ? "Link" : t.Name,
+                Name = t.IsLink ? t.Route : t.Name,
                 Id = t.Id,
                 component = t.Component,
                 Meta = new MetaDto()
@@ -115,8 +116,8 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<IEnumerable<MenuReadDto>> GetListByRoleIdAsync(Guid id)
         {
-           var list = await Queryable.Where(t=> SqlFunc.Subqueryable<RoleMenu>().Where(m=>m.RoleId == id && m.MenuId == t.Id).Any()).ToListAsync();
-           return Mapper.Map<IEnumerable<MenuReadDto>>(list);
+            var list = await Queryable.Where(t=> SqlFunc.Subqueryable<RoleMenu>().Where(m=>m.RoleId == id && m.MenuId == t.Id).Any()).ToListAsync();
+            return Mapper.Map<IEnumerable<MenuReadDto>>(list);
         }
 
         public async Task<int> DeleteMenuAsync(Guid id, bool force)

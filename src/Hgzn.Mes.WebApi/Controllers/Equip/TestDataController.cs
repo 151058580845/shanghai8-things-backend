@@ -8,11 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hgzn.Mes.WebApi.Controllers.Equip;
 
-
 [Route("api/[controller]")]
 [ApiController]
 [AllowAnonymous]
-public class TestDataController:ControllerBase
+public class TestDataController : ControllerBase
 {
     private readonly ITestDataService _testDataService;
 
@@ -25,15 +24,18 @@ public class TestDataController:ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("list")]
+    [Authorize(Policy = $"equip:testdata:{ScopeMethodType.Query}")]
     public async Task<ResponseWrapper<IEnumerable<TestDataReadDto>>> GetListAsync(TestDataQueryDto queryDto)
         => (await _testDataService.GetListAsync(queryDto)).Wrap();
-    
+
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("page")]
+    [Authorize(Policy = $"equip:testdata:{ScopeMethodType.Query}")]
     public async Task<ResponseWrapper<PaginatedList<TestDataReadDto>>> GetPaginatedListAsync(TestDataQueryDto queryDto)
         => (await _testDataService.GetPaginatedListAsync(queryDto)).Wrap();
+
     /// <summary>
     /// 创建
     /// </summary>
@@ -50,21 +52,16 @@ public class TestDataController:ControllerBase
     /// <summary>
     /// 导入
     /// </summary>
-    /// <param name="input"></param>
+    /// <param name="inputs"></param>
     /// <returns></returns>
     [HttpPost]
     [Route("import")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    //[Authorize(Policy = $"equip:testdata:{ScopeMethodType.Add}")]
-    [Authorize]
-    public async Task<ResponseWrapper<int>> CreateAsync(IEnumerable<TestDataCreateDto> inputs) {
-        var addCount =0;
-        foreach (var item in inputs)
-        {
-            if (await _testDataService.CreateAsync(item) != null) addCount += 1;
-        }
-
+    [Authorize(Policy = $"equip:testdata:{ScopeMethodType.Add}")]
+    public async Task<ResponseWrapper<int>> CreateAsync(IEnumerable<TestDataCreateDto> inputs)
+    {
+        var addCount = await _testDataService.CreateAsync(inputs);
         return addCount.Wrap();
     }
 

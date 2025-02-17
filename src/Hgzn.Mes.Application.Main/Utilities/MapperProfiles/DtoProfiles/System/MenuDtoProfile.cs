@@ -12,8 +12,10 @@ namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.System
             CreateMap<Menu, MenuReadDto>()
                 .ForMember(dest=>dest.Path,opt=>opt.MapFrom(src=>src.Route));
             CreateMap<MenuCreateDto, Menu>()
+                .ForMember(dest=>dest.Type,opt=>opt.MapFrom(src=>src.MenuType))
                 .ForMember(dest=>dest.Route,opt=>opt.MapFrom(src=>src.Path));
             CreateMap<MenuUpdateDto, Menu>()
+                .ForMember(dest=>dest.Type,opt=>opt.MapFrom(src=>src.MenuType))
                 .ForMember(dest=>dest.Route,opt=>opt.MapFrom(src=>src.Path));
         }
     }

@@ -85,7 +85,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
         public Guid? ParentId { get; set; }
 
-        public int Type { get; set; }
+        public int MenuType { get; set; }
 
         public int Order { get; set; } = -1;
         
@@ -121,7 +121,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
         public Guid? ParentId { get; set; }
 
-        public int Type { get; set; }
+        public int MenuType { get; set; }
 
         public int Order { get; set; } = -1;
         

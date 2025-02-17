@@ -1388,6 +1388,51 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "Room"
         };
         #endregion
+        
+        #region 楼层管理
+
+        // 展示区域
+        public static Menu ShowSystem = new()
+        {
+            Id = Guid.Parse("6CF45997-C39B-6382-0995-AFE0CDE0038F"),
+            Name = "展示区域",
+            Code = "showSystem",
+            Type = MenuType.Catalogue,
+            Route = "/show-system",
+            IconUrl = "ep:location",
+            OrderNum = 100,
+            ParentId = Root.Id
+        };
+
+        // 大屏展示1
+        public static Menu ShowSystem1 = new()
+        {
+            Id = Guid.Parse("82BA9B27-6926-1657-B07D-B64281A35A26"),
+            Name = "展示系统",
+            Code = "ShowSystem1",
+            Type = MenuType.Menu,
+            IconUrl = "ep:office-building",
+            Route = "http://192.168.110.94",
+            OrderNum = 99,
+            IsLink = true,
+            ParentId = ShowSystem.Id,
+            RouteName = "ShowSystem1"
+        };
+        // 大屏展示1
+        public static Menu ShowSystem2 = new()
+        {
+            Id = Guid.Parse("78BA5C57-4A86-7F44-282E-8F5EF117C72B"),
+            Name = "展示系统1",
+            Code = "ShowSystem2",
+            Type = MenuType.Menu,
+            IconUrl = "ep:office-building",
+            Route = "http://www.baidu.com",
+            OrderNum = 99,
+            IsLink = true,
+            ParentId = ShowSystem.Id,
+            RouteName = "ShowSystem2"
+        };
+        #endregion
         public static Menu[] Seeds { get; } = [
             Root,
             System,
@@ -1413,7 +1458,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Product, ProductPlan, ProductOrder, ProductSchedule,
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
-            Location,Building,Floor,Room
+            Location,Building,Floor,Room,
+            ShowSystem,ShowSystem1,ShowSystem2
         ];
 
         #endregion

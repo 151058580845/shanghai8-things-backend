@@ -1363,6 +1363,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         
         #endregion 
         
+        
+        
         public static DictionaryType[] Seeds { get; } =
         {
             EquipMaintenanceType,

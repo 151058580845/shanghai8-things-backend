@@ -76,45 +76,6 @@ public class EquipLedgerSearchReadDto : ReadDto
     [Description("安装地点")] public Guid? RoomId { get; set; }
 }
 
-/// <summary>
-/// 试验系统数据列表
-/// </summary>
-public class EquipLedgerTestReadDto : ReadDto
-{
-    [Description("正常设备列表")] public int NormalCount { get; set; } = 0;
-
-    [Description("空闲设备列表")] public int FreeCount { get; set; } = 0;
-
-    [Description("离线设备列表")] public int LeaveCount { get; set; } = 0;
-
-    [Description("健康设备列表")] public int HealthCount { get; set; } = 100;
-
-    [Description("较好设备列表")] public int BetterCount { get; set; } = 0;
-    [Description("故障设备列表")] public int ErrorCount { get; set; } = 0;
-    [Description("开机率")] public int UpRate { get; set; } = 0;
-    [Description("关机率")] public int DownRate { get; set; } = 0;
-    public List<TestListReadDto> TestList { get; set; } = new List<TestListReadDto>();
-    public List<TestErrorListReadDto> TestErrorList { get; set; } = new List<TestErrorListReadDto>();
-}
-
-public class TestListReadDto : ReadDto
-{
-    [Description("系统名称")] public string TestName { get; set; }
-    [Description("设备列表")] public int EquipCount { get; set; } = 0;
-
-    [Description("利用率")] public int Rate { get; set; } = 0;
-
-    [Description("健康度")] public int HealthRate { get; set; } = 0;
-}
-
-public class TestErrorListReadDto : ReadDto
-{
-    [Description("系统名称")] public string TestName { get; set; }
-    [Description("设备列表")] public Guid EquipId { get; set; }
-    [Description("设备列表")] public Guid EquipName { get; set; }
-    [Description("设备列表")] public Guid EquipCode { get; set; }
-}
-
 public class EquipLedgerCreateDto : CreateDto
 {
     /// <summary>

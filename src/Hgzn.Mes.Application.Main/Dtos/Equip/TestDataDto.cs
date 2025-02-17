@@ -34,6 +34,11 @@ public class TestDataReadDto : ReadDto
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
     public List<TestDataProductReadDto> Products { get; set; }
+    
+    [Description("当前状态")]
+    public string? Status { get; set; }
+
+    [Description("试验结果")] public string? Result { get; set; } = "未知";
 }
 
 public class TestDataCreateDto : CreateDto

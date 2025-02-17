@@ -154,53 +154,5 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<EquipLedgerReadDto>> UpdateStateAsync(Guid id, bool state) =>
             (await _equipLedgerService.UpdateStateAsync(id, state)).Wrap();
-        
-        
-        /// <summary>
-        /// 获取试验系统列表
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("test/list")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [AllowAnonymous]
-        public async Task<ResponseWrapper<EquipLedgerTestReadDto>> GetTestListAsync()
-        {
-            var testList = await _dictionaryInfoService.GetNameValueByTypeAsync("TestSystem");
-            var testRead = new EquipLedgerTestReadDto();
-            var list = new List<TestListReadDto>();
-            foreach (var test in testList)
-            {
-                list.Add(new TestListReadDto()
-                {
-                    TestName = test.Value
-                });
-            }
-            foreach (var entity in list)
-            {
-                var rooms = await _roomService.GetRoomListByTestName(entity.TestName);
-                var ids = await rooms.Select(x => x.Id).ToListAsync();
-                var equips = (await _equipLedgerService.GetEquipsListByRoomAsync(ids)).ToList();
-                if (equips.Count != 0)
-                {
-                    entity.EquipCount = equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
-                    entity.Rate = equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
-                    entity.HealthRate =  equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
-                }
-            }
-            
-            testRead.TestList = list;
-            testRead.TestErrorList = new List<TestErrorListReadDto>();
-            testRead.UpRate = 0;
-            testRead.DownRate = 0;
-            testRead.NormalCount = 0;
-            testRead.FreeCount = 0;
-            testRead.LeaveCount = 0;
-            testRead.HealthCount = 0;
-            testRead.BetterCount = 0;
-            testRead.ErrorCount = 0;
-            return testRead.Wrap();
-        }
     }
 }
