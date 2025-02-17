@@ -2,12 +2,15 @@
 using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
-using Hgzn.Mes.Domain.ValueObjects;
+using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
+using ScopeMethodType = Hgzn.Mes.Domain.ValueObjects.ScopeMethodType;
 
 namespace Hgzn.Mes.WebApi.Controllers.Equip
 {
@@ -16,9 +19,11 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
     public class EquipLedgerController : ControllerBase
     {
         private readonly IEquipLedgerService _equipLedgerService;
-        public EquipLedgerController(IEquipLedgerService equipLedgerService)
+        private readonly IRoomService _roomService;
+        public EquipLedgerController(IEquipLedgerService equipLedgerService,IRoomService roomService)
         {
             _equipLedgerService = equipLedgerService;
+            _roomService = roomService;
         }
 
         [HttpPost]
@@ -147,5 +152,33 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<EquipLedgerReadDto>> UpdateStateAsync(Guid id, bool state) =>
             (await _equipLedgerService.UpdateStateAsync(id, state)).Wrap();
+        
+        
+        /// <summary>
+        /// 获取试验系统下的设备列表
+        /// </summary>
+        /// <param name="testName"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("test/{testName}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
+        public async Task<ResponseWrapper<EquipLedgerTestReadDto>> GetEquipLedgerByIdAsync(string testName) {
+           var rooms = await _roomService.GetRoomListByTestName(testName);
+           var equips = await _equipLedgerService.GetEquipsListByRoomAsync(rooms);
+           var entity = new EquipLedgerTestReadDto();
+           entity.TestName = testName;
+           if (equips.Any())
+           {
+               entity.NormalList = await equips.Where(t => t.DeviceStatus == DeviceStatus.Normal).ToListAsync();
+               entity.FreeList = await equips.Where(t => t.DeviceStatus == DeviceStatus.Normal).ToListAsync();
+               entity.NormalList = await equips.Where(t => t.DeviceStatus == DeviceStatus.Normal).ToListAsync();
+               entity.NormalList = await equips.Where(t => t.DeviceStatus == DeviceStatus.Normal).ToListAsync();
+               entity.NormalList = await equips.Where(t => t.DeviceStatus == DeviceStatus.Normal).ToListAsync();
+
+           }
+           return entity.Wrap();
+        }
     }
 }

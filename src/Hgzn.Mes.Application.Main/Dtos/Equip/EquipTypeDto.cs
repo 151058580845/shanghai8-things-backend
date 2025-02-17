@@ -30,7 +30,7 @@ public class EquipTypeReadDto : ReadDto
     public Guid? ParentId { get; set; }
 
     public bool State { get; set; }
-
+    public string? ProtocolEnum { get; set; }
     public List<EquipTypeReadDto>? Children { get; set; }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class EquipTypeCreateDto : CreateDto
     /// 设备类型编号
     /// </summary>
     public string? TypeCode { get; set; }
-
+    public string? ProtocolEnum { get; set; }
     /// <summary>
     /// 设备类型名称
     /// </summary>
@@ -80,7 +80,7 @@ public class EquipTypeUpdateDto : UpdateDto
     /// 设备类型编号
     /// </summary>
     public string TypeCode { get; set; } = null!;
-
+    public string? ProtocolEnum { get; set; }
     /// <summary>
     /// 设备类型名称
     /// </summary>
@@ -110,7 +110,7 @@ public class EquipTypeQueryDto : PaginatedQueryDto
     /// 设备类型编号
     /// </summary>
     public string? TypeCode { get; set; }
-
+    public string? ProtocolEnum { get; set; }
     /// <summary>
     /// 设备类型名称
     /// </summary>

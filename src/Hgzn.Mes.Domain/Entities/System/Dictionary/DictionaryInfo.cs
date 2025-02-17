@@ -122,6 +122,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             
             DictionaryType.testSystem1,
             DictionaryType.testSystem2,
+            
+            DictionaryType.RfidReader,
+            DictionaryType.IotServer
         };
 
     }

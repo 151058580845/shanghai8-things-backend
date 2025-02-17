@@ -24,28 +24,31 @@ namespace Hgzn.Mes.Iot.EquipManager
             this._client = client;
         }
 
-        public void Initialize(IMqttExplorer mqttExplorer,IConnectionMultiplexer connectionMultiplexer)
+        public void Initialize(IMqttExplorer mqttExplorer, IConnectionMultiplexer connectionMultiplexer)
         {
             _mqtt = mqttExplorer;
             this._connectionMultiplexer = connectionMultiplexer;
         }
 
-        public async Task<IEquipConnector> AddEquip(Guid id, string equipType, string connectStr)
+        public async Task<IEquipConnector> AddEquip(Guid id, EquipConnType connType, string connectStr)
         {
             if (Connections.TryGetValue(id, out var value))
             {
                 return value;
-            }   
-            IEquipConnector? connector = null;
-            switch (equipType)
+            }
+
+            IEquipConnector? connector;
+            switch (connType)
             {
-                case "rfid-reader":
-                    connector = new RfidReaderConnector(_connectionMultiplexer,_mqtt, _client,id.ToString(), equipType);
+                case EquipConnType.RfidReader:
+                    connector = new RfidReaderConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
+                        connType);
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;
-                case "tcp-server":
-                    connector = new TcpServer.TcpServerConnector(_connectionMultiplexer,_mqtt, _client,id.ToString(), equipType);
+                case EquipConnType.IotServer:
+                    connector = new TcpServer.TcpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
+                        connType);
                     if (!Connections.TryAdd(id, connector))
                         throw new Exception("equip exist");
                     break;
@@ -61,6 +64,7 @@ namespace Hgzn.Mes.Iot.EquipManager
             {
                 return connector;
             }
+
             return null;
         }
 

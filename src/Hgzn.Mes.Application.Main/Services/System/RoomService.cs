@@ -74,6 +74,12 @@ public class RoomService : SugarCrudAppService<
         return list1;
     }
 
+    public async Task<IEnumerable<RoomReadDto>> GetRoomListByTestName(string testName)
+    {
+        var entities = await Queryable.Where(t => t.TestName == testName).ToListAsync();
+        return Mapper.Map<IEnumerable<Room>, IEnumerable<RoomReadDto>>(entities);
+    }
+
     public override async Task<RoomReadDto?> GetAsync(Guid key)
     {
         var entity = await base.GetAsync(key);

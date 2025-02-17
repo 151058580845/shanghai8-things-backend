@@ -1,8 +1,10 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
 using StackExchange.Redis;
@@ -10,9 +12,9 @@ using StackExchange.Redis;
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
 public class EquipLedgerService : SugarCrudAppService<
-    EquipLedger, Guid,
-    EquipLedgerReadDto, EquipLedgerQueryDto,
-    EquipLedgerCreateDto, EquipLedgerUpdateDto>,
+        EquipLedger, Guid,
+        EquipLedgerReadDto, EquipLedgerQueryDto,
+        EquipLedgerCreateDto, EquipLedgerUpdateDto>,
     IEquipLedgerService
 {
     public async Task<EquipLedger> GetEquipByIpAsync(string ipAddress)
@@ -35,9 +37,9 @@ public class EquipLedgerService : SugarCrudAppService<
     public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListAsync(string? equipCode, string? equipName)
     {
         var entities = await DbContext.Queryable<EquipLedger>()
-             .WhereIF(!string.IsNullOrEmpty(equipCode), t => t.EquipCode == equipCode)
-             .WhereIF(!string.IsNullOrEmpty(equipName), t => t.EquipName == equipName)
-             .ToListAsync();
+            .WhereIF(!string.IsNullOrEmpty(equipCode), t => t.EquipCode == equipCode)
+            .WhereIF(!string.IsNullOrEmpty(equipName), t => t.EquipName == equipName)
+            .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
@@ -47,7 +49,7 @@ public class EquipLedgerService : SugarCrudAppService<
         var list = Queryable.Where(t => keys.Contains(t.EquipCode)).ToList();
         foreach (var equipLedger in list)
         {
-            equipLedger.RoomId = equipIds[equipLedger.EquipCode];   
+            equipLedger.RoomId = equipIds[equipLedger.EquipCode];
         }
 
         return DbContext.Updateable(list).ExecuteCommandAsync();
@@ -71,8 +73,8 @@ public class EquipLedgerService : SugarCrudAppService<
     /// <returns></returns>
     public async Task<IEnumerable<EquipLedgerSearchReadDto>> GetAppSearchAsync()
     {
-        var entities = await Queryable.Where(t => t.State == false).Includes(t=>t.EquipType)
-            .Select<EquipLedgerSearchReadDto>(t=>new EquipLedgerSearchReadDto()
+        var entities = await Queryable.Where(t => t.State == false).Includes(t => t.EquipType)
+            .Select<EquipLedgerSearchReadDto>(t => new EquipLedgerSearchReadDto()
             {
                 Id = t.Id,
                 EquipCode = t.EquipCode,
@@ -86,18 +88,25 @@ public class EquipLedgerService : SugarCrudAppService<
         return entities;
     }
 
+    public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListByRoomAsync(IEnumerable<RoomReadDto> rooms)
+    {
+        var ids = await rooms.Select(t => t.Id).ToListAsync();
+        var equipList = await Queryable.Where(t =>t.RoomId != null && ids.Contains(t.RoomId!.Value)).ToListAsync();
+        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(equipList);
+    }
+
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
         var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(query.EquipName),m => m.EquipName.Contains(query.EquipName!))
-            .WhereIF(!string.IsNullOrEmpty(query.EquipCode),m => m.EquipName.Contains(query.EquipCode!))
-            .WhereIF(!query.TypeId.IsGuidEmpty(),m => m.TypeId.Equals(query.TypeId))
-            .WhereIF(!query.RoomId.IsGuidEmpty(),m => m.RoomId.Equals(query.RoomId))
-            .WhereIF(query.StartTime != null ,m => m.CreationTime >= query.StartTime)
-            .WhereIF(query.EndTime != null ,m => m.CreationTime <= query.EndTime)
-            .WhereIF(query.State != null,m => m.State == query.State)
+            .WhereIF(!string.IsNullOrEmpty(query.EquipName), m => m.EquipName.Contains(query.EquipName!))
+            .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
+            .WhereIF(!query.TypeId.IsGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
+            .WhereIF(!query.RoomId.IsGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
+            .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
+            .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
+            .WhereIF(query.State != null, m => m.State == query.State)
             .Includes(t => t.Room)
-            .Includes(t=>t.EquipType)
+            .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
             .ToPaginatedListAsync(query.PageIndex, query.PageSize);
         return Mapper.Map<PaginatedList<EquipLedgerReadDto>>(entities);
@@ -106,15 +115,15 @@ public class EquipLedgerService : SugarCrudAppService<
     public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto? query = null)
     {
         var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(query.EquipName),m => m.EquipName.Contains(query.EquipName!))
-            .WhereIF(!string.IsNullOrEmpty(query.EquipCode),m => m.EquipName.Contains(query.EquipCode!))
-            .WhereIF(!query.TypeId.IsGuidEmpty(),m => m.TypeId.Equals(query.TypeId))
-            .WhereIF(!query.RoomId.IsGuidEmpty(),m => m.RoomId.Equals(query.RoomId))
-            .WhereIF(query.StartTime != null ,m => m.CreationTime >= query.StartTime)
-            .WhereIF(query.EndTime != null ,m => m.CreationTime <= query.EndTime)
-            .WhereIF(query?.State != null,m => m.State == query.State)
+            .WhereIF(!string.IsNullOrEmpty(query.EquipName), m => m.EquipName.Contains(query.EquipName!))
+            .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
+            .WhereIF(!query.TypeId.IsGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
+            .WhereIF(!query.RoomId.IsGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
+            .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
+            .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
+            .WhereIF(query?.State != null, m => m.State == query.State)
             .Includes(t => t.Room)
-            .Includes(t=>t.EquipType)
+            .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
             .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
@@ -122,7 +131,8 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public async Task<IEnumerable<RfidEquipReadDto>> GetRfidEquipsListAsync(Guid equipId)
     {
-        List<RfidEquipReadDto> list = await DbContext.Queryable<RfidEquipReadDto>().Where(t => t.EquipId == equipId).ToListAsync();
+        List<RfidEquipReadDto> list =
+            await DbContext.Queryable<RfidEquipReadDto>().Where(t => t.EquipId == equipId).ToListAsync();
         return list;
     }
 }

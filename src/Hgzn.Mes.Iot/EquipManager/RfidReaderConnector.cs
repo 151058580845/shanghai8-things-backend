@@ -3,12 +3,9 @@ using GDotnet.Reader.Api.Protocol.Gx;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
-using Hgzn.Mes.Domain.ValueObjects.Message.Base;
-using Hgzn.Mes.Domain.ValueObjects.Message.Commads;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
-using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
@@ -24,10 +21,10 @@ public class RfidReaderConnector : EquipConnectorBase
 
     public RfidReaderConnector(
         IConnectionMultiplexer connectionMultiplexer,
-        IMqttExplorer mqtt,ISqlSugarClient sqlSugarClient, string uri, string equipType) : base(connectionMultiplexer, mqtt,sqlSugarClient)
+        IMqttExplorer mqtt,ISqlSugarClient sqlSugarClient, string uri, EquipConnType connType) : base(connectionMultiplexer, mqtt,sqlSugarClient)
     {
         _uri = uri;
-        _equipType = equipType;
+        _connType = connType;
     }
 
     public override async Task StartAsync()
@@ -136,7 +133,7 @@ public class RfidReaderConnector : EquipConnectorBase
             .WithDirection(MqttDirection.Up)
             .WithTag(MqttTag.Data)
             .WithUri(_uri!)
-            .WithDeviceType(_equipType!)
+            .WithDeviceType(_connType.ToString()!)
             .Build(), Encoding.UTF8.GetBytes(plain));
     }
 }

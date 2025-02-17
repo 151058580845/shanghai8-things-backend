@@ -1270,6 +1270,48 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         
         #endregion 
         
+        #region 设备采集类型
+
+        public static readonly DictionaryType EquipProtocol = new DictionaryType()
+        {
+            Id = Guid.Parse("464402A8-4CD7-0139-D3FB-D0CAAA5C3B27"), // 固定的 Guid 值
+            DictName = "设备采集类型",
+            DictType = "EquipProtocol",
+            OrderNum = 1,
+            Remark = "设备采集类型",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo RfidReader = new DictionaryInfo()
+        {
+            Id = Guid.Parse("663658FD-235E-AD58-052E-559688C13234"), // 固定的 Guid 值
+            DictLabel = "RFID读写器",
+            DictValue = "RfidReader",
+            ParentId = EquipProtocol.Id,
+            OrderNum = 1,
+            Remark = "RFID读写器",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+        public static readonly DictionaryInfo IotServer = new DictionaryInfo()
+        {
+            Id = Guid.Parse("98D2502F-24C0-0AF9-107A-35D03DE91970"), // 固定的 Guid 值
+            DictLabel = "数据采集适配器",
+            DictValue = "IotServer",
+            ParentId = EquipProtocol.Id,
+            OrderNum = 1,
+            Remark = "数据采集适配器",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+        
+        #endregion 
+        
         public static DictionaryType[] Seeds { get; } =
         {
             EquipMaintenanceType,
@@ -1290,7 +1332,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Parity,
             RoomType,
             DeviceStatus,
-            testSystem
+            testSystem,
+            EquipProtocol
         };
     }
 }

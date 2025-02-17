@@ -1,9 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
-using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
 using System.ComponentModel;
-using Hgzn.Mes.Application.Main.Dtos.System;
 
 namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 
@@ -17,21 +14,21 @@ public class EquipLedgerReadDto : ReadDto
 
     [Description("设备名称")] public string EquipName { get; set; } = null!;
 
-    [Description("设备类型ID")] 
-    public Guid? TypeId { get; set; }
+    [Description("设备类型ID")] public Guid? TypeId { get; set; }
     public string TypeName { get; set; }
     [Description("规格型号")] public string? Model { get; set; }
 
     [Description("购置日期")] public DateTime? PurchaseDate { get; set; }
-    
+
     [Description("资产编号")] public string? AssetNumber { get; set; }
-    
+
     [Description("安装地点")] //若是rfidReader则不可为null
     public Guid? RoomId { get; set; }
+
     [Description("安装地点")] //若是rfidReader则不可为null
     public string? RoomName { get; set; }
-    [Description("设备状态(正常/丢失/使用中)")]
-    public DeviceStatus? DeviceStatus { get; set; }
+
+    [Description("设备状态(正常/丢失/使用中)")] public DeviceStatus? DeviceStatus { get; set; }
 
     [Description("有效期时间")] public DateTime? ValidityDate { get; set; }
 
@@ -76,8 +73,24 @@ public class EquipLedgerSearchReadDto : ReadDto
 
     [Description("资产编号")] public string? AssetNumber { get; set; }
 
-    [Description("安装地点")] 
-    public Guid? RoomId { get; set; }
+    [Description("安装地点")] public Guid? RoomId { get; set; }
+}
+
+public class EquipLedgerTestReadDto : ReadDto
+{
+    [Description("系统名称")] public string TestName { get; set; }
+
+    [Description("正常设备列表")] public List<EquipLedgerReadDto> NormalList { get; set; } = null!;
+
+    [Description("空闲设备列表")] public List<EquipLedgerReadDto> FreeList { get; set; } = null!;
+
+    [Description("离线设备列表")] public List<EquipLedgerReadDto> LeaveList { get; set; } = null!;
+
+    [Description("健康设备列表")] public List<EquipLedgerReadDto> HealthList { get; set; } = null!;
+
+    [Description("较好设备列表")] public List<EquipLedgerReadDto> BetterList { get; set; } = null!;
+
+    [Description("故障设备列表")] public List<EquipLedgerReadDto> ErrorList { get; set; } = null!;
 }
 
 public class EquipLedgerCreateDto : CreateDto
@@ -106,13 +119,11 @@ public class EquipLedgerCreateDto : CreateDto
     /// 购置日期
     /// </summary>
     public DateTime? PurchaseDate { get; set; }
-    
 
     /// <summary>
     /// 资产编号
     /// </summary>
     public string? AssetNumber { get; set; }
-    
 
     /// <summary>
     /// 安装地点
@@ -128,6 +139,7 @@ public class EquipLedgerCreateDto : CreateDto
     /// 有效期时间
     /// </summary>
     public DateTime? ValidityDate { get; set; }
+
     /// <summary>
     /// 备注
     /// </summary>
@@ -160,13 +172,13 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// 购置日期
     /// </summary>
     public DateTime? PurchaseDate { get; set; }
-    
+
 
     /// <summary>
     /// 资产编号
     /// </summary>
     public string? AssetNumber { get; set; }
-    
+
 
     /// <summary>
     /// 安装地点
@@ -182,11 +194,13 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// 有效期时间
     /// </summary>
     public DateTime? ValidityDate { get; set; }
+
     /// <summary>
     /// 备注
     /// </summary>
     public string? Remark { get; set; }
 }
+
 public class EquipLedgerAppUpdateDto : UpdateDto
 {
     /// <summary>
@@ -254,6 +268,7 @@ public class EquipLedgerAppUpdateDto : UpdateDto
     /// </summary>
     public string? Remarks { get; set; }
 }
+
 public class EquipLedgerQueryDto : PaginatedQueryDto
 {
     /// <summary>

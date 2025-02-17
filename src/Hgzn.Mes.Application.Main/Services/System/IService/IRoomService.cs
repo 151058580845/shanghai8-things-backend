@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+﻿using System.Collections;
+using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Entities.System.Location;
 
@@ -10,4 +11,5 @@ public interface IRoomService : ICrudAppService<
     RoomCreateDto, RoomUpdateDto>
 {
     Task<IEnumerable<NameValueListDto>>  GetRoomListAllAsync(RoomQueryDto? input);
+    Task<IEnumerable<RoomReadDto>> GetRoomListByTestName(string testName);
 }

@@ -17,26 +17,29 @@ public class TcpServerConnector : EquipConnectorBase
     
 
     public TcpServerConnector(IConnectionMultiplexer connectionMultiplexer, 
-        IMqttExplorer mqttExplorer,ISqlSugarClient sqlSugarClient, string uri, string equipType) : base(connectionMultiplexer, mqttExplorer,sqlSugarClient)
+        IMqttExplorer mqttExplorer,ISqlSugarClient sqlSugarClient, string uri, EquipConnType connType) : base(connectionMultiplexer, mqttExplorer,sqlSugarClient)
     {
         _equipConnect = _sqlSugarClient.Queryable<EquipConnect>().First(x => x.Id == Guid.Parse(uri));
 
         _uri = uri;
-        _equipType = equipType;
+        _connType = connType;
     }
 
     public override async Task CloseConnectionAsync()
     {
+        _server.Stop();
         await UpdateStateAsync(ConnStateType.Stop);
     }
 
     public override async Task StartAsync()
     {
+        _server.Start();
         await UpdateStateAsync(ConnStateType.Run);
     }
 
     public override async Task StopAsync()
     {
+        _server.Stop();
         await UpdateStateAsync(ConnStateType.Stop);
     }
 

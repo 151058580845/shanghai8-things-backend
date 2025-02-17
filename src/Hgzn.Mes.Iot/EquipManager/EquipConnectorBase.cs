@@ -24,7 +24,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         protected readonly IMqttExplorer _mqttExplorer;
         protected readonly ISqlSugarClient _sqlSugarClient;
         protected EquipConnect _equipConnect;
-        protected string? _equipType;
+        protected EquipConnType? _connType;
         protected string? _uri;
 
         public abstract Task CloseConnectionAsync();
@@ -41,7 +41,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         {
             // 记录到redis服务器
             var database = _connectionMultiplexer.GetDatabase();
-            var key = string.Format(CacheKeyFormatter.EquipState, _equipType, _uri);
+            var key = string.Format(CacheKeyFormatter.EquipState, _connType.ToString(), _uri);
             await database.StringSetAsync(key, (int)ConnStateType.On);
 
             await _mqttExplorer.PublishAsync(UserTopicBuilder

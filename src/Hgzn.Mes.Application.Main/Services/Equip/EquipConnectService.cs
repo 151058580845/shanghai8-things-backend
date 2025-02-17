@@ -120,7 +120,7 @@ public class EquipConnectService : SugarCrudAppService<
                 .WithPrefix(TopicType.Iot)
                 .WithDirection(MqttDirection.Down)
                 .WithTag(MqttTag.Cmd)
-                .WithDeviceType(connect.EquipLedger?.EquipType?.TypeCode ??
+                .WithDeviceType(connect.EquipLedger?.EquipType?.ProtocolEnum ??
                     throw new ArgumentNullException("equip type not exist"))
                 .WithUri(connect.Id.ToString()).Build();
         if (await _mqttExplorer.IsConnectedAsync())
@@ -146,7 +146,7 @@ public class EquipConnectService : SugarCrudAppService<
                 .WithPrefix(TopicType.Iot)
                 .WithDirection(MqttDirection.Down)
                 .WithTag(MqttTag.Cmd)
-                .WithDeviceType(connect.EquipLedger?.EquipType?.TypeCode ??
+                .WithDeviceType(connect.EquipLedger?.EquipType?.ProtocolEnum ??
                     throw new ArgumentNullException("equip type not exist"))
                 .WithUri(connect.Id.ToString());
 

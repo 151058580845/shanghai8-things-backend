@@ -110,7 +110,8 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         public async Task<ICollection<MqttTopicFilter>> GetSubscribeTopicsAsync()
         {
-            var types = await _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArrayAsync();
+            // var types = await _client.Queryable<EquipType>().Select(dt => dt.TypeCode).ToArrayAsync();
+            var types = await _client.Queryable<EquipType>().Where(t=>!string.IsNullOrEmpty(t.ProtocolEnum)).Select(dt => dt.ProtocolEnum).ToArrayAsync();
             return types
                 .Select(type => $"{TopicType.Iot:F}/+/{IotTopic.EquipTypeName}/{type}/{IotTopic.ConnUriName}/+/+".ToLower())
                 .Select(topic => new MqttTopicFilterBuilder().WithTopic(topic)

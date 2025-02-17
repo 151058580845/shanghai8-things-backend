@@ -82,6 +82,28 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         private async Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
         {
+            var type = Enum.Parse<ConnType>(topic.EquipType!);
+            switch (type)
+            {
+                case ConnType.ModbusRtu:
+                    break;
+                case ConnType.ModbusAscii:
+                    break;
+                case ConnType.ModbusTcp:
+                    break;
+                case ConnType.ModbusUdp:
+                    break;
+                case ConnType.Http:
+                    break;
+                case ConnType.Socket:
+                    break;
+                case ConnType.SerialPort:
+                    break;
+                case ConnType.TcpServer:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             switch (topic.EquipType)
             {
                 case "rfidReader":
@@ -103,8 +125,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             switch (info.Type)
             {
                 case CmdType.Conn:
-
-                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.EquipType!, info.ConnString!);
+                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
                     await SwitchEquipAsync(equip);
                     break;
                 default:

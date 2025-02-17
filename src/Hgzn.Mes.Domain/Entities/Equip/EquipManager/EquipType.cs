@@ -29,6 +29,9 @@ public class EquipType : UniversalEntity, ISoftDelete, IState
 
     [Description("设备最后修改时间")]
     public DateTime? LastModificationTime { get; set; }
+    
+    [Description("绑定的协议")]
+    public string? ProtocolEnum { get; set; }
 
     public bool State { get; set; }
 
