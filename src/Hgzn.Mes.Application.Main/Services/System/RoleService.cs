@@ -127,22 +127,22 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<PaginatedList<RoleReadDto>>(roles);
         }
 
-        /// <summary>
-        /// 修改状态
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="state"></param> 
-        /// <returns></returns>
-        public async Task<RoleReadDto> UpdateStateAsync(Guid id, bool state)
-        {
-            var oldRoleData = await GetAsync(id);
-            oldRoleData.State = state;
+        ///// <summary>
+        ///// 修改状态
+        ///// </summary>
+        ///// <param name="id"></param>
+        ///// <param name="state"></param> 
+        ///// <returns></returns>
+        //public async Task<RoleReadDto> UpdateStateAsync(Guid id, bool state)
+        //{
+        //    var oldRoleData = await GetAsync(id);
+        //    oldRoleData.State = state;
 
-            Role info = Mapper.Map<Role>(oldRoleData);
+        //    Role info = Mapper.Map<Role>(oldRoleData);
 
-            var data = DbContext.Updateable<Role>(info).ExecuteCommand();
-            return oldRoleData;
-        }
+        //    var data = DbContext.Updateable<Role>(info).ExecuteCommand();
+        //    return oldRoleData;
+        //}
 
         public override Task<RoleReadDto?> UpdateAsync(Guid key, RoleUpdateDto dto)
         {

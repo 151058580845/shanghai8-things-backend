@@ -10,11 +10,11 @@ public interface ICodeRuleService : ICrudAppService<
 {
     Task<string> GenerateCodeByCodeAsync(string codeNumber);
 
-    /// <summary>
-    /// 修改状态
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    Task<CodeRuleReadDto> UpdateStateAsync(Guid id, bool? state);
+    ///// <summary>
+    ///// 修改状态
+    ///// </summary>
+    ///// <param name="id"></param>
+    ///// <param name="state"></param>
+    ///// <returns></returns>
+    //Task<CodeRuleReadDto> UpdateStateAsync(Guid id, bool? state);
 }
