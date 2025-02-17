@@ -13,6 +13,7 @@ using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 using StackExchange.Redis;
+using System;
 using System.Text;
 using System.Text.Json;
 
@@ -53,8 +54,9 @@ public class EquipConnectService : SugarCrudAppService<
         // 从redis里查出来赋值给ReadDto
         foreach (EquipConnect item in querable.Items)
         {
-            bool connectState = database.StringGet(string.Format("connectState", item.Id)) == "1" ? true : false;
-            item.ConnectState = connectState;
+            var key = string.Format(CacheKeyFormatter.EquipState, item.EquipLedger.EquipType.TypeCode.ToString(), item.EquipId);
+            var value = await database.StringGetAsync(key);
+            item.ConnectState = value.TryParse(out int state) && state != (int)ConnStateType.Off;
         }
         querable = new PaginatedList<EquipConnect>(querable.Items, querable.Items.Count(), queryDto.PageIndex, queryDto.PageSize);
 
