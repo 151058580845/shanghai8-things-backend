@@ -58,21 +58,16 @@ public class OperatorLogController : ControllerBase
 
         return dCount.Wrap();
     }
+
+    /// <summary>
+    ///     删除全部日志
+    /// </summary>
+    /// <returns></returns>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Route("deleteAll")]
-    public async Task<ResponseWrapper<int>> DeleteAllAsync(List<Guid>? guids)
-    {
-        var dCount = 0;
-        if (guids != null && guids.Count() > 0)
-        {
-            foreach (var logId in guids)
-            {
-                dCount += await _operLogService.DeleteAsync(logId);
-            }
-        }
+    public async Task<ResponseWrapper<int>> DeleteAllAsync() =>
+     (await _operLogService.DeleteAllLoginfo()).Wrap();
 
-        return dCount.Wrap();
-    }
 }
