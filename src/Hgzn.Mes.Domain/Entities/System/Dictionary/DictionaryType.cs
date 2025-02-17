@@ -1267,7 +1267,58 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
-        
+        public static readonly DictionaryInfo testSystem3 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("C2D80616-06C8-0BA5-CDFB-EC52A6E561E6"), // 固定的 Guid 值
+            DictLabel = "试验系统3",
+            DictValue = "test3",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "试验系统3",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+        public static readonly DictionaryInfo testSystem4 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("E11D4C2C-7A52-4BED-20C0-4E42D7A6E34D"), // 固定的 Guid 值
+            DictLabel = "试验系统4",
+            DictValue = "test4",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "试验系统4",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+        public static readonly DictionaryInfo testSystem5 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("1A1BA401-383C-0D30-595C-A9260E6076EF"), // 固定的 Guid 值
+            DictLabel = "试验系统5",
+            DictValue = "test5",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "试验系统5",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+        public static readonly DictionaryInfo testSystem6 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("108E4CDC-DE38-442C-3DC1-D5F283C27464"), // 固定的 Guid 值
+            DictLabel = "试验系统6",
+            DictValue = "test6",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "试验系统6",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
         #endregion 
         
         #region 设备采集类型
