@@ -103,13 +103,12 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// <param name="codeNumber"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("/generate-code/{codeNumber}")]
+        [Route("generate-code/{codeNumber}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:coderule:{ScopeMethodType.Query}")]
-        public async Task<string> GetGenerateCodeByCodeAsync(string codeNumber)
+        public async Task<ResponseWrapper<string>> GetGenerateCodeByCodeAsync(string codeNumber)
         {
-            return await _codeRuleService.GenerateCodeByCodeAsync(codeNumber);
+            return (await _codeRuleService.GenerateCodeByCodeAsync(codeNumber)).Wrap();
         }
 
         /// <summary>

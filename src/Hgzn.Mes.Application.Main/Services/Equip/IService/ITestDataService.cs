@@ -8,5 +8,10 @@ public interface ITestDataService : ICrudAppService<
     TestDataReadDto, TestDataQueryDto,
     TestDataCreateDto, TestDataUpdateDto>
 {
-    
+    /// <summary>
+    /// 批量api导入功能
+    /// </summary>
+    /// <param name="url"></param>
+    /// <returns></returns>
+    Task<int> GetDataFromThirdPartyAsync(string url);
 }

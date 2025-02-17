@@ -54,7 +54,7 @@ public class CodeRuleDefine : UniversalEntity, IOrder
         Id = new Guid("C444DF4E-DC26-4922-732E-C18D99952823"),
         CodeRuleId = new Guid("80CAD9AD-8473-7FC7-CA56-057DBB91448B"),
         CodeRuleType = "Date",
-        ConstantChar = "yyyyMMdd"
+        DateFormat = "yyyyMMddmmss"
     };
 
     public static readonly CodeRuleDefine EquipmentLedgerDefineBySerialNumber = new()
@@ -84,7 +84,7 @@ public class CodeRuleDefine : UniversalEntity, IOrder
         Id = new Guid("5D40EDAA-8B05-4DBA-651F-BFEDF95082E6"),
         CodeRuleId = new Guid("9BB2FF2E-4907-57C3-8DEE-EA526CB9C844"),
         CodeRuleType = "Date",
-        ConstantChar = "yyyyMMdd"
+        DateFormat = "yyyyMMddmmss"
     };
 
     public static readonly CodeRuleDefine EquipmentParameterDefineBySerialNumber = new()

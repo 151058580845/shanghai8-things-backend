@@ -64,7 +64,7 @@ public class CodeRule : UniversalEntity, ISoftDelete, IState, IOrder
         OrderNum = 1,
         State = true,
         CodeName = "设备台账",
-        CodeNumber = "1",
+        CodeNumber = "SBTZ",
         BasicDomain = "",
         CodeRuleRules = new List<CodeRuleDefine>() {
           new CodeRuleDefine(){
@@ -103,7 +103,7 @@ public class CodeRule : UniversalEntity, ISoftDelete, IState, IOrder
         OrderNum = 1,
         State = true,
         CodeName = "设备参数",
-        CodeNumber = "02",
+        CodeNumber = "SBCS",
         BasicDomain = "",
         CodeRuleRules = new List<CodeRuleDefine>() {
           new CodeRuleDefine(){
