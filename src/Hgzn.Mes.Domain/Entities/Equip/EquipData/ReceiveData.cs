@@ -59,7 +59,7 @@ public class ReceiveData : UniversalEntity, IAudited
     public uint SelfTest { get; set; }
 
     [Description("电源电压状态")]
-    public string? SupplyVoltageState { get; set; }
+    public uint SupplyVoltageState { get; set; }
 
     #endregion 健康状态信息
 

@@ -19,16 +19,19 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
     {
         public IotMessageHandler(
             ILogger<IotMessageHandler> logger,
-            ISqlSugarClient client)
+            ISqlSugarClient client,
+            IConnectionMultiplexer connectionMultiplexer)
         {
             _logger = logger;
             _client = client;
+            _connectionMultiplexer = connectionMultiplexer;
         }
 
         private readonly ILogger<IotMessageHandler> _logger;
         private readonly ISqlSugarClient _client;
         private IMqttExplorer _mqttExplorer = null!;
         private static ConcurrentDictionary<string, List<(int heart, int breath)>> _rawDataPackage = new();
+        private static IConnectionMultiplexer _connectionMultiplexer;
         private const int countIndex = 60;
 
         public void Initialize(IMqttExplorer mqttExplorer)
@@ -106,14 +109,14 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     await HandleRfidMsgAsync(uri, rfid);
                     break;
                 case "tcp-server":
-                    TestDataReceive testDataReceive = new TestDataReceive(_client);
+                    TestDataReceive testDataReceive = new TestDataReceive(_client, _connectionMultiplexer);
                     dataId = await testDataReceive.Handle(msg);
                     break;
             }
-            
+
         }
 
-        private async Task HandleDateAsync(IotTopic topic,Guid dataId)
+        private async Task HandleDateAsync(IotTopic topic, Guid dataId)
         {
             // _client.Insertable<>()
         }

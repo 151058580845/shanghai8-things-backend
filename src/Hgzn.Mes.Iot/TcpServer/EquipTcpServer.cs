@@ -5,6 +5,7 @@ using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Microsoft.IdentityModel.Logging;
 using NetCoreServer;
 using SqlSugar;
+using StackExchange.Redis;
 
 namespace Hgzn.Mes.Iot.TcpServer;
 
@@ -15,15 +16,18 @@ public class EquipTcpServer : NetCoreServer.TcpServer
     private readonly string _heartBeatMessage;
     private readonly string _heartBeatAck;
     private readonly int _heartTime;
+    private readonly IConnectionMultiplexer _connectionMultiplexer;
     private ISqlSugarClient _sqlSugarClient;
     private EquipConnect _equipConnect;
     private IMqttExplorer _mqttExplorer;
-    
+
     public EquipTcpServer(string address, int port,
+        IConnectionMultiplexer connectionMultiplexer,
         ISqlSugarClient sqlSugarClient,
         EquipConnect equipConnect,
         IMqttExplorer mqttExplorer) : base(address, port)
     {
+        _connectionMultiplexer = connectionMultiplexer;
         _sqlSugarClient = sqlSugarClient;
         _equipConnect = equipConnect;
         _mqttExplorer = mqttExplorer;
@@ -31,7 +35,7 @@ public class EquipTcpServer : NetCoreServer.TcpServer
 
     protected override TcpSession CreateSession()
     {
-        return new EquipTcpSession(this,_sqlSugarClient,_equipConnect,_mqttExplorer);
+        return new EquipTcpSession(this, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer);
     }
 
     protected override void OnConnected(TcpSession session)

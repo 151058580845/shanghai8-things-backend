@@ -13,6 +13,7 @@ using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 using StackExchange.Redis;
+using System;
 using System.Text;
 using System.Text.Json;
 
@@ -53,7 +54,7 @@ public class EquipConnectService : SugarCrudAppService<
         // 从redis里查出来赋值给ReadDto
         foreach (EquipConnect item in querable.Items)
         {
-            bool connectState = database.StringGet(string.Format("connectState", item.Id)) == "1" ? true : false;
+            bool connectState = database.StringGet(string.Format(CacheKeyFormatter.EquipState, EquipConnType.IotServer.ToString(), item.Id)) == "1" ? true : false;
             item.ConnectState = connectState;
         }
         querable = new PaginatedList<EquipConnect>(querable.Items, querable.Items.Count(), queryDto.PageIndex, queryDto.PageSize);
@@ -125,9 +126,9 @@ public class EquipConnectService : SugarCrudAppService<
                 .WithUri(connect.Id.ToString()).Build();
         if (await _mqttExplorer.IsConnectedAsync())
         {
-            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(startInfo)));
-            await Task.Delay(5 * 100);
             await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(conninfo)));
+            await Task.Delay(5 * 100);
+            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(startInfo)));
         }
     }
 

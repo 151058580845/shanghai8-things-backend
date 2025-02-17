@@ -7,6 +7,7 @@ using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
 using NetCoreServer;
 using SqlSugar;
+using StackExchange.Redis;
 using Buffer = System.Buffer;
 
 namespace Hgzn.Mes.Iot.TcpServer;
@@ -22,14 +23,17 @@ public class EquipTcpSession : TcpSession
     private string Mac;
     // 多少个转一个（从前端配置进行）
     private int _forwardLength = 10;
+    private readonly IConnectionMultiplexer _connectionMultiplexer;
     private ISqlSugarClient _sqlSugarClient;
     private EquipConnect _equipConnect;
     private IMqttExplorer _mqttExplorer;
     public EquipTcpSession(EquipTcpServer server,
+        IConnectionMultiplexer connectionMultiplexer,
         ISqlSugarClient sqlSugarClient,
         EquipConnect equipConnect,
         IMqttExplorer mqttExplorer) : base(server)
     {
+        this._connectionMultiplexer = connectionMultiplexer;
         _sqlSugarClient = sqlSugarClient;
         _equipConnect = equipConnect;
         _mqttExplorer = mqttExplorer;
@@ -45,64 +49,64 @@ public class EquipTcpSession : TcpSession
     private async Task ProcessDataAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
+        {
+            if (_dataQueue.TryDequeue(out var buffer))
             {
-                if (_dataQueue.TryDequeue(out var buffer))
+                var size = buffer.Length;
+                //标准头
+                var header = buffer[0];
+                if (header != 0x5A)
                 {
-                    var size = buffer.Length;
-                    //标准头
-                    var header = buffer[0];
-                    if (header != 0x5A)
-                    {
-                        Console.WriteLine("报头符错误。");
-                        return;
-                    }
-
-                    //报文长度
-                    var messageLength = BitConverter.ToUInt32(buffer, 1);
-                    if (messageLength != size)
-                    {
-                        Console.WriteLine($"报文长度错误：接收到的长度为 {size}，报文中声明的长度为 {messageLength}");
-                        return;
-                    }
-
-                    //解析报文流水号（1字节）
-                    var number = buffer[5];
-                    //报文数据
-                    var length = messageLength - 6;
-                    var newBuffer = new byte[length];
-                    Buffer.BlockCopy(buffer, BodyStartIndex, newBuffer, 0, newBuffer.Length);
-
-                    //获取所有转发地址
-                    if (_equipConnect.ForwardEntities != null)
-                    {
-                        List<Guid> list = _equipConnect.ForwardEntities.Select(x => x.Id).ToList();
-                        if (_forwardNum % _forwardLength == 0)
-                        {
-                            foreach (Guid guid in list)
-                            {
-                                var topic = IotTopicBuilder.CreateIotBuilder()
-                                    .WithPrefix(TopicType.Iot)
-                                    .WithDirection(MqttDirection.Down)
-                                    .WithTag(MqttTag.Data)
-                                    .WithDeviceType("tcp-server")
-                                    .WithUri(guid.ToString()).Build();
-                                if (await _mqttExplorer.IsConnectedAsync())
-                                {
-                                    await _mqttExplorer.PublishAsync(topic, buffer);
-                                }
-                            }
-
-                            _forwardNum = 1;
-                        }
-                    }
-
-                    //本地解析数据
-                    TestDataReceive testDataReceive = new TestDataReceive(_sqlSugarClient);
-                    await testDataReceive.Handle(buffer);
+                    Console.WriteLine("报头符错误。");
+                    return;
                 }
 
-                _hasData = false;
+                //报文长度
+                var messageLength = BitConverter.ToUInt32(buffer, 1);
+                if (messageLength != size)
+                {
+                    Console.WriteLine($"报文长度错误：接收到的长度为 {size}，报文中声明的长度为 {messageLength}");
+                    return;
+                }
+
+                //解析报文流水号（1字节）
+                var number = buffer[5];
+                //报文数据
+                var length = messageLength - 6;
+                var newBuffer = new byte[length];
+                Buffer.BlockCopy(buffer, BodyStartIndex, newBuffer, 0, newBuffer.Length);
+
+                //获取所有转发地址
+                if (_equipConnect.ForwardEntities != null)
+                {
+                    List<Guid> list = _equipConnect.ForwardEntities.Select(x => x.Id).ToList();
+                    if (_forwardNum % _forwardLength == 0)
+                    {
+                        foreach (Guid guid in list)
+                        {
+                            var topic = IotTopicBuilder.CreateIotBuilder()
+                                .WithPrefix(TopicType.Iot)
+                                .WithDirection(MqttDirection.Down)
+                                .WithTag(MqttTag.Data)
+                                .WithDeviceType("tcp-server")
+                                .WithUri(guid.ToString()).Build();
+                            if (await _mqttExplorer.IsConnectedAsync())
+                            {
+                                await _mqttExplorer.PublishAsync(topic, buffer);
+                            }
+                        }
+
+                        _forwardNum = 1;
+                    }
+                }
+
+                //本地解析数据
+                TestDataReceive testDataReceive = new TestDataReceive(_sqlSugarClient, _connectionMultiplexer);
+                await testDataReceive.Handle(buffer);
             }
+
+            _hasData = false;
+        }
     }
 
     protected override void OnConnected()

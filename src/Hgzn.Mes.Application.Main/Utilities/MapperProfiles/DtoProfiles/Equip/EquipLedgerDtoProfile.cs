@@ -15,14 +15,16 @@ public class EquipLedgerDtoProfile : Profile
         //     .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceStatus!)));
         CreateMap<EquipLedger, EquipLedgerReadDto>()
             .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => x.DeviceStatus.ToString()))
-            .ForMember(d=>d.TypeName,opt=>opt.MapFrom(x=>x.EquipType == null?"":x.EquipType!.TypeName))
-            .ForMember(d=>d.RoomName,opt=>opt.MapFrom(x=>x.Room==null?"":x.Room!.Name));
-
+            .ForMember(d => d.TypeName, opt => opt.MapFrom(x => x.EquipType == null ? "" : x.EquipType!.TypeName))
+            .ForMember(d => d.RoomName, opt => opt.MapFrom(x => x.Room == null ? "" : x.Room!.Name))
+            .ForMember(d => d.DeviceLevel, opt => opt.MapFrom(x => x.EquipLevel.ToString()));
+        CreateMap<EquipLedgerCreateDto, EquipLedger>()
+            .ForMember(d => d.EquipLevel, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceLevel!)));
     }
 
-    private DeviceStatus ConvertStringToDeviceStatus(string status)
+    private EquipLevelEnum ConvertStringToDeviceStatus(string status)
     {
-        if (Enum.TryParse(status, true, out DeviceStatus result))
+        if (Enum.TryParse(status, true, out EquipLevelEnum result))
         {
             return result;
         }
