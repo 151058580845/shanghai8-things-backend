@@ -42,7 +42,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         private const int countIndex = 60;
         public void Initialize(IMqttExplorer mqttExplorer)
         {
-            _manager.Initialize(mqttExplorer,_connectionMultiplexer);
+            _manager.Initialize(mqttExplorer, _connectionMultiplexer);
             _mqttExplorer = mqttExplorer;
         }
 
@@ -114,7 +114,7 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         private async Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
-            TestDataReceive testDataReceive = new TestDataReceive(_client);
+            TestDataReceive testDataReceive = new TestDataReceive(_client, _connectionMultiplexer);
             await testDataReceive.Handle(msg);
         }
 

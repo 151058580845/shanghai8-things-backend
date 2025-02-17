@@ -1,7 +1,10 @@
 ﻿using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
 using Hgzn.Mes.Domain.Events;
+using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.Shared;
 using MediatR;
 using SqlSugar;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +16,12 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
     public class TestDataReceive
     {
         public ISqlSugarClient SqlSugarClient;
+        private readonly IConnectionMultiplexer _connectionMultiplexer;
 
-        public TestDataReceive(ISqlSugarClient _client)
+        public TestDataReceive(ISqlSugarClient _client, IConnectionMultiplexer connectionMultiplexer)
         {
             this.SqlSugarClient = _client;
+            this._connectionMultiplexer = connectionMultiplexer;
         }
 
         /// <summary>
@@ -65,8 +70,6 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
             byte[] supplyVoltageState = new byte[4];
             Buffer.BlockCopy(buffer, 37, devHealthState, 0, 4);
             uint ulSupplyVoltageState = BitConverter.ToUInt32(supplyVoltageState, 0);
-            // 获取电源电压字符串
-            string sSupplyVoltageState = GetExceptionName(ulDevHealthState, ulSupplyVoltageState);
 
             // 剩余的都给物理量 48 + 16 = 64
             byte[] acquData = new byte[buffer.Length - 64];
@@ -97,7 +100,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
                 Model5 = workStyle[7],
                 StateType = stateType,
                 SelfTest = ulDevHealthState,
-                SupplyVoltageState = sSupplyVoltageState
+                SupplyVoltageState = ulSupplyVoltageState
             };
 
             // 使用反射将后面600个物理量数据进行填充
@@ -113,7 +116,15 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
                 }
             }
 
-            var receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+
+            // 获取电源电压异常
+            List<string> sSupplyVoltageException = GetExceptionName(ulDevHealthState, ulSupplyVoltageState);
+            // 记录到redis
+            IDatabase redisDb = _connectionMultiplexer.GetDatabase();
+            var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, compId);
+            await redisDb.StringSetAsync(key, sSupplyVoltageException.Count);
+
             return receive.Id;
         }
 
@@ -164,20 +175,24 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
             { (DevHealthState.D3, SupplyVoltageState.D6), "管理风扇12V电压异常" },
         };
 
-        public string GetExceptionName(uint ulDevHealthState, uint ulSupplyVoltageState)
+        public List<string> GetExceptionName(uint ulDevHealthState, uint ulSupplyVoltageState)
         {
             // 检查 ulSupplyVoltageState 的状态
-            KeyValuePair<(DevHealthState, SupplyVoltageState), string> exception = ExceptionMessages
-                .FirstOrDefault(entry =>
+            IEnumerable<KeyValuePair<(DevHealthState, SupplyVoltageState), string>> exception = ExceptionMessages
+                .Where(entry =>
                     (ulDevHealthState & (uint)entry.Key.Item1) != 0 &&
                     (ulSupplyVoltageState & (uint)entry.Key.Item2) != 0);
-            if (exception.Value != null)
-                return exception.Value;
+
+            List<string> exceptionNames = new List<string>();
+            foreach (KeyValuePair<(DevHealthState, SupplyVoltageState), string> item in exception)
+            {
+                exceptionNames.Add(item.Value);
+            }
             // 检查通道和分区
             string? channelOrZone = CheckChannelsAndZones(ulSupplyVoltageState);
             if (channelOrZone != null)
-                return channelOrZone;
-            return "正常"; // 如果没有异常，返回正常
+                exceptionNames.Add(channelOrZone);
+            return exceptionNames; // 如果没有异常，则表示正常
         }
 
         private string? CheckChannelsAndZones(uint ulSupplyVoltageState)

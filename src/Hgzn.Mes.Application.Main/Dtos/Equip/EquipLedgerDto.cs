@@ -52,7 +52,7 @@ public class EquipLedgerReadDto : ReadDto
     /// <summary>
     /// 设备重要级别
     /// </summary>
-    public EquipLevelEnum? EquipLevel { get; set; } = EquipLevelEnum.Basic;
+    public string? DeviceLevel { get; set; }
 
     public bool State { get; set; } = true;
     public int OrderNum { get; set; } = 0;
@@ -117,6 +117,11 @@ public class EquipLedgerCreateDto : CreateDto
     /// 设备状态(正常/丢失/使用中)
     /// </summary>
     public string? DeviceStatus { get; set; }
+
+    /// <summary>
+    /// 设备重要度(重要,一般,普通)
+    /// </summary>
+    public string? DeviceLevel { get; set; }
 
     /// <summary>
     /// 有效期时间

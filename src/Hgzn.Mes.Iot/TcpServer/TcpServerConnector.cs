@@ -13,11 +13,11 @@ namespace Hgzn.Mes.Iot.TcpServer;
 public class TcpServerConnector : EquipConnectorBase
 {
     private EquipTcpServer _server = null!;
-    private EquipConnect _connect ;
-    
+    private EquipConnect _connect;
 
-    public TcpServerConnector(IConnectionMultiplexer connectionMultiplexer, 
-        IMqttExplorer mqttExplorer,ISqlSugarClient sqlSugarClient, string uri, EquipConnType connType) : base(connectionMultiplexer, mqttExplorer,sqlSugarClient)
+
+    public TcpServerConnector(IConnectionMultiplexer connectionMultiplexer,
+        IMqttExplorer mqttExplorer, ISqlSugarClient sqlSugarClient, string uri, EquipConnType connType) : base(connectionMultiplexer, mqttExplorer, sqlSugarClient)
     {
         _equipConnect = _sqlSugarClient.Queryable<EquipConnect>().First(x => x.Id == Guid.Parse(uri));
 
@@ -29,18 +29,21 @@ public class TcpServerConnector : EquipConnectorBase
     {
         _server.Stop();
         await UpdateStateAsync(ConnStateType.Stop);
+        await UpdateOperationAsync(ConnStateType.Stop);
     }
 
     public override async Task StartAsync()
     {
         _server.Start();
         await UpdateStateAsync(ConnStateType.Run);
+        await UpdateOperationAsync(ConnStateType.Run);
     }
 
     public override async Task StopAsync()
     {
         _server.Stop();
         await UpdateStateAsync(ConnStateType.Stop);
+        await UpdateOperationAsync(ConnStateType.Stop);
     }
 
     public override async Task<bool> ConnectAsync(ConnInfo connInfo)
@@ -49,11 +52,12 @@ public class TcpServerConnector : EquipConnectorBase
         switch (connInfo.ConnType)
         {
             case ConnType.Socket:
-                var conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions)
-                           ?? throw new ArgumentNullException("conn");
+                SocketConnInfo conn = null;
+                conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions)
+                          ?? throw new ArgumentNullException("conn");
                 try
                 {
-                    _server = new EquipTcpServer(conn.Address,conn.Port,_sqlSugarClient,_equipConnect,_mqttExplorer);
+                    _server = new EquipTcpServer(conn.Address, conn.Port, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer);
                     _server.Start();
                 }
                 catch (Exception)

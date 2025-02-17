@@ -52,5 +52,27 @@ namespace Hgzn.Mes.Iot.EquipManager
             .WithUri(_uri!)
             .Build(), BitConverter.GetBytes((int)stateType));
         }
+
+        public async Task UpdateOperationAsync(ConnStateType stateType)
+        {
+            EquipOperationStatus equipOperationStatus = EquipOperationStatus.Stopped;
+            switch (stateType)
+            {
+                case ConnStateType.On:
+                    equipOperationStatus = EquipOperationStatus.Paused; break;
+                case ConnStateType.Off:
+                    equipOperationStatus = EquipOperationStatus.Stopped; break;
+                case ConnStateType.Run:
+                    equipOperationStatus = EquipOperationStatus.Running; break;
+                case ConnStateType.Stop:
+                    equipOperationStatus = EquipOperationStatus.Paused; break;
+                default:
+                    break;
+            }
+            // 记录到redis服务器
+            var database = _connectionMultiplexer.GetDatabase();
+            var key = string.Format(CacheKeyFormatter.EquipOperationStatus, _uri);
+            await database.StringSetAsync(key, (int)equipOperationStatus);
+        }
     }
 }

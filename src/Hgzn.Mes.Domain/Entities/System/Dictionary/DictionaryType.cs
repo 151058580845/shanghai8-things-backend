@@ -1228,6 +1228,63 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 
         #endregion 设备状态
 
+        #region 设备重要度
+
+        public static readonly DictionaryType DeviceLevel = new DictionaryType()
+        {
+            Id = Guid.Parse("21946842-CDC3-2A0C-0D2A-57AEF39D9533"), // 固定的 Guid 值
+            DictName = "设备重要度",
+            DictType = "DeviceLevel",
+            OrderNum = 1,
+            Remark = "设备重要度",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Important = new DictionaryInfo()
+        {
+            Id = Guid.Parse("D2F4AC22-D9F2-A1E5-2B39-C54472AE992D"), // 固定的 Guid 值
+            DictLabel = "关键设备",
+            DictValue = "Important",
+            ParentId = DeviceLevel.Id,
+            OrderNum = 1,
+            Remark = "关键设备",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo General = new DictionaryInfo()
+        {
+            Id = Guid.Parse("75EDDC58-C510-10E8-78B3-F3AF7EEC7E7B"), // 固定的 Guid 值
+            DictLabel = "一般设备",
+            DictValue = "General",
+            ParentId = DeviceLevel.Id,
+            OrderNum = 2,
+            Remark = "一般设备",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Basic = new DictionaryInfo()
+        {
+            Id = Guid.Parse("5AE693B2-196C-8CE5-9C12-FE486FCC98BC"), // 固定的 Guid 值
+            DictLabel = "普通设备",
+            DictValue = "Basic",
+            ParentId = DeviceLevel.Id,
+            OrderNum = 3,
+            Remark = "普通设备",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        #endregion 设备状态
+
         #region 试验系统
 
         public static readonly DictionaryType testSystem = new DictionaryType()
@@ -1385,6 +1442,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Parity,
             RoomType,
             DeviceStatus,
+            DeviceLevel,
             testSystem,
             EquipProtocol
         };

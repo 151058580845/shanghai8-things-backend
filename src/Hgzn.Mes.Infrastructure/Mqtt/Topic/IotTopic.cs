@@ -11,7 +11,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
         public const string EquipTypeName = "type";
         public const string ConnUriName = "uri";
 
-        public EquipConnType ConnType{ get; set; }
+        public EquipConnType ConnType { get; set; }
 
         public string? EquipType { get; set; }
         public string? ConnUri { get; set; }
@@ -41,7 +41,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 "calibration" => MqttTag.Calibration,
                 _ => throw new NotSupportedException(nodes[6])
             };
-            Enum.TryParse<EquipConnType>(nodes[3], out var connType);
+            Enum.TryParse<EquipConnType>(nodes[3], true, out var connType);
             var res = new IotTopic
             {
                 Prefix = prefix,
