@@ -19,5 +19,5 @@ public interface IEquipLedgerService : ICrudAppService<
     Task<int> UpdateEquipRoomId(Dictionary<string,Guid> equipIds);
     Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListInIdsAsync(List<Guid> equipIds);
     Task<IEnumerable<EquipLedgerSearchReadDto>> GetAppSearchAsync();
-    Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListByRoomAsync(IEnumerable<RoomReadDto> rooms);
+    Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms);
 }

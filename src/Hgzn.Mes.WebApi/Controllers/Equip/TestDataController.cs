@@ -48,6 +48,27 @@ public class TestDataController:ControllerBase
         (await _testDataService.CreateAsync(input)).Wrap();
 
     /// <summary>
+    /// 导入
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("import")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    //[Authorize(Policy = $"equip:testdata:{ScopeMethodType.Add}")]
+    [Authorize]
+    public async Task<ResponseWrapper<int>> CreateAsync(IEnumerable<TestDataCreateDto> inputs) {
+        var addCount =0;
+        foreach (var item in inputs)
+        {
+            if (await _testDataService.CreateAsync(item) != null) addCount += 1;
+        }
+
+        return addCount.Wrap();
+    }
+
+    /// <summary>
     /// 删除
     /// </summary>
     /// <param name="id"></param>

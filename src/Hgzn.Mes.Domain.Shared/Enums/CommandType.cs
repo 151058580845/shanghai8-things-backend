@@ -8,9 +8,9 @@ namespace Hgzn.Mes.Domain.Shared.Enums
         Conn,
     }
 
-    public enum ConnStateType: byte
+    public enum ConnStateType
     {
-        On=1,
+        On = 1,
         Off,
         Run,
         Stop

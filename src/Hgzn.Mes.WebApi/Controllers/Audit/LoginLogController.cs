@@ -45,8 +45,8 @@ namespace Hgzn.Mes.WebApi.Controllers.Audit
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Route("deleteAll")]
-        public async Task<ResponseWrapper<int>> DeleteAsync(List<Guid>? guids)
+        [Route("deleteByIds")]
+        public async Task<ResponseWrapper<int>> DeleteByIdsAsync(List<Guid>? guids)
         {
             var dCount = 0;
             if (guids != null && guids.Count() > 0)
@@ -59,6 +59,18 @@ namespace Hgzn.Mes.WebApi.Controllers.Audit
 
             return dCount.Wrap();
         }
+
+        /// <summary>
+        ///     删除全部日志
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Route("deleteAll")]
+        public async Task<ResponseWrapper<int>> DeleteAllAsync() =>
+         (await _loginLogService.DeleteAllLoginfo()).Wrap();
+
 
         /// <summary>
         /// 新增

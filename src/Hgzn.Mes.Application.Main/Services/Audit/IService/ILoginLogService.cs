@@ -17,5 +17,11 @@ namespace Hgzn.Mes.Application.Main.Services.Audit.IService
     {
 
         LoginLog GetInfoByHttpContext(HttpContext? httpContext);
+
+        /// <summary>
+        /// 删除全部日志
+        /// </summary>
+        /// <returns></returns>
+        Task<int> DeleteAllLoginfo();
     }
 }

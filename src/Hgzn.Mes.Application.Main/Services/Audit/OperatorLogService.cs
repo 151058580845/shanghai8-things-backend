@@ -30,4 +30,21 @@ public class OperatorLogService : SugarCrudAppService<
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
         return Mapper.Map<PaginatedList<OperatorLogReadDto>>(entities);
     }
+
+    /// <summary>
+    /// 删除全部日志
+    /// </summary>
+    /// <returns></returns>
+    public async Task<int> DeleteAllLoginfo()
+    {
+
+        var entities = await Queryable.Select(a => a.Id).ToListAsync();
+        var delcount = 0;
+        if (entities.Any())
+        {
+            delcount = await DbContext.Deleteable<OperatorLog>().Where(s => entities.Contains(s.Id)).ExecuteCommandAsync();
+        }
+
+        return delcount;
+    }
 }

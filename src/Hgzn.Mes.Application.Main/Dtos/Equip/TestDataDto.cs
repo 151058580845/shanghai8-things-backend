@@ -60,7 +60,7 @@ public class TestDataCreateDto : CreateDto
     public string SimuStaff { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
-    public List<TestDataProductCreateDto> Products { get; set; }
+    public List<TestDataProductCreateDto>? Products { get; set; }
 }
 
 public class TestDataUpdateDto : UpdateDto
