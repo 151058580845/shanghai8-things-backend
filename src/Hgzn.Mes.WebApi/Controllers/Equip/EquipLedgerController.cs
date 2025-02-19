@@ -1,6 +1,8 @@
 ﻿using System.Collections;
+using Hgzn.Mes.Application.Main.Dtos.App;
 using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
+using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
@@ -154,5 +156,115 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<EquipLedgerReadDto>> UpdateStateAsync(Guid id, bool state) =>
             (await _equipLedgerService.UpdateStateAsync(id, state)).Wrap();
+        
+        
+        /// <summary>
+        /// 获取试验系统列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("test/list")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
+        public async Task<ResponseWrapper<EquipLedgerTestReadDto>> GetTestListAsync()
+        {
+            var testList = await _dictionaryInfoService.GetNameValueByTypeAsync("TestSystem");
+            var testRead = new EquipLedgerTestReadDto();
+            var list = new List<TestListReadDto>();
+            foreach (var test in testList)
+            {
+                list.Add(new TestListReadDto()
+                {
+                    TestName = test.Value
+                });
+            }
+            foreach (var entity in list)
+            {
+                var rooms = await _roomService.GetRoomListByTestName(entity.TestName);
+                var ids = await rooms.Select(x => x.Id).ToListAsync();
+                var equips = (await _equipLedgerService.GetEquipsListByRoomAsync(ids)).ToList();
+                if (equips.Count != 0)
+                {
+                    entity.EquipCount = equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
+                    entity.Rate = equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
+                    entity.HealthRate =  equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
+                }
+            }
+            
+            testRead.TestList = list;
+            testRead.TestErrorList = new List<TestErrorListReadDto>();
+            testRead.UpRate = 0;
+            testRead.DownRate = 0;
+            testRead.NormalCount = 0;
+            testRead.FreeCount = 0;
+            testRead.LeaveCount = 0;
+            testRead.HealthCount = 0;
+            testRead.BetterCount = 0;
+            testRead.ErrorCount = 0;
+            return testRead.Wrap();
+        }
+
+        /// <summary>
+        /// 导入
+        /// </summary>
+        /// <param name="inputs"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("import")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        //[Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Add}")]
+        public async Task<ResponseWrapper<int>> CreateAsync(IEnumerable<EquipLedgerCreateDto> inputs)
+        {
+            var addCount = 0;
+            foreach (var item in inputs)
+            {
+                if (await _equipLedgerService.CreateAsync(item) != null) addCount += 1;
+            }
+
+            return addCount.Wrap();
+        }
+
+
+        /// <summary>
+        /// Api批量导入
+        /// </summary>
+        /// <param name="apiUrl"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("importByApi")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Add}")]
+        public async Task<ResponseWrapper<int>> CreateAsync(string apiUrl) =>
+             (await _equipLedgerService.PostImportDatas(apiUrl)).Wrap();
+
+        /// <summary>
+        /// 获取测试数据
+        /// </summary>
+        /// <param name="apiUrl"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("getTestData")]
+        public List<EquipLedgerCreateDto> GetTestData(string apiUrl)
+        {
+            List<EquipLedgerCreateDto> equipLedgerCreates = new List<EquipLedgerCreateDto>();
+
+            equipLedgerCreates.Add(new EquipLedgerCreateDto()
+            {
+                AssetNumber = "ces0",
+                DeviceStatus = DeviceStatus.Normal.ToString(),
+                EquipCode = "123",
+                EquipName = "挖掘机",
+                Model = "测试形",
+                PurchaseDate = DateTime.Now,
+                Remark = "测试",
+                RoomId = Guid.NewGuid(),
+                TypeId = Guid.NewGuid(),
+                ValidityDate = DateTime.Now
+            });
+            return equipLedgerCreates;
+        }
     }
 }

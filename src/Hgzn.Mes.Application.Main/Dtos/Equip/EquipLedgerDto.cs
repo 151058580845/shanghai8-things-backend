@@ -132,6 +132,8 @@ public class EquipLedgerCreateDto : CreateDto
     /// 备注
     /// </summary>
     public string? Remark { get; set; }
+
+    public bool State { get; set; } = true;
 }
 
 public class EquipLedgerUpdateDto : UpdateDto
