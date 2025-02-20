@@ -24,8 +24,21 @@ public class EquipLedgerTestReadDto : ReadDto
     [Description("故障设备列表")] public int ErrorCount { get; set; } = 0;
     [Description("开机率")] public int UpRate { get; set; } = 0;
     [Description("关机率")] public int DownRate { get; set; } = 0;
-    public List<TestListReadDto> TestList { get; set; } = new List<TestListReadDto>();
-    public List<TestErrorListReadDto> TestErrorList { get; set; } = new List<TestErrorListReadDto>();
+    public List<TestListReadDto> TestList { get; set; } = new();
+    public List<TestErrorListReadDto> TestErrorList { get; set; } = new();
+    public List<TestListLevelEquipReadDto> ListLevelEquipReadDtos { get; set; } = new();
+}
+public class TestListLevelEquipReadDto : ReadDto
+{
+    [Description("系统名称")] public string TestName { get; set; }
+    [Description("设备主键")] public Guid EquipId { get; set; }
+    [Description("设备名称")] public Guid EquipName { get; set; }
+    [Description("设备编号")] public Guid EquipCode { get; set; }
+
+    [Description("利用率")] public int Rate { get; set; } = 0;
+    [Description("空闲设备列表")] public int FreeCount { get; set; } = 0;
+
+    [Description("故障设备列表")] public int ErrorCount { get; set; } = 0;
 }
 
 public class TestListReadDto : ReadDto

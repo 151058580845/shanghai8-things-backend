@@ -24,6 +24,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("page")]
+        [Authorize(Policy = $"equip:equipdatapoint:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<PaginatedList<EquipDataPointReadDto>>> GetPaginatedListAsync(EquipDataPointQueryDto queryDto)
         => (await _equipDataPointService.GetPaginatedListAsync(queryDto)).Wrap();
 
@@ -31,6 +32,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("list")]
+        [Authorize(Policy = $"equip:equipdatapoint:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<IEnumerable<EquipDataPointReadDto>?>> GetListAsync(EquipDataPointQueryDto queryDto)
             => (await _equipDataPointService.GetListAsync(queryDto)).Wrap()!;
 
@@ -44,7 +46,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("create")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"equip:datapoint:{ScopeMethodType.Add}")]
+        [Authorize(Policy = $"equip:equipdatapoint:{ScopeMethodType.Add}")]
         public async Task<ResponseWrapper<EquipDataPointReadDto>> CreateAsync(EquipDataPointCreateDto input) =>
             (await _equipDataPointService.CreateAsync(input)).Wrap();
 
@@ -57,7 +59,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"equip:datapoint:{ScopeMethodType.Remove}")]
+        [Authorize(Policy = $"equip:equipdatapoint:{ScopeMethodType.Remove}")]
         public async Task<ResponseWrapper<int>> DeleteAsync(Guid id) =>
             (await _equipDataPointService.DeleteAsync(id)).Wrap();
 
@@ -71,7 +73,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"equip:datapoint:{ScopeMethodType.Edit}")]
+        [Authorize(Policy = $"equip:equipdatapoint:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<EquipDataPointReadDto>> UpdateAsync(Guid id, EquipDataPointUpdateDto input) =>
             (await _equipDataPointService.UpdateAsync(id, input)).Wrap();
 
@@ -84,7 +86,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"equip:datapoint:{ScopeMethodType.Query}")]
+        [Authorize(Policy = $"equip:equipdatapoint:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipDataPointReadDto>> GetAsync(Guid id) =>
             (await _equipDataPointService.GetAsync(id)).Wrap();
     }

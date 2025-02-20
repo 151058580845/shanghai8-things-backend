@@ -127,6 +127,10 @@ namespace Hgzn.Mes.Iot.Mqtt
                     var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
                     await SwitchEquipAsync(equip);
                     break;
+                case CmdType.Collection:
+                    var equipCon = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
+                    await CollectionDataAsync(equipCon);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(info.Type));
             }
@@ -142,6 +146,11 @@ namespace Hgzn.Mes.Iot.Mqtt
                     _ => throw new NotImplementedException()
                 };
                 await task;
+            }
+
+            async Task CollectionDataAsync(IEquipConnector equip)
+            {
+                
             }
         }
 

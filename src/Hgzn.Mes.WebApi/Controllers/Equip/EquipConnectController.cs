@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -22,6 +23,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("page")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<PaginatedList<EquipConnectReadDto>?>> GetPaginatedListAsync(EquipConnectQueryDto queryDto)
         => (await _equipConnectService.GetPaginatedListAsync(queryDto)).Wrap()!;
 
@@ -29,9 +31,17 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("list")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<IEnumerable<EquipConnectReadDto>?>> GetListAsync(EquipConnectQueryDto queryDto)
             => (await _equipConnectService.GetListAsync(queryDto)).Wrap()!;
 
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Route("name-value-list")]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<IEnumerable<NameValueDto>>> GetNameValueListAsync()
+            => (await _equipConnectService.GetNameValueListAsync()).Wrap();
         /// <summary>
         /// 创建
         /// </summary>
@@ -85,6 +95,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         public async Task<ResponseWrapper<EquipConnectReadDto?>> GetAsync(Guid id) =>
             (await _equipConnectService.GetAsync(id)).Wrap()!;
 
+        
         /// <summary>
         /// 开始连接
         /// </summary>

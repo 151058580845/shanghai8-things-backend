@@ -92,8 +92,20 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.WriteDiscrete,
             DictionaryType.WriteInput,
             DictionaryType.WriteHoldingRegister,
+            DictionaryType.Short,
+            DictionaryType.UShort,
             DictionaryType.Int,
             DictionaryType.UInt,
+            DictionaryType.Long,
+            DictionaryType.ULong,
+            DictionaryType.Float,
+            DictionaryType.Double,
+            DictionaryType.Decimal,
+            DictionaryType.Char,
+            DictionaryType.String,
+            DictionaryType.Bool,
+            
+            
             DictionaryType.AtMostOnce,
             DictionaryType.AtLeastOnce,
             DictionaryType.ExactlyOnce,
@@ -134,6 +146,13 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.General,
             DictionaryType.Important,
 
+            DictionaryType.Day1,
+            DictionaryType.Day2,
+            DictionaryType.Day3,
+            DictionaryType.Day4,
+            DictionaryType.Day5,
+            DictionaryType.Day6,
+            DictionaryType.Day7
         };
 
     }

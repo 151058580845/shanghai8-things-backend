@@ -771,10 +771,39 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             SoftDeleted = false,
             State = true
         };
+        
+        public static readonly DictionaryInfo Short = new DictionaryInfo()
+        {
+            Id = Guid.Parse("d20c1d6e-d7f3-4d6f-b80a-e4e2fcd0b7e4"),  // 固定的 Guid 值
+            DictLabel = "Short",
+            DictValue = "Short",
+            ParentId = DataType.Id,
+            OrderNum = 35,
+            Remark = "短整型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo UShort = new DictionaryInfo()
+        {
+            Id = Guid.Parse("0ed1fa65-0b19-4e5d-8c02-f1a8de703774"),  // 固定的 Guid 值
+            DictLabel = "UShort",
+            DictValue = "UShort",
+            ParentId = DataType.Id,
+            OrderNum = 36,
+            Remark = "无符号短整型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
 
         public static readonly DictionaryInfo Int = new DictionaryInfo()
         {
-            Id = Guid.Parse("40b2f3a4-7a27-4cf4-88fa-25ec7e2c54b2"), // 固定的 Guid 值
+            Id = Guid.Parse("40b2f3a4-7a27-4cf4-88fa-25ec7e2c54b2"),
             DictLabel = "Int",
             DictValue = "Int",
             ParentId = DataType.Id,
@@ -788,12 +817,124 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 
         public static readonly DictionaryInfo UInt = new DictionaryInfo()
         {
-            Id = Guid.Parse("5e5783c5-3c19-45eb-b2f7-75e9fe38be1a"), // 固定的 Guid 值
+            Id = Guid.Parse("5e5783c5-3c19-45eb-b2f7-75e9fe38be1a"),
             DictLabel = "UInt",
             DictValue = "UInt",
             ParentId = DataType.Id,
             OrderNum = 32,
             Remark = "无符号整型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Long = new DictionaryInfo()
+        {
+            Id = Guid.Parse("3c93e37b-3a74-4aaf-a809-1e27ac5105a7"),
+            DictLabel = "Long",
+            DictValue = "Long",
+            ParentId = DataType.Id,
+            OrderNum = 33,
+            Remark = "长整型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo ULong = new DictionaryInfo()
+        {
+            Id = Guid.Parse("e68f0710-d465-4e44-b62f-bc3c9a78ab68"),
+            DictLabel = "ULong",
+            DictValue = "ULong",
+            ParentId = DataType.Id,
+            OrderNum = 34,
+            Remark = "无符号长整型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Float = new DictionaryInfo()
+        {
+            Id = Guid.Parse("7fa174a2-d2f1-4d61-b453-fb32d0a329db"),
+            DictLabel = "Float",
+            DictValue = "Float",
+            ParentId = DataType.Id,
+            OrderNum = 35,
+            Remark = "单精度浮点型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Double = new DictionaryInfo()
+        {
+            Id = Guid.Parse("d2b2391d-116f-4749-b1c2-80b016a65a5f"),
+            DictLabel = "Double",
+            DictValue = "Double",
+            ParentId = DataType.Id,
+            OrderNum = 36,
+            Remark = "双精度浮点型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Decimal = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4ed8eaff-62ad-4854-9b30-6f26410c7253"),
+            DictLabel = "Decimal",
+            DictValue = "Decimal",
+            ParentId = DataType.Id,
+            OrderNum = 37,
+            Remark = "十进制浮点型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Char = new DictionaryInfo()
+        {
+            Id = Guid.Parse("b0ed0e45-1dbb-40d2-aed0-bfcd2c6c7783"),
+            DictLabel = "Char",
+            DictValue = "Char",
+            ParentId = DataType.Id,
+            OrderNum = 38,
+            Remark = "字符型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo String = new DictionaryInfo()
+        {
+            Id = Guid.Parse("f58a50f1-d05f-47a7-8f0c-0e74e9415ad1"),
+            DictLabel = "String",
+            DictValue = "String",
+            ParentId = DataType.Id,
+            OrderNum = 39,
+            Remark = "字符串型",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Bool = new DictionaryInfo()
+        {
+            Id = Guid.Parse("d01558f3-71d4-4c4b-ae42-29d4043f15b1"),
+            DictLabel = "Bool",
+            DictValue = "Bool",
+            ParentId = DataType.Id,
+            OrderNum = 40,
+            Remark = "布尔型",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,
@@ -1311,6 +1452,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+
         public static readonly DictionaryInfo testSystem2 = new DictionaryInfo()
         {
             Id = Guid.Parse("543025D1-5FFC-7C3A-4DD7-BB70E02FEBD8"), // 固定的 Guid 值
@@ -1324,6 +1466,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+
         public static readonly DictionaryInfo testSystem3 = new DictionaryInfo()
         {
             Id = Guid.Parse("C2D80616-06C8-0BA5-CDFB-EC52A6E561E6"), // 固定的 Guid 值
@@ -1337,6 +1480,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+
         public static readonly DictionaryInfo testSystem4 = new DictionaryInfo()
         {
             Id = Guid.Parse("E11D4C2C-7A52-4BED-20C0-4E42D7A6E34D"), // 固定的 Guid 值
@@ -1350,6 +1494,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+
         public static readonly DictionaryInfo testSystem5 = new DictionaryInfo()
         {
             Id = Guid.Parse("1A1BA401-383C-0D30-595C-A9260E6076EF"), // 固定的 Guid 值
@@ -1363,6 +1508,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+
         public static readonly DictionaryInfo testSystem6 = new DictionaryInfo()
         {
             Id = Guid.Parse("108E4CDC-DE38-442C-3DC1-D5F283C27464"), // 固定的 Guid 值
@@ -1376,8 +1522,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
-        #endregion 
-        
+
+        #endregion
+
         #region 设备采集类型
 
         public static readonly DictionaryType EquipProtocol = new DictionaryType()
@@ -1404,6 +1551,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+
         public static readonly DictionaryInfo IotServer = new DictionaryInfo()
         {
             Id = Guid.Parse("98D2502F-24C0-0AF9-107A-35D03DE91970"), // 固定的 Guid 值
@@ -1417,11 +1565,122 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
-        
-        #endregion 
-        
-        
-        
+
+        #endregion
+
+        #region 采集工作日
+
+        public static readonly DictionaryType CollectionWorkingDay = new DictionaryType()
+        {
+            Id = Guid.Parse("A5B796D5-3AAE-DE0C-F11E-AD6E713BAE96"), // 固定的 Guid 值
+            DictName = "采集工作日",
+            DictType = "CollectionWorkingDay",
+            OrderNum = 1,
+            Remark = "采集工作日",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo Day1 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("7C42BE48-3D4D-713A-C5A0-DC6998FF072D"), // 固定的 Guid 值
+            DictLabel = "周一",
+            DictValue = "Monday",
+            ParentId = CollectionWorkingDay.Id,
+            OrderNum = 1,
+            Remark = "周一",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Day2 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("F3E9C40C-5748-4F44-9EED-05644D2C28BC"), // 固定的 Guid 值
+            DictLabel = "周二",
+            DictValue = "Tuesday",
+            ParentId = CollectionWorkingDay.Id,
+            OrderNum = 2,
+            Remark = "周二",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Day3 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("346A7E94-0A60-4D9E-9020-FAD1A91D2401"),
+            DictLabel = "周三",
+            DictValue = "Wednesday",
+            ParentId = CollectionWorkingDay.Id,
+            OrderNum = 3,
+            Remark = "周三",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Day4 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4A240A5F-F5D4-4F0C-987F-639FB48A6720"),
+            DictLabel = "周四",
+            DictValue = "Thursday",
+            ParentId = CollectionWorkingDay.Id,
+            OrderNum = 4,
+            Remark = "周四",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Day5 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("5A3F87F1-F8C1-4C16-A15D-3204FBC9BE2F"),
+            DictLabel = "周五",
+            DictValue = "Friday",
+            ParentId = CollectionWorkingDay.Id,
+            OrderNum = 5,
+            Remark = "周五",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Day6 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("B7FB680C-8F1F-46F3-9BC1-4BEABDE2A0B0"),
+            DictLabel = "周六",
+            DictValue = "Saturday",
+            ParentId = CollectionWorkingDay.Id,
+            OrderNum = 6,
+            Remark = "周六",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Day7 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("D799021D-0409-40A7-AE46-07B35F67E9C9"),
+            DictLabel = "周日",
+            DictValue = "Sunday",
+            ParentId = CollectionWorkingDay.Id,
+            OrderNum = 7,
+            Remark = "周日",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        #endregion
+
         public static DictionaryType[] Seeds { get; } =
         {
             EquipMaintenanceType,
@@ -1444,7 +1703,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DeviceStatus,
             DeviceLevel,
             testSystem,
-            EquipProtocol
+            EquipProtocol,
+            CollectionWorkingDay
         };
     }
 }

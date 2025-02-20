@@ -1,6 +1,5 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
-using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Utilities;
@@ -9,26 +8,38 @@ using SqlSugar;
 namespace Hgzn.Mes.Application.Main.Services.Equip
 {
     internal class EquipDataPointService : SugarCrudAppService<
-    EquipDataPoint, Guid,
-    EquipDataPointReadDto, EquipDataPointQueryDto,
-    EquipDataPointCreateDto, EquipDataPointUpdateDto>, IEquipDataPointService
+        EquipDataPoint, Guid,
+        EquipDataPointReadDto, EquipDataPointQueryDto,
+        EquipDataPointCreateDto, EquipDataPointUpdateDto>, IEquipDataPointService
     {
-        private IEquipConnService _equipConnService;
-        public EquipDataPointService(IEquipConnService equipConnService)
+        public override async Task<IEnumerable<EquipDataPointReadDto>> GetListAsync(
+            EquipDataPointQueryDto? queryDto = null)
         {
-            _equipConnService = equipConnService;
+            var entities = await Queryable
+                .WhereIF(queryDto != null && queryDto.State == null, t => t.State == queryDto!.State)
+                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.Code),
+                    t => t.Code.Contains(queryDto!.Code!))
+                .ToListAsync();
+            // foreach (var entity in entities)
+            // {
+                //获取连接状态
+                // entity.Data = await RedieService.GetRedisDataAsync(entity.Code);
+            // }
 
+            var outputs = Mapper.Map<IEnumerable<EquipDataPointReadDto>>(entities);
+
+            return outputs;
         }
 
-        public async override Task<IEnumerable<EquipDataPointReadDto>> GetListAsync(EquipDataPointQueryDto? queryDto = null)
+        public override async Task<PaginatedList<EquipDataPointReadDto>> GetPaginatedListAsync(
+            EquipDataPointQueryDto queryDto)
         {
-            RefAsync<int> total = 0;
             var entites = await Queryable
-                .WhereIF(queryDto != null && queryDto.State == null, t => t.State == queryDto!.State)
-                .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto!.Code!))
-                .ToListAsync();
-            IEnumerable<EquipDataPointReadDto> outputs = Mapper.Map<IEnumerable<EquipDataPointReadDto>>(entites);
-            foreach (EquipDataPointReadDto entity in outputs)
+                .WhereIF(queryDto.State != null, t => t.State == queryDto.State)
+                .WhereIF(!string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto!.Code!))
+                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+            var outputs = Mapper.Map<PaginatedList<EquipDataPointReadDto>>(entites);
+            foreach (EquipDataPointReadDto entity in outputs.Items)
             {
                 if (entity.ConnectionId != null)
                 {
@@ -38,26 +49,6 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             }
 
             return outputs;
-        }
-
-        public async override Task<PaginatedList<EquipDataPointReadDto>> GetPaginatedListAsync(EquipDataPointQueryDto queryDto)
-        {
-            RefAsync<int> total = 0;
-            var entites = await Queryable
-                .WhereIF(queryDto.State == null, t => t.State == queryDto.State)
-                .WhereIF(!string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto!.Code!))
-                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
-            IEnumerable<EquipDataPointReadDto> outputs = Mapper.Map<IEnumerable<EquipDataPointReadDto>>(entites);
-            foreach (EquipDataPointReadDto entity in outputs)
-            {
-                if (entity.ConnectionId != null)
-                {
-                    //获取连接状态
-                    // entity.Data = await RedieService.GetRedisDataAsync(entity.Code);
-                }
-            }
-
-            return new PaginatedList<EquipDataPointReadDto>(outputs, total, queryDto.PageIndex, queryDto.PageSize);
         }
 
         /// <summary>

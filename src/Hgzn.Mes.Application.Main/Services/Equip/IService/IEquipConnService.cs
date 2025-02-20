@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
+﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Shared.Enums;
 
@@ -16,4 +17,5 @@ public interface IEquipConnService : ICrudAppService<
     Task StopConnectAsync(Guid connectId);
 
     Task TestConnection(ConnType protocolEnum, string connectionString);
+    Task<IEnumerable<NameValueDto>> GetNameValueListAsync();
 }

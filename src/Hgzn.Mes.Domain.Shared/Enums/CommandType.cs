@@ -6,6 +6,7 @@ namespace Hgzn.Mes.Domain.Shared.Enums
     public enum CmdType
     {
         Conn,
+        Collection
     }
 
     public enum ConnStateType

@@ -40,7 +40,7 @@ namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
                 context.Succeed(requirement);
                 return;
             }
-
+            //使用缓存
             var role = await _roleService.GetAsync(roleId);
             if (role is null)
             {

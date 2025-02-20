@@ -16,6 +16,7 @@ using StackExchange.Redis;
 using System;
 using System.Text;
 using System.Text.Json;
+using Hgzn.Mes.Application.Main.Dtos.Base;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -181,5 +182,19 @@ public class EquipConnectService : SugarCrudAppService<
         };
         connect.ProtocolEnum = protocolEnum;
         await PutStartConnect(guid);
+    }
+
+    public async Task<IEnumerable<NameValueDto>> GetNameValueListAsync()
+    {
+        var result = await Queryable
+            .OrderBy(t => t.OrderNum)
+            .Select<NameValueDto>(t=>new NameValueDto()
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Value = t.Id.ToString()
+            })
+            .ToListAsync();
+        return result;
     }
 }
