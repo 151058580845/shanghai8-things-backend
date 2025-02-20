@@ -33,8 +33,8 @@ public class CodeRule : UniversalEntity, ISoftDelete, IState, IOrder
     [Description("规则编号")]
     public string? CodeNumber { get; set; }
 
-    [Description("基础元素")]
-    public string? BasicDomain { get; set; }
+    //[Description("基础元素")]
+    //public string? BasicDomain { get; set; }
 
     [Description("备注")]
     public string? Remark { get; set; }
@@ -65,7 +65,6 @@ public class CodeRule : UniversalEntity, ISoftDelete, IState, IOrder
         State = true,
         CodeName = "设备台账",
         CodeNumber = "SBTZ",
-        BasicDomain = "",
         CodeRuleRules = new List<CodeRuleDefine>() {
           new CodeRuleDefine(){
             Id=new Guid("B10CD4B1-6037-D34D-C3E2-F5C1DDB8829A"),
@@ -104,7 +103,6 @@ public class CodeRule : UniversalEntity, ISoftDelete, IState, IOrder
         State = true,
         CodeName = "设备参数",
         CodeNumber = "SBCS",
-        BasicDomain = "",
         CodeRuleRules = new List<CodeRuleDefine>() {
           new CodeRuleDefine(){
             Id=new Guid("5FC96497-7D0F-FCE9-B97C-7351087D5593"),
