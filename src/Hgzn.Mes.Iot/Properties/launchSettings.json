@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Hgzn.Mes.Iot": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
