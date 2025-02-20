@@ -38,6 +38,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 "ota" => MqttTag.Ota,
                 "cmd" => MqttTag.Cmd,
                 "health" => MqttTag.Health,
+                "alarm" => MqttTag.Alarm,
                 "calibration" => MqttTag.Calibration,
                 _ => throw new NotSupportedException(nodes[6])
             };

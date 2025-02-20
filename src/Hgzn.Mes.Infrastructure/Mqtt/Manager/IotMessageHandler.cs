@@ -3,15 +3,19 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
+using MySqlX.XDevAPI;
+using NetCoreServer;
 using SqlSugar;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 {
@@ -19,11 +23,11 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
     {
         public IotMessageHandler(
             ILogger<IotMessageHandler> logger,
-            ISqlSugarClient client,
+            SqlSugarContext context,
             IConnectionMultiplexer connectionMultiplexer)
         {
             _logger = logger;
-            _client = client;
+            _client = context.DbContext;
             _connectionMultiplexer = connectionMultiplexer;
         }
 
@@ -42,7 +46,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         public async Task HandleAsync(MqttApplicationMessage message)
         {
             var topic = IotTopic.FromIotString(message.Topic);
-            if (topic.Direction == MqttDirection.Up) return;
+            if (topic.Direction == MqttDirection.Down) return;
             switch (topic.Tag)
             {
                 case MqttTag.State:
@@ -65,7 +69,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 case MqttTag.Calibration:
                     await HandleCalibrationAsync(topic);
                     break;
-
+                case MqttTag.Alarm:
+                    await HandleAlarmAsync(topic, message.PayloadSegment.Array!);
+                    break;
                 default:
                     return;
             }
@@ -96,10 +102,11 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         private async Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
             var uri = Guid.Parse(topic.ConnUri!);
+            var connType = topic.ConnType;
             Guid? dataId = null;
-            switch (topic.EquipType)
+            switch (connType)
             {
-                case "rfid-reader":
+                case EquipConnType.RfidReader:
                     var rfid = JsonSerializer.Deserialize<RfidMsg>(msg, Options.CustomJsonSerializerOptions);
                     if (rfid is null)
                     {
@@ -108,9 +115,12 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     }
                     await HandleRfidMsgAsync(uri, rfid);
                     break;
-                case "tcp-server":
-                    TestDataReceive testDataReceive = new TestDataReceive(_client, _connectionMultiplexer);
-                    dataId = await testDataReceive.Handle(msg);
+                case EquipConnType.IotServer:
+                    // 根据连接ID查询设备ID
+                    EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
+                    Guid equipId = con.EquipId;
+                    TestDataReceive testDataReceive = new TestDataReceive(equipId, _client, _connectionMultiplexer, _mqttExplorer);
+                    dataId = await testDataReceive.Handle(msg, false);
                     break;
             }
 
@@ -169,5 +179,10 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             _logger.LogInformation($"device: {topic.EquipType} time calibrate succeed");
         }
 
+        private async Task HandleAlarmAsync(IotTopic topic, byte[] msg)
+        {
+            EquipNotice? notice = JsonSerializer.Deserialize<EquipNotice>(msg);
+            await _client.Insertable(notice).ExecuteCommandAsync();
+        }
     }
 }

@@ -16,6 +16,7 @@ using StackExchange.Redis;
 using System;
 using System.Text;
 using System.Text.Json;
+using Hgzn.Mes.Application.Main.Dtos.Base;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -54,7 +55,7 @@ public class EquipConnectService : SugarCrudAppService<
         // 从redis里查出来赋值给ReadDto
         foreach (EquipConnect item in querable.Items)
         {
-            bool connectState = database.StringGet(string.Format(CacheKeyFormatter.EquipState, EquipConnType.IotServer.ToString(), item.Id)) == "1" ? true : false;
+            bool connectState = database.StringGet(string.Format(CacheKeyFormatter.EquipState, EquipConnType.IotServer.ToString(), item.Id)) == "3" ? true : false;
             item.ConnectState = connectState;
         }
         querable = new PaginatedList<EquipConnect>(querable.Items, querable.Items.Count(), queryDto.PageIndex, queryDto.PageSize);
@@ -181,5 +182,19 @@ public class EquipConnectService : SugarCrudAppService<
         };
         connect.ProtocolEnum = protocolEnum;
         await PutStartConnect(guid);
+    }
+
+    public async Task<IEnumerable<NameValueDto>> GetNameValueListAsync()
+    {
+        var result = await Queryable
+            .OrderBy(t => t.OrderNum)
+            .Select<NameValueDto>(t=>new NameValueDto()
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Value = t.Id.ToString()
+            })
+            .ToListAsync();
+        return result;
     }
 }

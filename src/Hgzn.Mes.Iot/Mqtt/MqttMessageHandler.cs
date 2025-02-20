@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Domain.ValueObjects.Message.Base;
@@ -114,8 +115,6 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         private async Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
-            TestDataReceive testDataReceive = new TestDataReceive(_client, _connectionMultiplexer);
-            await testDataReceive.Handle(msg);
         }
 
         private async Task HandleCmdAsync(IotTopic topic, ConnInfo info)
@@ -127,6 +126,10 @@ namespace Hgzn.Mes.Iot.Mqtt
                 case CmdType.Conn:
                     var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
                     await SwitchEquipAsync(equip);
+                    break;
+                case CmdType.Collection:
+                    var equipCon = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
+                    await CollectionDataAsync(equipCon);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(info.Type));
@@ -143,6 +146,11 @@ namespace Hgzn.Mes.Iot.Mqtt
                     _ => throw new NotImplementedException()
                 };
                 await task;
+            }
+
+            async Task CollectionDataAsync(IEquipConnector equip)
+            {
+                
             }
         }
 

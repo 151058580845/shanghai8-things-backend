@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Net;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Shared.Enums;
@@ -22,7 +23,7 @@ public class EquipTcpSession : TcpSession
     private string Ip;
     private string Mac;
     // 多少个转一个（从前端配置进行）
-    private int _forwardLength = 10;
+    private int? _forwardLength = 10;
     private readonly IConnectionMultiplexer _connectionMultiplexer;
     private ISqlSugarClient _sqlSugarClient;
     private EquipConnect _equipConnect;
@@ -37,6 +38,7 @@ public class EquipTcpSession : TcpSession
         _sqlSugarClient = sqlSugarClient;
         _equipConnect = equipConnect;
         _mqttExplorer = mqttExplorer;
+        _forwardLength = server.ForwardRate;
     }
 
     private const int BodyStartIndex = 6;
@@ -75,34 +77,21 @@ public class EquipTcpSession : TcpSession
                 var length = messageLength - 6;
                 var newBuffer = new byte[length];
                 Buffer.BlockCopy(buffer, BodyStartIndex, newBuffer, 0, newBuffer.Length);
-
-                //获取所有转发地址
-                if (_equipConnect.ForwardEntities != null)
+                if (_forwardLength != null && _forwardNum == _forwardLength)
                 {
-                    List<Guid> list = _equipConnect.ForwardEntities.Select(x => x.Id).ToList();
-                    if (_forwardNum % _forwardLength == 0)
-                    {
-                        foreach (Guid guid in list)
-                        {
-                            var topic = IotTopicBuilder.CreateIotBuilder()
-                                .WithPrefix(TopicType.Iot)
-                                .WithDirection(MqttDirection.Down)
-                                .WithTag(MqttTag.Data)
-                                .WithDeviceType("tcp-server")
-                                .WithUri(guid.ToString()).Build();
-                            if (await _mqttExplorer.IsConnectedAsync())
-                            {
-                                await _mqttExplorer.PublishAsync(topic, buffer);
-                            }
-                        }
-
-                        _forwardNum = 1;
-                    }
+                    var topic = IotTopicBuilder.CreateIotBuilder()
+                                    .WithPrefix(TopicType.Iot)
+                                    .WithDirection(MqttDirection.Up)
+                                    .WithTag(MqttTag.Data)
+                                    .WithDeviceType(EquipConnType.IotServer.ToString())
+                                    .WithUri(_equipConnect.Id.ToString()).Build();
+                    await _mqttExplorer.PublishAsync(topic, buffer);
+                    _forwardNum = 0;
                 }
-
+                _forwardNum++;
                 //本地解析数据
-                TestDataReceive testDataReceive = new TestDataReceive(_sqlSugarClient, _connectionMultiplexer);
-                await testDataReceive.Handle(buffer);
+                TestDataReceive testDataReceive = new TestDataReceive(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
+                await testDataReceive.Handle(buffer, true);
             }
 
             _hasData = false;

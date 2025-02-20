@@ -18,34 +18,25 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
     {
         public Guid? CreatorId { get; set; }
 
-        [Description("创建时间")]
-        public DateTime CreationTime { get; set; }
+        [Description("创建时间")] public DateTime CreationTime { get; set; }
 
-        [Description("编号")]
-        public string Code { get; set; } = null!;
+        [Description("编号")] public string Code { get; set; } = null!;
 
-        [Description("连接Id")]
-        public Guid ConnectionId { get; set; }
+        [Description("连接Id")] public Guid ConnectionId { get; set; }
+        
         public EquipConnect? Connection { get; set; }
 
-        [Description("备注")]
-        public string? Remark { get; set; }
+        [Description("备注")] public string? Remark { get; set; }
 
-        [Description("采集频率")]
-        public Guid? CollectionConfigId { get; set; }
+        [Description("采集频率")] public Guid? CollectionConfigId { get; set; }
 
         public CollectionConfig? CollectionConfig { get; set; }
 
-        [Description("采集地址设置")]
-        public string? CollectionAddressStr { get; set; }
+        [Description("采集地址设置")] public string? CollectionAddressStr { get; set; }
 
-        [Description("采集数据主键")]
-        public Guid EquipReceiveDataId { get; set; }
-        [Description("采集数据")]
-        public EquipReceiveData? EquipReceiveData { get; set; }
-
-        [Description("触发时机")]
-        public Guid? Trigger { get; set; }
+        [Description("采集数据主键")] public Guid EquipReceiveDataId { get; set; }
+        
+        [Description("采集数据")] public EquipReceiveData? EquipReceiveData { get; set; }
 
         public bool State { get; set; } = true;
 

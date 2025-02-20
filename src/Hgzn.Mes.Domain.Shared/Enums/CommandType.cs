@@ -6,6 +6,7 @@ namespace Hgzn.Mes.Domain.Shared.Enums
     public enum CmdType
     {
         Conn,
+        Collection
     }
 
     public enum ConnStateType
@@ -14,6 +15,13 @@ namespace Hgzn.Mes.Domain.Shared.Enums
         Off,
         Run,
         Stop
+    }
+
+    public enum EquipNoticeType
+    {
+        [Description("设备上线")] Online,
+        [Description("设备下线")] Offline,
+        [Description("告警")] Alarm
     }
 
     /// <summary>
