@@ -696,6 +696,20 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "SystemCode"
         };
 
+        public static Menu SysConfig = new()
+        {
+            Id = Guid.Parse("8B91C05F-C0C7-55F1-84A3-0338ED7AC78E"),
+            Name = "配置管理",
+            Code = "sysConfig",
+            ScopeCode = "system:baseConfig:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:set-up",
+            Route = "/system/config/index",
+            OrderNum = 96,
+            ParentId = System.Id,
+            RouteName = "SystemConfig"
+        };
+
         // 主数据管理
         public static Menu MainData = new()
         {
@@ -1448,7 +1462,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Dict, DictQuery, DictAdd, DictEdit, DictRemove,
             //Notice, NoticeQuery, NoticeAdd, NoticeEdit, NoticeRemove,
             // Config, ConfigQuery, ConfigAdd, ConfigEdit, ConfigRemove,
-            SysCode,
+            SysCode,SysConfig,
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
