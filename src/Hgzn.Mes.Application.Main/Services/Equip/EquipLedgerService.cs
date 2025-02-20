@@ -2,12 +2,17 @@
 using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
 using StackExchange.Redis;
+
+using System.Text.Json.Serialization;
+
+using System.Text.Json;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -17,6 +22,14 @@ public class EquipLedgerService : SugarCrudAppService<
         EquipLedgerCreateDto, EquipLedgerUpdateDto>,
     IEquipLedgerService
 {
+
+    private readonly HttpClient _httpClient;
+
+    public EquipLedgerService(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
     public async Task<EquipLedger> GetEquipByIpAsync(string ipAddress)
     {
         return await Queryable.FirstAsync(t => t.IpAddress == ipAddress);
@@ -133,5 +146,65 @@ public class EquipLedgerService : SugarCrudAppService<
         List<RfidEquipReadDto> list =
             await DbContext.Queryable<RfidEquipReadDto>().Where(t => t.EquipId == equipId).ToListAsync();
         return list;
+    }
+
+    /// <summary>
+    ///  Api批量导入
+    /// </summary>
+    /// <param name="url"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public async Task<int> PostImportDatas(string url)
+    {
+        try
+        {
+            // 发送 GET 请求
+            var response = await _httpClient.GetAsync(url);
+
+            // 确保请求成功
+            response.EnsureSuccessStatusCode();
+
+            // 读取响应内容
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true, // 忽略大小写
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull // 忽略 null 值
+            };
+
+            var result = JsonSerializer.Deserialize<List<EquipLedgerCreateDto>>(jsonResponse, options);
+
+            var changeCount = 0;
+            if (result!=null && result.Any())
+            {
+
+                foreach (var item in result)
+                {
+                    var info = Mapper.Map<EquipLedger>(item);
+                    changeCount += DbContext.Insertable<EquipLedger>(info).ExecuteCommand();
+                }
+            }
+
+            return changeCount;
+        }
+        catch (HttpRequestException ex)
+        {
+            // 处理 HTTP 请求异常
+            Console.WriteLine($"HTTP 请求失败: {ex.Message}");
+            throw;
+        }
+        catch (JsonException ex)
+        {
+            // 处理 JSON 反序列化异常
+            Console.WriteLine($"JSON 反序列化失败: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // 处理其他异常
+            Console.WriteLine($"发生错误: {ex.Message}");
+            throw;
+        }
     }
 }
