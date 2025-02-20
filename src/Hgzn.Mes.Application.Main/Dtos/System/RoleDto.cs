@@ -13,7 +13,6 @@ namespace Hgzn.Mes.Application.Main.Dtos
 
     public class RoleReadDto : ReadDto
     {
-        public Guid Id { get; set; }
         public string Name { get; set; } = null!;
         public string Code { get; set; } = null!;
         public string Description { get; set; } = null!;

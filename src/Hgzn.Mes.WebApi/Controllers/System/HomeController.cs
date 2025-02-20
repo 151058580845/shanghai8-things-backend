@@ -68,7 +68,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// <returns>成功注册的用户/null</returns>
         [HttpPost]
         [Route("register")]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<UserReadDto>> Register(UserRegisterDto registerDto) =>
