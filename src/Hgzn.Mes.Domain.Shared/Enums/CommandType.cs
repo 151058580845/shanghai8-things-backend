@@ -16,6 +16,13 @@ namespace Hgzn.Mes.Domain.Shared.Enums
         Stop
     }
 
+    public enum EquipNoticeType
+    {
+        [Description("设备上线")] Online,
+        [Description("设备下线")] Offline,
+        [Description("告警")] Alarm
+    }
+
     /// <summary>
     /// 通信协议枚举类型
     /// </summary>

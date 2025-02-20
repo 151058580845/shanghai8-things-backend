@@ -10,18 +10,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Newtonsoft.Json;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
 {
     public class TestDataReceive
     {
         public ISqlSugarClient SqlSugarClient;
+        private Guid _equipId;
         private readonly IConnectionMultiplexer _connectionMultiplexer;
+        private readonly IMqttExplorer _mqttExplorer;
 
-        public TestDataReceive(ISqlSugarClient _client, IConnectionMultiplexer connectionMultiplexer)
+        public TestDataReceive(Guid equipId,
+            ISqlSugarClient _client,
+            IConnectionMultiplexer connectionMultiplexer,
+            IMqttExplorer mqttExplorer)
         {
+            this._equipId = equipId;
             this.SqlSugarClient = _client;
             this._connectionMultiplexer = connectionMultiplexer;
+            this._mqttExplorer = mqttExplorer;
         }
 
         /// <summary>
@@ -34,7 +45,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
         /// workStyle       字节10    不固定
         /// devHealthState   字节8     不固定
         /// acquData        字节2800  不固定
-        public async Task<Guid> Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg, bool needPublish)
         {
             string data = Encoding.UTF8.GetString(msg);
             Console.WriteLine(data);
@@ -85,7 +96,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
 
             ReceiveData entity = new ReceiveData()
             {
-                Id = Guid.NewGuid(),
+                Id = _equipId,
                 CreationTime = DateTime.Now,
                 SimuTestSysld = simuTestSysId,
                 DevTypeld = devTypeId,
@@ -116,7 +127,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
                 }
             }
 
-            ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            // ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
 
             // 获取电源电压异常
             List<string> sSupplyVoltageException = GetExceptionName(ulDevHealthState, ulSupplyVoltageState);
@@ -124,8 +135,35 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceive
             IDatabase redisDb = _connectionMultiplexer.GetDatabase();
             var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, compId);
             await redisDb.StringSetAsync(key, sSupplyVoltageException.Count);
+            EquipNotice equipNotice = new EquipNotice()
+            {
+                EquipId = _equipId,
+                SendTime = DateTime.Now,
+                NoticeType = EquipNoticeType.Alarm,
+                Title = "Receive Alarm",
+                Content = JsonConvert.SerializeObject(sSupplyVoltageException),
+                Description = "",
+            };
 
-            return receive.Id;
+            if (needPublish)
+            {
+                // 将异常发布到mqtt
+                await _mqttExplorer.PublishAsync(IotTopicBuilder
+                .CreateIotBuilder()
+                .WithPrefix(TopicType.Iot)
+                .WithDirection(MqttDirection.Up)
+                .WithTag(MqttTag.Alarm)
+                .WithDeviceType(EquipConnType.IotServer.ToString())
+                .WithUri(_equipId.ToString()!)
+                .Build(), Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(equipNotice)));
+            }
+
+            // 将异常记录到数据库
+            equipNotice.Id = Guid.NewGuid();
+            EquipNotice sequipNotice = await SqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+            
+            // return receive.Id;
+            return Guid.Empty;
         }
 
         // 定义状态位的枚举

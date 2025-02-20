@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Domain.ValueObjects.Message.Base;
@@ -114,8 +115,6 @@ namespace Hgzn.Mes.Iot.Mqtt
 
         private async Task HandleDataAsync(IotTopic topic, byte[] msg)
         {
-            TestDataReceive testDataReceive = new TestDataReceive(_client, _connectionMultiplexer);
-            await testDataReceive.Handle(msg);
         }
 
         private async Task HandleCmdAsync(IotTopic topic, ConnInfo info)

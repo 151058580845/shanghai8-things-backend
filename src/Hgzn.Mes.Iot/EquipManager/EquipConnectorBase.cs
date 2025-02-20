@@ -42,7 +42,10 @@ namespace Hgzn.Mes.Iot.EquipManager
             // 记录到redis服务器
             var database = _connectionMultiplexer.GetDatabase();
             var key = string.Format(CacheKeyFormatter.EquipState, _connType.ToString(), _uri);
-            await database.StringSetAsync(key, (int)ConnStateType.On);
+            if (stateType == ConnStateType.Run)
+                await database.StringSetAsync(key, (int)ConnStateType.Run);
+            if (stateType == ConnStateType.Off || stateType == ConnStateType.Stop)
+                await database.StringSetAsync(key, (int)ConnStateType.Off);
 
             await _mqttExplorer.PublishAsync(UserTopicBuilder
             .CreateUserBuilder()

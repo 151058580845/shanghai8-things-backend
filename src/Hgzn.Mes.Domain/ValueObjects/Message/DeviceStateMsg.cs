@@ -12,10 +12,10 @@ namespace Hgzn.Mes.Domain.ValueObjects.Message
     {
         public DeviceStateMsg(ArraySegment<byte> raw)
         {
-            State = (ConnStateType)raw[0];
+            State = (EquipNoticeType)raw[0];
         }
 
-        public ConnStateType State { get; set; }
+        public EquipNoticeType State { get; set; }
         
         public byte[] FrameHeader { get; set; }
         public byte FrameType { get; set; }

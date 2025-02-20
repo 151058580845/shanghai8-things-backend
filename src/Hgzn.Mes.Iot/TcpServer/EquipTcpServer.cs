@@ -21,6 +21,8 @@ public class EquipTcpServer : NetCoreServer.TcpServer
     private EquipConnect _equipConnect;
     private IMqttExplorer _mqttExplorer;
 
+    public int? ForwardRate { get; set; }
+
     public EquipTcpServer(string address, int port,
         IConnectionMultiplexer connectionMultiplexer,
         ISqlSugarClient sqlSugarClient,
@@ -31,6 +33,7 @@ public class EquipTcpServer : NetCoreServer.TcpServer
         _sqlSugarClient = sqlSugarClient;
         _equipConnect = equipConnect;
         _mqttExplorer = mqttExplorer;
+        ForwardRate = equipConnect.ForwardRate;
     }
 
     protected override TcpSession CreateSession()

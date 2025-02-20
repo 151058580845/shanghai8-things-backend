@@ -1,5 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Iot.EquipManager;
@@ -12,6 +14,8 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using SqlSugar;
 using StackExchange.Redis;
+using System;
+using System.Text.RegularExpressions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -51,5 +55,24 @@ var host = builder.Build();
 
 var loggerAdapter = host.Services.GetService<ILogger<LoggerAdapter>>()!;
 LoggerAdapter.Initialize(loggerAdapter);
+
+var connectionMultiplexer = host.Services.GetService<IConnectionMultiplexer>();
+if (connectionMultiplexer != null)
+{
+    var db = connectionMultiplexer.GetDatabase();
+    // 构建匹配模式
+    string pattern = "^equip:.+:.+:state$"; // equip:XXXXX:XXXXXX:state
+
+    // 获取所有匹配的键
+    var server = connectionMultiplexer.GetServer(connectionMultiplexer.Configuration);
+    var keys = server.Keys().ToArray();
+
+    // 遍历所有匹配的键并设置值为 0
+    foreach (RedisKey key in keys)
+    {
+        if (Regex.Match(key.ToString(), pattern).Success)
+            await db.StringSetAsync(key, 0);
+    }
+}
 
 host.Run();
