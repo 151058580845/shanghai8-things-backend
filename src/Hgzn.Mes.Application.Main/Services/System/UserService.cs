@@ -26,8 +26,8 @@ using SqlSugar;
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     public class UserService : SugarCrudAppService<
-            User, Guid,
-            UserReadDto, UserQueryDto,UserRegisterDto,UserUpdateDto>,
+        User, Guid,
+        UserReadDto, UserQueryDto,UserRegisterDto,UserUpdateDto>,
         IUserService
     {
         public UserService(
@@ -138,10 +138,10 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public override async Task<IEnumerable<UserReadDto>> GetListAsync(UserQueryDto? query)
         {
             var users = await Queryable
-                .Where(u => u.Phone != null && (string.IsNullOrEmpty(query.Phone) || u.Phone.Contains(query.Phone)))
-                .Where(u => string.IsNullOrEmpty(query.UserName) || u.Username.Contains(query.UserName))
-                .Where(u => query.DeptId == null || u.DeptId == query.DeptId)
-                .Where(u =>query.State == null || u.State == query.State)
+                .WhereIF(string.IsNullOrEmpty(query?.Phone), u => u.Phone == null || u.Phone.Contains(query!.Phone!))
+                .WhereIF(string.IsNullOrEmpty(query?.UserName) , u => u.Username.Contains(query!.UserName!))
+                .WhereIF(query?.DeptId != null, u => u.DeptId == query!.DeptId)
+                .WhereIF(query?.State == null, u => u.State == query!.State)
                 .Includes(u => u.Roles)
                 .ToListAsync();
             return Mapper.Map<IEnumerable<UserReadDto>>(users);

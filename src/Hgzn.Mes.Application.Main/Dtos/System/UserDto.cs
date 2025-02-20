@@ -13,7 +13,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         /// </summary>s
         public string? Name { get; set; }
 
-        public string Salt { get; set; } = null!;
+        //public string Salt { get; set; } = null!;
         public string? Nick { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
@@ -58,7 +58,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public UserSettingReadDto? Settings { get; set; }
 
         public UserDetailReadDto? Detail { get; set; }
-        public List<RoleReadDto> Roles{ get; set; }
+        public List<RoleReadDto>? Roles{ get; set; }
         public bool State { get; set; }
         public Guid? DeptId{ get; set; }
         public Gender? Gender { get; set; }

@@ -6,9 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="DbContexts\DesignTimeDbContextFactory.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.2.0" />
@@ -41,19 +38,13 @@
     <ProjectReference Include="..\Hgzn.Mes.Domain\Hgzn.Mes.Domain.csproj" />
   </ItemGroup>
 
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Reference Include="SkiaSharp">
-	    <HintPath>..\Hgzn.Mes.WebApi\bin\Debug\net8.0\SkiaSharp.dll</HintPath>
-	  </Reference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="ip2region.db">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Update="ip2region.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
