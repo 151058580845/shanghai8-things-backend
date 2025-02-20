@@ -20,6 +20,9 @@ public class CodeRuleDefine : UniversalEntity, IOrder
     [Description("当前流水号")]
     public int? NowFlow { get; set; }
 
+    [Description("原始流水号")]
+    public int? InitialNowFlow { get; set; }
+
     [Description("确认当前编码被应用")]
     public bool? NowFlowIsSure { get; set; }
 
@@ -65,6 +68,7 @@ public class CodeRuleDefine : UniversalEntity, IOrder
         OrderNum = 0,
         MaxFlow = 17,
         NowFlow = 20536,
+        InitialNowFlow= 20536,
         CodeCover = '*'
     };
 
@@ -95,6 +99,7 @@ public class CodeRuleDefine : UniversalEntity, IOrder
         OrderNum = 0,
         MaxFlow = 17,
         NowFlow = 20536,
+        InitialNowFlow = 20536,
         CodeCover = '*'
     };
 

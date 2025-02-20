@@ -9,6 +9,7 @@ using Hgzn.Mes.Infrastructure.Utilities;
 using Microsoft.Extensions.Logging;
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -39,10 +40,7 @@ public class CodeRuleService : SugarCrudAppService<
         var entities = await Queryable
               .WhereIF(!string.IsNullOrEmpty(input.CodeName), x => x.CodeName.Contains(input.CodeName))
                .WhereIF(!string.IsNullOrEmpty(input.CodeNumber), x => x.CodeNumber.Contains(input.CodeNumber))
-               .WhereIF(!string.IsNullOrEmpty(input.BasicDomain), x => x.BasicDomain.Contains(input.BasicDomain))
-               .WhereIF(!string.IsNullOrEmpty(input.BasicDomain), x => x.BasicDomain.Contains(input.BasicDomain))
                .WhereIF(input.State != null, x => x.State == input.State)
-                .WhereIF(!string.IsNullOrEmpty(input.Remark), x => x.Remark.Contains(input.Remark))
             .OrderBy(x => x.OrderNum)
             .ToPaginatedListAsync(input.PageIndex, input.PageSize);
         return Mapper.Map<PaginatedList<CodeRuleReadDto>>(entities);
@@ -78,9 +76,35 @@ public class CodeRuleService : SugarCrudAppService<
                 switch (rule.CodeRuleType)
                 {
                     case "SerialNumber":
+                        // 如果为空设置 上一次的重置天数
+                        if (string.IsNullOrEmpty(rule.SourceKey)  )
+                        {
+                            rule.SourceKey =DateTime.Now.ToString("yyyyMMdd");
+                        }
+
+                        bool isParsed = DateTime.TryParseExact(
+                            rule.SourceKey,               // 待解析的日期字符串
+                            "yyyyMMdd",               // 期望的日期格式
+                            CultureInfo.InvariantCulture,  // 使用固定的文化信息，不依赖于系统的区域设置
+                            DateTimeStyles.None,      // 不进行额外的日期处理
+                            out DateTime ruleDate              // 输出的 DateTime 对象
+                        );
+
+                       // DateTime.TryParse(rule.SourceKey.ToString(), out DateTime ruleDate);
+                        // 重置流水号
+                        if (ruleDate.Day != DateTime.Now.Day)
+                        {
+                            rule.NowFlow = rule.InitialNowFlow;
+                            rule.SourceKey = DateTime.Now.ToString("yyyyMMdd");
+                        }
+
                         rule.NowFlow++;
                         sb.Append((rule.NowFlow).ToString()?.PadLeft((int)rule.MaxFlow!, (char)rule.CodeCover!));
                         rule.NowFlowIsSure = false;
+
+                       
+                        // 保存流水号
+                        var saveCount= DbContext.Updateable<CodeRuleDefine>(rule).ExecuteCommand();
                         break;
 
                     case "Constant":
@@ -114,7 +138,6 @@ public class CodeRuleService : SugarCrudAppService<
         var users = await Queryable
         .WhereIF(!string.IsNullOrEmpty(queryDto.CodeName), x => x.CodeName.Contains(queryDto.CodeName))
         .WhereIF(!string.IsNullOrEmpty(queryDto.CodeNumber), x => x.CodeNumber.Contains(queryDto.CodeNumber))
-        .WhereIF(!string.IsNullOrEmpty(queryDto.BasicDomain), x => x.BasicDomain.Contains(queryDto.BasicDomain))
         .OrderBy(x => x.OrderNum)
         .ToArrayAsync();
 
