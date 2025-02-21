@@ -6,6 +6,9 @@ public enum Location
 {
 }
 
+/// <summary>
+///     非房间类型写在过道之后
+/// </summary>
 public enum RoomPurpose
 {
     [Description("试验室")]
@@ -30,5 +33,15 @@ public enum RoomPurpose
     Warehouse,
 
     [Description("卫生间")]
-    Restroom
+    Restroom,
+
+    [Description("过道")]
+    Hallway,
+    
+    [Description("门")]
+    Gate,
+    
+    [Description("楼梯")]
+    Stair,
+
 }

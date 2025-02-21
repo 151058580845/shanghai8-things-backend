@@ -8,5 +8,4 @@ public interface IEquipNoticeService : ICrudAppService<
     EquipNoticeReadDto, EquipNoticeQueryDto,
     EquipNoticeCreateDto>
 {
-    
 }

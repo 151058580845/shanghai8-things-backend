@@ -48,6 +48,11 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     public bool IsMoving { get; set; }
 
     /// <summary>
+    ///     此设备是否可移动
+    /// </summary>
+    public bool IsMovable { get; set; }
+
+    /// <summary>
     /// 最后移动时间
     /// </summary>
     public DateTime? LastMoveTime { get; set; }

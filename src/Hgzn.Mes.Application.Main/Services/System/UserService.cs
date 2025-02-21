@@ -150,7 +150,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public async Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds)
         {
             var user = (await Queryable.FirstAsync(u => u.Id == userId)) ??
-                       throw new NotFoundException("user not found");
+                throw new NotFoundException("user not found");  
             user.Roles = roleIds.Select(id => new Role { Id = id }).ToList();
             var count = await DbContext.Updateable(user).ExecuteCommandAsync();
             return count == 0 ? null : Mapper.Map<UserReadDto>(user);

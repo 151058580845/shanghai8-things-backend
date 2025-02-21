@@ -11,5 +11,7 @@
         public const string EquipHealthStatus = "simuTestSysId:{0}:devTypeId:{1}:compId:{2}:equipHealthStatus";
 
         public const string EquipOperationStatus = "equipOperationStatus:{0}:status";
+
+        public const string EquipPosAlarm = "equip:{0}:{1}:alarm:pos";
     }
 }
