@@ -8,6 +8,10 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json.Nodes;
 using StackExchange.Redis;
+using Hgzn.Mes.Iot.EquipConnectManager;
+using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
+using System.Collections.Generic;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 
 namespace Hgzn.Mes.Iot.EquipManager
 {
@@ -30,32 +34,39 @@ namespace Hgzn.Mes.Iot.EquipManager
             this._connectionMultiplexer = connectionMultiplexer;
         }
 
-        public async Task<IEquipConnector> AddEquip(Guid id, EquipConnType connType, string connectStr)
+        public async Task<IEquipConnector> AddEquip(Guid id, EquipConnType connType, ConnInfo connectInfo)
         {
             if (Connections.TryGetValue(id, out var value))
             {
                 return value;
             }
 
-            IEquipConnector? connector;
+            IEquipConnector? equipConnector = null;
             switch (connType)
             {
                 case EquipConnType.RfidReader:
-                    connector = new RfidReaderConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
+                    equipConnector = new RfidReaderConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
                         connType);
-                    if (!Connections.TryAdd(id, connector))
+                    if (!Connections.TryAdd(id, equipConnector))
                         throw new Exception("equip exist");
                     break;
                 case EquipConnType.IotServer:
-                    connector = new TcpServer.TcpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
-                        connType);
-                    if (!Connections.TryAdd(id, connector))
-                        throw new Exception("equip exist");
+                    switch (connectInfo.ConnType)
+                    {
+                        case ConnType.Socket:
+                            equipConnector = new TcpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType);
+                            if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
+                            break;
+                        case ConnType.ModbusTcp:
+                            equipConnector = new EquipModbusTcpConnect(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType);
+                            if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
+                            break;
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("equipType");
             }
-            return connector ?? throw new ArgumentNullException();
+            return equipConnector ?? throw new ArgumentNullException();
         }
 
         public IEquipConnector? GetEquip(Guid id)
@@ -66,12 +77,6 @@ namespace Hgzn.Mes.Iot.EquipManager
             }
 
             return null;
-        }
-
-        public JsonNode? GetJsonNode(string conStr)
-        {
-            JsonNode? jn = JsonNode.Parse(conStr);
-            return jn;
         }
     }
 }

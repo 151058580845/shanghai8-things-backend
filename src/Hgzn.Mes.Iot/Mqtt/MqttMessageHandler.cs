@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
@@ -12,6 +13,7 @@ using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
 using Hgzn.Mes.Iot.EquipManager;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
+using MySqlX.XDevAPI;
 using SqlSugar;
 using StackExchange.Redis;
 using System;
@@ -124,12 +126,14 @@ namespace Hgzn.Mes.Iot.Mqtt
             switch (info.Type)
             {
                 case CmdType.Conn:
-                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
+                    IEquipConnector equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info);
                     await SwitchEquipAsync(equip);
                     break;
                 case CmdType.Collection:
-                    var equipCon = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
-                    await CollectionDataAsync(equipCon);
+                    // 如果是采集点ID,则需要获取连接ID,并获得对应的连接
+                    EquipDataPoint equipDataPoint = await _client.Queryable<EquipDataPoint>().Where(x => x.Id == uri).Includes(x => x.Connection).FirstAsync();
+                    IEquipConnector equipCon = _manager.GetEquip(equipDataPoint.Connection!.Id) ?? await _manager.AddEquip(equipDataPoint.Connection.Id, topic.ConnType!, info);
+                    await SwitchEquipAsync(equipCon);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(info.Type));
@@ -140,17 +144,12 @@ namespace Hgzn.Mes.Iot.Mqtt
                 var task = info.StateType switch
                 {
                     ConnStateType.On => equip.ConnectAsync(info),
-                    ConnStateType.Run => equip.StartAsync(),
+                    ConnStateType.Run => equip.StartAsync(uri),
                     ConnStateType.Stop => equip.StopAsync(),
                     ConnStateType.Off => equip.CloseConnectionAsync(),
                     _ => throw new NotImplementedException()
                 };
                 await task;
-            }
-
-            async Task CollectionDataAsync(IEquipConnector equip)
-            {
-                
             }
         }
 

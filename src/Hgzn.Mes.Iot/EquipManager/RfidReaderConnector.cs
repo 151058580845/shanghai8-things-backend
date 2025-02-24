@@ -27,7 +27,7 @@ public class RfidReaderConnector : EquipConnectorBase
         _connType = connType;
     }
 
-    public override async Task StartAsync()
+    public override async Task StartAsync(Guid uri)
     {
         StartReadingTag(_client);
         await UpdateStateAsync(ConnStateType.Run);

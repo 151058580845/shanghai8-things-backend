@@ -1,9 +1,19 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
+using Hgzn.Mes.Domain.Entities.Equip.EquipDataPoint;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
+using StackExchange.Redis;
+using System;
+using System.Text;
+using System.Text.Json;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip
 {
@@ -12,6 +22,19 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         EquipDataPointReadDto, EquipDataPointQueryDto,
         EquipDataPointCreateDto, EquipDataPointUpdateDto>, IEquipDataPointService
     {
+        private IMqttExplorer _mqttExplorer;
+        private ISqlSugarClient _sugarClient;
+        private readonly IConnectionMultiplexer _connectionMultiplexer;
+
+        public EquipDataPointService(IMqttExplorer mqttExplorer,
+            IConnectionMultiplexer connectionMultiplexer,
+            ISqlSugarClient sugarClient)
+        {
+            this._mqttExplorer = mqttExplorer;
+            this._connectionMultiplexer = connectionMultiplexer;
+            this._sugarClient = sugarClient;
+        }
+
         public override async Task<IEnumerable<EquipDataPointReadDto>> GetListAsync(
             EquipDataPointQueryDto? queryDto = null)
         {
@@ -20,11 +43,6 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.Code),
                     t => t.Code.Contains(queryDto!.Code!))
                 .ToListAsync();
-            // foreach (var entity in entities)
-            // {
-                //获取连接状态
-                // entity.Data = await RedieService.GetRedisDataAsync(entity.Code);
-            // }
 
             var outputs = Mapper.Map<IEnumerable<EquipDataPointReadDto>>(entities);
 
@@ -34,19 +52,19 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public override async Task<PaginatedList<EquipDataPointReadDto>> GetPaginatedListAsync(
             EquipDataPointQueryDto queryDto)
         {
-            var entites = await Queryable
+            PaginatedList<EquipDataPoint> entites = await Queryable
+                .Includes(edp => edp.Connection)
                 .WhereIF(queryDto.State != null, t => t.State == queryDto.State)
                 .WhereIF(!string.IsNullOrEmpty(queryDto.Code), t => t.Code.Contains(queryDto!.Code!))
                 .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
-            var outputs = Mapper.Map<PaginatedList<EquipDataPointReadDto>>(entites);
-            foreach (EquipDataPointReadDto entity in outputs.Items)
+            foreach (EquipDataPoint entity in entites.Items)
             {
-                if (entity.ConnectionId != null)
-                {
-                    //获取连接状态
-                    // entity.Data = await RedieService.GetRedisDataAsync(entity.Code);
-                }
+                //获取连接状态
+                IDatabase database = _connectionMultiplexer.GetDatabase();
+                bool isConnect = await database.StringGetAsync(string.Format(CacheKeyFormatter.EquipDataPointOperationStatus, entity.Id)) == 1 ? true : false;
+                entity.CollectStatus = isConnect ? "Pending" : "None";
             }
+            PaginatedList<EquipDataPointReadDto> outputs = Mapper.Map<PaginatedList<EquipDataPointReadDto>>(entites);
 
             return outputs;
         }
@@ -58,26 +76,30 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         /// <returns></returns>
         public async Task PutStartConnect(Guid id)
         {
-            //try
-            //{
-            //    var dataPoint = await GetEntityByIdAsync(id);
-            //    dataPoint.Connection = await _equipConnect.GetEntityByIdAsync(dataPoint.ConnectionId);
-            //    if (await _equipConnService.IsConnectedAsync(dataPoint.ConnectionId))
-            //    {
-            //        await _equipDataPointManager.StartCollectAsync(dataPoint);
-            //        //将点位加入队列中
-            //        await _collectionJob.AddDataPoint(dataPoint);
-            //    }
-            //    else
-            //    {
-            //        throw new ApplicationException("找不到该连接");
-            //    }
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine(e);
-            //    throw;
-            //}
+            EquipDataPoint equipDataPoint = await Queryable.Where(it => it.Id == id)
+           .Includes(x => x.Connection, c => c!.EquipLedger, el => el.EquipType)
+           .FirstAsync();
+
+            if (equipDataPoint == null) return;
+            EquipConnect connect = equipDataPoint.Connection!;
+
+            var startInfo = new ConnInfo
+            {
+                ConnType = connect.ProtocolEnum,
+                ConnString = connect.ConnectStr,
+                Type = CmdType.Collection,
+                StateType = ConnStateType.Run,
+            };
+
+            var topic = IotTopicBuilder.CreateIotBuilder()
+                    .WithPrefix(TopicType.Iot)
+                    .WithDirection(MqttDirection.Down)
+                    .WithTag(MqttTag.Cmd)
+                    .WithDeviceType(connect.EquipLedger?.EquipType?.ProtocolEnum ??
+            throw new ArgumentNullException("equip type not exist"))
+                    .WithUri(id.ToString()).Build();
+            if (await _mqttExplorer.IsConnectedAsync())
+                await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(startInfo)));
         }
 
         /// <summary>
@@ -87,15 +109,31 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         /// <returns></returns>
         public async Task PutStopConnect(Guid id)
         {
-            //var dataPoint = await GetEntityByIdAsync(id);
-            //if (await _equipConnService.IsConnectedAsync(dataPoint.ConnectionId))
-            //{
-            //    await _equipDataPointManager.StopCollectAsync(dataPoint);
-            //}
-            //else
-            //{
-            //    throw new ApplicationException("找不到该连接");
-            //}
+            EquipDataPoint equipDataPoint = await Queryable.Where(it => it.Id == id)
+           .Includes(x => x.Connection, c => c!.EquipLedger, el => el.EquipType)
+           .FirstAsync();
+            if (equipDataPoint == null) return;
+            EquipConnect connect = equipDataPoint.Connection!;
+
+            IotTopicBuilder iotTopicBuilder = IotTopicBuilder.CreateIotBuilder()
+                    .WithPrefix(TopicType.Iot)
+                    .WithDirection(MqttDirection.Down)
+                    .WithTag(MqttTag.Cmd)
+                    .WithDeviceType(connect.EquipLedger?.EquipType?.ProtocolEnum ??
+                        throw new ArgumentNullException("equip type not exist"))
+                    .WithUri(connect.Id.ToString());
+
+            string topic = iotTopicBuilder.Build();
+
+            var stopInfo = new ConnInfo
+            {
+                ConnType = connect.ProtocolEnum,
+                ConnString = connect.ConnectStr,
+                Type = CmdType.Conn,
+                StateType = ConnStateType.Off,
+            };
+
+            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(stopInfo)));
         }
     }
 }

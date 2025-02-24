@@ -11,7 +11,7 @@ using SqlSugar;
 using StackExchange.Redis;
 using Buffer = System.Buffer;
 
-namespace Hgzn.Mes.Iot.TcpServer;
+namespace Hgzn.Mes.Iot.EquipConnectManager;
 
 public class EquipTcpSession : TcpSession
 {
@@ -34,7 +34,7 @@ public class EquipTcpSession : TcpSession
         EquipConnect equipConnect,
         IMqttExplorer mqttExplorer) : base(server)
     {
-        this._connectionMultiplexer = connectionMultiplexer;
+        _connectionMultiplexer = connectionMultiplexer;
         _sqlSugarClient = sqlSugarClient;
         _equipConnect = equipConnect;
         _mqttExplorer = mqttExplorer;
@@ -100,7 +100,7 @@ public class EquipTcpSession : TcpSession
 
     protected override void OnConnected()
     {
-        var ipEndPoint = this.Socket.RemoteEndPoint as IPEndPoint;
+        var ipEndPoint = Socket.RemoteEndPoint as IPEndPoint;
         if (ipEndPoint == null) return;
         Ip = ipEndPoint.ToString();
         Mac = ipEndPoint.Address.ToString();

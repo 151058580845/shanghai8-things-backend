@@ -7,9 +7,9 @@ using NetCoreServer;
 using SqlSugar;
 using StackExchange.Redis;
 
-namespace Hgzn.Mes.Iot.TcpServer;
+namespace Hgzn.Mes.Iot.EquipConnectManager;
 
-public class EquipTcpServer : NetCoreServer.TcpServer
+public class EquipTcpServer : TcpServer
 {
     private readonly List<TcpSession> _tcpSessions = [];
     private readonly Dictionary<Guid, IPAddress?> _sessionDictionary = new();

@@ -26,7 +26,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
 
         public bool ConnectState { get; set; } = false;
 
-        public DataPointStatus CollectStatus { get; set; }
+        public string CollectStatus { get; set; }
         /// <summary>
         /// 当前的数据值
         /// </summary>
