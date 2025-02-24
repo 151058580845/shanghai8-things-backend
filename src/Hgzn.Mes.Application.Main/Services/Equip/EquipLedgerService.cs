@@ -13,6 +13,7 @@ using StackExchange.Redis;
 using System.Text.Json.Serialization;
 
 using System.Text.Json;
+using Hgzn.Mes.Domain.Shared.Enum;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -206,5 +207,15 @@ public class EquipLedgerService : SugarCrudAppService<
             Console.WriteLine($"发生错误: {ex.Message}");
             throw;
         }
+    }
+
+    public async Task<IEnumerable<EquipLedgerReadDto>> GetMissingDevicesAlarmAsync()
+    {
+        var entities = await DbContext.Queryable<EquipLedger>()
+            .Includes(e => e.Room)
+            .Where(e => e.IsMovable &&
+            (e.RoomId == null || (int)e.Room!.Purpose >= (int)RoomPurpose.Hallway) &&
+            DateTime.UtcNow.AddMinutes(-30) >= e.LastMoveTime).ToArrayAsync();
+        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 }

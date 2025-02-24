@@ -14,6 +14,8 @@
         // 用于展示设备操作状态,停止,暂停,运行,中止
         public const string EquipOperationStatus = "equipOperationStatus:{0}:status";
 
+        public const string EquipPosAlarm = "equip:{0}:{1}:alarm:pos";
+
         // 用于指示数据采集状态 开启/停止 , 1是开始,0是停止
         public const string EquipDataPointOperationStatus = "equipDataPointOperationStatus:{0}:status";
 

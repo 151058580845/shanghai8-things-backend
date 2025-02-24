@@ -7,6 +7,7 @@ using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MySqlX.XDevAPI;
@@ -24,18 +25,22 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         public IotMessageHandler(
             ILogger<IotMessageHandler> logger,
             SqlSugarContext context,
-            IConnectionMultiplexer connectionMultiplexer)
+            IConnectionMultiplexer connectionMultiplexer,
+            IConfiguration configuration
+            )
         {
             _logger = logger;
             _client = context.DbContext;
             _connectionMultiplexer = connectionMultiplexer;
+            _pos_interval = configuration.GetValue<int?>("PosInterval") ?? 3;
         }
 
         private readonly ILogger<IotMessageHandler> _logger;
         private readonly ISqlSugarClient _client;
         private IMqttExplorer _mqttExplorer = null!;
         private static ConcurrentDictionary<string, List<(int heart, int breath)>> _rawDataPackage = new();
-        private static IConnectionMultiplexer _connectionMultiplexer;
+        private readonly IConnectionMultiplexer _connectionMultiplexer;
+        private readonly int _pos_interval;
         private const int countIndex = 60;
 
         public void Initialize(IMqttExplorer mqttExplorer)
@@ -126,10 +131,6 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         }
 
-        private async Task HandleDateAsync(IotTopic topic, Guid dataId)
-        {
-            // _client.Insertable<>()
-        }
         private async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
         {
             var targetId = Guid.Parse(msg.Userdata ?? throw new ArgumentNullException("userdata not exist"));
@@ -150,13 +151,14 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             var tids = equip.PosTags is null ? null : equip.PosTags.Split(';');
 
             //原先设备已绑定则解绑
-            if (equip.RoomId is not null)
+            if (equip.RoomId is not null && (equip.LastMoveTime is null ||
+                (DateTime.UtcNow - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
             {
                 equip.RoomId = null;
                 equip.IsMoving = true;
                 equip.LastMoveTime = DateTime.UtcNow;
             }
-            else //未绑定设备绑定至新房间
+            else//未绑定设备绑定至新房间
             {
                 equip.RoomId = rfidRoom;
                 equip.LastMoveTime = DateTime.UtcNow;

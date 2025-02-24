@@ -27,4 +27,6 @@ public interface IEquipLedgerService : ICrudAppService<
     /// <param name="url"></param>
     /// <returns></returns>
     Task<int> PostImportDatas(string url);
+
+    Task<IEnumerable<EquipLedgerReadDto>> GetMissingDevicesAlarmAsync();
 }
