@@ -125,35 +125,38 @@ public sealed class SqlSugarContext
 
     public void InitDatabase()
     {
-        //var uri = _dbOptions.Url!.Split(";");
-        //var newDatabaseName = uri[1].Substring(uri[1].IndexOf('=') + 1);
-        //uri[1] = "DATABASE=postgres";
-        //string connectionString = string.Join(";", uri);
+        if (_dbOptions.DbType == DbType.PostgreSQL || _dbOptions.DbType == DbType.OpenGauss)
+        {
+            var uri = _dbOptions.Url!.Split(";");
+            var newDatabaseName = uri[1].Substring(uri[1].IndexOf('=') + 1);
+            uri[1] = "DATABASE=postgres";
+            string connectionString = string.Join(";", uri);
         
-        //var connConfig = new ConnectionConfig()
-        //{
-        //    ConfigId = DefaultConnectionStringName,
-        //    DbType = _dbOptions.DbType ?? DbType.Sqlite,
-        //    ConnectionString = connectionString,
-        //    InitKeyType = InitKeyType.Attribute,
-        //    IsAutoCloseConnection = true
-        //};
-        //var client = new SqlSugarClient(connConfig);
+            var connConfig = new ConnectionConfig()
+            {
+                ConfigId = DefaultConnectionStringName,
+                DbType = _dbOptions.DbType ?? DbType.Sqlite,
+                ConnectionString = connectionString,
+                InitKeyType = InitKeyType.Attribute,
+                IsAutoCloseConnection = true
+            };
+            var client = new SqlSugarClient(connConfig);
         
-        //string checkDbQuery = $"SELECT 1 FROM pg_database WHERE datname = '{newDatabaseName}'";
-        //var data =  client.Ado.SqlQuery<string>(checkDbQuery);
-        //if (data.Count == 0)
-        //{
-        //    Console.WriteLine($"Database '{newDatabaseName}' does not exist. Creating it...");
-        //    // 如果数据库不存在，创建数据库
-        //    string createDbQuery = $"CREATE DATABASE {newDatabaseName}";
-        //    client.Ado.SqlQuery<string>(createDbQuery);
-        //    Console.WriteLine($"Database '{newDatabaseName}' created.");
-        //}
-        //else
-        //{
-        //    Console.WriteLine($"Database '{newDatabaseName}' already exists.");
-        //}
+            string checkDbQuery = $"SELECT 1 FROM pg_database WHERE datname = '{newDatabaseName}'";
+            var data =  client.Ado.SqlQuery<string>(checkDbQuery);
+            if (data.Count == 0)
+            {
+                Console.WriteLine($"Database '{newDatabaseName}' does not exist. Creating it...");
+                // 如果数据库不存在，创建数据库
+                string createDbQuery = $"CREATE DATABASE {newDatabaseName}";
+                client.Ado.SqlQuery<string>(createDbQuery);
+                Console.WriteLine($"Database '{newDatabaseName}' created.");
+            }
+            else
+            {
+                Console.WriteLine($"Database '{newDatabaseName}' already exists.");
+            }
+        }
 
         InitTables();
     }
