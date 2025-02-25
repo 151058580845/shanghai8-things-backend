@@ -43,7 +43,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         private const int countIndex = 60;
         public void Initialize(IMqttExplorer mqttExplorer)
         {
-            _manager.Initialize(mqttExplorer, _connectionMultiplexer);
+            _manager.Initialize(mqttExplorer);
             _mqttExplorer = mqttExplorer;
         }
 
@@ -124,11 +124,11 @@ namespace Hgzn.Mes.Iot.Mqtt
             switch (info.Type)
             {
                 case CmdType.Conn:
-                    var equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
+                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
                     await SwitchEquipAsync(equip);
                     break;
                 case CmdType.Collection:
-                    var equipCon = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
+                    var equipCon = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, topic.ConnType!, info.ConnString!);
                     await CollectionDataAsync(equipCon);
                     break;
                 default:

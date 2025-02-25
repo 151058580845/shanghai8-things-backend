@@ -15,22 +15,27 @@ namespace Hgzn.Mes.Iot.EquipManager
     {
         private IMqttExplorer _mqtt = null!;
         private readonly ISqlSugarClient _client;
-        private readonly IMqttExplorer _mqttExplorer;
         private IConnectionMultiplexer _connectionMultiplexer;
         public static ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
 
-        public ConnManager(ISqlSugarClient client)
+        public ConnManager(
+            ISqlSugarClient client,
+            IConnectionMultiplexer connectionMultiplexer)
         {
-            this._client = client;
+            _client = client;
+            _connectionMultiplexer = connectionMultiplexer;
         }
 
-        public void Initialize(IMqttExplorer mqttExplorer, IConnectionMultiplexer connectionMultiplexer)
+        /// <summary>
+        /// 因为有循环依赖所以不放在构造函数里注入
+        /// </summary>
+        /// <param name="mqttExplorer"></param>
+        public void Initialize(IMqttExplorer mqttExplorer)
         {
             _mqtt = mqttExplorer;
-            this._connectionMultiplexer = connectionMultiplexer;
         }
 
-        public async Task<IEquipConnector> AddEquip(Guid id, EquipConnType connType, string connectStr)
+        public IEquipConnector AddEquip(Guid id, EquipConnType connType, string connectStr)
         {
             if (Connections.TryGetValue(id, out var value))
             {
