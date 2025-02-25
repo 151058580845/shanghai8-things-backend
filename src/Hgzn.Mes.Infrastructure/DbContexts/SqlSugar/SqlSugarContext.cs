@@ -16,6 +16,7 @@ using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
+using Hgzn.Mes.Domain.Entities.Equip;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -208,6 +209,8 @@ public sealed class SqlSugarContext
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
                     c.IfTable<NoticeInfo>()
                         .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
+                    c.IfTable<EquipLedger>()
+                        .OneToMany(t => t.Labels, nameof(LocationLabel.EquipLedgerId), nameof(EquipLedger.Id));
                     c.IfTable<User>()
                         .ManyToMany(t => t.Roles, typeof(UserRole), nameof(UserRole.UserId), nameof(UserRole.RoleId));
                     c.IfTable<Role>()

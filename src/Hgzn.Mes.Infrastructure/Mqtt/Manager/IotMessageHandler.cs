@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+﻿using Hgzn.Mes.Domain.Entities.Equip;
+using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
@@ -133,7 +134,24 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         private async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
         {
-            var targetId = Guid.Parse(msg.Userdata ?? throw new ArgumentNullException("userdata not exist"));
+            //var targetId = Guid.Parse(msg.Userdata ?? throw new ArgumentNullException("userdata not exist"));
+            var label = await _client.Queryable<LocationLabel>()
+                .Where(x => x.TagId == msg.Tid)
+                .FirstAsync();
+            if(label is null)
+            {
+                await _client.Insertable(new LocationLabel
+                {
+                    TagId = msg.Tid!,
+                }).ExecuteCommandAsync();
+                _logger.LogTrace("new label added");
+                return;
+            }
+            if(label.EquipLedgerId is null)
+            {
+                _logger.LogInformation("label not binding to equip");
+                return;
+            }
             // 读写器所在房间
             var rfidRoom = await _client.Queryable<EquipLedger>()
                 .Select(el => el.RoomId)
@@ -146,9 +164,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             // 查找标签所在设备
             var equip = await _client.Queryable<EquipLedger>()
                 .Includes(eq => eq.Room)
-                .FirstAsync(x => x!.Id == targetId);
-
-            var tids = equip.PosTags is null ? null : equip.PosTags.Split(';');
+                .Includes(eq => eq.Labels)
+                .FirstAsync(x => x!.Id == label!.EquipLedgerId);
 
             //原先设备已绑定则解绑
             if (equip.RoomId is not null && (equip.LastMoveTime is null ||
