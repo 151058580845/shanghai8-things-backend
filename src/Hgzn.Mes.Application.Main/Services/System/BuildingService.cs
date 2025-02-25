@@ -8,7 +8,7 @@ namespace Hgzn.Mes.Application.Main.Services.System;
 
 public class BuildingService : SugarCrudAppService<
         Building, Guid,
-        BuildingReadDto, BuildingQueryTimeDto,
+        BuildingReadDto, BuildingQueryDto,
         BuildingCreateDto, BuildingUpdateDto>,
     IBuildingService
 {
