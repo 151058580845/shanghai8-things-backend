@@ -23,11 +23,17 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         private readonly IEquipLedgerService _equipLedgerService;
         private readonly IRoomService _roomService;
         private readonly IDictionaryInfoService _dictionaryInfoService;
-        public EquipLedgerController(IEquipLedgerService equipLedgerService,IRoomService roomService,IDictionaryInfoService dictionaryInfoService)
+        private readonly ILocationLabelService _locationLabelService;
+        public EquipLedgerController(
+            IEquipLedgerService equipLedgerService,
+            IRoomService roomService,
+            IDictionaryInfoService dictionaryInfoService,
+            ILocationLabelService locationLabelService)
         {
             _equipLedgerService = equipLedgerService;
             _roomService = roomService;
             _dictionaryInfoService = dictionaryInfoService;
+            _locationLabelService = locationLabelService;
         }
 
         [HttpPost]
@@ -266,5 +272,33 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
             });
             return equipLedgerCreates;
         }
+
+        [HttpPut]
+        [Route("label")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<LocationLabelReadDto?> UpdateEquipLabel(Guid id, LocationLabelUpdateDto dto) =>
+            await _locationLabelService.UpdateAsync(id, dto);
+
+        [HttpDelete]
+        [Route("label/{id:guid}/")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<int> DeleteEquipLabel(Guid id, LocationLabelUpdateDto dto) =>
+            await _locationLabelService.DeleteAsync(id);
+
+        [HttpPut]
+        [Route("labels/paged")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<PaginatedList<LocationLabelReadDto>?> UpdateEquipLabel(LocationLabelQueryDto dto) =>
+            await _locationLabelService.GetPaginatedListAsync(dto);
+
+        [HttpDelete]
+        [Route("labels")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<int> DeleteRanges(IEnumerable<Guid> ids) =>
+            await _locationLabelService.DeleteRangesAsync(ids);
     }
 }

@@ -1,9 +1,8 @@
-﻿using Hgzn.Mes.Domain.Entities.Base;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace Hgzn.Mes.Application.Main.Dtos.Equip
 {
-    public class RfidEquipReadDto : UniversalEntity
+    public class RfidEquipReadDto
     {
         [Description("RFID的TID")]
 

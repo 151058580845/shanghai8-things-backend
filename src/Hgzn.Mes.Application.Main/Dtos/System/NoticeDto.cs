@@ -63,7 +63,7 @@ public class NoticeUpdateDto : UpdateDto
     public List<Guid>? TargetIds { get; set; }
 }
 
-public class NoticeQueryDto : PaginatedQueryDto
+public class NoticeQueryDto : PaginatedTimeQueryDto
 {
     public string? Title { get; set; }
     // public NoticeShow? Type { get; set; }

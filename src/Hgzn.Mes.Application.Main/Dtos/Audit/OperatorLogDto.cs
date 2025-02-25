@@ -51,7 +51,7 @@ public class OperatorLogReadDto : ReadDto
     public DateTime CreationTime { get; set; }
 }
 
-public class OperatorLogQueryDto : PaginatedQueryDto
+public class OperatorLogQueryDto : PaginatedTimeQueryDto
 {
     /// <summary>
     /// 操作模块    

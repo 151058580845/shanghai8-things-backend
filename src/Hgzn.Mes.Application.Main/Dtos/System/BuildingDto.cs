@@ -116,7 +116,7 @@ public class BuildingUpdateDto : UpdateDto
     public DateTime? ConstructionDate { get; set; }
 }
 
-public class BuildingQueryDto : PaginatedQueryDto
+public class BuildingQueryDto : PaginatedTimeQueryDto
 {
     /// <summary>
     /// 建筑物名称
