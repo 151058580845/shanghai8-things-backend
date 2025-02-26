@@ -635,57 +635,6 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "SystemConfig"
         };
 
-        /// <summary>
-        /// 供应商
-        /// </summary>
-        public static Menu Supplier = new()
-        {
-            Id = Guid.Parse("FDDBBF82-72A7-1143-6A5F-6953EE2FE5A3"),
-            Name = "供应商管理",
-            Code = "supplier",
-            ScopeCode = "basic:supplier:list",
-            Type = MenuType.Menu,
-            IconUrl = "ep:school",
-            Route = "/main/supplier/index",
-            OrderNum = 96,
-            ParentId = System.Id,
-            RouteName = "Supplier"
-        };
-
-        /// <summary>
-        /// 计量单位
-        /// </summary>
-        public static Menu Unit = new()
-        {
-            Id = Guid.Parse("14A67646-4BAE-C6A4-FC70-45E7A5065CA1"),
-            Name = "计量单位管理",
-            Code = "unit",
-            ScopeCode = "basic:unit:list",
-            Type = MenuType.Menu,
-            IconUrl = "ep:grid",
-            Route = "/main/unit/index",
-            OrderNum = 96,
-            ParentId = System.Id,
-            RouteName = "Unit"
-        };
-
-        /// <summary>
-        /// 客户管理
-        /// </summary>
-        public static Menu Custom = new()
-        {
-            Id = Guid.Parse("366032CC-FC75-DDE4-2FF5-CEB3B9A1D992"),
-            Name = "客户管理",
-            Code = "custom",
-            ScopeCode = "basic:custom:list",
-            Type = MenuType.Menu,
-            IconUrl = "user:filled",
-            Route = "/main/custom/index",
-            OrderNum = 96,
-            ParentId = System.Id,
-            RouteName = "custom"
-        };
-
         public static Menu ConfigQuery = new()
         {
             Id = Guid.Parse("46d58b30-b9b0-4d95-a243-bab2c9876c0e"),
@@ -1499,6 +1448,67 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "ShowSystem2"
         };
         #endregion
+        
+        
+        #region 基础管理
+
+        // 地点管理
+        public static Menu Basic = new()
+        {
+            Id = Guid.Parse("EDC608D3-2667-85CE-FB70-5A2AFE11A365"),
+            Name = "基础管理",
+            Code = "basic",
+            Type = MenuType.Catalogue,
+            Route = "/basic",
+            IconUrl = "ep:location",
+            OrderNum = 100,
+            ParentId = Root.Id
+        };
+
+        // 单位管理
+        public static Menu Unit = new()
+        {
+            Id = Guid.Parse("C10F1708-4177-D911-827A-563290998957"),
+            Name = "单位管理",
+            Code = "utils",
+            ScopeCode = "basic:unit:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:office-building",
+            Route = "/basic/unit/index",
+            OrderNum = 99,
+            ParentId = Basic.Id,
+            RouteName = "utils"
+        };
+        
+        // 供应商管理
+        public static Menu Supplier = new()
+        {
+            Id = Guid.Parse("4F20F07F-6D34-CDDB-F5D6-9C4C7FCDA2DC"),
+            Name = "供应商管理",
+            Code = "supplier",
+            ScopeCode = "basic:supplier:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:office-building",
+            Route = "/basic/supplier/index",
+            OrderNum = 99,
+            ParentId = Basic.Id,
+            RouteName = "supplier"
+        };
+        // 客户管理
+        public static Menu Customer = new()
+        {
+            Id = Guid.Parse("5C1863E7-FAF2-5A43-395E-959E09B13C41"),
+            Name = "客户管理",
+            Code = "customer",
+            ScopeCode = "basic:customer:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:office-building",
+            Route = "/basic/custom/index",
+            OrderNum = 99,
+            ParentId = Basic.Id,
+            RouteName = "customer"
+        };
+        #endregion
         public static Menu[] Seeds { get; } = [
             Root,
             System,
@@ -1514,7 +1524,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Dict, DictQuery, DictAdd, DictEdit, DictRemove,
             //Notice, NoticeQuery, NoticeAdd, NoticeEdit, NoticeRemove,
             // Config, ConfigQuery, ConfigAdd, ConfigEdit, ConfigRemove,
-            SysCode,SysConfig,Supplier,Unit,Custom,
+            SysCode,SysConfig,
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
@@ -1525,7 +1535,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
             Location,Building,Floor,Room,
-            ShowSystem,ShowSystem1,ShowSystem2
+            ShowSystem,ShowSystem1,ShowSystem2,
+            Basic,Supplier,Unit,Customer,
         ];
 
         #endregion
