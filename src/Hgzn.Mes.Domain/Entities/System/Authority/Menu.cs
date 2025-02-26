@@ -30,7 +30,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
 
         public string? ScopeCode { get; set; }
 
-        public bool Visible { get; set; } = true;
+        public bool IsShow { get; set; } = true;
 
         public bool IsCache { get; set; } = false;
 
@@ -470,7 +470,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "audit:loginlog:list",
             Type = MenuType.Menu,
             Route = "/monitor/login-logs",
-            Visible = true,
+            IsShow = true,
             IsLink = false,
             IsCache = true,
             Component = "monitor/logs/login/index",
@@ -1426,9 +1426,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "ShowSystem1",
             Type = MenuType.Menu,
             IconUrl = "ep:office-building",
-            Route = "http://192.168.110.94",
+            Route = "/show-system/index",
             OrderNum = 99,
-            IsLink = true,
+            IsLink = false,
             ParentId = ShowSystem.Id,
             RouteName = "ShowSystem1"
         };
@@ -1440,9 +1440,10 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Code = "ShowSystem2",
             Type = MenuType.Menu,
             IconUrl = "ep:office-building",
-            Route = "http://www.baidu.com",
+            Route = "/show-system/detail",
             OrderNum = 99,
-            IsLink = true,
+            IsLink = false,
+            IsShow = false,
             ParentId = ShowSystem.Id,
             RouteName = "ShowSystem2"
         };
@@ -1473,7 +1474,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
             Location,Building,Floor,Room,
-            // ShowSystem,ShowSystem1,ShowSystem2
+            ShowSystem,ShowSystem1,ShowSystem2
         ];
 
         #endregion

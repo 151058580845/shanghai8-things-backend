@@ -58,7 +58,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 component = t.Component,
                 Meta = new MetaDto()
                 {
-                    showLink = t.Visible,
+                    showLink = t.IsShow,
                     FrameSrc = t.IsLink ? t.Route : null,
                     Auths = [],
                     Icon = t.IconUrl ?? "",

@@ -37,7 +37,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public string? RouteName { get; set; }
         public string? ScopeCode { get; set; }
 
-        public bool Visible { get; set; } = true;
+        public bool IsShow { get; set; } = true;
         public bool IsCache { get; set; } = false;
 
         public bool Favorite { get; set; } = false;
@@ -78,16 +78,14 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
     public class MenuCreateDto : CreateDto
     {
         public string Name { get; set; } = null!;
-
-        public string? Code { get; set; }
-
+        
         public string? Description { get; set; }
 
         public Guid? ParentId { get; set; }
 
         public int MenuType { get; set; }
 
-        public int Order { get; set; } = -1;
+        public int OrderNum { get; set; } = -1;
         
         public string Path { get; set; } = null!;
 
@@ -108,8 +106,10 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
         public string? ScopeCode { get; set; }
 
-        public bool Visible { get; set; } = true;
+        public bool IsShow { get; set; } = true;
 
+        public bool State { get; set; } = true;
+        
         public bool Favorite { get; set; } = false;
     }
 
@@ -123,7 +123,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
         public int MenuType { get; set; }
 
-        public int Order { get; set; } = -1;
+        public int OrderNum { get; set; } = -1;
         
         public string Path { get; set; } = null!;
 
@@ -144,7 +144,9 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
         public string? ScopeCode { get; set; }
 
-        public bool Visible { get; set; } = true;
+        public bool IsShow { get; set; } = true;
+        
+        public bool State { get; set; } = true;
 
         public bool Favorite { get; set; } = false;
     }
