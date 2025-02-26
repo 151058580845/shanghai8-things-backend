@@ -219,23 +219,4 @@ public class EquipLedgerService : SugarCrudAppService<
             DateTime.UtcNow.AddMinutes(-30) >= e.LastMoveTime).ToArrayAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
-
-    public async Task<PaginatedList<EquipLedgerLocationLabelReadDto>> GetAppModelAsync(int pageIndex, int pageSize)
-    {
-        var dtos = await DbContext.Queryable<LocationLabel>()
-            .Includes(ll => ll.EquipLedger, el => el!.EquipType)
-            .OrderByDescending(ll => ll.LastModificationTime)
-            .Select(ll => new EquipLedgerLocationLabelReadDto
-            {
-                Id = ll.Id,
-                AssetNumber = ll.EquipLedger == null ? null : ll.EquipLedger.AssetNumber,
-                EquipName = ll.EquipLedger == null ? null : ll.EquipLedger.EquipName,
-                Model = ll.EquipLedger == null ? null : ll.EquipLedger.Model,
-                EquipTypeName = (ll.EquipLedger == null || ll.EquipLedger.EquipType == null) ? null : ll.EquipLedger.EquipType.TypeName,
-                Tid = ll.TagId
-            })
-
-            .ToPaginatedListAsync(pageIndex, pageSize);
-        return dtos;
-    }
 }

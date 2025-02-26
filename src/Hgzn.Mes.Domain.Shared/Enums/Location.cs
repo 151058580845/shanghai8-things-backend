@@ -6,6 +6,14 @@ public enum Location
 {
 }
 
+public enum LabelType
+{
+    Equip,
+    Room,
+    Unknow
+}
+
+
 /// <summary>
 ///     非房间类型写在过道之后
 /// </summary>

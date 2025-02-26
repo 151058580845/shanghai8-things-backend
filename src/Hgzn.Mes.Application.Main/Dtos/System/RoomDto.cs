@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Hgzn.Mes.Application.Main.Dtos.Base;
 
 namespace Hgzn.Mes.Application.Main.Dtos.System;
@@ -205,4 +206,17 @@ public class RoomQueryDto : PaginatedQueryDto
     public Guid? GroupId { get; set; }
     public bool? IsTest { get; set; }
     public string? TestName { get; set; }
+}
+
+public class RoomLocationLabelReadDto : ReadDto
+{
+    [Description("房间名称")]
+    public string? RoomName { get; set; }
+    public Guid? RoomId { get; set; }
+
+    [Description("房间编号")]
+    public string? RoomCode { get; set; }
+
+    [Description("标签Tid")] public string Tid { get; set; } = null!;
+
 }
