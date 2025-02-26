@@ -5,9 +5,9 @@ public interface IEquipConnector
 {
     Task<bool> ConnectAsync(ConnInfo connInfo);
     Task CloseConnectionAsync();
-    Task StartAsync();
+    Task StartAsync(Guid uri);
     //Task StartAsync(Guid dataPointId);
-    Task StopAsync();
+    Task StopAsync(Guid uri);
     //Task StopAsync(Guid dataPointId);
     Task SendDataAsync(byte[] buffer);
     //Task UpdateEquipConnectForward(List<Guid> targetIds);

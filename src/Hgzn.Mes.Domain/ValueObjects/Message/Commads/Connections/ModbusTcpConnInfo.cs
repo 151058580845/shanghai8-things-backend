@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Domain.ValueObjects.Message.Base;
+﻿using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
@@ -50,6 +51,6 @@ public class ModbusTcpConnInfo : IConnInfo
     /// <summary>
     /// 读取格式
     /// </summary>
-    //[Description("Format")]
-    //public DataOrderType DataType { get; set; } = DataOrderType.CDAB;
+    [Description("Format")]
+    public DataOrderType DataType { get; set; } = DataOrderType.CDAB;
 }

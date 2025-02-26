@@ -17,6 +17,7 @@ using System;
 using System.Text;
 using System.Text.Json;
 using Hgzn.Mes.Application.Main.Dtos.Base;
+using System.Security.Policy;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -99,37 +100,20 @@ public class EquipConnectService : SugarCrudAppService<
     /// <returns></returns>
     public async Task PutStartConnect(Guid id)
     {
-        var connect = await Queryable.Where(it => it.Id == id)
+        EquipConnect connect = await Queryable.Where(it => it.Id == id)
            .Includes(t => t.EquipLedger, le => le.EquipType)
            .FirstAsync();
 
-        var conninfo = new ConnInfo
+        switch (connect.ProtocolEnum)
         {
-            ConnType = connect.ProtocolEnum,
-            ConnString = connect.ConnectStr,
-            Type = CmdType.Conn,
-            StateType = ConnStateType.On,
-        };
-        var startInfo = new ConnInfo
-        {
-            ConnType = connect.ProtocolEnum,
-            ConnString = connect.ConnectStr,
-            Type = CmdType.Conn,
-            StateType = ConnStateType.Run,
-        };
-
-        var topic = IotTopicBuilder.CreateIotBuilder()
-                .WithPrefix(TopicType.Iot)
-                .WithDirection(MqttDirection.Down)
-                .WithTag(MqttTag.Cmd)
-                .WithDeviceType(connect.EquipLedger?.EquipType?.ProtocolEnum ??
-                    throw new ArgumentNullException("equip type not exist"))
-                .WithUri(connect.Id.ToString()).Build();
-        if (await _mqttExplorer.IsConnectedAsync())
-        {
-            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(conninfo)));
-            await Task.Delay(5 * 100);
-            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(startInfo)));
+            case ConnType.ModbusTcp:
+                await Publish(connect, CmdType.Conn, ConnStateType.On, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
+                break;
+            default:
+                await Publish(connect, CmdType.Conn, ConnStateType.On, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
+                await Task.Delay(5 * 100);
+                await Publish(connect, CmdType.Conn, ConnStateType.Run, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
+                break;
         }
     }
 
@@ -144,25 +128,7 @@ public class EquipConnectService : SugarCrudAppService<
            .Includes(t => t.EquipLedger, le => le.EquipType)
            .FirstAsync();
 
-        IotTopicBuilder iotTopicBuilder = IotTopicBuilder.CreateIotBuilder()
-                .WithPrefix(TopicType.Iot)
-                .WithDirection(MqttDirection.Down)
-                .WithTag(MqttTag.Cmd)
-                .WithDeviceType(connect.EquipLedger?.EquipType?.ProtocolEnum ??
-                    throw new ArgumentNullException("equip type not exist"))
-                .WithUri(connect.Id.ToString());
-
-        string topic = iotTopicBuilder.Build();
-
-        var stopInfo = new ConnInfo
-        {
-            ConnType = connect.ProtocolEnum,
-            ConnString = connect.ConnectStr,
-            Type = CmdType.Conn,
-            StateType = ConnStateType.Off,
-        };
-
-        await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(stopInfo)));
+        await Publish(connect, CmdType.Conn, ConnStateType.Off, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
     }
 
     /// <summary>
@@ -188,7 +154,7 @@ public class EquipConnectService : SugarCrudAppService<
     {
         var result = await Queryable
             .OrderBy(t => t.OrderNum)
-            .Select<NameValueDto>(t=>new NameValueDto()
+            .Select<NameValueDto>(t => new NameValueDto()
             {
                 Id = t.Id,
                 Name = t.Name,
@@ -196,5 +162,27 @@ public class EquipConnectService : SugarCrudAppService<
             })
             .ToListAsync();
         return result;
+    }
+
+    private async Task Publish(EquipConnect connect, CmdType cmdType, ConnStateType connStateType, TopicType iotType, MqttDirection mqttDirection, MqttTag mqttTag)
+    {
+        var conninfo = new ConnInfo
+        {
+            ConnType = connect.ProtocolEnum,
+            ConnString = connect.ConnectStr,
+            Type = cmdType,
+            StateType = connStateType,
+        };
+        var topic = IotTopicBuilder.CreateIotBuilder()
+                .WithPrefix(iotType)
+                .WithDirection(mqttDirection)
+                .WithTag(mqttTag)
+                .WithDeviceType(connect.EquipLedger?.EquipType?.ProtocolEnum ??
+                    throw new ArgumentNullException("equip type not exist"))
+                .WithUri(connect.Id.ToString()).Build();
+        if (await _mqttExplorer.IsConnectedAsync())
+        {
+            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(conninfo)));
+        }
     }
 }

@@ -33,16 +33,16 @@ namespace Hgzn.Mes.Iot.EquipManager
 
         public abstract Task SendDataAsync(byte[] buffer);
 
-        public abstract Task StartAsync();
+        public abstract Task StartAsync(Guid uri);
 
-        public abstract Task StopAsync();
+        public abstract Task StopAsync(Guid uri);
 
         public async Task UpdateStateAsync(ConnStateType stateType)
         {
             // 记录到redis服务器
             var database = _connectionMultiplexer.GetDatabase();
             var key = string.Format(CacheKeyFormatter.EquipState, _connType.ToString(), _uri);
-            if (stateType == ConnStateType.Run)
+            if (stateType == ConnStateType.On)
                 await database.StringSetAsync(key, (int)ConnStateType.Run);
             if (stateType == ConnStateType.Off || stateType == ConnStateType.Stop)
                 await database.StringSetAsync(key, (int)ConnStateType.Off);
