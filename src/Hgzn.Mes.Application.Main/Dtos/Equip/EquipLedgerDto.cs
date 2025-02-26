@@ -62,7 +62,6 @@ public class EquipLedgerReadDto : ReadDto
 
 public class EquipLedgerSearchReadDto : ReadDto
 {
-    public Guid Id { get; set; }
     [Description("设备编号")] public string EquipCode { get; set; } = null!;
 
     [Description("设备名称")] public string EquipName { get; set; } = null!;
@@ -75,6 +74,21 @@ public class EquipLedgerSearchReadDto : ReadDto
 
     [Description("安装地点")] public Guid? RoomId { get; set; }
 }
+
+public class EquipLocationLabelReadDto : ReadDto
+{
+    [Description("资产编号")] public string? AssetNumber { get; set; } = null!;
+
+    [Description("设备名称")] public string? EquipName { get; set; } = null!;
+
+    [Description("设备型号")] public string? Model { get; set; } = null!;
+    
+    [Description("设备类型")] public string? EquipTypeName { get; set; } = null!;
+    
+    [Description("标签Tid")] public string Tid { get; set; } = null!;
+
+}
+
 
 public class EquipLedgerCreateDto : CreateDto
 {

@@ -2,6 +2,7 @@
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
@@ -143,6 +144,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 await _client.Insertable(new LocationLabel
                 {
                     TagId = msg.Tid!,
+                    Type = LabelType.Unknow
                 }).ExecuteCommandAsync();
                 _logger.LogTrace("new label added");
                 return;

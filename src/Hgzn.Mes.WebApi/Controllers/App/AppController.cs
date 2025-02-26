@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hgzn.Mes.WebApi.Controllers.App;
 
+
+/// <summary>
+/// 大屏使用
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class AppController : ControllerBase

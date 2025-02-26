@@ -1,7 +1,9 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
+using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Infrastructure.Utilities;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip
@@ -36,6 +38,41 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .Where(ll => ids.Contains(ll.Id))
                 .ExecuteCommandAsync();
             return count;
+        }
+        public async Task<PaginatedList<EquipLocationLabelReadDto>> GetEquipLabelAsync(int pageIndex, int pageSize)
+        {
+            var dtos = await DbContext.Queryable<LocationLabel>()
+                .Where(ll => ll.Type == LabelType.Equip)
+                .Includes(ll => ll.EquipLedger, el => el!.EquipType)
+                .OrderByDescending(ll => ll.LastModificationTime)
+                .Select(ll => new EquipLocationLabelReadDto
+                {
+                    Id = ll.Id,
+                    AssetNumber = ll.EquipLedger == null ? null : ll.EquipLedger.AssetNumber,
+                    EquipName = ll.EquipLedger == null ? null : ll.EquipLedger.EquipName,
+                    Model = ll.EquipLedger == null ? null : ll.EquipLedger.Model,
+                    EquipTypeName = (ll.EquipLedger == null || ll.EquipLedger.EquipType == null) ? null : ll.EquipLedger.EquipType.TypeName,
+                    Tid = ll.TagId
+                })
+                .ToPaginatedListAsync(pageIndex, pageSize);
+            return dtos;
+        }
+
+        public async Task<PaginatedList<RoomLocationLabelReadDto>> GetRoomLabelAsync(int pageIndex, int pageSize)
+        {
+            var dtos = await DbContext.Queryable<LocationLabel>()
+                .Where(ll => ll.Type == LabelType.Room)
+                .Includes(ll => ll.Room)
+                .OrderByDescending(ll => ll.LastModificationTime)
+                .Select(ll => new RoomLocationLabelReadDto
+                {
+                    RoomId = ll.RoomId,
+                    RoomName = ll.EquipLedger == null ? null : ll.EquipLedger.AssetNumber,
+                    RoomCode = ll.EquipLedger == null ? null : ll.EquipLedger.EquipName,
+                    Tid = ll.TagId
+                })
+                .ToPaginatedListAsync(pageIndex, pageSize);
+            return dtos;
         }
     }
 }

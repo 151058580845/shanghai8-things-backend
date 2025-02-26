@@ -10,10 +10,10 @@ public class Room : UniversalEntity, IOrder, IAudited
     public Guid ParentId { get; set; }  // 外键，关联 FloorEntity
 
     [Description("房间名称")]
-    public string? Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [Description("房间编号")]
-    public string? Code { get; set; }
+    public string Code { get; set; } = null!;
 
     [Description("房间长度（米）")]
     public double Length { get; set; }

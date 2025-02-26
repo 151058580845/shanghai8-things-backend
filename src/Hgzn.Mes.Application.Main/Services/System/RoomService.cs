@@ -1,9 +1,12 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Entities.System.Dictionary;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;

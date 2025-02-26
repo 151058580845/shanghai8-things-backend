@@ -214,6 +214,8 @@ public sealed class SqlSugarContext
                         .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
                     c.IfTable<EquipLedger>()
                         .OneToMany(t => t.Labels, nameof(LocationLabel.EquipLedgerId), nameof(EquipLedger.Id));
+                    c.IfTable<LocationLabel>()
+                        .OneToOne(t => t.Room, nameof(LocationLabel.RoomId), nameof(Room.Id));
                     c.IfTable<User>()
                         .ManyToMany(t => t.Roles, typeof(UserRole), nameof(UserRole.UserId), nameof(UserRole.RoleId));
                     c.IfTable<Role>()

@@ -14,6 +14,7 @@ using System.Text.Json.Serialization;
 
 using System.Text.Json;
 using Hgzn.Mes.Domain.Shared.Enum;
+using Hgzn.Mes.Domain.Entities.Equip;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
