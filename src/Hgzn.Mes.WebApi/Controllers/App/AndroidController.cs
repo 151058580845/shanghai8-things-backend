@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,18 +22,20 @@ public class AndroidController:ControllerBase
         _equipLedgerService = equipLedgerService;
         _equipLedgerHistoryService = equipLedgerHistoryService;
     }
-    
+
     /// <summary>
-    /// 手持端获取设备rfid绑定关系
+    ///     手持端获取设备rfid绑定关系
     /// </summary>
+    /// <param name="pageIndex"></param>
+    /// <param name="pageSize"></param>
     /// <returns></returns>
     [HttpGet]
     [Route("model")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<ResponseWrapper<IEnumerable<EquipLedgerSearchReadDto>>> GetModelAsync() =>
-        (await _equipLedgerService.GetAppSearchAsync()).Wrap();
+    public async Task<ResponseWrapper<PaginatedList<EquipLedgerLocationLabelReadDto>>> GetModelAsync(int pageIndex = 1, int pageSize = 100) =>
+        (await _equipLedgerService.GetAppModelAsync(pageIndex, pageSize)).Wrap();
     
     /// <summary>
     /// 手持端获取搜索目标
