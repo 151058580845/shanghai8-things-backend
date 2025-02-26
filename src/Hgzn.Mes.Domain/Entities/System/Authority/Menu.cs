@@ -635,6 +635,57 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "SystemConfig"
         };
 
+        /// <summary>
+        /// 供应商
+        /// </summary>
+        public static Menu Supplier = new()
+        {
+            Id = Guid.Parse("FDDBBF82-72A7-1143-6A5F-6953EE2FE5A3"),
+            Name = "供应商管理",
+            Code = "supplier",
+            ScopeCode = "basic:supplier:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:school",
+            Route = "/main/supplier/index",
+            OrderNum = 96,
+            ParentId = System.Id,
+            RouteName = "Supplier"
+        };
+
+        /// <summary>
+        /// 计量单位
+        /// </summary>
+        public static Menu Unit = new()
+        {
+            Id = Guid.Parse("14A67646-4BAE-C6A4-FC70-45E7A5065CA1"),
+            Name = "计量单位管理",
+            Code = "unit",
+            ScopeCode = "basic:unit:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:grid",
+            Route = "/main/unit/index",
+            OrderNum = 96,
+            ParentId = System.Id,
+            RouteName = "Unit"
+        };
+
+        /// <summary>
+        /// 客户管理
+        /// </summary>
+        public static Menu Custom = new()
+        {
+            Id = Guid.Parse("366032CC-FC75-DDE4-2FF5-CEB3B9A1D992"),
+            Name = "客户管理",
+            Code = "custom",
+            ScopeCode = "basic:custom:list",
+            Type = MenuType.Menu,
+            IconUrl = "user:filled",
+            Route = "/main/custom/index",
+            OrderNum = 96,
+            ParentId = System.Id,
+            RouteName = "custom"
+        };
+
         public static Menu ConfigQuery = new()
         {
             Id = Guid.Parse("46d58b30-b9b0-4d95-a243-bab2c9876c0e"),
@@ -1462,7 +1513,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Dict, DictQuery, DictAdd, DictEdit, DictRemove,
             //Notice, NoticeQuery, NoticeAdd, NoticeEdit, NoticeRemove,
             // Config, ConfigQuery, ConfigAdd, ConfigEdit, ConfigRemove,
-            SysCode,SysConfig,
+            SysCode,SysConfig,Supplier,Unit,Custom,
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,

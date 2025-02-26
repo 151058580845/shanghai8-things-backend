@@ -6,7 +6,7 @@ namespace Hgzn.Mes.Domain.Entities.Basic;
 
 
 [Description("供应商管理")]
-public class Supplier: UniversalEntity, IAudited
+public class Supplier : UniversalEntity, IAudited
 {
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }

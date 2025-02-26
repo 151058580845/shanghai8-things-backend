@@ -22,6 +22,11 @@ public class Contact: UniversalEntity, IAudited
     /// </summary>
     public string Phone { get; set; } = null!;
 
+    /// <summary>
+    /// 联系人地址
+    /// </summary>
+    public string Address { get; set; } = null!;
+
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
     public Guid? LastModifierId { get; set; }

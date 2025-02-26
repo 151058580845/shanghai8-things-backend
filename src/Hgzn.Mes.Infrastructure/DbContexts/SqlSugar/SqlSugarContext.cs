@@ -16,6 +16,7 @@ using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
+using Hgzn.Mes.Domain.Entities.Basic;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -218,6 +219,22 @@ public sealed class SqlSugarContext
                         .OneToMany(t => t.Floors, nameof(Floor.ParentId), nameof(Building.Id));
                     c.IfTable<Floor>()
                         .OneToMany(t => t.Rooms, nameof(Room.ParentId), nameof(Floor.Id));
+
+                    c.IfTable<Supplier>()
+                        .OneToMany(t => t.Contacts, nameof(Contact.ParentId), nameof(Supplier.Id));
+                    c.IfTable<Supplier>()
+                        .OneToMany(t => t.AddressBs, nameof(AddressB.ParentId), nameof(Supplier.Id));
+
+                    c.IfTable<Customer>()
+                   .OneToMany(t => t.Contacts, nameof(Contact.ParentId), nameof(Customer.Id));
+                    c.IfTable<Customer>()
+                        .OneToMany(t => t.AddressBs, nameof(AddressB.ParentId), nameof(Customer.Id));
+
+                    c.IfTable<Supplier>()
+                       .OneToMany(t => t.Contacts, nameof(Contact.ParentId), nameof(Supplier.Id));
+                    c.IfTable<Supplier>()
+                        .OneToMany(t => t.AddressBs, nameof(AddressB.ParentId), nameof(Supplier.Id));
+
                     c.IfTable<TestData>()
                      .OneToMany(t => t.Products, nameof(TestDataProduct.TestDataId), nameof(TestData.Id)); ;
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
