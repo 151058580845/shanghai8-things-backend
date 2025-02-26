@@ -214,7 +214,6 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
                 await database.StringSetAsync(key2, 1);
                 while (!token.IsCancellationRequested)
                 {
-                    Console.WriteLine("这是循环线程名:" + Thread.CurrentThread.Name);
                     ushort[] datas = new ushort[collectAddress.ReadLength];
                     switch (collectAddress.ModbusReadType)
                     {
