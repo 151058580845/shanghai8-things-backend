@@ -137,17 +137,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         public async Task<ResponseWrapper<EquipLedgerReadDto>> GetAsync(Guid id) =>
             (await _equipLedgerService.GetAsync(id)).Wrap();
         
-        /// <summary>
-        /// 手持端获取搜索目标
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("app/search")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [AllowAnonymous]
-        public async Task<ResponseWrapper<IEnumerable<EquipLedgerSearchReadDto>>> GetAppSearchAsync() =>
-            (await _equipLedgerService.GetAppSearchAsync()).Wrap();
+
         
         /// <summary>
         /// 修改状态

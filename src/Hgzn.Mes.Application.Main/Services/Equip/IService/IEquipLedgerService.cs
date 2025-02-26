@@ -22,7 +22,7 @@ public interface IEquipLedgerService : ICrudAppService<
     Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms);
 
     /// <summary>
-    /// 批量api导入功能
+    /// 锟斤拷锟斤拷api锟斤拷锟诫功锟斤拷
     /// </summary>
     /// <param name="url"></param>
     /// <returns></returns>
