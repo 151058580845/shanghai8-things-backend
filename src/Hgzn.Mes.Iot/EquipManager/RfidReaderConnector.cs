@@ -37,7 +37,7 @@ public class RfidReaderConnector : EquipConnectorBase
     /// <summary>
     /// 全部停止采集
     /// </summary>
-    public override async Task StopAsync()
+    public override async Task StopAsync(Guid uri)
     {
         StopReadingTag(_client);
         await UpdateStateAsync(ConnStateType.Stop);

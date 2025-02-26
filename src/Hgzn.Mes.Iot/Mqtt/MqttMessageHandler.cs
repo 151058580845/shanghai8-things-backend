@@ -145,7 +145,7 @@ namespace Hgzn.Mes.Iot.Mqtt
                 {
                     ConnStateType.On => equip.ConnectAsync(info),
                     ConnStateType.Run => equip.StartAsync(uri),
-                    ConnStateType.Stop => equip.StopAsync(),
+                    ConnStateType.Stop => equip.StopAsync(uri),
                     ConnStateType.Off => equip.CloseConnectionAsync(),
                     _ => throw new NotImplementedException()
                 };

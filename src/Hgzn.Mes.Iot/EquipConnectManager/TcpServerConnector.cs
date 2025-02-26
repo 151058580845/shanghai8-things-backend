@@ -47,7 +47,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             await UpdateOperationAsync(ConnStateType.Run);
         }
 
-        public override async Task StopAsync()
+        public override async Task StopAsync(Guid uri)
         {
             _server.Stop();
             await UpdateStateAsync(ConnStateType.Stop);

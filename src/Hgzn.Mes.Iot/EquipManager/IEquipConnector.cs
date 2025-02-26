@@ -7,7 +7,7 @@ public interface IEquipConnector
     Task CloseConnectionAsync();
     Task StartAsync(Guid uri);
     //Task StartAsync(Guid dataPointId);
-    Task StopAsync();
+    Task StopAsync(Guid uri);
     //Task StopAsync(Guid dataPointId);
     Task SendDataAsync(byte[] buffer);
     //Task UpdateEquipConnectForward(List<Guid> targetIds);

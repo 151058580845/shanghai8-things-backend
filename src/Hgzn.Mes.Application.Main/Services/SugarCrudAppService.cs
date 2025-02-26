@@ -55,7 +55,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         return Mapper.Map<TReadDto>(entity);
     }
-    
+
     /// <summary>
     /// 修改实体
     /// </summary>
@@ -71,7 +71,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
             return default;
         }
         var t = entity.GetType().GetProperty("State");
-        t?.SetValue(entity,state);
+        t?.SetValue(entity, state);
         await DbContext.Updateable(entity).ExecuteCommandAsync();
         return Mapper.Map<TReadDto>(entity);
     }

@@ -40,7 +40,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
 
         public bool State { get; set; } = true;
 
-        public string CollectStatus { get; set; }
+        public string? CollectStatus { get; set; }
 
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }

@@ -121,7 +121,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     .WithTag(MqttTag.Cmd)
                     .WithDeviceType(connect.EquipLedger?.EquipType?.ProtocolEnum ??
                         throw new ArgumentNullException("equip type not exist"))
-                    .WithUri(connect.Id.ToString());
+                    .WithUri(id.ToString());
 
             string topic = iotTopicBuilder.Build();
 
@@ -129,8 +129,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             {
                 ConnType = connect.ProtocolEnum,
                 ConnString = connect.ConnectStr,
-                Type = CmdType.Conn,
-                StateType = ConnStateType.Off,
+                Type = CmdType.Collection,
+                StateType = ConnStateType.Stop,
             };
 
             await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(stopInfo)));

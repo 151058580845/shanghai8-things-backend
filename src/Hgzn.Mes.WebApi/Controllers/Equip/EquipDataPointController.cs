@@ -102,5 +102,18 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"equip:equipdatapoint:{ScopeMethodType.Query}")]
         public async Task StartConnectAsync(Guid id) =>
             await _equipDataPointService.PutStartConnect(id);
+
+        /// <summary>
+        /// 断开连接
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id:guid}/stopconnect")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"equip:equipdatapoint:{ScopeMethodType.Query}")]
+        public async Task StopConnectAsync(Guid id) =>
+            await _equipDataPointService.PutStopConnect(id);
     }
 }

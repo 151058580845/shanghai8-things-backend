@@ -14,5 +14,6 @@ namespace Hgzn.Mes.Application.Main.Services.Equip.IService
     EquipDataPointCreateDto, EquipDataPointUpdateDto>
     {
         Task PutStartConnect(Guid id);
+        Task PutStopConnect(Guid id);
     }
 }

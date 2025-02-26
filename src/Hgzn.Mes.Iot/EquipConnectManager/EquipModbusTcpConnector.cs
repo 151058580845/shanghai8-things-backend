@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text.Json.Nodes;
 using System.Timers;
+using static Hgzn.Mes.Domain.Entities.Equip.EquipControl.CollectionConfig;
 
 namespace Hgzn.Mes.Iot.EquipConnectManager
 {
@@ -28,6 +29,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
         /// 定时器，5秒校验一次
         /// </summary>
         private readonly System.Timers.Timer _timer;
+        private Dictionary<Guid, System.Timers.Timer> collectTimers = new();
         /// <summary>
         /// 失败重连5次
         /// </summary>
@@ -112,16 +114,15 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
         {
             DataPoint = await _sqlSugarClient.Queryable<EquipDataPoint>().Where(x => x.Id == uri).FirstAsync();
             ModbusTcpDataPoint mtdp = JsonConvert.DeserializeObject<ModbusTcpDataPoint>(DataPoint.CollectionAddressStr!)!;
-            _collectAddress.Add(DataPoint.Id, mtdp);
+            _collectAddress.TryAdd(DataPoint.Id, mtdp);
 
             var cancelToken = new CancellationTokenSource();
-            CancelTokens.Add(DataPoint.Id, cancelToken);
-            // 立即开始数据采集
-            await Task.Run(async () => { await CollectDataAsync(DataPoint); }, cancelToken.Token);
-
+            if (!CancelTokens.TryAdd(DataPoint.Id, cancelToken))
+                CancelTokens[DataPoint.Id] = cancelToken;
+            await Task.Run(async () => await CollectDataAsync(DataPoint), cancelToken.Token);
         }
 
-        public async override Task StopAsync()
+        public async Task StopAsync()
         {
             foreach (var cancellation in CancelTokens)
             {
@@ -135,7 +136,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
         /// 停止某个点的采集
         /// </summary>
         /// <param name="dataPointId"></param>
-        public virtual async Task StopAsync(Guid dataPointId)
+        public override async Task StopAsync(Guid dataPointId)
         {
             if (CancelTokens.TryGetValue(dataPointId, out var cancelToken))
             {
@@ -143,6 +144,12 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
                     DataPointStatusDict.TryAdd(dataPointId, DataPointStatus.Paused);
                 DataPointStatusDict[dataPointId] = DataPointStatus.Paused;
                 await cancelToken.CancelAsync();
+
+                _collectAddress.Remove(dataPointId);
+
+                var database = _connectionMultiplexer.GetDatabase();
+                var key2 = string.Format(CacheKeyFormatter.EquipDataPointOperationStatus, dataPointId);
+                await database.StringSetAsync(key2, 0);
             }
         }
 

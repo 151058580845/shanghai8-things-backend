@@ -35,7 +35,7 @@ namespace Hgzn.Mes.Iot.EquipManager
 
         public abstract Task StartAsync(Guid uri);
 
-        public abstract Task StopAsync();
+        public abstract Task StopAsync(Guid uri);
 
         public async Task UpdateStateAsync(ConnStateType stateType)
         {
