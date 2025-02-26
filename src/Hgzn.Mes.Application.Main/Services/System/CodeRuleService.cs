@@ -180,7 +180,7 @@ public class CodeRuleService : SugarCrudAppService<
     }
 
     /// <summary>
-    /// 修改编码规则
+    /// 修改编码规则  
     /// </summary>
     /// <param name="key"></param>
     /// <param name="dto"></param>
@@ -194,23 +194,4 @@ public class CodeRuleService : SugarCrudAppService<
             .ExecuteCommand();
         return new CodeRuleReadDto();
     }
-
-
-    ///// <summary>
-    ///// 修改状态
-    ///// </summary>
-    ///// <param name="id"></param>
-    ///// <param name="state"></param>
-    ///// <returns></returns>
-    //public async Task<CodeRuleReadDto> UpdateStateAsync(Guid id, bool? state)
-    //{
-    //    var oldRuleData = await GetAsync(id);
-    //    oldRuleData.State = state;
-    //    CodeRule info = Mapper.Map<CodeRule>(oldRuleData);
-
-    //    var data = DbContext.Updateable<CodeRule>(info).ExecuteCommand();
-    //    return oldRuleData;
-    //}
-
-
 }

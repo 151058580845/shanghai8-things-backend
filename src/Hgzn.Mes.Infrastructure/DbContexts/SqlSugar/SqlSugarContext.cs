@@ -17,6 +17,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip;
+using Hgzn.Mes.Domain.Entities.Basic;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -125,42 +126,39 @@ public sealed class SqlSugarContext
 
     public void InitDatabase()
     {
-        if (_dbOptions.DbType == DbType.PostgreSQL || _dbOptions.DbType == DbType.OpenGauss)
-        {
-            var uri = _dbOptions.Url!.Split(";");
-            var newDatabaseName = uri[1].Substring(uri[1].IndexOf('=') + 1);
-            uri[1] = "DATABASE=postgres";
-            string connectionString = string.Join(";", uri);
+        //var uri = _dbOptions.Url!.Split(";");
+        //var newDatabaseName = uri[1].Substring(uri[1].IndexOf('=') + 1);
+        //uri[1] = "DATABASE=postgres";
+        //string connectionString = string.Join(";", uri);
         
-            var connConfig = new ConnectionConfig()
-            {
-                ConfigId = DefaultConnectionStringName,
-                DbType = _dbOptions.DbType ?? DbType.Sqlite,
-                ConnectionString = connectionString,
-                InitKeyType = InitKeyType.Attribute,
-                IsAutoCloseConnection = true
-            };
-            var client = new SqlSugarClient(connConfig);
+        //var connConfig = new ConnectionConfig()
+        //{
+        //    ConfigId = DefaultConnectionStringName,
+        //    DbType = _dbOptions.DbType ?? DbType.Sqlite,
+        //    ConnectionString = connectionString,
+        //    InitKeyType = InitKeyType.Attribute,
+        //    IsAutoCloseConnection = true
+        //};
+        //var client = new SqlSugarClient(connConfig);
         
-            string checkDbQuery = $"SELECT 1 FROM pg_database WHERE datname = '{newDatabaseName}'";
-            var data =  client.Ado.SqlQuery<string>(checkDbQuery);
-            if (data.Count == 0)
-            {
-                Console.WriteLine($"Database '{newDatabaseName}' does not exist. Creating it...");
-                // 如果数据库不存在，创建数据库
-                string createDbQuery = $"CREATE DATABASE {newDatabaseName}";
-                client.Ado.SqlQuery<string>(createDbQuery);
-                Console.WriteLine($"Database '{newDatabaseName}' created.");
-            }
-            else
-            {
-                Console.WriteLine($"Database '{newDatabaseName}' already exists.");
-            }
-        }
+        //string checkDbQuery = $"SELECT 1 FROM pg_database WHERE datname = '{newDatabaseName}'";
+        //var data =  client.Ado.SqlQuery<string>(checkDbQuery);
+        //if (data.Count == 0)
+        //{
+        //    Console.WriteLine($"Database '{newDatabaseName}' does not exist. Creating it...");
+        //    // 如果数据库不存在，创建数据库
+        //    string createDbQuery = $"CREATE DATABASE {newDatabaseName}";
+        //    client.Ado.SqlQuery<string>(createDbQuery);
+        //    Console.WriteLine($"Database '{newDatabaseName}' created.");
+        //}
+        //else
+        //{
+        //    Console.WriteLine($"Database '{newDatabaseName}' already exists.");
+        //}
 
         InitTables();
     }
-
+    
     /// <summary>
     /// 初始化连接字符串
     /// </summary>
@@ -212,10 +210,6 @@ public sealed class SqlSugarContext
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
                     c.IfTable<NoticeInfo>()
                         .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
-                    c.IfTable<EquipLedger>()
-                        .OneToMany(t => t.Labels, nameof(LocationLabel.EquipLedgerId), nameof(EquipLedger.Id));
-                    c.IfTable<LocationLabel>()
-                        .OneToOne(t => t.Room, nameof(LocationLabel.RoomId), nameof(Room.Id));
                     c.IfTable<User>()
                         .ManyToMany(t => t.Roles, typeof(UserRole), nameof(UserRole.UserId), nameof(UserRole.RoleId));
                     c.IfTable<Role>()
@@ -227,11 +221,7 @@ public sealed class SqlSugarContext
                     c.IfTable<Floor>()
                         .OneToMany(t => t.Rooms, nameof(Room.ParentId), nameof(Floor.Id));
                     c.IfTable<TestData>()
-                     .OneToMany(t => t.Products, nameof(TestDataProduct.TestDataId), nameof(TestData.Id));
-                    c.IfTable<EquipDataPoint>()
-                     .OneToOne(t => t.EquipReceiveData, nameof(EquipDataPoint.EquipReceiveDataId))
-                     .OneToOne(t => t.Connection, nameof(EquipDataPoint.ConnectionId));
-                    // .OneToOne(t => t.Connection!.EquipLedger, nameof(EquipDataPoint.Connection.EquipId));
+                     .OneToMany(t => t.Products, nameof(TestDataProduct.TestDataId), nameof(TestData.Id)); ;
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();
