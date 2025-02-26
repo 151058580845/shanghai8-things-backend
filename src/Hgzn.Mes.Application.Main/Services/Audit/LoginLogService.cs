@@ -1,14 +1,11 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Audit;
 using Hgzn.Mes.Application.Main.Services.Audit.IService;
 using Hgzn.Mes.Domain.Entities.Audit;
-using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Infrastructure.Utilities;
-
 using IPTools.Core;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 using UAParser;
 
@@ -16,7 +13,8 @@ namespace Hgzn.Mes.Application.Main.Services.Audit
 {
     public class LoginLogService : SugarCrudAppService<
         LoginLog, Guid,
-        LoginLogReadDto, LoginLogQueryDto, LoginLogCreateDto>,
+        LoginLogReadDto, LoginLogQueryDto,
+        LoginLogCreateDto>,
     ILoginLogService
     {
         public async override Task<IEnumerable<LoginLogReadDto>> GetListAsync(LoginLogQueryDto? queryDto = null)

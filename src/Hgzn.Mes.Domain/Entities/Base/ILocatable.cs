@@ -11,8 +11,6 @@ namespace Hgzn.Mes.Domain.Entities.Base
 
         public DateTime? LastMoveTime { get; set; }
 
-        public string? PosTags { get; set; }
-
         public Guid? RoomId { get; set; }
 
         public Room? Room { get; set; }

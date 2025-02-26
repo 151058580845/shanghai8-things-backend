@@ -32,7 +32,7 @@ public class DictionaryTypeUpdateDto : UpdateDto
     public bool State { get; set; }
 }
 
-public class DictionaryTypeQueryDto : PaginatedQueryDto
+public class DictionaryTypeQueryDto : PaginatedTimeQueryDto
 {
     public string? DictName { get; set; }
     public string? DictType { get; set; }

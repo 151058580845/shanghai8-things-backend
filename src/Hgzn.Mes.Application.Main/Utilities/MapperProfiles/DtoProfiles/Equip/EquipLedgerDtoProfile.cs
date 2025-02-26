@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
+using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.Equip;
@@ -20,6 +22,9 @@ public class EquipLedgerDtoProfile : Profile
             .ForMember(d => d.DeviceLevel, opt => opt.MapFrom(x => x.EquipLevel.ToString()));
         CreateMap<EquipLedgerCreateDto, EquipLedger>()
             .ForMember(d => d.EquipLevel, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceLevel!)));
+
+        CreateMap<LocationLabel, LocationLabelReadDto>();
+        CreateMap<LocationLabelUpdateDto, LocationLabel>();
     }
 
     private EquipLevelEnum ConvertStringToDeviceStatus(string status)

@@ -3,6 +3,7 @@ using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared.Enums;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -56,12 +57,6 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     /// 最后移动时间
     /// </summary>
     public DateTime? LastMoveTime { get; set; }
-
-    /// <summary>
-    ///  位置标签唯一编码
-    ///  有多个用;分隔
-    /// </summary>
-    public string? PosTags { get; set; }
 
     [Description("设备状态(正常/丢失/使用中)")]
     public DeviceStatus? DeviceStatus { get; set; }
@@ -121,6 +116,7 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     // /// </summary>
     // public EquipType EquipType { get; set; } = EquipType.UserEquip;
 
+    public IEnumerable<LocationLabel>? Labels { get; set; }
     public bool State { get; set; } = true;
     public int OrderNum { get; set; } = 0;
     public bool SoftDeleted { get; set; }

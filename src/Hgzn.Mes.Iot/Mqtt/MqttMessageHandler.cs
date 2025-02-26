@@ -45,7 +45,7 @@ namespace Hgzn.Mes.Iot.Mqtt
         private const int countIndex = 60;
         public void Initialize(IMqttExplorer mqttExplorer)
         {
-            _manager.Initialize(mqttExplorer, _connectionMultiplexer);
+            _manager.Initialize(mqttExplorer);
             _mqttExplorer = mqttExplorer;
         }
 
@@ -126,13 +126,13 @@ namespace Hgzn.Mes.Iot.Mqtt
             switch (info.Type)
             {
                 case CmdType.Conn:
-                    IEquipConnector equip = _manager.GetEquip(uri) ?? await _manager.AddEquip(uri, topic.ConnType!, info);
+                    var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, topic.ConnType!, info.ConnString!, info);
                     await SwitchEquipAsync(equip);
                     break;
                 case CmdType.Collection:
                     // 如果是采集点ID,则需要获取连接ID,并获得对应的连接
                     EquipDataPoint equipDataPoint = await _client.Queryable<EquipDataPoint>().Where(x => x.Id == uri).Includes(x => x.Connection).FirstAsync();
-                    IEquipConnector equipCon = _manager.GetEquip(equipDataPoint.Connection!.Id) ?? await _manager.AddEquip(equipDataPoint.Connection.Id, topic.ConnType!, info);
+                    IEquipConnector equipCon = _manager.GetEquip(equipDataPoint.Connection!.Id) ?? _manager.AddEquip(equipDataPoint.Connection.Id, topic.ConnType!, info.ConnString!, info);
                     await SwitchEquipAsync(equipCon);
                     break;
                 default:

@@ -15,7 +15,7 @@ public class EquipLedgerReadDto : ReadDto
     [Description("设备名称")] public string EquipName { get; set; } = null!;
 
     [Description("设备类型ID")] public Guid? TypeId { get; set; }
-    public string TypeName { get; set; }
+    public string? TypeName { get; set; }
     [Description("规格型号")] public string? Model { get; set; }
 
     [Description("购置日期")] public DateTime? PurchaseDate { get; set; }
@@ -259,7 +259,7 @@ public class EquipLedgerAppUpdateDto : UpdateDto
     public string? Remarks { get; set; }
 }
 
-public class EquipLedgerQueryDto : PaginatedQueryDto
+public class EquipLedgerQueryDto : PaginatedTimeQueryDto
 {
     /// <summary>
     /// 设备类型编号

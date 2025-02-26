@@ -1,5 +1,7 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
+﻿using AutoMapper;
+using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
@@ -14,10 +16,12 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip;
 public class TestDataController : ControllerBase
 {
     private readonly ITestDataService _testDataService;
+    private readonly IBaseConfigService _baseConfigService;
 
-    public TestDataController(ITestDataService testDataService)
+    public TestDataController(ITestDataService testDataService, IBaseConfigService baseConfigService)
     {
         _testDataService = testDataService;
+        _baseConfigService = baseConfigService;
     }
 
     [HttpPost]
@@ -68,15 +72,18 @@ public class TestDataController : ControllerBase
     /// <summary>
     /// Api批量导入
     /// </summary>
-    /// <param name="apiUrl"></param>
     /// <returns></returns>
     [HttpPost]
     [Route("importByApi")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"equip:testdata:{ScopeMethodType.Add}")]
-    public async Task<ResponseWrapper<int>> CreateAsync(string apiUrl)=>
-         (await _testDataService.GetDataFromThirdPartyAsync(apiUrl)).Wrap();
+    public async Task<ResponseWrapper<int>> CreateAsync()
+    {
+        var url = await _baseConfigService.GetValueByKeyAsync("import_plan_url");
+        return (await _testDataService.GetDataFromThirdPartyAsync(url)).Wrap();
+    }
+
 
     [HttpGet]
     [Route("getTestData")]

@@ -23,7 +23,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         protected readonly IConnectionMultiplexer _connectionMultiplexer;
         protected readonly IMqttExplorer _mqttExplorer;
         protected readonly ISqlSugarClient _sqlSugarClient;
-        protected EquipConnect _equipConnect;
+        protected EquipConnect? _equipConnect;
         protected EquipConnType? _connType;
         protected string? _uri;
 

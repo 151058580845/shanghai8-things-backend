@@ -39,7 +39,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<PaginatedList<OnlineUser>?>>  GetRolesList(OnlineUserQueryDto? queryDto) =>
+        public async Task<ResponseWrapper<PaginatedList<OnlineUser>>>  GetRolesList(OnlineUserQueryDto queryDto) =>
             ( await _onlineHubService.GetList(queryDto)).Wrap();
 
 

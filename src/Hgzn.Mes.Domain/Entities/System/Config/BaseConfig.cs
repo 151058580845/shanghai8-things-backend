@@ -25,7 +25,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Config
         /// 配置值 
         ///</summary>
         [Description("配置值")]
-        public string ConfigValue { get; set; } = string.Empty;
+        public string? ConfigValue { get; set; } = string.Empty;
         /// <summary>
         /// 配置类别 
         ///</summary>
@@ -49,5 +49,20 @@ namespace Hgzn.Mes.Domain.Entities.System.Config
 
         [Description("排序")]
         public int OrderNum { get; set; }
+        
+        #region static
+
+        public static BaseConfig ImportUrl = new BaseConfig()
+        {
+            Id = Guid.Parse("CF89CCBA-5A39-8C7F-CEB5-3855519BE067"),
+            ConfigName = "导入地址",
+            ConfigKey = "import_plan_url",
+            ConfigValue = "http://localhost:5000",
+            Remark = "导入试验计划请求地址"
+        };
+
+        #endregion
+
+        public static BaseConfig[] Seeds { get; } = [ImportUrl];
     }
 }

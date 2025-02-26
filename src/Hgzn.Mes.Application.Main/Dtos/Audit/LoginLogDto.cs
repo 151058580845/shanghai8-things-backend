@@ -44,7 +44,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Audit
         /// </summary>
         public DateTime CreationTime { get; set; }
     }
-    public class LoginLogQueryDto : PaginatedQueryDto
+    public class LoginLogQueryDto : PaginatedTimeQueryDto
     {
         /// <summary>
         /// 操作模块    

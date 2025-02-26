@@ -1473,7 +1473,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
             Location,Building,Floor,Room,
-            ShowSystem,ShowSystem1,ShowSystem2
+            // ShowSystem,ShowSystem1,ShowSystem2
         ];
 
         #endregion

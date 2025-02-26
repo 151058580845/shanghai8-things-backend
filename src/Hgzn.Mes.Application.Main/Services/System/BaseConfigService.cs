@@ -7,29 +7,40 @@ using Hgzn.Mes.Infrastructure.Utilities;
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     public class BaseConfigService : SugarCrudAppService<
-        BaseConfig, Guid,
-        BaseConfigReadDto, BaseConfigQueryDto,
-        BaseConfigCreateDto, BaseConfigUpdateDto>,
-    IBaseConfigService
+            BaseConfig, Guid,
+            BaseConfigReadDto, BaseConfigQueryDto,
+            BaseConfigCreateDto, BaseConfigUpdateDto>,
+        IBaseConfigService
     {
-        public async override Task<IEnumerable<BaseConfigReadDto>> GetListAsync(BaseConfigQueryDto? queryDto = null)
+        public override async Task<IEnumerable<BaseConfigReadDto>> GetListAsync(BaseConfigQueryDto? queryDto = null)
         {
             var entities = await Queryable
-           .WhereIF(!string.IsNullOrEmpty(queryDto?.ConfigName), x => x.ConfigName.Contains(queryDto!.ConfigName!))
-           .WhereIF(!string.IsNullOrEmpty(queryDto?.ConfigKey), x => x.ConfigKey.Contains(queryDto!.ConfigKey!))
-           .ToListAsync();
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.ConfigName), x => x.ConfigName.Contains(queryDto!.ConfigName!))
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.ConfigKey), x => x.ConfigKey.Contains(queryDto!.ConfigKey!))
+                .ToListAsync();
 
             return Mapper.Map<IEnumerable<BaseConfig>, IEnumerable<BaseConfigReadDto>>(entities);
         }
 
-        public async override Task<PaginatedList<BaseConfigReadDto>> GetPaginatedListAsync(BaseConfigQueryDto queryDto)
+        public override async Task<PaginatedList<BaseConfigReadDto>> GetPaginatedListAsync(BaseConfigQueryDto queryDto)
         {
             var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ConfigName), x => x.ConfigName.Contains(queryDto!.ConfigName!))
-            .WhereIF(!string.IsNullOrEmpty(queryDto?.ConfigKey), x => x.ConfigKey.Contains(queryDto!.ConfigKey!))
-            .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+                .WhereIF(!string.IsNullOrEmpty(queryDto.ConfigName), x => x.ConfigName.Contains(queryDto!.ConfigName!))
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.ConfigKey), x => x.ConfigKey.Contains(queryDto!.ConfigKey!))
+                .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
 
             return Mapper.Map<PaginatedList<BaseConfig>, PaginatedList<BaseConfigReadDto>>(entities);
+        }
+
+        public async Task<string> GetValueByKeyAsync(string key)
+        {
+            var entity = await Queryable.FirstAsync(t => t.ConfigKey == key);
+            if (entity == null)
+            {
+                throw new KeyNotFoundException(key);
+            }
+
+            return entity.ConfigValue!;
         }
     }
 }

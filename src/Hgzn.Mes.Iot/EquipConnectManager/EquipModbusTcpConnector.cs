@@ -119,7 +119,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             var cancelToken = new CancellationTokenSource();
             if (!CancelTokens.TryAdd(DataPoint.Id, cancelToken))
                 CancelTokens[DataPoint.Id] = cancelToken;
-            await Task.Run(async () => await CollectDataAsync(DataPoint), cancelToken.Token);
+            _ = Task.Run(() => CollectDataAsync(DataPoint), cancelToken.Token);
         }
 
         public async Task StopAsync()
@@ -214,6 +214,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
                 await database.StringSetAsync(key2, 1);
                 while (!token.IsCancellationRequested)
                 {
+                    Console.WriteLine("这是循环线程名:" + Thread.CurrentThread.Name);
                     ushort[] datas = new ushort[collectAddress.ReadLength];
                     switch (collectAddress.ModbusReadType)
                     {
@@ -259,7 +260,8 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
                     }
 
                     // 等待指定的采集频率再进行下一次读取
-                    await Task.Delay(1000, token.Token);
+                    Thread.Sleep(1000);
+                    // await Task.Delay(1000, token.Token);
                 }
             }
             catch (TaskCanceledException)
