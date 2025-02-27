@@ -17,6 +17,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip;
+using Hgzn.Mes.Domain.Entities.Basic;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -125,13 +126,15 @@ public sealed class SqlSugarContext
 
     public void InitDatabase()
     {
-        if (_dbOptions.DbType == DbType.PostgreSQL || _dbOptions.DbType == DbType.OpenGauss)
+        if (_dbOptions.DbType == DbType.OpenGauss || _dbOptions.DbType == DbType.PostgreSQL)
         {
+
+
             var uri = _dbOptions.Url!.Split(";");
             var newDatabaseName = uri[1].Substring(uri[1].IndexOf('=') + 1);
             uri[1] = "DATABASE=postgres";
             string connectionString = string.Join(";", uri);
-        
+
             var connConfig = new ConnectionConfig()
             {
                 ConfigId = DefaultConnectionStringName,
@@ -141,9 +144,9 @@ public sealed class SqlSugarContext
                 IsAutoCloseConnection = true
             };
             var client = new SqlSugarClient(connConfig);
-        
+
             string checkDbQuery = $"SELECT 1 FROM pg_database WHERE datname = '{newDatabaseName}'";
-            var data =  client.Ado.SqlQuery<string>(checkDbQuery);
+            var data = client.Ado.SqlQuery<string>(checkDbQuery);
             if (data.Count == 0)
             {
                 Console.WriteLine($"Database '{newDatabaseName}' does not exist. Creating it...");
@@ -212,10 +215,6 @@ public sealed class SqlSugarContext
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
                     c.IfTable<NoticeInfo>()
                         .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
-                    c.IfTable<EquipLedger>()
-                        .OneToMany(t => t.Labels, nameof(LocationLabel.EquipLedgerId), nameof(EquipLedger.Id));
-                    c.IfTable<LocationLabel>()
-                        .OneToOne(t => t.Room, nameof(LocationLabel.RoomId), nameof(Room.Id));
                     c.IfTable<User>()
                         .ManyToMany(t => t.Roles, typeof(UserRole), nameof(UserRole.UserId), nameof(UserRole.RoleId));
                     c.IfTable<Role>()

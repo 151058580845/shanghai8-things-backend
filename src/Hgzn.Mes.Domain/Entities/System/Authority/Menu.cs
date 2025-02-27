@@ -1448,6 +1448,67 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "ShowSystem2"
         };
         #endregion
+        
+        
+        #region 基础管理
+
+        // 地点管理
+        public static Menu Basic = new()
+        {
+            Id = Guid.Parse("EDC608D3-2667-85CE-FB70-5A2AFE11A365"),
+            Name = "基础管理",
+            Code = "basic",
+            Type = MenuType.Catalogue,
+            Route = "/basic",
+            IconUrl = "ep:location",
+            OrderNum = 100,
+            ParentId = Root.Id
+        };
+
+        // 单位管理
+        public static Menu Unit = new()
+        {
+            Id = Guid.Parse("C10F1708-4177-D911-827A-563290998957"),
+            Name = "单位管理",
+            Code = "utils",
+            ScopeCode = "basic:unit:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:office-building",
+            Route = "/basic/unit/index",
+            OrderNum = 99,
+            ParentId = Basic.Id,
+            RouteName = "utils"
+        };
+        
+        // 供应商管理
+        public static Menu Supplier = new()
+        {
+            Id = Guid.Parse("4F20F07F-6D34-CDDB-F5D6-9C4C7FCDA2DC"),
+            Name = "供应商管理",
+            Code = "supplier",
+            ScopeCode = "basic:supplier:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:office-building",
+            Route = "/basic/supplier/index",
+            OrderNum = 99,
+            ParentId = Basic.Id,
+            RouteName = "supplier"
+        };
+        // 客户管理
+        public static Menu Customer = new()
+        {
+            Id = Guid.Parse("5C1863E7-FAF2-5A43-395E-959E09B13C41"),
+            Name = "客户管理",
+            Code = "customer",
+            ScopeCode = "basic:customer:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:office-building",
+            Route = "/basic/custom/index",
+            OrderNum = 99,
+            ParentId = Basic.Id,
+            RouteName = "customer"
+        };
+        #endregion
         public static Menu[] Seeds { get; } = [
             Root,
             System,
@@ -1474,7 +1535,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
             Location,Building,Floor,Room,
-            ShowSystem,ShowSystem1,ShowSystem2
+            ShowSystem,ShowSystem1,ShowSystem2,
+            Basic,Supplier,Unit,Customer,
         ];
 
         #endregion
