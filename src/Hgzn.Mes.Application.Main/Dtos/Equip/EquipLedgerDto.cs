@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Enums;
 using System.ComponentModel;
 

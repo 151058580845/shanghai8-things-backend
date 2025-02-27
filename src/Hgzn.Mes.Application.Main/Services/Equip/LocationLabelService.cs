@@ -74,5 +74,10 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .ToPaginatedListAsync(pageIndex, pageSize);
             return dtos;
         }
+
+        public async Task<int> BindingLabelsAsync(BindingLabelDto dto)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
