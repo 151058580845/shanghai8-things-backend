@@ -112,6 +112,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
 
         public async override Task StartAsync(Guid uri)
         {
+            if (_modbusIpMaster == null) return;
             DataPoint = await _sqlSugarClient.Queryable<EquipDataPoint>().Where(x => x.Id == uri).FirstAsync();
             ModbusTcpDataPoint mtdp = JsonConvert.DeserializeObject<ModbusTcpDataPoint>(DataPoint.CollectionAddressStr!)!;
             _collectAddress.TryAdd(DataPoint.Id, mtdp);
@@ -120,6 +121,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             if (!CancelTokens.TryAdd(DataPoint.Id, cancelToken))
                 CancelTokens[DataPoint.Id] = cancelToken;
             _ = Task.Run(() => CollectDataAsync(DataPoint), cancelToken.Token);
+            await UpdateStateAsync(ConnStateType.Run);
         }
 
         public async Task StopAsync()
@@ -150,6 +152,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
                 var database = _connectionMultiplexer.GetDatabase();
                 var key2 = string.Format(CacheKeyFormatter.EquipDataPointOperationStatus, dataPointId);
                 await database.StringSetAsync(key2, 0);
+                await UpdateStateAsync(ConnStateType.Stop);
             }
         }
 
