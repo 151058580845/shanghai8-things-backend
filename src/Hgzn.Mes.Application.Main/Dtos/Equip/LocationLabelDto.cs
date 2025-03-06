@@ -51,7 +51,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
 
     public class BindingLabelDto
     {
-        public LabelType LabelType { get; set; }
+        public LabelType LabelType { get; set; } = LabelType.Unknow;
 
         public IEnumerable<string> Tids { get; set; } = null!;
 

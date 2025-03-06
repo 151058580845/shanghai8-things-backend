@@ -23,7 +23,7 @@ public class RoomService : SugarCrudAppService<
     public override async Task<IEnumerable<RoomReadDto>> GetListAsync(RoomQueryDto? queryDto = null)
     {
         var entities = await Queryable
-            .WhereIF(!queryDto.ParentId.IsGuidEmpty(), x => x.ParentId == queryDto.ParentId)
+            .WhereIF(queryDto?.ParentId is not null, x => x.ParentId == queryDto!.ParentId)
             .WhereIF(queryDto != null && !string.IsNullOrEmpty(queryDto.Name), x => x.Name.Contains(queryDto!.Name!))
             // .Includes(t=>t.Rooms)
             .OrderBy(x => x.OrderNum)
@@ -34,7 +34,7 @@ public class RoomService : SugarCrudAppService<
     public override async Task<PaginatedList<RoomReadDto>> GetPaginatedListAsync(RoomQueryDto queryDto)
     {
         var entities = await Queryable
-            .WhereIF(!queryDto.ParentId.IsGuidEmpty(), x => x.ParentId == queryDto.ParentId)
+            .WhereIF(!queryDto.ParentId.IsNullableGuidEmpty(), x => x.ParentId == queryDto.ParentId)
             .WhereIF(!string.IsNullOrEmpty(queryDto.Name), x => x.Name!.Contains(queryDto.Name!))
             // .Includes(t=>t.Rooms)
             .OrderBy(x => x.OrderNum)

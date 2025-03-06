@@ -213,6 +213,10 @@ public sealed class SqlSugarContext
                         .OneToOne(t => t.EquipType, nameof(EquipLedger.TypeId));
                     c.IfTable<EquipLedger>()
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
+                    c.IfTable<LocationLabel>()
+                        .OneToOne(t => t.Room, nameof(LocationLabel.RoomId));
+                    c.IfTable<LocationLabel>()
+                        .OneToOne(t => t.EquipLedger, nameof(LocationLabel.EquipLedgerId));
                     c.IfTable<NoticeInfo>()
                         .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
                     c.IfTable<User>()

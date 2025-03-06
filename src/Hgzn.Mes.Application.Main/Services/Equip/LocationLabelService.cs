@@ -26,7 +26,10 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public override async Task<PaginatedList<LocationLabelReadDto>> GetPaginatedListAsync(LocationLabelQueryDto queryDto)
         {
             var entities = await Queryable
+                .Where(ll => ll.Type == queryDto.LabelType)
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
+                .Includes(ll => ll.EquipLedger)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!))
                 .OrderBy(m => m.CreationTime)
                 .ToPaginatedListAsync(queryDto!.PageIndex, queryDto.PageSize);
             return Mapper.Map<PaginatedList<LocationLabelReadDto>>(entities);
@@ -77,7 +80,14 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
 
         public async Task<int> BindingLabelsAsync(BindingLabelDto dto)
         {
-            throw new NotImplementedException();
+            var entities = dto.Tids.Select(bl => new LocationLabel
+            {
+                Type = dto.LabelType,
+                TagId = bl,
+                EquipLedgerId = dto.EquipLedgerId,
+                RoomId = dto.RoomId,
+            });
+            return await DbContext.Insertable<LocationLabel>(entities).ExecuteCommandAsync();
         }
     }
 }

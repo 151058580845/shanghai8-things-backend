@@ -1417,7 +1417,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         };
 
         // 房间标签管理
-        public static Menu Label = new()
+        public static Menu LocationLabel = new()
         {
             Id = Guid.Parse("A0F66616-B831-0768-3054-F00B1D9A296B"),
             Name = "房间标签",
@@ -1566,6 +1566,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Location,Building,Floor,Room,
             ShowSystem,ShowSystem1,ShowSystem2,
             Basic,Supplier,Unit,Customer,
+            LocationLabel, EquipLabel
         ];
 
         #endregion

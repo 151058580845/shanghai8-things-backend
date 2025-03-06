@@ -1,7 +1,10 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
+using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Dtos.System;
+using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -16,12 +19,19 @@ public class LocationController : ControllerBase
     private readonly IBuildingService _buildingService;
     private readonly IFloorService _floorService;
     private readonly IRoomService _roomService;
+    private readonly ILocationLabelService _locationLabelService;
 
-    public LocationController(IBuildingService buildingService, IFloorService floorService, IRoomService roomService)
+
+    public LocationController(
+        IBuildingService buildingService,
+        IFloorService floorService,
+        IRoomService roomService,
+        ILocationLabelService locationLabelService)
     {
         _buildingService = buildingService;
         _floorService = floorService;
         _roomService = roomService;
+        _locationLabelService = locationLabelService;
     }
 
     #region Building
@@ -285,5 +295,19 @@ public class LocationController : ControllerBase
     [Authorize(Policy = $"system:room:{ScopeMethodType.Query}")]
     public async Task<ResponseWrapper<IEnumerable<NameValueListDto>>> GetRoomListAllAsync(RoomQueryDto? input) =>
         (await _roomService.GetRoomListAllAsync(input)).Wrap();
+
+    [HttpPost]
+    [Route("room/labels/paged")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ResponseWrapper<PaginatedList<LocationLabelReadDto>>?> GetRoomLabelsPaginatedList(LocationLabelQueryDto dto) =>
+        (await _locationLabelService.GetPaginatedListAsync(dto)).Wrap();
+
+    [HttpPost]
+    [Route("labels/bind")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ResponseWrapper<int>> BindingLabels(BindingLabelDto dto) => 
+        (await _locationLabelService.BindingLabelsAsync(dto)).Wrap();
     #endregion
 }
