@@ -141,12 +141,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 .FirstAsync();
             if(label is null)
             {
-                await _client.Insertable(new LocationLabel
-                {
-                    TagId = msg.Tid!,
-                    Type = LabelType.Unknow
-                }).ExecuteCommandAsync();
-                _logger.LogTrace("new label added");
+                _logger.LogTrace("new label found");
                 return;
             }
             if(label.EquipLedgerId is null)
@@ -155,9 +150,14 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 return;
             }
             // 读写器所在房间
-            var rfidRoom = await _client.Queryable<EquipLedger>()
-                .Select(el => el.RoomId)
-                .FirstAsync(id => id == uri);
+            var rfidRoom = (await _client.Queryable<EquipConnect>()
+                .Includes(ec => ec.EquipLedger)
+                .Where(ec => ec.Id == uri)
+                .Select(ec => new
+                {
+                    ec.EquipLedger.RoomId,
+                })
+                .FirstAsync());
             if (rfidRoom is null)
             {
                 _logger.LogError("rfid device not bind to room");
@@ -165,9 +165,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             }
             // 查找标签所在设备
             var equip = await _client.Queryable<EquipLedger>()
+                .Where(x => x!.Id == label!.EquipLedgerId)
                 .Includes(eq => eq.Room)
-                .Includes(eq => eq.Labels)
-                .FirstAsync(x => x!.Id == label!.EquipLedgerId);
+                .FirstAsync();
 
             //原先设备已绑定则解绑
             if (equip.RoomId is not null && (equip.LastMoveTime is null ||
@@ -179,7 +179,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             }
             else//未绑定设备绑定至新房间
             {
-                equip.RoomId = rfidRoom;
+                equip.RoomId = rfidRoom.RoomId;
                 equip.LastMoveTime = DateTime.UtcNow;
             }
 

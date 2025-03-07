@@ -12,14 +12,10 @@ using Modbus.Device;
 using Newtonsoft.Json;
 using SqlSugar;
 using StackExchange.Redis;
-using System;
 using System.Collections.Concurrent;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text.Json.Nodes;
 using System.Timers;
-using static Hgzn.Mes.Domain.Entities.Equip.EquipControl.CollectionConfig;
 
 namespace Hgzn.Mes.Iot.EquipConnectManager
 {
@@ -49,17 +45,14 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
         protected readonly Dictionary<Guid, CancellationTokenSource> CancelTokens = new();
         protected EquipDataPoint DataPoint = new();
 
-        public EquipConnect Connect { get; set; }
-        public string ConnectStr { get; set; }
-
-        public EquipModbusTcpConnect(IConnectionMultiplexer connectionMultiplexer, IMqttExplorer mqttExplorer, ISqlSugarClient sugarClient, string uri, EquipConnType connType) : base(connectionMultiplexer, mqttExplorer, sugarClient)
+        public EquipModbusTcpConnect(
+            IConnectionMultiplexer connectionMultiplexer,
+            IMqttExplorer mqttExplorer,
+            ISqlSugarClient sugarClient,
+            string uri, EquipConnType connType) :
+            base(connectionMultiplexer, mqttExplorer, sugarClient, uri, connType)
         {
-            _uri = uri;
-            _connType = connType;
-            Connect = _sqlSugarClient.Queryable<EquipConnect>().Where(it => it.Id.ToString() == uri).First();
-            if (Connect?.ConnectStr == null) return;
-            ConnectStr = Connect.ConnectStr;
-            _modbusTcpConnInfo = JsonConvert.DeserializeObject<ModbusTcpConnInfo>(ConnectStr)!;
+            _modbusTcpConnInfo = JsonConvert.DeserializeObject<ModbusTcpConnInfo>(_equipConnect?.ConnectStr)!;
             _timer = new System.Timers.Timer(5000);
             // _timer.Elapsed += CheckConnect;
             _timer.AutoReset = true;

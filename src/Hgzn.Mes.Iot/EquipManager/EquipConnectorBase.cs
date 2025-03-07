@@ -14,11 +14,15 @@ namespace Hgzn.Mes.Iot.EquipManager
         protected EquipConnectorBase(
             IConnectionMultiplexer connectionMultiplexer,
             IMqttExplorer mqttExplorer,
-            ISqlSugarClient sugarClient)
+            ISqlSugarClient sugarClient,
+            string uri, EquipConnType connType)
         {
+            _uri = uri;
+            _connType = connType;
             _connectionMultiplexer = connectionMultiplexer;
             _mqttExplorer = mqttExplorer;
             _sqlSugarClient = sugarClient;
+            _equipConnect = sugarClient.Queryable<EquipConnect>().First(x => x.Id == Guid.Parse(_uri));
         }
         protected readonly IConnectionMultiplexer _connectionMultiplexer;
         protected readonly IMqttExplorer _mqttExplorer;
@@ -41,12 +45,8 @@ namespace Hgzn.Mes.Iot.EquipManager
         {
             // 记录到redis服务器
             var database = _connectionMultiplexer.GetDatabase();
-            var key = string.Format(CacheKeyFormatter.EquipState, _connType.ToString(), _uri);
-            if (stateType == ConnStateType.On)
-                await database.StringSetAsync(key, (int)ConnStateType.Run);
-            if (stateType == ConnStateType.Off || stateType == ConnStateType.Stop)
-                await database.StringSetAsync(key, (int)ConnStateType.Off);
-
+            var key = string.Format(CacheKeyFormatter.EquipState, _equipConnect.EquipId, _uri);
+            await database.StringSetAsync(key, (int)stateType);
             await _mqttExplorer.PublishAsync(UserTopicBuilder
             .CreateUserBuilder()
             .WithPrefix(TopicType.App)
