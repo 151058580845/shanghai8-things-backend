@@ -29,7 +29,9 @@ public class EquipLedgerReadDto : ReadDto
     [Description("安装地点")] //若是rfidReader则不可为null
     public string? RoomName { get; set; }
 
-    [Description("设备状态(正常/丢失/使用中)")] public DeviceStatus? DeviceStatus { get; set; }
+    [Description("设备状态(正常/丢失/使用中)")] public string? DeviceStatus { get; set; }
+
+    public string? DeviceStatusString { get; set; }
 
     [Description("有效期时间")] public DateTime? ValidityDate { get; set; }
 
@@ -54,7 +56,7 @@ public class EquipLedgerReadDto : ReadDto
     /// 设备重要级别
     /// </summary>
     public string? DeviceLevel { get; set; }
-
+    public string? DeviceLevelString { get; set; }
     public bool State { get; set; } = true;
     public int OrderNum { get; set; } = 0;
     public bool SoftDeleted { get; set; }

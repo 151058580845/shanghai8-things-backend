@@ -103,10 +103,10 @@ public class EquipLedgerService : SugarCrudAppService<
         return entities;
     }
 
-    public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms)
+    public async Task<IEnumerable<EquipLedger>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms)
     {
         var equipList = await Queryable.Where(t =>t.RoomId != null && rooms.Contains(t.RoomId!.Value)).ToListAsync();
-        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(equipList);
+        return Mapper.Map<IEnumerable<EquipLedger>>(equipList);
     }
 
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)

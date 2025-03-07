@@ -20,7 +20,7 @@ public interface IEquipLedgerService : ICrudAppService<
     Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListInIdsAsync(List<Guid> equipIds);
     Task<IEnumerable<EquipLedgerSearchReadDto>> GetAppSearchAsync();
 
-    Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms);
+    Task<IEnumerable<EquipLedger>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms);
 
     /// <summary>
     /// ����api���빦��
