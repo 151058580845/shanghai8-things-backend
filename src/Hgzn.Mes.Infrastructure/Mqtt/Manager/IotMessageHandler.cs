@@ -170,12 +170,15 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 .FirstAsync();
 
             //原先设备已绑定则解绑
-            if (equip.RoomId is not null && (equip.LastMoveTime is null ||
-                (DateTime.UtcNow - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
+            if (equip.RoomId is not null && equip.RoomId == rfidRoom.RoomId)
             {
-                equip.RoomId = null;
-                equip.IsMoving = true;
-                equip.LastMoveTime = DateTime.UtcNow;
+                if ((equip.LastMoveTime is null ||
+                (DateTime.UtcNow - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
+                {
+                    equip.RoomId = null;
+                    equip.IsMoving = true;
+                    equip.LastMoveTime = DateTime.UtcNow;
+                }
             }
             else//未绑定设备绑定至新房间
             {
