@@ -42,11 +42,17 @@ public class ReceiveData : UniversalEntity, IAudited
     [Description("阵列通道复用")]
     public byte Model3 { get; set; }
 
-    [Description("通道极化方式")]
+    [Description("通道极化方式1")]
     public byte Model4 { get; set; }
 
-    [Description("通道功率模式")]
+    [Description("通道极化方式2")]
     public byte Model5 { get; set; }
+
+    [Description("通道功率模式")]
+    public byte Model6 { get; set; }
+
+    [Description("预留")]
+    public byte Model7 { get; set; }
 
     #endregion 工作模式信息
 
@@ -62,6 +68,13 @@ public class ReceiveData : UniversalEntity, IAudited
     public uint SupplyVoltageState { get; set; }
 
     #endregion 健康状态信息
+
+    #region 物理量数量
+
+    [Description("物理量数量")]
+    public uint PhysicalQuantityCount { get; set; }
+
+    #endregion
 
     #region 解析,精控器件
 
