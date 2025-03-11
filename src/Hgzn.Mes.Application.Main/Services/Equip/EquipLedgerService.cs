@@ -103,10 +103,10 @@ public class EquipLedgerService : SugarCrudAppService<
         return entities;
     }
 
-    public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms)
+    public async Task<IEnumerable<EquipLedger>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms)
     {
         var equipList = await Queryable.Where(t =>t.RoomId != null && rooms.Contains(t.RoomId!.Value)).ToListAsync();
-        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(equipList);
+        return Mapper.Map<IEnumerable<EquipLedger>>(equipList);
     }
 
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
@@ -114,8 +114,8 @@ public class EquipLedgerService : SugarCrudAppService<
         var entities = await Queryable
             .WhereIF(!string.IsNullOrEmpty(query.EquipName), m => m.EquipName.Contains(query.EquipName!))
             .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
-            .WhereIF(!query.TypeId.IsGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
-            .WhereIF(!query.RoomId.IsGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
+            .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
+            .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
             .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
             .WhereIF(query.State != null, m => m.State == query.State)
@@ -131,8 +131,8 @@ public class EquipLedgerService : SugarCrudAppService<
         var entities = await Queryable
             .WhereIF(!string.IsNullOrEmpty(query.EquipName), m => m.EquipName.Contains(query.EquipName!))
             .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
-            .WhereIF(!query.TypeId.IsGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
-            .WhereIF(!query.RoomId.IsGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
+            .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
+            .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
             .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
             .WhereIF(query?.State != null, m => m.State == query.State)

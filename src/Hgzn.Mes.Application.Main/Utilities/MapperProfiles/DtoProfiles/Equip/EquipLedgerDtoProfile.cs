@@ -16,7 +16,6 @@ public class EquipLedgerDtoProfile : Profile
         // CreateMap<EquipLedgerUpdateDto, EquipLedger>()
         //     .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceStatus!)));
         CreateMap<EquipLedger, EquipLedgerReadDto>()
-            .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => x.DeviceStatus.ToString()))
             .ForMember(d => d.TypeName, opt => opt.MapFrom(x => x.EquipType == null ? "" : x.EquipType!.TypeName))
             .ForMember(d => d.RoomName, opt => opt.MapFrom(x => x.Room == null ? "" : x.Room!.Name))
             .ForMember(d => d.DeviceLevel, opt => opt.MapFrom(x => x.EquipLevel.ToString()));

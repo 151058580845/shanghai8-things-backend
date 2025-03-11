@@ -38,30 +38,30 @@ public class EquipConnectService : SugarCrudAppService<
     {
         _equipLedgerService = equipLedgerService;
         _mqttExplorer = mqttExplorer;
-        this._connectionMultiplexer = connectionMultiplexer;
+        _connectionMultiplexer = connectionMultiplexer;
     }
 
 
     public override async Task<PaginatedList<EquipConnectReadDto>> GetPaginatedListAsync(EquipConnectQueryDto queryDto)
     {
-        IDatabase database = _connectionMultiplexer.GetDatabase();
+        var database = _connectionMultiplexer.GetDatabase();
 
-        PaginatedList<EquipConnect> querable = await DbContext.Queryable<EquipConnect>()
-            .Includes(eq => eq.EquipLedger, el => el.EquipType)
+        var equips = await DbContext.Queryable<EquipConnect>()
+            .Includes(eq => eq.EquipLedger)
             .WhereIF(!queryDto.EquipName.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipName.Contains(queryDto.EquipName!))
             .WhereIF(!queryDto.EquipCode.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipCode.Contains(queryDto.EquipCode!))
             .OrderBy(t => t.OrderNum)
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
 
         // 从redis里查出来赋值给ReadDto
-        foreach (EquipConnect item in querable.Items)
+        foreach (var item in equips.Items)
         {
-            bool connectState = database.StringGet(string.Format(CacheKeyFormatter.EquipState, EquipConnType.IotServer.ToString(), item.Id)) == "3" ? true : false;
-            item.ConnectState = connectState;
+            var key = string.Format(CacheKeyFormatter.EquipState, item.EquipLedger!.Id, item.Id);
+            item.ConnectState = database.StringGet(key).TryParse(out int index) &&
+                (index == (int)ConnStateType.Run || index == (int)ConnStateType.On);
         }
-        querable = new PaginatedList<EquipConnect>(querable.Items, querable.Items.Count(), queryDto.PageIndex, queryDto.PageSize);
 
-        return Mapper.Map<PaginatedList<EquipConnectReadDto>>(querable);
+        return Mapper.Map<PaginatedList<EquipConnectReadDto>>(equips);
     }
 
     public async Task<List<EquipConnectReadDto>> MapToGetListOutputDtosAsync(List<EquipConnect> equipLedgerQueryDtos)

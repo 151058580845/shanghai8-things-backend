@@ -1,36 +1,26 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
-using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Iot.EquipManager;
 using SqlSugar;
 using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Iot.EquipConnectManager
 {
     public class TcpServerConnector : EquipConnectorBase
     {
         private EquipTcpServer _server = null!;
-        private EquipConnect _connect;
 
         public TcpServerConnector(
             IConnectionMultiplexer connectionMultiplexer,
             IMqttExplorer mqttExplorer,
             ISqlSugarClient sqlSugarClient,
-            string uri,
-            EquipConnType connType) : base(connectionMultiplexer, mqttExplorer, sqlSugarClient)
-        {
-            _equipConnect = _sqlSugarClient.Queryable<EquipConnect>().First(x => x.Id == Guid.Parse(uri));
-            _uri = uri;
-            _connType = connType;
+            string uri, EquipConnType connType) :
+            base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
+        {            
         }
 
         public override async Task CloseConnectionAsync()

@@ -12,7 +12,7 @@ public static class KeyExtension
     /// </summary>
     /// <param name="guid"></param>
     /// <returns></returns>
-    public static bool IsGuidEmpty(this Guid? guid)
+    public static bool IsNullableGuidEmpty(this Guid? guid)
     {
         return guid == null || guid == Guid.Empty;
     }

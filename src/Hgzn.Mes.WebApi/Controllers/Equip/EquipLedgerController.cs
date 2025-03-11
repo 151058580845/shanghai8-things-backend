@@ -6,6 +6,7 @@ using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.WebApi.Utilities;
@@ -40,8 +41,19 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("page")]
-        public async Task<ResponseWrapper<PaginatedList<EquipLedgerReadDto>>> GetPaginatedListAsync(EquipLedgerQueryDto queryDto)
-        => (await _equipLedgerService.GetPaginatedListAsync(queryDto)).Wrap();
+        public async Task<ResponseWrapper<PaginatedList<EquipLedgerReadDto>>> GetPaginatedListAsync(
+            EquipLedgerQueryDto queryDto)
+        {
+           var levels = await _dictionaryInfoService.GetNameValueByTypeAsync("DeviceLevel");
+           var status = await _dictionaryInfoService.GetNameValueByTypeAsync("DeviceStatus");
+           var entities = await _equipLedgerService.GetPaginatedListAsync(queryDto);
+           foreach (var entity in entities.Items)
+           {
+               entity.DeviceLevelString = levels?.FirstOrDefault(t=>t.Value == entity.DeviceLevel)?.Name;
+               entity.DeviceStatusString = status?.FirstOrDefault(t=>t.Value == entity.DeviceStatus.ToString())?.Name;
+           }
+           return entities.Wrap();
+        }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -152,54 +164,6 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<EquipLedgerReadDto>> UpdateStateAsync(Guid id, bool state) =>
             (await _equipLedgerService.UpdateStateAsync(id, state)).Wrap();
-        
-        
-        /// <summary>
-        /// 获取试验系统列表
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("test/list")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [AllowAnonymous]
-        public async Task<ResponseWrapper<EquipLedgerTestReadDto>> GetTestListAsync()
-        {
-            var testList = await _dictionaryInfoService.GetNameValueByTypeAsync("TestSystem");
-            var testRead = new EquipLedgerTestReadDto();
-            var list = new List<TestListReadDto>();
-            foreach (var test in testList)
-            {
-                list.Add(new TestListReadDto()
-                {
-                    TestName = test.Value
-                });
-            }
-            foreach (var entity in list)
-            {
-                var rooms = await _roomService.GetRoomListByTestName(entity.TestName);
-                var ids = await rooms.Select(x => x.Id).ToListAsync();
-                var equips = (await _equipLedgerService.GetEquipsListByRoomAsync(ids)).ToList();
-                if (equips.Count != 0)
-                {
-                    entity.EquipCount = equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
-                    entity.Rate = equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
-                    entity.HealthRate =  equips.Count(t => t.DeviceStatus == DeviceStatus.Normal);
-                }
-            }
-            
-            testRead.TestList = list;
-            testRead.TestErrorList = new List<TestErrorListReadDto>();
-            testRead.UpRate = 0;
-            testRead.DownRate = 0;
-            testRead.NormalCount = 0;
-            testRead.FreeCount = 0;
-            testRead.LeaveCount = 0;
-            testRead.HealthCount = 0;
-            testRead.BetterCount = 0;
-            testRead.ErrorCount = 0;
-            return testRead.Wrap();
-        }
 
         /// <summary>
         /// 导入
@@ -267,28 +231,29 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("label")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<LocationLabelReadDto?> UpdateEquipLabel(Guid id, LocationLabelUpdateDto dto) =>
-            await _locationLabelService.UpdateAsync(id, dto);
+        public async Task<ResponseWrapper<LocationLabelReadDto>> UpdateEquipLabel(Guid id, LocationLabelUpdateDto dto) =>
+            (await _locationLabelService.UpdateAsync(id, dto)).Wrap();
 
         [HttpDelete]
         [Route("label/{id:guid}/")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<int> DeleteEquipLabel(Guid id, LocationLabelUpdateDto dto) =>
-            await _locationLabelService.DeleteAsync(id);
+        public async Task<ResponseWrapper<int>> DeleteEquipLabel(Guid id) =>
+            (await _locationLabelService.DeleteAsync(id)).Wrap();
 
-        [HttpPut]
+        [HttpPost]
         [Route("labels/paged")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<PaginatedList<LocationLabelReadDto>?> UpdateEquipLabel(LocationLabelQueryDto dto) =>
-            await _locationLabelService.GetPaginatedListAsync(dto);
+        public async Task<ResponseWrapper<PaginatedList<LocationLabelReadDto>>> GetEquipLabelaPaginatedList(LocationLabelQueryDto dto) =>
+            (await _locationLabelService.GetPaginatedListAsync(dto)).Wrap();
 
         [HttpDelete]
         [Route("labels")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<int> DeleteRanges(IEnumerable<Guid> ids) =>
-            await _locationLabelService.DeleteRangesAsync(ids);
+        public async Task<ResponseWrapper<int>> DeleteRanges(IEnumerable<Guid> ids) =>
+            (await _locationLabelService.DeleteRangesAsync(ids)).Wrap();
+           
     }
 }

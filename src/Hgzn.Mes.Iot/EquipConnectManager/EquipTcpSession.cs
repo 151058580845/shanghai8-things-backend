@@ -9,7 +9,6 @@ using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
 using NetCoreServer;
 using SqlSugar;
 using StackExchange.Redis;
-using static Hgzn.Mes.Infrastructure.Utilities.TestDataReceive.TestDataReceive;
 using Buffer = System.Buffer;
 
 namespace Hgzn.Mes.Iot.EquipConnectManager;
@@ -42,25 +41,25 @@ public class EquipTcpSession : TcpSession
         _forwardLength = server.ForwardRate;
     }
 
-    private const int BodyStartIndex = 13;
+    private const int BodyStartIndex = 6;
     //缓存数据
     private readonly ConcurrentQueue<byte[]> _dataQueue = new();
     //接收数据就开启
     private volatile bool _hasData = false;
     private volatile int _forwardNum = 1;
 
-    private async Task ProcessDataAsync(CancellationToken cancellationToken, long size)
+    private async Task ProcessDataAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
             if (_dataQueue.TryDequeue(out var buffer))
             {
+                var size = buffer.Length;
                 //标准头
                 var header = buffer[0];
                 if (header != 0x5A)
                 {
                     Console.WriteLine("报头符错误。");
-                    _hasData = false;
                     return;
                 }
 
@@ -69,29 +68,15 @@ public class EquipTcpSession : TcpSession
                 if (messageLength != size)
                 {
                     Console.WriteLine($"报文长度错误：接收到的长度为 {size}，报文中声明的长度为 {messageLength}");
-                    _hasData = false;
                     return;
                 }
 
                 //解析报文流水号（1字节）
-                byte number = buffer[5];
-
-                // 解析时间
-                byte[] bYear = new byte[2];
-                Buffer.BlockCopy(buffer, 6, bYear, 0, 2);
-                ushort year = BitConverter.ToUInt16(bYear, 0);
-
-                byte month = buffer[8];
-                byte day = buffer[9];
-                byte hour = buffer[10];
-                byte minute = buffer[11];
-                byte second = buffer[12];
-
+                var number = buffer[5];
                 //报文数据
                 var length = messageLength - 6;
                 var newBuffer = new byte[length];
                 Buffer.BlockCopy(buffer, BodyStartIndex, newBuffer, 0, newBuffer.Length);
-
                 if (_forwardLength != null && _forwardNum == _forwardLength)
                 {
                     var topic = IotTopicBuilder.CreateIotBuilder()
@@ -100,13 +85,13 @@ public class EquipTcpSession : TcpSession
                                     .WithTag(MqttTag.Data)
                                     .WithDeviceType(EquipConnType.IotServer.ToString())
                                     .WithUri(_equipConnect.Id.ToString()).Build();
-                    await _mqttExplorer.PublishAsync(topic, newBuffer);
+                    await _mqttExplorer.PublishAsync(topic, buffer);
                     _forwardNum = 0;
                 }
                 _forwardNum++;
                 //本地解析数据
                 TestDataReceive testDataReceive = new TestDataReceive(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
-                await testDataReceive.Handle(newBuffer, true);
+                await testDataReceive.Handle(buffer, true);
             }
 
             _hasData = false;
@@ -130,7 +115,7 @@ public class EquipTcpSession : TcpSession
             _hasData = true;
             var cancellationTokenSource = new CancellationTokenSource();
             var token = cancellationTokenSource.Token;
-            _ = Task.Run(async () => await ProcessDataAsync(token, size), token);
+            _ = Task.Run(async () => await ProcessDataAsync(token), token);
         }
     }
 }

@@ -163,7 +163,7 @@ public sealed class SqlSugarContext
 
         InitTables();
     }
-
+    
     /// <summary>
     /// 初始化连接字符串
     /// </summary>
@@ -213,6 +213,10 @@ public sealed class SqlSugarContext
                         .OneToOne(t => t.EquipType, nameof(EquipLedger.TypeId));
                     c.IfTable<EquipLedger>()
                         .OneToOne(t => t.Room, nameof(EquipLedger.RoomId));
+                    c.IfTable<LocationLabel>()
+                        .OneToOne(t => t.Room, nameof(LocationLabel.RoomId));
+                    c.IfTable<LocationLabel>()
+                        .OneToOne(t => t.EquipLedger, nameof(LocationLabel.EquipLedgerId));
                     c.IfTable<NoticeInfo>()
                         .OneToMany(t => t.NoticeTargets, nameof(NoticeTarget.NoticeId), nameof(NoticeInfo.Id));
                     c.IfTable<User>()
@@ -226,11 +230,7 @@ public sealed class SqlSugarContext
                     c.IfTable<Floor>()
                         .OneToMany(t => t.Rooms, nameof(Room.ParentId), nameof(Floor.Id));
                     c.IfTable<TestData>()
-                     .OneToMany(t => t.Products, nameof(TestDataProduct.TestDataId), nameof(TestData.Id));
-                    c.IfTable<EquipDataPoint>()
-                     .OneToOne(t => t.EquipReceiveData, nameof(EquipDataPoint.EquipReceiveDataId))
-                     .OneToOne(t => t.Connection, nameof(EquipDataPoint.ConnectionId));
-                    // .OneToOne(t => t.Connection!.EquipLedger, nameof(EquipDataPoint.Connection.EquipId));
+                     .OneToMany(t => t.Products, nameof(TestDataProduct.TestDataId), nameof(TestData.Id)); ;
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();

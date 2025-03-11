@@ -17,7 +17,7 @@ public class EquipNoticeService : SugarCrudAppService<
     public override async Task<IEnumerable<EquipNoticeReadDto>> GetListAsync(EquipNoticeQueryDto? queryDto = null)
     {
         var entities = await Queryable
-            .WhereIF(!queryDto!.EquipId.IsGuidEmpty(),t=>t.EquipId == queryDto.EquipId!.Value)
+            .WhereIF(!queryDto!.EquipId.IsNullableGuidEmpty(),t=>t.EquipId == queryDto.EquipId!.Value)
             .WhereIF(!string.IsNullOrEmpty(queryDto.Title), t=>t.Title!.Contains(queryDto.Title!))
             .ToListAsync();
         return Mapper.Map<IEnumerable<EquipNoticeReadDto>>(entities);
@@ -26,7 +26,7 @@ public class EquipNoticeService : SugarCrudAppService<
     public override async Task<PaginatedList<EquipNoticeReadDto>> GetPaginatedListAsync(EquipNoticeQueryDto queryDto)
     {
         var entities = await Queryable
-            .WhereIF(!queryDto.EquipId.IsGuidEmpty(),t=>t.EquipId == queryDto.EquipId!.Value)
+            .WhereIF(!queryDto.EquipId.IsNullableGuidEmpty(),t=>t.EquipId == queryDto.EquipId!.Value)
             .WhereIF(!string.IsNullOrEmpty(queryDto.Title), t=>t.Title!.Contains(queryDto.Title!))
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
         return Mapper.Map<PaginatedList<EquipNoticeReadDto>>(entities);

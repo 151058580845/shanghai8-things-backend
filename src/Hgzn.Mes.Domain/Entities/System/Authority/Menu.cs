@@ -947,7 +947,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:equalizer-line",
             Route = "/equip/type/index",
-            OrderNum = 100,
+            OrderNum = 99,
             ParentId = Equip.Id,
             RouteName = "EquipType"
         };
@@ -962,7 +962,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:equal-fill",
             Route = "/equip/ledger/index",
-            OrderNum = 99,
+            OrderNum = 98,
             ParentId = Equip.Id,
             RouteName = "EquipLedger"
         };
@@ -977,7 +977,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:connection",
             Route = "/equip/connect/index",
-            OrderNum = 98,
+            OrderNum = 97,
             ParentId = Equip.Id,
             RouteName = "EquipConfig"
         };
@@ -991,7 +991,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:alarm-warning-line",
             Route = "/equip/test-analyse/index",
-            OrderNum = 98,
+            OrderNum = 96,
             ParentId = Equip.Id,
             RouteName = "EquipTestAnalyse"
         };
@@ -1005,7 +1005,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:management",
             Route = "/equip/data-point/index",
-            OrderNum = 89,
+            OrderNum = 95,
             ParentId = Equip.Id,
             RouteName = "EquipData"
         };
@@ -1019,7 +1019,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:management",
             Route = "/equip/test-data/index",
-            OrderNum = 89,
+            OrderNum = 94,
             ParentId = Equip.Id,
             RouteName = "TestData"
         };
@@ -1033,7 +1033,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "fa-solid:history",
             Route = "/equip/history/index",
-            OrderNum = 97,
+            OrderNum = 93,
             ParentId = Equip.Id,
             RouteName = "EquipLedgerHistory"
         };
@@ -1047,7 +1047,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:alarm-warning-line",
             Route = "/equip/notice/index",
-            OrderNum = 96,
+            OrderNum = 92,
             ParentId = Equip.Id,
             RouteName = "EquipNotice"
         };
@@ -1061,7 +1061,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:management",
             Route = "/equip/item/index",
-            OrderNum = 98,
+            OrderNum = 91,
             ParentId = Equip.Id,
             RouteName = "EquipItems"
         };
@@ -1076,7 +1076,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:management",
             Route = "/equip/plan/index",
-            OrderNum = 97,
+            OrderNum = 90,
             ParentId = Equip.Id,
             RouteName = "EquipPlan"
         };
@@ -1091,7 +1091,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:management",
             Route = "/equip/task/index",
-            OrderNum = 96,
+            OrderNum = 89,
             ParentId = Equip.Id,
             RouteName = "EquipPlanDone"
         };
@@ -1106,7 +1106,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:management",
             Route = "/equip/repair/index",
-            OrderNum = 95,
+            OrderNum = 88,
             ParentId = Equip.Id,
             RouteName = "EquipRepair"
         };
@@ -1120,10 +1120,24 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "equip:record:list",
             Type = MenuType.Menu,
             IconUrl = "ep:management",
-            Route = "/equip/record:/index",
-            OrderNum = 94,
+            Route = "/equip/record/index",
+            OrderNum = 87,
             ParentId = Equip.Id,
             RouteName = "EquipPlanRecord"
+        };
+
+        public static Menu EquipLabel = new()
+        {
+            Id = Guid.Parse("a2fa081e-c8ed-4382-bab7-556f8e3f6476"),
+            Name = "设备标签",
+            Code = "equip_label",
+            ScopeCode = "equip:label:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:location-information",
+            Route = "equip/label/index",
+            OrderNum = 86,
+            ParentId = Equip.Id,
+            RouteName = "equip_label"
         };
 
         #endregion
@@ -1401,8 +1415,23 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Location.Id,
             RouteName = "Room"
         };
+
+        // 房间标签管理
+        public static Menu LocationLabel = new()
+        {
+            Id = Guid.Parse("A0F66616-B831-0768-3054-F00B1D9A296B"),
+            Name = "房间标签",
+            Code = "location_label",
+            ScopeCode = "system:label:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:location-information",
+            Route = "/location/label/index",
+            OrderNum = 96,
+            ParentId = Location.Id,
+            RouteName = "location_label"
+        };
         #endregion
-        
+
         #region 楼层管理
 
         // 展示区域
@@ -1537,6 +1566,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Location,Building,Floor,Room,
             ShowSystem,ShowSystem1,ShowSystem2,
             Basic,Supplier,Unit,Customer,
+            LocationLabel, EquipLabel
         ];
 
         #endregion

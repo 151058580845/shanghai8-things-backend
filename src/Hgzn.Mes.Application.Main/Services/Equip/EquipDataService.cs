@@ -23,7 +23,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public async override Task<IEnumerable<EquipDataReadDto>> GetListAsync(EquipDataQueryDto? queryDto = null)
         {
             RefAsync<int> total = 0;
-            var entities = await Queryable.WhereIF(queryDto != null && !queryDto.TypeId.IsGuidEmpty(), t => t.TypeId == queryDto.TypeId)
+            var entities = await Queryable.WhereIF(queryDto != null && !queryDto.TypeId.IsNullableGuidEmpty(), t => t.TypeId == queryDto.TypeId)
                 .ToListAsync();
             return Mapper.Map<IEnumerable<EquipDataReadDto>>(entities);
         }
@@ -31,7 +31,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public async override Task<PaginatedList<EquipDataReadDto>> GetPaginatedListAsync(EquipDataQueryDto queryDto)
         {
             RefAsync<int> total = 0;
-            var entities = await Queryable.WhereIF(!queryDto.TypeId.IsGuidEmpty(), t => t.TypeId == queryDto.TypeId)
+            var entities = await Queryable.WhereIF(!queryDto.TypeId.IsNullableGuidEmpty(), t => t.TypeId == queryDto.TypeId)
                 .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
             return Mapper.Map<PaginatedList<EquipDataReadDto>>(entities);
         }

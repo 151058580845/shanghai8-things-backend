@@ -10,10 +10,10 @@ public class Floor : UniversalEntity, IOrder, IAudited
     public Guid ParentId { get; set; }  // 对应建筑物的ID
 
     [Description("楼层名称")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [Description("楼层编号")]
-    public string Code { get; set; }
+    public string Code { get; set; } = null!;
 
     [Description("楼层面积（平方米）")]
     public double? Area { get; set; }
