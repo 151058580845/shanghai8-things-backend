@@ -11,6 +11,7 @@ COPY ["src/Hgzn.Mes.Iot/Hgzn.Mes.Iot.csproj", "src/Hgzn.Mes.Iot/"]
 COPY ["src/Hgzn.Mes.Infrastructure/Hgzn.Mes.Infrastructure.csproj", "src/Hgzn.Mes.Infrastructure/"]
 COPY ["src/Hgzn.Mes.Domain/Hgzn.Mes.Domain.csproj", "src/Hgzn.Mes.Domain/"]
 COPY ["src/Hgzn.Mes.Domain.Shared/Hgzn.Mes.Domain.Shared.csproj", "src/Hgzn.Mes.Domain.Shared/"]
+COPY ["../packages","~/.nuget/packages"]
 RUN dotnet restore "./src/Hgzn.Mes.Iot/Hgzn.Mes.Iot.csproj"
 COPY . .
 WORKDIR "/src/src/Hgzn.Mes.Iot"

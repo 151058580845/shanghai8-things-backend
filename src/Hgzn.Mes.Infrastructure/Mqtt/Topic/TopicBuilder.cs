@@ -88,7 +88,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
 
     public class UserTopicBuilder : TopicBuilder
     {
-        private string _patientCode = null!;
+        private string _uri = null!;
 
         private UserTopicBuilder()
         { }
@@ -113,7 +113,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
 
         public UserTopicBuilder WithUri(string uri)
         {
-            _patientCode = uri;
+            _uri = uri;
             return this;
         }
 
@@ -123,7 +123,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 Direction = _direction,
                 Prefix = _prefix,
                 Tag = _tag,
-                UserCode = _patientCode
+                UserCode = _uri
             }.ToString();
 
         public static UserTopicBuilder CreateUserBuilder() => new();

@@ -225,6 +225,22 @@ public sealed class SqlSugarContext
                         .ManyToMany(t => t.Menus, typeof(RoleMenu), nameof(RoleMenu.RoleId), nameof(RoleMenu.MenuId));
                     c.IfTable<CodeRule>()
                      .OneToMany(t => t.CodeRuleRules, nameof(CodeRuleDefine.CodeRuleId), nameof(CodeRule.Id));
+
+                    c.IfTable<Supplier>()
+                       .OneToMany(t => t.Contacts, nameof(Contact.ParentId), nameof(Supplier.Id));
+                    c.IfTable<Supplier>()
+                        .OneToMany(t => t.AddressBs, nameof(AddressB.ParentId), nameof(Supplier.Id));
+
+                    c.IfTable<Customer>()
+                   .OneToMany(t => t.Contacts, nameof(Contact.ParentId), nameof(Customer.Id));
+                    c.IfTable<Customer>()
+                        .OneToMany(t => t.AddressBs, nameof(AddressB.ParentId), nameof(Customer.Id));
+
+                    c.IfTable<Supplier>()
+                       .OneToMany(t => t.Contacts, nameof(Contact.ParentId), nameof(Supplier.Id));
+                    c.IfTable<Supplier>()
+                        .OneToMany(t => t.AddressBs, nameof(AddressB.ParentId), nameof(Supplier.Id));
+
                     c.IfTable<Building>()
                         .OneToMany(t => t.Floors, nameof(Floor.ParentId), nameof(Building.Id));
                     c.IfTable<Floor>()

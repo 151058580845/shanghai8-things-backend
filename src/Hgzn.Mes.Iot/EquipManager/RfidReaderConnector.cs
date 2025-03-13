@@ -10,6 +10,7 @@ using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 using SqlSugar;
+using Hgzn.Mes.Domain.Shared.Utilities;
 
 namespace Hgzn.Mes.Iot.EquipManager;
 
@@ -18,14 +19,18 @@ public class RfidReaderConnector : EquipConnectorBase
     private GClient _client = new();
     private string? _serialNum { get; set; }
 
+    private int _pushInterval { get; set; } 
+
+    private DateTime _timeLast { get; set; }
 
     public RfidReaderConnector(
         IConnectionMultiplexer connectionMultiplexer,
         IMqttExplorer mqtt,
         ISqlSugarClient sqlSugarClient,
-        string uri, EquipConnType connType) :
+        string uri, EquipConnType connType, int pushInterval) :
         base(connectionMultiplexer, mqtt, sqlSugarClient, uri, connType)
     {
+        _pushInterval = pushInterval;
     }
 
     public override async Task StartAsync(Guid uri)
@@ -61,6 +66,7 @@ public class RfidReaderConnector : EquipConnectorBase
                     status == eConnectionAttemptEventStatusType.OK)
                 {
                     _client.OnEncapedTagEpcLog = TagEpcLogEncapedHandler;
+                    _client.OnTcpDisconnected = TcpDisconnectedHandler;
                     // 获得读写器信息
                     var readerInfo = new MsgAppGetReaderInfo();
                     _client.SendSynMsg(readerInfo);
@@ -83,6 +89,11 @@ public class RfidReaderConnector : EquipConnectorBase
     public override async Task CloseConnectionAsync()
     {
         StopReadingTag(_client);
+        await CloseConnOnlyAsync();
+    }
+
+    private async Task CloseConnOnlyAsync()
+    {
         _client?.Close();
         await UpdateStateAsync(ConnStateType.Stop);
     }
@@ -95,7 +106,7 @@ public class RfidReaderConnector : EquipConnectorBase
         // 4个天线读卡, 读取EPC数据区以及TID数据区
         var msgBaseInventoryEpc = new MsgBaseInventoryEpc
         {
-            AntennaEnable = (ushort)(eAntennaNo._1 | eAntennaNo._2 | eAntennaNo._3 | eAntennaNo._4),
+            AntennaEnable = (ushort)(eAntennaNo._1),
             InventoryMode = (byte)eInventoryMode.Inventory,
             ReadTid = new ParamEpcReadTid
             {
@@ -123,11 +134,19 @@ public class RfidReaderConnector : EquipConnectorBase
 
     private async void TagEpcLogEncapedHandler(EncapedLogBaseEpcInfo msg)
     {
+        LoggerAdapter.LogTrace("epc on");
+
+        if ((DateTime.UtcNow - _timeLast).TotalSeconds - _pushInterval < 0)
+        {
+            return;
+        }
+        _timeLast = DateTime.UtcNow;
         var data = new RfidMsg
         {
             Tid = msg.logBaseEpcInfo.Tid,
             Userdata = msg.logBaseEpcInfo.Userdata
         };
+
         var plain = JsonSerializer.Serialize(data, Options.CustomJsonSerializerOptions);
         await _mqttExplorer.PublishAsync(IotTopicBuilder
             .CreateIotBuilder()
@@ -137,5 +156,11 @@ public class RfidReaderConnector : EquipConnectorBase
             .WithUri(_uri!)
             .WithDeviceType(_connType.ToString()!)
             .Build(), Encoding.UTF8.GetBytes(plain));
+    }    
+    
+    private async void TcpDisconnectedHandler(string readerName)
+    {
+        LoggerAdapter.LogWarning($"serilnum: {_serialNum}, reader: {readerName} disconnected!");
+        await CloseConnOnlyAsync();
     }
 }

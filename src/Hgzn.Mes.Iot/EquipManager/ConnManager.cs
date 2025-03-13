@@ -12,6 +12,8 @@ using Hgzn.Mes.Iot.EquipConnectManager;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using System.Collections.Generic;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
+using Microsoft.Extensions.Configuration;
+using System.Configuration;
 
 namespace Hgzn.Mes.Iot.EquipManager
 {
@@ -20,14 +22,17 @@ namespace Hgzn.Mes.Iot.EquipManager
         private IMqttExplorer _mqtt = null!;
         private readonly ISqlSugarClient _client;
         private IConnectionMultiplexer _connectionMultiplexer;
+        private IConfiguration _configuration;
         public static ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
 
         public ConnManager(
             ISqlSugarClient client,
-            IConnectionMultiplexer connectionMultiplexer)
+            IConnectionMultiplexer connectionMultiplexer,
+            IConfiguration configuration)
         {
             _client = client;
             _connectionMultiplexer = connectionMultiplexer;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -50,8 +55,9 @@ namespace Hgzn.Mes.Iot.EquipManager
             switch (connType)
             {
                 case EquipConnType.RfidReader:
+                    var interval = _configuration.GetValue<int>("PushInterval");
                     equipConnector = new RfidReaderConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
-                        connType);
+                        connType, interval);
                     if (!Connections.TryAdd(id, equipConnector))
                         throw new Exception("equip exist");
                     break;

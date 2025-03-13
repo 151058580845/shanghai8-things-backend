@@ -51,16 +51,13 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions) ?? throw new ArgumentNullException("conn");
             try
             {
-                _server = new EquipTcpServer("127.0.0.1", conn.Port, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer);
+                _server = new EquipTcpServer(conn.Address, conn.Port, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer);
                 _server.Start();
-                await UpdateStateAsync(ConnStateType.On);
-                await UpdateOperationAsync(ConnStateType.On);
-                LoggerAdapter.LogInformation($"ip: {conn.Address}, port: {conn.Port}, server start sucessed!");
             }
             catch (Exception)
             {
                 await CloseConnectionAsync();
-                LoggerAdapter.LogInformation($"ip: {conn.Address}, port: {conn.Port}, server start failure!");
+                throw;
             }
 
             return false;
