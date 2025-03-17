@@ -8,7 +8,7 @@ using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
@@ -128,7 +128,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     // 根据连接ID查询设备ID
                     EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
                     Guid equipId = con.EquipId;
-                    TestDataReceive testDataReceive = new TestDataReceive(equipId, _client, _connectionMultiplexer, _mqttExplorer);
+                    TestDataOnlineReceive testDataReceive = new TestDataOnlineReceive(equipId, _client, _connectionMultiplexer, _mqttExplorer);
                     dataId = await testDataReceive.Handle(msg, false);
                     break;
             }

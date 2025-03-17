@@ -193,19 +193,19 @@ public class EquipLedgerService : SugarCrudAppService<
         catch (HttpRequestException ex)
         {
             // 处理 HTTP 请求异常
-            Console.WriteLine($"HTTP 请求失败: {ex.Message}");
+            LoggerAdapter.LogWarning($"HTTP 请求失败: {ex.Message}");
             throw;
         }
         catch (JsonException ex)
         {
             // 处理 JSON 反序列化异常
-            Console.WriteLine($"JSON 反序列化失败: {ex.Message}");
+            LoggerAdapter.LogWarning($"JSON 反序列化失败: {ex.Message}");
             throw;
         }
         catch (Exception ex)
         {
             // 处理其他异常
-            Console.WriteLine($"发生错误: {ex.Message}");
+            LoggerAdapter.LogWarning($"发生错误: {ex.Message}");
             throw;
         }
     }

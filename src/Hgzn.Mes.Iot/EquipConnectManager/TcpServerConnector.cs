@@ -20,7 +20,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             ISqlSugarClient sqlSugarClient,
             string uri, EquipConnType connType) :
             base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
-        {            
+        {
         }
 
         public override async Task CloseConnectionAsync()
@@ -51,7 +51,13 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions) ?? throw new ArgumentNullException("conn");
             try
             {
-                _server = new EquipTcpServer("127.0.0.1", conn.Port, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer);
+                if (conn.Port < 1600 || conn.Port > 1650)
+                {
+                    await UpdateStateAsync(ConnStateType.Off);
+                    LoggerAdapter.LogInformation($"ip: {conn.Address}, port: {conn.Port}, port out of range!");
+                    return false;
+                }
+                _server = new EquipTcpServer("0.0.0.0", conn.Port, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer);
                 _server.Start();
                 await UpdateStateAsync(ConnStateType.On);
                 await UpdateOperationAsync(ConnStateType.On);

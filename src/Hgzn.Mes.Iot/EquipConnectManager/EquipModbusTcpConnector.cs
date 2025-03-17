@@ -238,13 +238,13 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
                     {
                         case DataReadTypeEnum.Int:
                             var intValue1 = ModbusHelper.ConvertToInt32(datas, DataOrderType.ABCD);
-                            Console.WriteLine(intValue1);
+                            LoggerAdapter.LogInformation(intValue1.ToString());
                             // 处理 intValue，例如存储或传递给其他系统
                             break;
                         case DataReadTypeEnum.UInt:
                             var stringValue = ModbusHelper.ConvertToUInt32(datas, _modbusTcpConnInfo.DataType);
                             // 处理 stringValue
-                            Console.WriteLine(stringValue);
+                            LoggerAdapter.LogInformation(stringValue.ToString());
                             break;
                         // 处理其他数据类型
                         default:
@@ -262,7 +262,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                LoggerAdapter.LogError(ex.Message);
                 // 处理其他异常，例如记录日志
             }
         }
@@ -293,7 +293,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
+                LoggerAdapter.LogError(exception.Message);
                 _failedTimes--;
             }
         }

@@ -2,14 +2,16 @@
 using System.Collections.Concurrent;
 using System.Net;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
+using MySqlX.XDevAPI;
 using NetCoreServer;
 using SqlSugar;
 using StackExchange.Redis;
-using static Hgzn.Mes.Infrastructure.Utilities.TestDataReceive.TestDataReceive;
+using static Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.TestDataOnlineReceive;
 using Buffer = System.Buffer;
 
 namespace Hgzn.Mes.Iot.EquipConnectManager;
@@ -59,7 +61,7 @@ public class EquipTcpSession : TcpSession
                 var header = buffer[0];
                 if (header != 0x5A)
                 {
-                    Console.WriteLine("报头符错误。");
+                    LoggerAdapter.LogWarning("报头符错误。");
                     _hasData = false;
                     return;
                 }
@@ -68,7 +70,7 @@ public class EquipTcpSession : TcpSession
                 var messageLength = BitConverter.ToUInt32(buffer, 1);
                 if (messageLength != size)
                 {
-                    Console.WriteLine($"报文长度错误：接收到的长度为 {size}，报文中声明的长度为 {messageLength}");
+                    LoggerAdapter.LogWarning($"报文长度错误：接收到的长度为 {size}，报文中声明的长度为 {messageLength}");
                     _hasData = false;
                     return;
                 }
@@ -104,12 +106,13 @@ public class EquipTcpSession : TcpSession
                     _forwardNum = 0;
                 }
                 _forwardNum++;
-                //本地解析数据
-                TestDataReceive testDataReceive = new TestDataReceive(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
-                await testDataReceive.Handle(newBuffer, true);
+                //本地解析资产编号和异常解析
+                TestDataLocalReceive testDataReceive = new TestDataLocalReceive(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
+                string computerNum = await testDataReceive.Handle(newBuffer, true);
             }
 
             _hasData = false;
+            return;
         }
     }
 
@@ -120,10 +123,12 @@ public class EquipTcpSession : TcpSession
         Ip = ipEndPoint.ToString();
         Mac = ipEndPoint.Address.ToString();
         base.OnConnected();
+        LoggerAdapter.LogTrace($"tcpclient {Ip} connected");
     }
 
     protected override async void OnReceived(byte[] buffer, long offset, long size)
     {
+        LoggerAdapter.LogTrace($"buffer received {buffer} , size:{size} ");
         _dataQueue.Enqueue(buffer);
         if (!_hasData)
         {

@@ -18,6 +18,7 @@ using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Entities.Basic;
+using Hgzn.Mes.Domain.Shared;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -149,15 +150,15 @@ public sealed class SqlSugarContext
             var data = client.Ado.SqlQuery<string>(checkDbQuery);
             if (data.Count == 0)
             {
-                Console.WriteLine($"Database '{newDatabaseName}' does not exist. Creating it...");
+                LoggerAdapter.LogWarning($"Database '{newDatabaseName}' does not exist. Creating it...");
                 // 如果数据库不存在，创建数据库
                 string createDbQuery = $"CREATE DATABASE {newDatabaseName}";
                 client.Ado.SqlQuery<string>(createDbQuery);
-                Console.WriteLine($"Database '{newDatabaseName}' created.");
+                LoggerAdapter.LogInformation($"Database '{newDatabaseName}' created.");
             }
             else
             {
-                Console.WriteLine($"Database '{newDatabaseName}' already exists.");
+                LoggerAdapter.LogInformation($"Database '{newDatabaseName}' already exists.");
             }
         }
 
@@ -263,7 +264,7 @@ public sealed class SqlSugarContext
 
                     // if (c.EntityName == nameof(RoleMenu))
                     // {
-                    //     Console.WriteLine("asdasd");
+                    //     LoggerAdapter.WriteLine("asdasd");
                     // }
                     if (name == "id")
                     {

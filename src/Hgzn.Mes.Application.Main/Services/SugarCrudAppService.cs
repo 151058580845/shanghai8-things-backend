@@ -23,7 +23,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
     {
         get
         {
-            Console.WriteLine((DbContext == null));
+            LoggerAdapter.LogInformation((DbContext == null).ToString());
             return DbContext.Queryable<TEntity>();
         }
     }

@@ -9,7 +9,7 @@ using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceive;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Hgzn.Mes.Iot.EquipManager;
 using Microsoft.Extensions.Logging;
 using MQTTnet;

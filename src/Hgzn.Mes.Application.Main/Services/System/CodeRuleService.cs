@@ -123,7 +123,7 @@ public class CodeRuleService : SugarCrudAppService<
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            LoggerAdapter.LogError(e.Message);
             throw;
         }
     }

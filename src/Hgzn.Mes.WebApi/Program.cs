@@ -13,6 +13,7 @@ using Hgzn.Mes.Infrastructure.Utilities.Filter;
 using Hgzn.Mes.WebApi.Utilities;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -221,6 +222,10 @@ builder.Services.AddMediatR(config =>
 
 builder.Services.AddHttpClient(); // 注册 IHttpClientFactory
 var app = builder.Build();
+
+// global Logger
+var loggerAdapter = app.Services.GetService<ILogger<LoggerAdapter>>()!;
+LoggerAdapter.Initialize(loggerAdapter);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
