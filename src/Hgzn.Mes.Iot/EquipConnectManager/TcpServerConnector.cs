@@ -20,7 +20,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             ISqlSugarClient sqlSugarClient,
             string uri, EquipConnType connType) :
             base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
-        {            
+        {
         }
 
         public override async Task CloseConnectionAsync()

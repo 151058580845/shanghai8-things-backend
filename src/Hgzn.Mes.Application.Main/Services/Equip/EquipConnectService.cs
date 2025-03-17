@@ -56,7 +56,7 @@ public class EquipConnectService : SugarCrudAppService<
         // 从redis里查出来赋值给ReadDto
         foreach (var item in equips.Items)
         {
-            var key = string.Format(CacheKeyFormatter.EquipState, item.EquipLedger?.Id, item.Id);
+            var key = string.Format(CacheKeyFormatter.EquipState, item.EquipLedger!.Id, item.Id);
             item.ConnectState = database.StringGet(key).TryParse(out int index) &&
                 (index == (int)ConnStateType.Run || index == (int)ConnStateType.On);
         }
