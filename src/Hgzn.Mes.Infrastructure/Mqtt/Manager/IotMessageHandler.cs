@@ -153,12 +153,11 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             }
             // 读写器所在房间
             var rfidRoom = (await _client.Queryable<EquipConnect>()
-                .Includes(ec => ec.EquipLedger, el => el.Room)
+                .Includes(ec => ec.EquipLedger)
                 .Where(ec => ec.Id == uri)
                 .Select(ec => new
                 {
                     ec.EquipLedger.RoomId,
-                    ec.EquipLedger.Room.Name,
                 })
                 .FirstAsync());
             if (rfidRoom is null)
@@ -180,7 +179,6 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 (DateTime.UtcNow - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
                 {
                     equip.RoomId = null;
-                    roomName = null;
                     equip.IsMoving = true;
                     equip.LastMoveTime = DateTime.UtcNow;
                 }
@@ -188,7 +186,6 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             else//未绑定设备绑定至新房间
             {
                 equip.RoomId = rfidRoom.RoomId;
-                roomName = rfidRoom.Name;
                 equip.LastMoveTime = DateTime.UtcNow;
             }
             await _mqttExplorer.PublishAsync(UserTopicBuilder

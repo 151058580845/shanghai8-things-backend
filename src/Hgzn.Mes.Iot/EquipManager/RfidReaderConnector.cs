@@ -27,10 +27,9 @@ public class RfidReaderConnector : EquipConnectorBase
         IConnectionMultiplexer connectionMultiplexer,
         IMqttExplorer mqtt,
         ISqlSugarClient sqlSugarClient,
-        string uri, EquipConnType connType, int pushInterval) :
+        string uri, EquipConnType connType) :
         base(connectionMultiplexer, mqtt, sqlSugarClient, uri, connType)
     {
-        _pushInterval = pushInterval;
     }
 
     public override async Task StartAsync(Guid uri)
@@ -89,11 +88,6 @@ public class RfidReaderConnector : EquipConnectorBase
     public override async Task CloseConnectionAsync()
     {
         StopReadingTag(_client);
-        await CloseConnOnlyAsync();
-    }
-
-    private async Task CloseConnOnlyAsync()
-    {
         _client?.Close();
         await UpdateStateAsync(ConnStateType.Stop);
     }
@@ -146,7 +140,6 @@ public class RfidReaderConnector : EquipConnectorBase
             Tid = msg.logBaseEpcInfo.Tid,
             Userdata = msg.logBaseEpcInfo.Userdata
         };
-
         var plain = JsonSerializer.Serialize(data, Options.CustomJsonSerializerOptions);
         await _mqttExplorer.PublishAsync(IotTopicBuilder
             .CreateIotBuilder()
