@@ -138,7 +138,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.testSystem4,
             DictionaryType.testSystem5,
             DictionaryType.testSystem6,
-            
+
+            DictionaryType.ParserDevice,
+
             DictionaryType.RfidReader,
             DictionaryType.IotServer,
 

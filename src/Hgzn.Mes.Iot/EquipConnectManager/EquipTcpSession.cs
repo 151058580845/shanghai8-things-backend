@@ -108,7 +108,7 @@ public class EquipTcpSession : TcpSession
                 _forwardNum++;
                 //本地解析资产编号和异常解析
                 TestDataLocalReceive testDataReceive = new TestDataLocalReceive(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
-                string computerNum = await testDataReceive.Handle(newBuffer, true);
+                string computerNum = await testDataReceive.Handle(newBuffer);
             }
 
             _hasData = false;

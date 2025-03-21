@@ -1525,6 +1525,35 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 
         #endregion
 
+        #region 表格类型
+
+        public static readonly DictionaryType FormTypes = new DictionaryType()
+        {
+            Id = Guid.Parse("62071D10-0BD0-95D1-9B76-FA46F6E4A512"), // 固定的 Guid 值
+            DictName = "表格类型",
+            DictType = "FormTypes",
+            OrderNum = 1,
+            Remark = "表格类型",
+            SoftDeleted = false,
+            State = true
+        };
+
+        public static readonly DictionaryInfo ParserDevice = new DictionaryInfo()
+        {
+            Id = Guid.Parse("3B4EBD5B-C59D-03C9-1B55-9BCB19206783"), // 固定的 Guid 值
+            DictLabel = "解析器",
+            DictValue = "parserDevice",
+            ParentId = FormTypes.Id,
+            OrderNum = 1,
+            Remark = "解析器",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        #endregion
+
         #region 设备采集类型
 
         public static readonly DictionaryType EquipProtocol = new DictionaryType()
@@ -1703,6 +1732,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DeviceStatus,
             DeviceLevel,
             testSystem,
+            FormTypes,
             EquipProtocol,
             CollectionWorkingDay
         };
