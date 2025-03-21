@@ -39,7 +39,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         /// workStyle       字节10    不固定
         /// devHealthState   字节8     不固定
         /// acquData        字节2800  不固定
-        public async Task<string> Handle(byte[] msg, bool needPublish)
+        public async Task<string> Handle(byte[] msg)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);

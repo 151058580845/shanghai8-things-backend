@@ -1,19 +1,21 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.Base;
-using Hgzn.Mes.Application.Main.Dtos.Equip;
-using Hgzn.Mes.Application.Main.Services.Equip.IService;
-using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
+﻿using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
+using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Hgzn.Mes.Application.Main.Services.Equip
+namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 {
-    public class TestAnalyseJob : ITestAnalyseJob
+    public class TestAnalyseJob
     {
         public Dictionary<string, string> AbbreviationName = new Dictionary<string, string>()
         {
@@ -40,7 +42,6 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             { "水平粗控控制共用","共用控制"},
             { "水平粗控控制风扇","共用风扇"},
         };
-
         public List<DivisionTable> DivisionTables = new List<DivisionTable>();
 
         public TestAnalyseJob()
@@ -68,6 +69,29 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     Columns = columns,
                     Data = data,
                     Span = queryTable.Spans,
+                });
+            };
+            return ret;
+        }
+
+        public ApiResponse GetResponseForPushData(ReceiveData receiveData, List<string> tableNames)
+        {
+            ApiResponse ret = new ApiResponse();
+            if (receiveData == null) return ret;
+            ret.Data = new List<DataArea>();
+            // 获取想要查询的表格名
+            List<DivisionTable> queryTables = GetTables(tableNames);
+            foreach (DivisionTable queryTable in queryTables)
+            {
+                Dictionary<(string, string), float> analyseData = Analyse(receiveData, queryTable);
+                List<Column> columns = GetColumns(queryTable.Title);
+                // 初始化数据列表
+                List<Dictionary<string, object>> data = BuildData(analyseData, columns);
+                // 添加数据区域
+                ret.Data.Add(new DataArea
+                {
+                    Title = queryTable.Title,
+                    Data = data
                 });
             };
             return ret;

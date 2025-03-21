@@ -129,7 +129,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
                     Guid equipId = con.EquipId;
                     TestDataOnlineReceive testDataReceive = new TestDataOnlineReceive(equipId, _client, _connectionMultiplexer, _mqttExplorer);
-                    dataId = await testDataReceive.Handle(msg, false);
+                    dataId = await testDataReceive.Handle(msg);
                     break;
             }
 
@@ -141,12 +141,12 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             var label = await _client.Queryable<LocationLabel>()
                 .Where(x => x.TagId == msg.Tid)
                 .FirstAsync();
-            if(label is null)
+            if (label is null)
             {
                 _logger.LogTrace("new label found");
                 return;
             }
-            if(label.EquipLedgerId is null)
+            if (label.EquipLedgerId is null)
             {
                 _logger.LogInformation("label not binding to equip");
                 return;

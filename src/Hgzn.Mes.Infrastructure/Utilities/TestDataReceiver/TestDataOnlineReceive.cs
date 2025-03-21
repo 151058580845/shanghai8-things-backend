@@ -37,7 +37,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         /// workStyle       字节10    不固定
         /// devHealthState   字节8     不固定
         /// acquData        字节2800  不固定
-        public async Task<Guid> Handle(byte[] msg, bool needPublish)
+        public async Task<Guid> Handle(byte[] msg)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);
@@ -137,8 +137,39 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                     exception = GetSupplyVoltageExceptionName(ulSupplyVoltageState);
             }
 
+            // 将试验数据记录数据库
             ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            // 将试验数据的数据部分推送到mqtt给前端进行展示
+            await TestDataPublishToMQTT(receive);
+            // 将异常记录到redis
+            EquipNotice equipNotice = await ExceptionRecordToRedis(simuTestSysId, devTypeId, compId, exception);
+            // 将异常发布到mqtt
+            await ExceptionPublishToMQTT(equipNotice);
+            // 将异常记录到数据库
+            await RecordExceptionToDB(equipNotice);
+            // 输出到日志
+            OutputToLog(entity);
 
+            return Guid.Empty;
+        }
+
+        private async Task TestDataPublishToMQTT(ReceiveData receive)
+        {
+            TestAnalyseJob job = new TestAnalyseJob();
+            ApiResponse ar = job.GetResponse(receive, null!);
+            // 推送ar的Data用于展示
+            await _mqttExplorer.PublishAsync(IotTopicBuilder
+            .CreateIotBuilder()
+            .WithPrefix(TopicType.Iot)
+            .WithDirection(MqttDirection.Up)
+            .WithTag(MqttTag.Data)
+            .WithDeviceType(EquipConnType.IotServer.ToString())
+            .WithUri(_equipId.ToString()!)
+            .Build(), Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(ar.Data)));
+        }
+
+        private async Task<EquipNotice> ExceptionRecordToRedis(byte simuTestSysId, byte devTypeId, byte[] compId, List<string> exception)
+        {
             // 记录到redis
             IDatabase redisDb = _connectionMultiplexer.GetDatabase();
             var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, compId);
@@ -152,24 +183,31 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 Content = JsonConvert.SerializeObject(exception),
                 Description = "",
             };
+            return equipNotice;
+        }
 
-            if (needPublish)
-            {
-                // 将异常发布到mqtt
-                await _mqttExplorer.PublishAsync(IotTopicBuilder
-                .CreateIotBuilder()
-                .WithPrefix(TopicType.Iot)
-                .WithDirection(MqttDirection.Up)
-                .WithTag(MqttTag.Alarm)
-                .WithDeviceType(EquipConnType.IotServer.ToString())
-                .WithUri(_equipId.ToString()!)
-                .Build(), Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(equipNotice)));
-            }
+        private async Task ExceptionPublishToMQTT(EquipNotice equipNotice)
+        {
+            // 将异常发布到mqtt
+            await _mqttExplorer.PublishAsync(IotTopicBuilder
+            .CreateIotBuilder()
+            .WithPrefix(TopicType.Iot)
+            .WithDirection(MqttDirection.Up)
+            .WithTag(MqttTag.Alarm)
+            .WithDeviceType(EquipConnType.IotServer.ToString())
+            .WithUri(_equipId.ToString()!)
+            .Build(), Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(equipNotice)));
+        }
 
+        private async Task RecordExceptionToDB(EquipNotice equipNotice)
+        {
             // 将异常记录到数据库
             equipNotice.Id = Guid.NewGuid();
             EquipNotice sequipNotice = await SqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+        }
 
+        private static void OutputToLog(ReceiveData entity)
+        {
             // 输出到日志
             System.Reflection.PropertyInfo[] receiveDataProperties = typeof(ReceiveData).GetProperties();
             string output = "";
@@ -184,8 +222,6 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 output += description + ":" + value + "\r\n";
             }
             LoggerAdapter.LogTrace(output);
-
-            return Guid.Empty;
         }
     }
 }

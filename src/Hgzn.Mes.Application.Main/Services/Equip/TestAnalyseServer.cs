@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Newtonsoft.Json;
 using SqlSugar;
 using System;
@@ -22,8 +23,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
     TestAnalyse, Guid,
     TestAnalyseReadDto, TestAnalyseQueryDto>, ITestAnalyseServer
     {
-        private ITestAnalyseJob _testAnalyseJob;
-        public TestAnalyseServer(ITestAnalyseJob testAnalyseJob)
+        private TestAnalyseJob _testAnalyseJob;
+        public TestAnalyseServer(TestAnalyseJob testAnalyseJob)
         {
             _testAnalyseJob = testAnalyseJob;
         }

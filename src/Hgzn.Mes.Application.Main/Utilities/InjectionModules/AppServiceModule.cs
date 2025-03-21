@@ -4,6 +4,7 @@ using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Services.System;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using SqlSugar;
 using System.Reflection;
 
@@ -24,7 +25,7 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .PropertiesAutowired();
 
             builder.RegisterType<EquipLedgerService>().InstancePerLifetimeScope();
-            // builder.RegisterType<MemoryCacheDomainService>().As<IMemoryCacheDomainService>().InstancePerLifetimeScope();
+            builder.RegisterType<TestAnalyseJob>().InstancePerLifetimeScope();
         }
     }
 }
