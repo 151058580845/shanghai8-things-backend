@@ -2,7 +2,7 @@
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 using System.ComponentModel;
 
-namespace Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
+namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
 
 /// <summary>
 /// 接收的数据

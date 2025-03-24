@@ -40,6 +40,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Topic
                 "health" => MqttTag.Health,
                 "alarm" => MqttTag.Alarm,
                 "calibration" => MqttTag.Calibration,
+                "transmit" => MqttTag.Transmit,
                 _ => throw new NotSupportedException(nodes[6])
             };
             Enum.TryParse<EquipConnType>(nodes[3], true, out var connType);

@@ -99,7 +99,7 @@ public class EquipTcpSession : TcpSession
                     var topic = IotTopicBuilder.CreateIotBuilder()
                                     .WithPrefix(TopicType.Iot)
                                     .WithDirection(MqttDirection.Up)
-                                    .WithTag(MqttTag.Data)
+                                    .WithTag(MqttTag.Transmit)
                                     .WithDeviceType(EquipConnType.IotServer.ToString())
                                     .WithUri(_equipConnect.Id.ToString()).Build();
                     await _mqttExplorer.PublishAsync(topic, newBuffer);
