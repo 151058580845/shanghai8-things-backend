@@ -39,7 +39,13 @@ public enum MqttTag
     Alarm,
 
     [Description("通知消息")]
-    Notice
+    Notice,
+
+    [Description("展示数据")]
+    Show,
+
+    [Description("转发")]
+    Transmit,
 }
 
 public enum MqttState : byte

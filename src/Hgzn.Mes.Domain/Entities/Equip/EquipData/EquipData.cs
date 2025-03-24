@@ -1,5 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
-using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

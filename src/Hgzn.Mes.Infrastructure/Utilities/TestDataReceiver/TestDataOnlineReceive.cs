@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Events;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared;
@@ -156,16 +156,17 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         private async Task TestDataPublishToMQTT(ReceiveData receive)
         {
             TestAnalyseJob job = new TestAnalyseJob();
-            ApiResponse ar = job.GetResponse(receive, null!);
-            // 推送ar的Data用于展示
-            await _mqttExplorer.PublishAsync(IotTopicBuilder
+            ApiResponse ar = job.GetResponseForPushData(receive, null!);
+            string topic = IotTopicBuilder
             .CreateIotBuilder()
             .WithPrefix(TopicType.Iot)
             .WithDirection(MqttDirection.Up)
-            .WithTag(MqttTag.Data)
+            .WithTag(MqttTag.Show)
             .WithDeviceType(EquipConnType.IotServer.ToString())
-            .WithUri(_equipId.ToString()!)
-            .Build(), Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(ar.Data)));
+            .WithUri(_equipId.ToString())
+            .Build();
+            // 推送ar的Data用于展示
+            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(ar.data)));
         }
 
         private async Task<EquipNotice> ExceptionRecordToRedis(byte simuTestSysId, byte devTypeId, byte[] compId, List<string> exception)

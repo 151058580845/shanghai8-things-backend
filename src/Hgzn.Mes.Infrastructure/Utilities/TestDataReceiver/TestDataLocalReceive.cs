@@ -1,5 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;

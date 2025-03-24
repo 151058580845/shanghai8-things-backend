@@ -3,8 +3,10 @@ using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Newtonsoft.Json;
 using SqlSugar;
@@ -24,6 +26,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
     TestAnalyseReadDto, TestAnalyseQueryDto>, ITestAnalyseServer
     {
         private TestAnalyseJob _testAnalyseJob;
+
         public TestAnalyseServer(TestAnalyseJob testAnalyseJob)
         {
             _testAnalyseJob = testAnalyseJob;
