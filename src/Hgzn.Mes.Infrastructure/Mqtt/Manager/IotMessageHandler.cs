@@ -81,6 +81,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 case MqttTag.Alarm:
                     await HandleAlarmAsync(topic, message.PayloadSegment.Array!);
                     break;
+                case MqttTag.Transmit:
+                    await HandleTransmitAsync(topic, message.PayloadSegment.Array!);
+                    break;
                 default:
                     return;
             }
@@ -131,6 +134,22 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     TestDataOnlineReceive testDataReceive = new TestDataOnlineReceive(equipId, _client, _connectionMultiplexer, _mqttExplorer);
                     dataId = await testDataReceive.Handle(msg);
                     break;
+            }
+
+        }
+
+        private async Task HandleTransmitAsync(IotTopic topic, byte[] msg)
+        {
+            var uri = Guid.Parse(topic.ConnUri!);
+            var connType = topic.ConnType;
+            Guid? dataId = null;
+            if (connType == EquipConnType.IotServer)
+            {
+                // 根据连接ID查询设备ID
+                EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
+                Guid equipId = con.EquipId;
+                TestDataOnlineReceive testDataReceive = new TestDataOnlineReceive(equipId, _client, _connectionMultiplexer, _mqttExplorer);
+                dataId = await testDataReceive.Handle(msg);
             }
 
         }

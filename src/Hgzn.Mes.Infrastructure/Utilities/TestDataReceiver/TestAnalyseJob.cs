@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.System.Equip.EquipData;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
@@ -53,22 +53,22 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         {
             ApiResponse ret = new ApiResponse();
             if (receiveData == null) return ret;
-            ret.Data = new List<DataArea>();
+            ret.data = new List<DataArea>();
             // 获取想要查询的表格名
             List<DivisionTable> queryTables = GetTables(tableNames);
             foreach (DivisionTable queryTable in queryTables)
             {
                 Dictionary<(string, string), float> analyseData = Analyse(receiveData, queryTable);
-                List<Column> columns = GetColumns(queryTable.Title);
+                List<Column> columns = GetColumns(queryTable.title);
                 // 初始化数据列表
                 List<Dictionary<string, object>> data = BuildData(analyseData, columns);
                 // 添加数据区域
-                ret.Data.Add(new DataArea
+                ret.data.Add(new DataArea
                 {
-                    Title = queryTable.Title,
-                    Columns = columns,
-                    Data = data,
-                    Span = queryTable.Spans,
+                    title = queryTable.title,
+                    columns = columns,
+                    data = data,
+                    span = queryTable.spans,
                 });
             };
             return ret;
@@ -78,20 +78,20 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         {
             ApiResponse ret = new ApiResponse();
             if (receiveData == null) return ret;
-            ret.Data = new List<DataArea>();
+            ret.data = new List<DataArea>();
             // 获取想要查询的表格名
             List<DivisionTable> queryTables = GetTables(tableNames);
             foreach (DivisionTable queryTable in queryTables)
             {
                 Dictionary<(string, string), float> analyseData = Analyse(receiveData, queryTable);
-                List<Column> columns = GetColumns(queryTable.Title);
+                List<Column> columns = GetColumns(queryTable.title);
                 // 初始化数据列表
                 List<Dictionary<string, object>> data = BuildData(analyseData, columns);
                 // 添加数据区域
-                ret.Data.Add(new DataArea
+                ret.data.Add(new DataArea
                 {
-                    Title = queryTable.Title,
-                    Data = data
+                    title = queryTable.title,
+                    data = data
                 });
             };
             return ret;
@@ -108,7 +108,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 {
                     foreach (DivisionTable table in DivisionTables)
                     {
-                        if (item == table.Title)
+                        if (item == table.title)
                             ret.Add(table);
                     }
                 }
@@ -137,7 +137,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 if (channelName == null)
                     dataEntry["合并项里的列写什么呀?"] = item.Value;
                 else
-                    dataEntry[columns.First(x => x.Name == channelName).Field] = item.Value;
+                    dataEntry[columns.First(x => x.name == channelName).field] = item.Value;
             }
             return data;
         }
@@ -148,274 +148,274 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             {
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (1, 84)},
-                    Title = "解析精控",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (1, 84)},
+                    title = "解析精控",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 11, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 12, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 13, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 11, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 12, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 13, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (85, 114)},
-                    Title = "放大器",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (85, 114)},
+                    title = "放大器",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (115, 135)},
-                    Title = "粗控垂直1区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (115, 135)},
+                    title = "粗控垂直1区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (136, 156)},
-                    Title = "粗控垂直2区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (136, 156)},
+                    title = "粗控垂直2区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (157, 177)},
-                    Title = "粗控垂直3区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (157, 177)},
+                    title = "粗控垂直3区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (178, 198)},
-                    Title = "粗控垂直4区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (178, 198)},
+                    title = "粗控垂直4区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (199, 219)},
-                    Title = "粗控垂直5区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (199, 219)},
+                    title = "粗控垂直5区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (220, 240)},
-                    Title = "粗控垂直6区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (220, 240)},
+                    title = "粗控垂直6区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (241, 248)},
-                    Title = "粗控控制垂直1区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (241, 248)},
+                    title = "粗控控制垂直1区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (249, 256)},
-                    Title = "粗控控制垂直2区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (249, 256)},
+                    title = "粗控控制垂直2区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (257, 264)},
-                    Title = "粗控控制垂直3区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (257, 264)},
+                    title = "粗控控制垂直3区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (265, 272)},
-                    Title = "粗控控制垂直4区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (265, 272)},
+                    title = "粗控控制垂直4区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (273, 280)},
-                    Title = "粗控控制垂直5区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (273, 280)},
+                    title = "粗控控制垂直5区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (281, 288)},
-                    Title = "粗控控制垂直6区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (281, 288)},
+                    title = "粗控控制垂直6区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (289, 309)},
-                    Title = "粗控水平1区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (289, 309)},
+                    title = "粗控水平1区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (310, 330)},
-                    Title = "粗控水平2区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (310, 330)},
+                    title = "粗控水平2区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (331, 351)},
-                    Title = "粗控水平3区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (331, 351)},
+                    title = "粗控水平3区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (352, 372)},
-                    Title = "粗控水平4区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (352, 372)},
+                    title = "粗控水平4区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (373, 393)},
-                    Title = "粗控水平5区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (373, 393)},
+                    title = "粗控水平5区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (394, 414)},
-                    Title = "粗控水平6区", Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (394, 414)},
+                    title = "粗控水平6区", spans = new List<Span>
                     {
-                        new Span { Row = 3, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 4, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 5, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 3, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 4, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 5, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (415, 422)},
-                    Title = "粗控控制水平1区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (415, 422)},
+                    title = "粗控控制水平1区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (423, 430)},
-                    Title = "粗控控制水平2区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (423, 430)},
+                    title = "粗控控制水平2区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (431, 438)},
-                    Title = "粗控控制水平3区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (431, 438)},
+                    title = "粗控控制水平3区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (439, 446)},
-                    Title = "粗控控制水平4区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (439, 446)},
+                    title = "粗控控制水平4区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (447, 454)},
-                    Title = "粗控控制水平5区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (447, 454)},
+                    title = "粗控控制水平5区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 },
                 new DivisionTable
                 {
-                    StartAndEnd = new List<(int, int)>{ (455, 462)},
-                    Title = "粗控控制水平6区",
-                    Spans = new List<Span>
+                    startAndEnd = new List<(int, int)>{ (455, 462)},
+                    title = "粗控控制水平6区",
+                    spans = new List<Span>
                     {
-                        new Span { Row = 1, Col = 1, Rowspan = 1, Colspan = 6 },
-                        new Span { Row = 2, Col = 1, Rowspan = 1, Colspan = 6 }
+                        new Span { row = 1, col = 1, rowspan = 1, colspan = 6 },
+                        new Span { row = 2, col = 1, rowspan = 1, colspan = 6 }
                     }
                 }
             };
@@ -425,13 +425,13 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         {
             return new List<Column>
             {
-                new Column { Field = "DeviceCode", Name = title },
-                new Column { Field = "Channel1", Name = "通道1" },
-                new Column { Field = "Channel2", Name = "通道2" },
-                new Column { Field = "Channel3", Name = "通道3" },
-                new Column { Field = "Channel4", Name = "通道4" },
-                new Column { Field = "Channel5", Name = "通道5" },
-                new Column { Field = "Channel6", Name = "通道6" },
+                new Column { field = "DeviceCode", name = title },
+                new Column { field = "Channel1", name = "通道1" },
+                new Column { field = "Channel2", name = "通道2" },
+                new Column { field = "Channel3", name = "通道3" },
+                new Column { field = "Channel4", name = "通道4" },
+                new Column { field = "Channel5", name = "通道5" },
+                new Column { field = "Channel6", name = "通道6" },
             };
         }
 
@@ -491,7 +491,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             // <(通道,数据名称) , 值>
             Dictionary<(string, string), float> abbreviationNameDescriptions = new Dictionary<(string, string), float>();
 
-            foreach ((int, int) startAndEnd in divisionTable.StartAndEnd)
+            foreach ((int, int) startAndEnd in divisionTable.startAndEnd)
             {
                 for (int i = occupy + startAndEnd.Item1; i <= occupy + startAndEnd.Item2; i++)
                 {
