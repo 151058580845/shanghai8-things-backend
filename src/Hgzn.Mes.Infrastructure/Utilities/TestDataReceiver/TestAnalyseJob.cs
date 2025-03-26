@@ -42,6 +42,15 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             { "水平粗控控制共用","共用控制"},
             { "水平粗控控制风扇","共用风扇"},
         };
+
+        public Dictionary<string, List<string>> tableTypeToTitlesMap = new Dictionary<string, List<string>>()
+        {
+            { "parserDevice",new List<string>(){ "解析精控" } },
+            { "amplifier",new List<string>(){ "放大器"} },
+            {"sketchy",new List<string>(){ "粗控垂直1区", "粗控垂直2区", "粗控垂直3区", "粗控垂直4区", "粗控垂直5区", "粗控垂直6区", "粗控控制垂直1区", "粗控控制垂直2区", "粗控控制垂直3区", "粗控控制垂直4区", "粗控控制垂直5区", "粗控控制垂直6区",
+                                           "粗控水平1区", "粗控水平2区", "粗控水平3区", "粗控水平4区", "粗控水平5区", "粗控水平6区", "粗控控制水平1区", "粗控控制水平2区", "粗控控制水平3区", "粗控控制水平4区", "粗控控制水平5区", "粗控控制水平6区" } }
+        };
+
         public List<DivisionTable> DivisionTables = new List<DivisionTable>();
 
         public TestAnalyseJob()
@@ -49,12 +58,16 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             DivisionTables = InitializeDivisionTables();
         }
 
-        public ApiResponse GetResponse(ReceiveData receiveData, List<string> tableNames)
+        public ApiResponse GetResponse(ReceiveData receiveData, string formType)
         {
             ApiResponse ret = new ApiResponse();
             if (receiveData == null) return ret;
             ret.data = new List<DataArea>();
             // 获取想要查询的表格名
+
+            List<string> tableNames = null!;
+            if (formType != null && tableTypeToTitlesMap.ContainsKey(formType))
+                tableNames = tableTypeToTitlesMap[formType];
             List<DivisionTable> queryTables = GetTables(tableNames);
             foreach (DivisionTable queryTable in queryTables)
             {

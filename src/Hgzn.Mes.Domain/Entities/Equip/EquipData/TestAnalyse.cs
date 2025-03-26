@@ -17,8 +17,12 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
         public string? ProjectName { get; set; }
         [Description("试验名称")]
         public string? TestName { get; set; }
+        [Description("表格类型")]
+        public string? FormTypes { get; set; }
         [Description("物理量表格名称")]
         public List<string>? PhysicalQuantityTableName { get; set; }
+        [Description("历史时间")]
+        public DateTime History { get; set; }
         [Description("试验数据")]
         public string? TestDataJson { get; set; }
     }

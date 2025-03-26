@@ -1552,6 +1552,34 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             ListClass = "info"
         };
 
+        public static readonly DictionaryInfo Amplifier = new DictionaryInfo()
+        {
+            Id = Guid.Parse("E30B041F-7F0B-8B56-C49D-33A2F698B7BD"), // 固定的 Guid 值
+            DictLabel = "放大器",
+            DictValue = "amplifier",
+            ParentId = FormTypes.Id,
+            OrderNum = 2,
+            Remark = "放大器",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo Sketchy = new DictionaryInfo()
+        {
+            Id = Guid.Parse("B193C14A-61AC-8DE7-6B62-483216B91EE5"), // 固定的 Guid 值
+            DictLabel = "粗控",
+            DictValue = "sketchy",
+            ParentId = FormTypes.Id,
+            OrderNum = 3,
+            Remark = "粗控",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
         #endregion
 
         #region 设备采集类型

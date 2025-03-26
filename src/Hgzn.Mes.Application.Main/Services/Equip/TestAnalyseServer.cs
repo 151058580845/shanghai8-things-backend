@@ -38,7 +38,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             ReceiveData receiveData = await DbContext.Queryable<ReceiveData>().OrderByDescending(x => x.CreationTime).FirstAsync();
             if (receiveData == null) receiveData = new ReceiveData(); // 如果没有查询到则全部返回0
             if (queryDto == null) return null!;
-            ApiResponse ret = _testAnalyseJob.GetResponse(receiveData, queryDto.PhysicalQuantityTableName!);
+            ApiResponse ret = _testAnalyseJob.GetResponse(receiveData, queryDto.FormTypes!);
             TestAnalyseReadDto readDto = new TestAnalyseReadDto() { Response = ret };
             return await Task.FromResult(new List<TestAnalyseReadDto>() { readDto });
         }
@@ -48,7 +48,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             // 本应去数据库查询,但是没有数据,先模拟一些数据出来
             ReceiveData receiveData = new ReceiveData();
             if (queryDto == null) return null!;
-            ApiResponse ret = _testAnalyseJob.GetResponse(receiveData, queryDto.PhysicalQuantityTableName!);
+            ApiResponse ret = _testAnalyseJob.GetResponse(receiveData, queryDto.FormTypes!);
             TestAnalyseReadDto readDto = new TestAnalyseReadDto() { Response = ret };
             return await Task.FromResult(new PaginatedList<TestAnalyseReadDto>(new List<TestAnalyseReadDto>() { readDto }, 1, 1, 1));
         }
