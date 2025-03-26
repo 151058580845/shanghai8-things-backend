@@ -140,6 +140,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.testSystem6,
 
             DictionaryType.ParserDevice,
+            DictionaryType.Amplifier,
+            DictionaryType.Sketchy,
 
             DictionaryType.RfidReader,
             DictionaryType.IotServer,
