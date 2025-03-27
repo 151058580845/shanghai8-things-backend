@@ -9,6 +9,7 @@ namespace Hgzn.Mes.Domain.Shared.Enums
     public enum DataReadTypeEnum
     {
         Int,
-        UInt
+        UInt,
+        Bool,
     }
 }
