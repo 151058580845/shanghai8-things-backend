@@ -4,6 +4,7 @@ using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enum;
@@ -25,16 +26,19 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         private readonly IRoomService _roomService;
         private readonly IDictionaryInfoService _dictionaryInfoService;
         private readonly ILocationLabelService _locationLabelService;
+        private readonly IBaseConfigService _baseConfigService;
         public EquipLedgerController(
             IEquipLedgerService equipLedgerService,
             IRoomService roomService,
             IDictionaryInfoService dictionaryInfoService,
-            ILocationLabelService locationLabelService)
+            ILocationLabelService locationLabelService,
+            IBaseConfigService baseConfigService)
         {
             _equipLedgerService = equipLedgerService;
             _roomService = roomService;
             _dictionaryInfoService = dictionaryInfoService;
             _locationLabelService = locationLabelService;
+            _baseConfigService = baseConfigService;
         }
 
         [HttpPost]
@@ -44,15 +48,15 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         public async Task<ResponseWrapper<PaginatedList<EquipLedgerReadDto>>> GetPaginatedListAsync(
             EquipLedgerQueryDto queryDto)
         {
-           var levels = await _dictionaryInfoService.GetNameValueByTypeAsync("DeviceLevel");
-           var status = await _dictionaryInfoService.GetNameValueByTypeAsync("DeviceStatus");
-           var entities = await _equipLedgerService.GetPaginatedListAsync(queryDto);
-           foreach (var entity in entities.Items)
-           {
-               entity.DeviceLevelString = levels?.FirstOrDefault(t=>t.Value == entity.DeviceLevel)?.Name;
-               entity.DeviceStatusString = status?.FirstOrDefault(t=>t.Value == entity.DeviceStatus.ToString())?.Name;
-           }
-           return entities.Wrap();
+            var levels = await _dictionaryInfoService.GetNameValueByTypeAsync("DeviceLevel");
+            var status = await _dictionaryInfoService.GetNameValueByTypeAsync("DeviceStatus");
+            var entities = await _equipLedgerService.GetPaginatedListAsync(queryDto);
+            foreach (var entity in entities.Items)
+            {
+                entity.DeviceLevelString = levels?.FirstOrDefault(t => t.Value == entity.DeviceLevel)?.Name;
+                entity.DeviceStatusString = status?.FirstOrDefault(t => t.Value == entity.DeviceStatus.ToString())?.Name;
+            }
+            return entities.Wrap();
         }
 
         [HttpPost]
@@ -148,9 +152,9 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<EquipLedgerReadDto>> GetAsync(Guid id) =>
             (await _equipLedgerService.GetAsync(id)).Wrap();
-        
 
-        
+
+
         /// <summary>
         /// 修改状态
         /// </summary>
@@ -197,8 +201,11 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Add}")]
-        public async Task<ResponseWrapper<int>> CreateAsync(string apiUrl) =>
-             (await _equipLedgerService.PostImportDatas(apiUrl)).Wrap();
+        public async Task<ResponseWrapper<int>> CreateAsync()
+        {
+            var url = await _baseConfigService.GetValueByKeyAsync("import_equip_url");
+            return (await _equipLedgerService.PostImportDatas(url)).Wrap();
+        }
 
         /// <summary>
         /// 获取测试数据
@@ -254,6 +261,6 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<int>> DeleteRanges(IEnumerable<Guid> ids) =>
             (await _locationLabelService.DeleteRangesAsync(ids)).Wrap();
-           
+
     }
 }
