@@ -4,6 +4,8 @@ using System.Net;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.ValueObjects.UserValue;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
@@ -12,6 +14,7 @@ using NetCoreServer;
 using SqlSugar;
 using StackExchange.Redis;
 using static Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.TestDataOnlineReceive;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 using Buffer = System.Buffer;
 
 namespace Hgzn.Mes.Iot.EquipConnectManager;
@@ -31,6 +34,7 @@ public class EquipTcpSession : TcpSession
     private ISqlSugarClient _sqlSugarClient;
     private EquipConnect _equipConnect;
     private IMqttExplorer _mqttExplorer;
+    private DbConnOptions _config;
     public EquipTcpSession(EquipTcpServer server,
         IConnectionMultiplexer connectionMultiplexer,
         ISqlSugarClient sqlSugarClient,
@@ -42,6 +46,16 @@ public class EquipTcpSession : TcpSession
         _equipConnect = equipConnect;
         _mqttExplorer = mqttExplorer;
         _forwardLength = server.ForwardRate;
+        _config = new DbConnOptions()
+        {
+            DbType = DbType.PostgreSQL,
+            Url = "PORT=5432;DATABASE=postgre;HOST=localhost;PASSWORD=dev@2024;USER ID=dev",
+            EnabledReadWrite = false,
+            EnabledCodeFirst = true,
+            EnabledSqlLog = true,
+            EnabledDbSeed = true,
+            EnabledSaasMultiTenancy = false
+        };
     }
 
     private const int BodyStartIndex = 13;
@@ -106,8 +120,12 @@ public class EquipTcpSession : TcpSession
                     _forwardNum = 0;
                 }
                 _forwardNum++;
-                //本地解析资产编号和异常解析
-                TestDataLocalReceive testDataReceive = new TestDataLocalReceive(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
+                // 本地解析资产编号和异常解析
+                // 这里要记录到数据采集器的数据库,而不是服务器的数据库
+                // 创建新的SqlSugarClient实例用于本地数据记录
+                SqlSugarClient localDbClient = new SqlSugarClient(SqlSugarContext.Build(_config));
+
+                TestDataLocalReceive testDataReceive = new TestDataLocalReceive(_equipConnect.EquipId, localDbClient, _connectionMultiplexer, _mqttExplorer);
                 string computerNum = await testDataReceive.Handle(newBuffer);
             }
 
