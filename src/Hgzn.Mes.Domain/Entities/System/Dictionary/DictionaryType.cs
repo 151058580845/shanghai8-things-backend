@@ -1622,7 +1622,19 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
-
+        public static readonly DictionaryInfo RKServer = new DictionaryInfo()
+        {
+            Id = Guid.Parse("D4C0907B-DB6B-1587-B57F-DBE1087B1819"), // 固定的 Guid 值
+            DictLabel = "温湿度计",
+            DictValue = "RKServer",
+            ParentId = EquipProtocol.Id,
+            OrderNum = 1,
+            Remark = "温湿度计",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
         #endregion
 
         #region 采集工作日

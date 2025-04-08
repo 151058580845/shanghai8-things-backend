@@ -65,7 +65,18 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("list")]
         public async Task<ResponseWrapper<IEnumerable<EquipLedgerReadDto>?>> GetListAsync(EquipLedgerQueryDto queryDto)
             => (await _equipLedgerService.GetListAsync(queryDto)).Wrap()!;
-
+        /// <summary>
+        /// 根据设备采集类型获取对应的列表
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Route("list/type/{type}")]
+        public async Task<ResponseWrapper<IEnumerable<EquipLedgerReadDto>?>> GetListByTypeAsync(string? type)
+            => (await _equipLedgerService.GetListByTypeAsync(type)).Wrap()!;
+        
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -151,6 +151,10 @@ public class EquipLedgerCreateDto : CreateDto
     public string? Remark { get; set; }
 
     public bool State { get; set; } = true;
+    /// <summary>
+    /// 设备当前的IP地址
+    /// </summary>
+    public string? IpAddress { get; set; }
 }
 
 public class EquipLedgerUpdateDto : UpdateDto
@@ -206,6 +210,10 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// 备注
     /// </summary>
     public string? Remark { get; set; }
+    /// <summary>
+    /// 设备当前的IP地址
+    /// </summary>
+    public string? IpAddress { get; set; }
 }
 
 public class EquipLedgerAppUpdateDto : UpdateDto
@@ -302,4 +310,5 @@ public class EquipLedgerQueryDto : PaginatedTimeQueryDto
     /// 房间Id
     /// </summary>
     public Guid? RoomId { get; set; }
+    
 }

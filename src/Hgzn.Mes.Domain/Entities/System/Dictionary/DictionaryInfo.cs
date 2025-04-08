@@ -145,6 +145,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 
             DictionaryType.RfidReader,
             DictionaryType.IotServer,
+            DictionaryType.RKServer,
 
             DictionaryType.Basic,
             DictionaryType.General,

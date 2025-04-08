@@ -30,4 +30,5 @@ public interface IEquipLedgerService : ICrudAppService<
     Task<int> PostImportDatas(string url);
 
     Task<IEnumerable<EquipLedgerReadDto>> GetMissingDevicesAlarmAsync();
+    Task<IEnumerable<EquipLedgerReadDto>?> GetListByTypeAsync(string? type);
 }

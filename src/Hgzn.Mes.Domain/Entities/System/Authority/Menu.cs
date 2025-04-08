@@ -1139,7 +1139,19 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Equip.Id,
             RouteName = "equip_label"
         };
-
+        public static Menu EquipRkServer = new()
+        {
+            Id = Guid.Parse("DE767E24-FE2A-322B-980D-8A11F6CCDFDB"),
+            Name = "温湿度计数据",
+            Code = "equip_RkServer",
+            ScopeCode = "equip:rkserver:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:location-information",
+            Route = "equip/rkserver/index",
+            OrderNum = 85,
+            ParentId = Equip.Id,
+            RouteName = "equip_rk_server"
+        };
         #endregion
 
         #region 生产管理
@@ -1557,7 +1569,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipLedgerHistory,EquipNotice,EquipTestAnalyse,TestData,
+            Equip, EquipType, EquipLedger, EquipLedgerHistory,EquipNotice,EquipTestAnalyse,TestData,EquipRkServer,
             //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,
             EquipConfig, EquipDataConfig,
             //Product, ProductPlan, ProductOrder, ProductSchedule,

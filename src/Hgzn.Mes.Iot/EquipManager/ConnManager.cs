@@ -74,6 +74,12 @@ namespace Hgzn.Mes.Iot.EquipManager
                             break;
                     }
                     break;
+                case EquipConnType.RKServer:
+                    equipConnector = new HygrographConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
+                        connType);
+                    if (!Connections.TryAdd(id, equipConnector))
+                        throw new Exception("equip exist");
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException("equipType");
             }

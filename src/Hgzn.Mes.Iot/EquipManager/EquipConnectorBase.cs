@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+﻿using System.Text.Json;
+using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
@@ -77,5 +78,10 @@ namespace Hgzn.Mes.Iot.EquipManager
             var key = string.Format(CacheKeyFormatter.EquipOperationStatus, _uri);
             await database.StringSetAsync(key, (int)equipOperationStatus);
         }
+
+        public static JsonSerializerOptions DefaultJsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
     }
 }

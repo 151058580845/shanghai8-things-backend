@@ -17,4 +17,9 @@ public enum EquipConnType
     /// </summary>
     [Description("数据采集适配器")]
     IotServer,
+    /// <summary>
+    /// 温湿度计
+    /// </summary>
+    [Description("温湿度计")]
+    RKServer,
 }

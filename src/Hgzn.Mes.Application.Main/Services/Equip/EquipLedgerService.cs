@@ -15,6 +15,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Entities.Equip;
+using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -217,6 +218,18 @@ public class EquipLedgerService : SugarCrudAppService<
             .Where(e => e.IsMovable &&
             (e.RoomId == null || (int)e.Room!.Purpose >= (int)RoomPurpose.Hallway) &&
             DateTime.UtcNow.AddMinutes(-30) >= e.LastMoveTime).ToArrayAsync();
+        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
+    }
+
+    public async Task<IEnumerable<EquipLedgerReadDto>?> GetListByTypeAsync(string? protocolEnum)
+    {
+        // var protocol = Enum.Parse<EquipConnType>(type, true);
+        var entities = await Queryable
+            .WhereIF(!string.IsNullOrEmpty(protocolEnum), m => m.EquipType!.ProtocolEnum == protocolEnum &&(!m.EquipName.Contains("测试") || !m.EquipCode.Contains("测试")))
+            .Includes(t => t.Room)
+            .Includes(t => t.EquipType)
+            .OrderByDescending(m => m.OrderNum)
+            .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 }
