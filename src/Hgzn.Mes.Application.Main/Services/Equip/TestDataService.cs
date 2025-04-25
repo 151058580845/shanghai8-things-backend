@@ -37,7 +37,9 @@ public class TestDataService : SugarCrudAppService<
             .WhereIF(!string.IsNullOrEmpty(queryDto.TaskEndTime), t => t.TaskEndTime.Contains(queryDto.TaskEndTime))
             .WhereIF(!string.IsNullOrEmpty(queryDto.ReqDep), t => t.ReqDep.Contains(queryDto.ReqDep))
             .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManager), t => t.ReqManager.Contains(queryDto.ReqManager))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuResp), t => t.SimuResp.Contains(queryDto.SimuResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManagerCode), t => t.ReqManagerCode.Contains(queryDto.ReqManagerCode))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.GncResp), t => t.GncResp.Contains(queryDto.GncResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.GncRespCode), t => t.GncRespCode.Contains(queryDto.GncRespCode))
             .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff), t => t.SimuStaff.Contains(queryDto.SimuStaff))
             .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
             .ToListAsync();
@@ -55,7 +57,9 @@ public class TestDataService : SugarCrudAppService<
             .WhereIF(!string.IsNullOrEmpty(queryDto.TaskEndTime), t => t.TaskEndTime.Contains(queryDto.TaskEndTime))
             .WhereIF(!string.IsNullOrEmpty(queryDto.ReqDep), t => t.ReqDep.Contains(queryDto.ReqDep))
             .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManager), t => t.ReqManager.Contains(queryDto.ReqManager))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuResp), t => t.SimuResp.Contains(queryDto.SimuResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManagerCode), t => t.ReqManagerCode.Contains(queryDto.ReqManagerCode))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.GncResp), t => t.GncResp.Contains(queryDto.GncResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.GncRespCode), t => t.GncRespCode.Contains(queryDto.GncRespCode))
             .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff), t => t.SimuStaff.Contains(queryDto.SimuStaff))
             .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
@@ -109,7 +113,7 @@ public class TestDataService : SugarCrudAppService<
                 {
                     var info = Mapper.Map<TestData>(item);
                     var inData = DbContext.InsertNav<TestData>(info)
-                         .Include(x => x.Products)
+                         .Include(x => x.UUT)
                          .ExecuteCommand();
 
                     if (inData)

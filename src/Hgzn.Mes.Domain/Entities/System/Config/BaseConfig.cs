@@ -57,7 +57,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Config
             Id = Guid.Parse("CF89CCBA-5A39-8C7F-CEB5-3855519BE067"),
             ConfigName = "导入地址",
             ConfigKey = "import_plan_url",
-            ConfigValue = "http://localhost:5000",
+            ConfigValue = "http://10.125.157.101:8090",
             Remark = "导入试验计划请求地址"
         };
 

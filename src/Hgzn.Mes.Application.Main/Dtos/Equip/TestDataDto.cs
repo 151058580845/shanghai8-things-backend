@@ -27,13 +27,17 @@ public class TestDataReadDto : ReadDto
     public string ReqDep { get; set; }
     [Description("申请调度,多个人名用 英文‘,’ 分隔")]
     public string ReqManager { get; set; }
+    [Description("申请调度员工编号")]
+    public string ReqManagerCode { get; set; }
     [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
-    public string SimuResp { get; set; }
+    public string GncResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string GncRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string SimuStaff { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
-    public List<TestDataProductReadDto> Products { get; set; }
+    public List<TestDataProductReadDto> UUT { get; set; }
     
     [Description("当前状态")]
     public string? Status { get; set; }
@@ -59,13 +63,17 @@ public class TestDataCreateDto : CreateDto
     public string ReqDep { get; set; }
     [Description("申请调度,多个人名用 英文‘,’ 分隔")]
     public string ReqManager { get; set; }
+    [Description("申请调度员工编号")]
+    public string ReqManagerCode { get; set; }
     [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
-    public string SimuResp { get; set; }
+    public string GncResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string GncRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string SimuStaff { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
-    public List<TestDataProductCreateDto>? Products { get; set; }
+    public List<TestDataProductCreateDto>? UUT { get; set; }
 }
 
 public class TestDataUpdateDto : UpdateDto
@@ -86,13 +94,17 @@ public class TestDataUpdateDto : UpdateDto
     public string ReqDep { get; set; }
     [Description("申请调度,多个人名用 英文‘,’ 分隔")]
     public string ReqManager { get; set; }
+    [Description("申请调度员工编号")]
+    public string ReqManagerCode { get; set; }
     [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
-    public string SimuResp { get; set; }
+    public string GncResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string GncRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string SimuStaff { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
-    public List<TestDataProductUpdateDto> Products { get; set; }
+    public List<TestDataProductUpdateDto> UUT { get; set; }
 }
 
 public class TestDataQueryDto : PaginatedQueryDto
@@ -113,8 +125,12 @@ public class TestDataQueryDto : PaginatedQueryDto
     public string? ReqDep { get; set; }
     [Description("申请调度,多个人名用 英文‘,’ 分隔")]
     public string? ReqManager { get; set; }
+    [Description("申请调度员工编号")]
+    public string? ReqManagerCode { get; set; }
     [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
-    public string? SimuResp { get; set; }
+    public string? GncResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string? GncRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string? SimuStaff { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]

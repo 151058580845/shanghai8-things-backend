@@ -108,10 +108,12 @@ public class TestDataController : ControllerBase
             TaskEndTime = "2025-01-01",
             ReqDep = "ce",
             ReqManager = "ce",
-            SimuResp = "ce",
+            ReqManagerCode = "ce",
+            GncResp = "ce",
+            GncRespCode = "ce",
             SimuStaff = "ce",
             QncResp = "ce",
-            Products = detilData
+            UUT = detilData
         };
 
         var allData = new List<TestDataCreateDto>();
