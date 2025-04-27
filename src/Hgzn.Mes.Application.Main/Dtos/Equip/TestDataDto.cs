@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
 using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 
@@ -11,6 +12,8 @@ public class TestDataDto
 
 public class TestDataReadDto : ReadDto
 {
+    [Description("试验计划ID")]
+    public string TestDataId { get; set; }
     [Description("仿真系统资源名称")]
     public string SysName { get; set; }
     [Description("型号项目名称")]
@@ -29,14 +32,22 @@ public class TestDataReadDto : ReadDto
     public string ReqManager { get; set; }
     [Description("申请调度员工编号")]
     public string ReqManagerCode { get; set; }
-    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    [Description("系统责任人,多个人名用 英文‘,’ 分隔")]
     public string GncResp { get; set; }
-    [Description("试验专业代表员工编号")]
+    [Description("系统责任人员工编号")]
     public string GncRespCode { get; set; }
+    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    public string SimuResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string simuRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string SimuStaff { get; set; }
+    [Description("试验参与人员代码编号,多个人名用 英文‘,’ 分隔")]
+    public string simuStaffCodes { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
+    [Description("产品信息")]
+    public string ProductInfo { get; set; }
     public List<TestDataProductReadDto> UUT { get; set; }
     
     [Description("当前状态")]
@@ -47,6 +58,9 @@ public class TestDataReadDto : ReadDto
 
 public class TestDataCreateDto : CreateDto
 {
+    [Description("试验计划ID")]
+    [JsonPropertyName("ID")]
+    public string TestDataId { get; set; }
     [Description("仿真系统资源名称")]
     public string SysName { get; set; }
     [Description("型号项目名称")]
@@ -65,12 +79,17 @@ public class TestDataCreateDto : CreateDto
     public string ReqManager { get; set; }
     [Description("申请调度员工编号")]
     public string ReqManagerCode { get; set; }
-    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    [Description("系统责任人,多个人名用 英文‘,’ 分隔")]
     public string GncResp { get; set; }
-    [Description("试验专业代表员工编号")]
+    [Description("系统责任人员工编号")]
     public string GncRespCode { get; set; }
+    public string SimuResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string simuRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string SimuStaff { get; set; }
+    [Description("试验参与人员代码编号,多个人名用 英文‘,’ 分隔")]
+    public string simuStaffCodes { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
     public List<TestDataProductCreateDto>? UUT { get; set; }
@@ -78,6 +97,8 @@ public class TestDataCreateDto : CreateDto
 
 public class TestDataUpdateDto : UpdateDto
 {
+    [Description("试验计划ID")]
+    public string TestDataId { get; set; }
     [Description("仿真系统资源名称")]
     public string SysName { get; set; }
     [Description("型号项目名称")]
@@ -96,12 +117,18 @@ public class TestDataUpdateDto : UpdateDto
     public string ReqManager { get; set; }
     [Description("申请调度员工编号")]
     public string ReqManagerCode { get; set; }
-    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    [Description("系统责任人,多个人名用 英文‘,’ 分隔")]
     public string GncResp { get; set; }
-    [Description("试验专业代表员工编号")]
+    [Description("系统责任人员工编号")]
     public string GncRespCode { get; set; }
+    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    public string? SimuResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string? simuRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string SimuStaff { get; set; }
+    [Description("试验参与人员代码编号,多个人名用 英文‘,’ 分隔")]
+    public string? simuStaffCodes { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
     public List<TestDataProductUpdateDto> UUT { get; set; }
@@ -109,6 +136,8 @@ public class TestDataUpdateDto : UpdateDto
 
 public class TestDataQueryDto : PaginatedQueryDto
 {
+    [Description("试验计划ID")]
+    public string? TestDataId { get; set; }
     [Description("仿真系统资源名称")]
     public string? SysName { get; set; }
     [Description("型号项目名称")]
@@ -127,12 +156,18 @@ public class TestDataQueryDto : PaginatedQueryDto
     public string? ReqManager { get; set; }
     [Description("申请调度员工编号")]
     public string? ReqManagerCode { get; set; }
-    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    [Description("系统责任人,多个人名用 英文‘,’ 分隔")]
     public string? GncResp { get; set; }
-    [Description("试验专业代表员工编号")]
+    [Description("系统责任人员工编号")]
     public string? GncRespCode { get; set; }
+    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    public string? SimuResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string? simuRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string? SimuStaff { get; set; }
+    [Description("试验参与人员代码编号,多个人名用 英文‘,’ 分隔")]
+    public string? simuStaffCodes { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string? QncResp { get; set; }
 }

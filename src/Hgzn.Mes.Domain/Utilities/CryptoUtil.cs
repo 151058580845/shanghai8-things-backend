@@ -1,14 +1,18 @@
 ﻿using Hgzn.Mes.Domain.Entities.System.Account;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Hgzn.Mes.Domain.Utilities
 {
     public static class CryptoUtil
     {
-        public static ECDsa PublicECDsa { get; private set; } = ECDsa.Create();
-        public static ECDsa PrivateECDsa { get; private set; } = ECDsa.Create();
-
+        //public static ECDsa PublicECDsa { get; private set; } = ECDsa.Create();
+        //public static ECDsa PrivateECDsa { get; private set; } = ECDsa.Create();
+        public static string KeyId = "EC_KEY_2024";
+        public static ECDsaSecurityKey PrivateECDsaSecurityKey { get; private set; }
+        public static ECDsaSecurityKey PublicECDsaSecurityKey { get; private set; }
         public static void Initialize(string keyFolder)
         {
             //if (SettingUtil.IsDevelopment)
@@ -31,6 +35,7 @@ namespace Hgzn.Mes.Domain.Utilities
             {
                 var ecdsa = ECDsa.Create();
                 ecdsa.GenerateKey(ECCurve.NamedCurves.nistP256);
+
                 var privatePem = ecdsa.ExportECPrivateKeyPem();
                 var publicPem = ecdsa.ExportSubjectPublicKeyInfoPem();
                 if (!Directory.Exists(keyFolder))
@@ -39,14 +44,38 @@ namespace Hgzn.Mes.Domain.Utilities
                 }
                 File.WriteAllText(privateKeyPath, privatePem);
                 File.WriteAllText(publicKeyPath, publicPem);
+                // 导入密钥
+                var privateEcdsa = ECDsa.Create();
+                privateEcdsa.ImportFromPem(privatePem);
+                var publicEcdsa = ECDsa.Create();
+                publicEcdsa.ImportFromPem(publicPem);
+                // 创建 SecurityKey 并设置 KeyId
+                PrivateECDsaSecurityKey = new ECDsaSecurityKey(privateEcdsa) { KeyId = KeyId };
+                PublicECDsaSecurityKey = new ECDsaSecurityKey(publicEcdsa) { KeyId = KeyId };
             }
             else
             {
+                // 加载现有密钥
                 var privatePem = File.ReadAllText(privateKeyPath);
                 var publicPem = File.ReadAllText(publicKeyPath);
-                PrivateECDsa.ImportFromPem(privatePem);
-                PublicECDsa.ImportFromPem(publicPem);
+
+                // 导入密钥
+                var privateEcdsa = ECDsa.Create();
+                privateEcdsa.ImportFromPem(privatePem);
+                var publicEcdsa = ECDsa.Create();
+                publicEcdsa.ImportFromPem(publicPem);
+                PrivateECDsaSecurityKey = new ECDsaSecurityKey(privateEcdsa) { KeyId = KeyId };
+                PublicECDsaSecurityKey = new ECDsaSecurityKey(publicEcdsa) { KeyId = KeyId };
+
+                // PrivateECDsa.ImportFromPem(privatePem);
+                // PublicECDsa.ImportFromPem(publicPem);
             }
+        }
+
+        private static string ParseKeyIdFromPem(string pem)
+        {
+            var match = Regex.Match(pem, @"KeyId: (\w+)");
+            return match.Success ? match.Groups[1].Value : "default-kid";
         }
 
         /// <summary>

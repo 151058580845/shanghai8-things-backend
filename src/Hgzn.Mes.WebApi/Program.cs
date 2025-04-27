@@ -69,72 +69,91 @@ builder.Services.AddAuthentication(options =>
     option.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new ECDsaSecurityKey(CryptoUtil.PublicECDsa),    // Use ECDsa
-        ValidAlgorithms = [SecurityAlgorithms.EcdsaSha256],
+        IssuerSigningKey = CryptoUtil.PublicECDsaSecurityKey, // 公钥
+        ValidAlgorithms = [SecurityAlgorithms.EcdsaSha256], // 必须与生成时算法一致
         ValidateIssuer = true,
         ValidIssuer = SettingUtil.Jwt.Issuer,
         ValidateAudience = true,
         ValidAudience = SettingUtil.Jwt.Audience,
         RequireExpirationTime = true,
         ValidateLifetime = true,
+
+        SaveSigninToken = true, //记录原始令牌
+        LogValidationExceptions = true //开启详细日志
     };
-// 监听 Token 验证成功事件
+    // 监听 Token 验证成功事件
     option.Events = new JwtBearerEvents()
     {
         OnMessageReceived = async context =>
         {
             var accessToken = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            //WebSocket不支持自定义报文头，所以把JWT通过url中的QueryString传递
             var path = context.HttpContext.Request.Path;
-            //如果是MyHub的请求，就在服务器端的OnMessageReceived中把QueryString中的JWT读出来赋值给context.Token
-            if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/hub")))
+
+            // 处理 WebSocket 的 Token 传递（从 QueryString 获取）
+            if (path.StartsWithSegments("/hub") && string.IsNullOrEmpty(accessToken))
             {
+                accessToken = context.Request.Query["access_token"];
                 context.Token = accessToken;
             }
-
-            // 获取 JWT Token 解析器
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            // 解析 token 并验证
-            var key = new ECDsaSecurityKey(CryptoUtil.PublicECDsa); // 使用与生成 token 时相同的公钥
-            var validationParameters = option.TokenValidationParameters;
-
-            try
-            {
-                if (accessToken != null)
-                {
-                    // 验证 token 并解析，获取 ClaimsPrincipal
-                    var principal = tokenHandler.ValidateToken(accessToken, validationParameters, out var validatedToken);
-
-                    // 从 ClaimsPrincipal 中提取 user.Username
-                    var userNameClaim = principal.FindFirst(ClaimType.UserId);
-                    // 如果用户名存在，返回用户名
-                    if (userNameClaim != null)
-                    {
-                        var userid = Guid.Parse(userNameClaim.Value);
-                        var myService = context.HttpContext.RequestServices.GetRequiredService<IConnectionMultiplexer>();
-
-                        var database = myService.GetDatabase();
-                        var userKey = string.Format(CacheKeyFormatter.Token, userid);
-                        var raw = (await database.StringGetAsync(userKey));
-                        // var udService = builder.Services.BuildServiceProvider().GetService<UserDomainService>();
-                       // var tokenData = await myService.VerifyTokenAsync(userid, accessToken);
-                        if (!raw.HasValue)
-                        {
-                            context.Fail("Token is no longer valid or has expired.");
-                            return; // 直接返回，不再继续处理
-                        }
-                    }
-                }
-            }
-            catch (SecurityTokenException ex)
-            {
-                // Token 验证失败
-                context.Fail($"Token validation failed: {ex.Message}");
-                return;
-            }
+            // var accessToken = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            // //WebSocket不支持自定义报文头，所以把JWT通过url中的QueryString传递
+            // var path = context.HttpContext.Request.Path;
+            // Console.WriteLine("accessToken:" + accessToken);
+            // //如果是MyHub的请求，就在服务器端的OnMessageReceived中把QueryString中的JWT读出来赋值给context.Token
+            // if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/hub")))
+            // {
+            //     context.Token = accessToken;
+            // }
+            //
+            // // 获取 JWT Token 解析器
+            // var tokenHandler = new JwtSecurityTokenHandler();
+            //
+            // // 解析 token 并验证
+            // var key = new ECDsaSecurityKey(CryptoUtil.PublicECDsa); // 使用与生成 token 时相同的公钥
+            // var validationParameters = option.TokenValidationParameters;
+            //
+            // try
+            // {
+            //     if (accessToken != null)
+            //     {
+            //         // 验证 token 并解析，获取 ClaimsPrincipal
+            //         var principal = tokenHandler.ValidateToken(accessToken, validationParameters, out var validatedToken);
+            //
+            //         // 从 ClaimsPrincipal 中提取 user.Username
+            //         var userNameClaim = principal.FindFirst(ClaimType.UserId);
+            //         // 如果用户名存在，返回用户名
+            //         if (userNameClaim != null)
+            //         {
+            //             var userid = Guid.Parse(userNameClaim.Value);
+            //             var myService = context.HttpContext.RequestServices.GetRequiredService<IConnectionMultiplexer>();
+            //
+            //             var database = myService.GetDatabase();
+            //             var userKey = string.Format(CacheKeyFormatter.Token, userid);
+            //             var raw = (await database.StringGetAsync(userKey));
+            //             // var udService = builder.Services.BuildServiceProvider().GetService<UserDomainService>();
+            //            // var tokenData = await myService.VerifyTokenAsync(userid, accessToken);
+            //             if (!raw.HasValue)
+            //             {
+            //                 context.Fail("Token is no longer valid or has expired.");
+            //                 return; // 直接返回，不再继续处理
+            //             }
+            //         }
+            //     }
+            // }
+            // catch (SecurityTokenException ex)
+            // {
+            //     // Token 验证失败
+            //     context.Fail($"Token validation failed: {ex.Message}");
+            //     return;
+            // }
 
             await Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError($"Authentication failed: {context.Exception.Message}");
+            return Task.CompletedTask;
         }
     };
 });

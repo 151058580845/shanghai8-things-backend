@@ -6,6 +6,8 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
 [Description("试验计划")]
 public class TestData : UniversalEntity
 {
+    [Description("试验计划ID")]
+    public string? TestDataId { get; set; }
     [Description("仿真系统资源名称")]
     public string? SysName { get; set; }
     [Description("型号项目名称")]
@@ -24,12 +26,18 @@ public class TestData : UniversalEntity
     public string? ReqManager { get; set; }
     [Description("申请调度员工编号")]
     public string? ReqManagerCode { get; set; }
-    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    [Description("系统责任人,多个人名用 英文‘,’ 分隔")]
     public string? GncResp { get; set; }
-    [Description("试验专业代表员工编号")]
+    [Description("系统责任人员工编号")]
     public string? GncRespCode { get; set; }
+    [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
+    public string? SimuResp { get; set; }
+    [Description("试验专业代表员工编号")]
+    public string? simuRespCode { get; set; }
     [Description("试验参与人员,多个人名用 英文‘,’ 分隔")]
     public string? SimuStaff { get; set; }
+    [Description("试验参与人员代码编号,多个人名用 英文‘,’ 分隔")]
+    public string? simuStaffCodes { get; set; }
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string? QncResp { get; set; }
 

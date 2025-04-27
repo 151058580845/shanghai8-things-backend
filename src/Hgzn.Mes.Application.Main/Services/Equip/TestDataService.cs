@@ -40,8 +40,12 @@ public class TestDataService : SugarCrudAppService<
             .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManagerCode), t => t.ReqManagerCode.Contains(queryDto.ReqManagerCode))
             .WhereIF(!string.IsNullOrEmpty(queryDto.GncResp), t => t.GncResp.Contains(queryDto.GncResp))
             .WhereIF(!string.IsNullOrEmpty(queryDto.GncRespCode), t => t.GncRespCode.Contains(queryDto.GncRespCode))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuResp), t => t.SimuResp.Contains(queryDto.SimuResp))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.simuRespCode), t => t.simuRespCode.Contains(queryDto.GncRespCode))
             .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff), t => t.SimuStaff.Contains(queryDto.SimuStaff))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.simuStaffCodes), t => t.simuStaffCodes.Contains(queryDto.simuStaffCodes))
             .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
+            .Includes(x => x.UUT)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }
@@ -49,20 +53,24 @@ public class TestDataService : SugarCrudAppService<
     public override async Task<PaginatedList<TestDataReadDto>> GetPaginatedListAsync(TestDataQueryDto queryDto)
     {
         var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(queryDto.SysName), t => t.SysName.Contains(queryDto.SysName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ProjectName), t => t.ProjectName.Contains(queryDto.ProjectName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskName), t => t.TaskName.Contains(queryDto.TaskName))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.DevPhase), t => t.DevPhase.Contains(queryDto.DevPhase))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskStartTime), t => t.TaskStartTime.Contains(queryDto.TaskStartTime))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.TaskEndTime), t => t.TaskEndTime.Contains(queryDto.TaskEndTime))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqDep), t => t.ReqDep.Contains(queryDto.ReqDep))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManager), t => t.ReqManager.Contains(queryDto.ReqManager))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManagerCode), t => t.ReqManagerCode.Contains(queryDto.ReqManagerCode))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.GncResp), t => t.GncResp.Contains(queryDto.GncResp))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.GncRespCode), t => t.GncRespCode.Contains(queryDto.GncRespCode))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff), t => t.SimuStaff.Contains(queryDto.SimuStaff))
-            .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
-            .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+              .WhereIF(!string.IsNullOrEmpty(queryDto.SysName), t => t.SysName.Contains(queryDto.SysName))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.ProjectName), t => t.ProjectName.Contains(queryDto.ProjectName))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.TaskName), t => t.TaskName.Contains(queryDto.TaskName))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.DevPhase), t => t.DevPhase.Contains(queryDto.DevPhase))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.TaskStartTime), t => t.TaskStartTime.Contains(queryDto.TaskStartTime))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.TaskEndTime), t => t.TaskEndTime.Contains(queryDto.TaskEndTime))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.ReqDep), t => t.ReqDep.Contains(queryDto.ReqDep))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManager), t => t.ReqManager.Contains(queryDto.ReqManager))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.ReqManagerCode), t => t.ReqManagerCode.Contains(queryDto.ReqManagerCode))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.GncResp), t => t.GncResp.Contains(queryDto.GncResp))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.GncRespCode), t => t.GncRespCode.Contains(queryDto.GncRespCode))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.SimuResp), t => t.SimuResp.Contains(queryDto.SimuResp))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.simuRespCode), t => t.simuRespCode.Contains(queryDto.simuRespCode))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.SimuStaff), t => t.SimuStaff.Contains(queryDto.SimuStaff))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.simuStaffCodes), t => t.simuStaffCodes.Contains(queryDto.simuStaffCodes))
+              .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
+              .Includes(x => x.UUT)
+              .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
         return Mapper.Map<PaginatedList<TestDataReadDto>>(entities);
     }
 
@@ -89,14 +97,16 @@ public class TestDataService : SugarCrudAppService<
     {
         try
         {
-            // 发送 GET 请求
-            var response = await _httpClient.GetAsync(url);
+            //// 发送 GET 请求
+            //var response = await _httpClient.GetAsync(url);
 
-            // 确保请求成功
-            response.EnsureSuccessStatusCode();
+            //// 确保请求成功
+            //response.EnsureSuccessStatusCode();
 
-            // 读取响应内容
-            var jsonResponse = await response.Content.ReadAsStringAsync();
+            //// 读取响应内容
+            //var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            var jsonResponse = File.ReadAllText("D:\\resource\\8院资料\\实验计划数据.txt");
 
             var options = new JsonSerializerOptions
             {
@@ -112,13 +122,28 @@ public class TestDataService : SugarCrudAppService<
                 foreach (var item in result)
                 {
                     var info = Mapper.Map<TestData>(item);
-                    var inData = DbContext.InsertNav<TestData>(info)
-                         .Include(x => x.UUT)
-                         .ExecuteCommand();
+                    // 首先检查数据库中是否已存在相同 TestDataId 的记录
+                    var existingData = DbContext.Queryable<TestData>()
+                        .Where(x => x.TestDataId == info.TestDataId)
+                        .First();
 
-                    if (inData)
+                    if (existingData != null)
                     {
-                        changeCount++;
+                        // 如果存在，则更新主表和子表
+                        DbContext.UpdateNav(existingData)
+                            .Include(x => x.UUT) // 包含子表
+                            .ExecuteCommand();
+                    }
+                    else
+                    {
+                        // 如果不存在，则插入新记录
+                        var inData = DbContext.InsertNav<TestData>(info)
+                            .Include(x => x.UUT) // 包含子表
+                            .ExecuteCommand();
+                        if (inData)
+                        {
+                            changeCount++;
+                        }
                     }
                 }
             }
@@ -144,4 +169,5 @@ public class TestDataService : SugarCrudAppService<
             throw;
         }
     }
+
 }
