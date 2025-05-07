@@ -4,7 +4,7 @@ using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Services.System;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;
 using SqlSugar;
 using System.Reflection;
 

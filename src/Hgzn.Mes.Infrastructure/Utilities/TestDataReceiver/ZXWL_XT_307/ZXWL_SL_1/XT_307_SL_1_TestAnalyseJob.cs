@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipData;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 {
-    public class TestAnalyseJob
+    public class XT_307_SL_1_TestAnalyseJob
     {
         public Dictionary<string, string> AbbreviationName = new Dictionary<string, string>()
         {
@@ -53,12 +54,12 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 
         public List<DivisionTable> DivisionTables = new List<DivisionTable>();
 
-        public TestAnalyseJob()
+        public XT_307_SL_1_TestAnalyseJob()
         {
             DivisionTables = InitializeDivisionTables();
         }
 
-        public ApiResponse GetResponse(ReceiveData receiveData, string formType)
+        public ApiResponse GetResponse(XT_307_SL_1_ReceiveData receiveData, string formType)
         {
             ApiResponse ret = new ApiResponse();
             if (receiveData == null) return ret;
@@ -87,7 +88,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             return ret;
         }
 
-        public ApiResponse GetResponseForPushData(ReceiveData receiveData, List<string> tableNames)
+        public ApiResponse GetResponseForPushData(XT_307_SL_1_ReceiveData receiveData, List<string> tableNames)
         {
             ApiResponse ret = new ApiResponse();
             if (receiveData == null) return ret;
@@ -106,7 +107,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                     title = queryTable.title,
                     data = data
                 });
-            };
+            }
             return ret;
         }
 
@@ -492,12 +493,12 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             return deviceType;
         }
 
-        private Dictionary<(string, string), float> Analyse(ReceiveData receiveData, DivisionTable divisionTable)
+        private Dictionary<(string, string), float> Analyse(XT_307_SL_1_ReceiveData receiveData, DivisionTable divisionTable)
         {
             // 这里的18是指报头占用的属性数量,这样做是为了让divisionTable的start和end就是协议上的"字段号"
             int occupy = 18;
             // 获取 DeviceSettings 类的所有属性
-            PropertyInfo[] properties = typeof(ReceiveData).GetProperties();
+            PropertyInfo[] properties = typeof(XT_307_SL_1_ReceiveData).GetProperties();
 
             // 存储描述信息的字典
             Dictionary<string, float> descriptions = new Dictionary<string, float>();

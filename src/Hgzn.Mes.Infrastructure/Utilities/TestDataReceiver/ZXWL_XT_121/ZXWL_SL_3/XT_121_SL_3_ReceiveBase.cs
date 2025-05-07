@@ -7,22 +7,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
+namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_121.ZXWL_SL_3
 {
-    public class ReceiveBase
+    public class XT_121_SL_3_ReceiveBase
     {
-        protected ISqlSugarClient _sqlSugarClient;
+        public Dictionary<string, int> DeviceStateTag = new Dictionary<string, int>()
+        {
+            // { },
+        };
+
+        protected ISqlSugarClient SqlSugarClient;
         protected Guid _equipId;
         protected readonly IConnectionMultiplexer _connectionMultiplexer;
         protected readonly IMqttExplorer _mqttExplorer;
 
-        public ReceiveBase(Guid equipId,
+        public XT_121_SL_3_ReceiveBase(Guid equipId,
             ISqlSugarClient _client,
             IConnectionMultiplexer connectionMultiplexer,
             IMqttExplorer mqttExplorer)
         {
             _equipId = equipId;
-            _sqlSugarClient = _client;
+            SqlSugarClient = _client;
             _connectionMultiplexer = connectionMultiplexer;
             _mqttExplorer = mqttExplorer;
         }

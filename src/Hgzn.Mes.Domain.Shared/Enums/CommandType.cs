@@ -77,5 +77,10 @@ namespace Hgzn.Mes.Domain.Shared.Enums
         [Description("TcpServer")]
         TcpServer = 8,
 
+        /// <summary>
+        /// UDP
+        /// </summary>
+        [Description("UdpServer")]
+        UdpServer = 9,
     }
 }

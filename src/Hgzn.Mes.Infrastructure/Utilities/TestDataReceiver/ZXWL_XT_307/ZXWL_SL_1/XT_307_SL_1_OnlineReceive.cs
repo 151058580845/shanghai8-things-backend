@@ -1,5 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipData;
-using Hgzn.Mes.Domain.Events;
+﻿using Hgzn.Mes.Domain.Events;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared;
 using MediatR;
@@ -17,12 +16,14 @@ using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using System.Reflection;
 using System.ComponentModel;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 
-namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
+namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1
 {
-    public class TestDataOnlineReceive : ReceiveBase
+    public class XT_307_SL_1_OnlineReceive : XT_307_SL_1_ReceiveBase, IOnlineReceive
     {
-        public TestDataOnlineReceive(Guid equipId,
+        public XT_307_SL_1_OnlineReceive(Guid equipId,
             ISqlSugarClient _client,
             IConnectionMultiplexer connectionMultiplexer,
             IMqttExplorer mqttExplorer) : base(equipId, _client, connectionMultiplexer, mqttExplorer) { }
@@ -91,7 +92,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 floatData[i] = BitConverter.ToSingle(acquData, i * 4);
             }
 
-            ReceiveData entity = new ReceiveData()
+            XT_307_SL_1_ReceiveData entity = new XT_307_SL_1_ReceiveData()
             {
                 Id = _equipId,
                 CreationTime = DateTime.Now,
@@ -115,12 +116,12 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             };
 
             // 使用反射将后面指定数量个物理量数据进行填充
-            System.Reflection.PropertyInfo[] properties = typeof(ReceiveData).GetProperties();
+            PropertyInfo[] properties = typeof(XT_307_SL_1_ReceiveData).GetProperties();
 
             // 使用循环将数组值赋给类属性
             for (int i = 0; i < floatData.Length; i++)
             {
-                // 跳过前面20个属性,索引20开始设置
+                // 跳过前面19个属性,索引20开始设置
                 properties[i + 19].SetValue(entity, floatData[i]);
             }
 
@@ -138,24 +139,24 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             }
 
             // 将试验数据记录数据库
-            ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            XT_307_SL_1_ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             await TestDataPublishToMQTT(receive);
             // 将异常记录到redis
-            EquipNotice equipNotice = await ExceptionRecordToRedis(simuTestSysId, devTypeId, compId, exception);
+            EquipNotice equipNotice = await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception);
             // 将异常发布到mqtt
-            await ExceptionPublishToMQTT(equipNotice);
+            await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
             // 将异常记录到数据库
-            await RecordExceptionToDB(equipNotice);
+            await ReceiveHelper.RecordExceptionToDB(SqlSugarClient, equipNotice);
             // 输出到日志
             OutputToLog(entity);
 
-            return Guid.Empty;
+            return _equipId;
         }
 
-        private async Task TestDataPublishToMQTT(ReceiveData receive)
+        private async Task TestDataPublishToMQTT(XT_307_SL_1_ReceiveData receive)
         {
-            TestAnalyseJob job = new TestAnalyseJob();
+            XT_307_SL_1_TestAnalyseJob job = new XT_307_SL_1_TestAnalyseJob();
             ApiResponse ar = job.GetResponseForPushData(receive, null!);
             string topic = IotTopicBuilder
             .CreateIotBuilder()
@@ -169,48 +170,11 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(ar.data)));
         }
 
-        private async Task<EquipNotice> ExceptionRecordToRedis(byte simuTestSysId, byte devTypeId, byte[] compId, List<string> exception)
+        private static void OutputToLog(XT_307_SL_1_ReceiveData entity)
         {
-            // 记录到redis
-            IDatabase redisDb = _connectionMultiplexer.GetDatabase();
-            var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, compId);
-            await redisDb.StringSetAsync(key, exception.Count);
-            EquipNotice equipNotice = new EquipNotice()
-            {
-                EquipId = _equipId,
-                SendTime = DateTime.Now,
-                NoticeType = EquipNoticeType.Alarm,
-                Title = "Receive Alarm",
-                Content = JsonConvert.SerializeObject(exception),
-                Description = "",
-            };
-            return equipNotice;
-        }
-
-        private async Task ExceptionPublishToMQTT(EquipNotice equipNotice)
-        {
-            // 将异常发布到mqtt
-            await _mqttExplorer.PublishAsync(IotTopicBuilder
-            .CreateIotBuilder()
-            .WithPrefix(TopicType.Iot)
-            .WithDirection(MqttDirection.Up)
-            .WithTag(MqttTag.Alarm)
-            .WithDeviceType(EquipConnType.IotServer.ToString())
-            .WithUri(_equipId.ToString()!)
-            .Build(), Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(equipNotice)));
-        }
-
-        private async Task RecordExceptionToDB(EquipNotice equipNotice)
-        {
-            // 将异常记录到数据库
-            equipNotice.Id = Guid.NewGuid();
-            EquipNotice sequipNotice = await SqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
-        }
-
-        private static void OutputToLog(ReceiveData entity)
-        {
+            return;
             // 输出到日志
-            System.Reflection.PropertyInfo[] receiveDataProperties = typeof(ReceiveData).GetProperties();
+            PropertyInfo[] receiveDataProperties = typeof(XT_307_SL_1_ReceiveData).GetProperties();
             string output = "";
             foreach (PropertyInfo item in receiveDataProperties)
             {

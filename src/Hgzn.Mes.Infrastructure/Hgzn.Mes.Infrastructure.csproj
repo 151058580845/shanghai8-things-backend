@@ -47,4 +47,70 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_103\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_103\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_103\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_103\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_103\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_103\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_108\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_108\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_108\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_108\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_108\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_108\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_109\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_109\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_109\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_109\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_109\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_112\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_112\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_112\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_112\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_112\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_112\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_119\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_119\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_119\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_119\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_119\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_119\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_121\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_121\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_121\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_121\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_121\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_202\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_202\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_202\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_202\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_202\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_202\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_301\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_301\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_301\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_301\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_301\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_301\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_307\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_307\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_307\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_307\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_307\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_310\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_310\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_310\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_310\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_310\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_310\ZXWL_SL_6\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_314\ZXWL_SL_1\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_314\ZXWL_SL_2\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_314\ZXWL_SL_3\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_314\ZXWL_SL_4\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_314\ZXWL_SL_5\" />
+    <Folder Include="Utilities\TestDataReceiver\ZXWL_XT_314\ZXWL_SL_6\" />
+  </ItemGroup>
 </Project>

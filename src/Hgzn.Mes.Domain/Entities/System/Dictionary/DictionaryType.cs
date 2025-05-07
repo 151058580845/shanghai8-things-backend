@@ -458,6 +458,20 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             ListClass = "info"
         };
 
+        public static readonly DictionaryInfo UdpServer = new DictionaryInfo()
+        {
+            Id = Guid.Parse("9485e0f8-495e-4fd6-9d0c-eaabef91066a"), // 固定的 Guid 值
+            DictLabel = "UdpServer",
+            DictValue = "UdpServer",
+            ParentId = EquipConnType.Id,
+            OrderNum = 58,
+            Remark = "UDP服务器",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
         #endregion
 
         #region BaudRate

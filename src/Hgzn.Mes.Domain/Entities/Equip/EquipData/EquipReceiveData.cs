@@ -1,7 +1,7 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
-using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using System.ComponentModel;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
 {
@@ -19,7 +19,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
         [Description("设备编号")] 
         public string? EquipCode { get; set; }
         
-        public ReceiveData? ReceiveData { get; set; }
+        public XT_307_SL_1_ReceiveData? ReceiveData { get; set; }
         public Guid? CreatorId { get; set; }
         public DateTime CreationTime { get; set; }
     }

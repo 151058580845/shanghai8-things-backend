@@ -9,11 +9,13 @@ using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;
 using MySqlX.XDevAPI;
 using NetCoreServer;
 using SqlSugar;
 using StackExchange.Redis;
-using static Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.TestDataOnlineReceive;
+using static Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1.XT_307_SL_1_OnlineReceive;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 using Buffer = System.Buffer;
 
@@ -34,7 +36,6 @@ public class EquipTcpSession : TcpSession
     private ISqlSugarClient _sqlSugarClient;
     private EquipConnect _equipConnect;
     private IMqttExplorer _mqttExplorer;
-    private DbConnOptions _config;
     public EquipTcpSession(EquipTcpServer server,
         IConnectionMultiplexer connectionMultiplexer,
         ISqlSugarClient sqlSugarClient,
@@ -46,16 +47,6 @@ public class EquipTcpSession : TcpSession
         _equipConnect = equipConnect;
         _mqttExplorer = mqttExplorer;
         _forwardLength = server.ForwardRate;
-        _config = new DbConnOptions()
-        {
-            DbType = DbType.PostgreSQL,
-            Url = "PORT=5432;DATABASE=postgre;HOST=localhost;PASSWORD=dev@2024;USER ID=dev",
-            EnabledReadWrite = false,
-            EnabledCodeFirst = true,
-            EnabledSqlLog = true,
-            EnabledDbSeed = true,
-            EnabledSaasMultiTenancy = false
-        };
     }
 
     private const int BodyStartIndex = 13;
@@ -71,62 +62,31 @@ public class EquipTcpSession : TcpSession
         {
             if (_dataQueue.TryDequeue(out var buffer))
             {
-                //标准头
-                var header = buffer[0];
-                if (header != 0x5A)
+                byte[] newBuffer;
+                _hasData = ReceiveHelper.GetMessage(buffer, size, out newBuffer);
+                if (_hasData && newBuffer != null)
                 {
-                    LoggerAdapter.LogWarning("报头符错误。");
-                    _hasData = false;
-                    return;
+                    if (_forwardLength != null && _forwardNum == _forwardLength)
+                    {
+                        var topic = IotTopicBuilder.CreateIotBuilder()
+                                        .WithPrefix(TopicType.Iot)
+                                        .WithDirection(MqttDirection.Up)
+                                        .WithTag(MqttTag.Transmit)
+                                        .WithDeviceType(EquipConnType.IotServer.ToString())
+                                        .WithUri(_equipConnect.Id.ToString()).Build();
+                        await _mqttExplorer.PublishAsync(topic, newBuffer);
+                        _forwardNum = 0;
+                    }
+                    _forwardNum++;
+                    // 本地解析资产编号和异常解析
+                    // 这里要记录到数据采集器的数据库,而不是服务器的数据库
+                    // 创建新的SqlSugarClient实例用于本地数据记录
+                    SqlSugarClient localDbClient = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
+
+                    LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, localDbClient, _connectionMultiplexer, _mqttExplorer);
+                    await dispatch.Handle(newBuffer);
                 }
 
-                //报文长度
-                var messageLength = BitConverter.ToUInt32(buffer, 1);
-                if (messageLength != size)
-                {
-                    LoggerAdapter.LogWarning($"报文长度错误：接收到的长度为 {size}，报文中声明的长度为 {messageLength}");
-                    _hasData = false;
-                    return;
-                }
-
-                //解析报文流水号（1字节）
-                byte number = buffer[5];
-
-                // 解析时间
-                byte[] bYear = new byte[2];
-                Buffer.BlockCopy(buffer, 6, bYear, 0, 2);
-                ushort year = BitConverter.ToUInt16(bYear, 0);
-
-                byte month = buffer[8];
-                byte day = buffer[9];
-                byte hour = buffer[10];
-                byte minute = buffer[11];
-                byte second = buffer[12];
-
-                //报文数据
-                var length = messageLength - 6;
-                var newBuffer = new byte[length];
-                Buffer.BlockCopy(buffer, BodyStartIndex, newBuffer, 0, newBuffer.Length);
-
-                if (_forwardLength != null && _forwardNum == _forwardLength)
-                {
-                    var topic = IotTopicBuilder.CreateIotBuilder()
-                                    .WithPrefix(TopicType.Iot)
-                                    .WithDirection(MqttDirection.Up)
-                                    .WithTag(MqttTag.Transmit)
-                                    .WithDeviceType(EquipConnType.IotServer.ToString())
-                                    .WithUri(_equipConnect.Id.ToString()).Build();
-                    await _mqttExplorer.PublishAsync(topic, newBuffer);
-                    _forwardNum = 0;
-                }
-                _forwardNum++;
-                // 本地解析资产编号和异常解析
-                // 这里要记录到数据采集器的数据库,而不是服务器的数据库
-                // 创建新的SqlSugarClient实例用于本地数据记录
-                SqlSugarClient localDbClient = new SqlSugarClient(SqlSugarContext.Build(_config));
-
-                TestDataLocalReceive testDataReceive = new TestDataLocalReceive(_equipConnect.EquipId, localDbClient, _connectionMultiplexer, _mqttExplorer);
-                string computerNum = await testDataReceive.Handle(newBuffer);
             }
 
             _hasData = false;

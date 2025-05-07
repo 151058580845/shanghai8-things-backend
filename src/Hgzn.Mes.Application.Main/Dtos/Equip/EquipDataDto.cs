@@ -1,5 +1,5 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
-using Hgzn.Mes.Domain.Entities.Equip.EquipData;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
         public Guid TypeId { get; set; }
 
         [Description("采集数据")]
-        public ReceiveData? ReceiveData { get; set; }
+        public XT_307_SL_1_ReceiveData? ReceiveData { get; set; }
 
         [Description("最大值")]
         public double? MaxValue { get; set; }
@@ -38,7 +38,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
         public Guid TypeId { get; set; }
 
         [Description("采集数据")]
-        public ReceiveData? ReceiveData { get; set; }
+        public XT_307_SL_1_ReceiveData? ReceiveData { get; set; }
 
         [Description("最大值")]
         public double? MaxValue { get; set; }
@@ -59,7 +59,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
         public Guid TypeId { get; set; }
 
         [Description("采集数据")]
-        public ReceiveData? ReceiveData { get; set; }
+        public XT_307_SL_1_ReceiveData? ReceiveData { get; set; }
 
         [Description("最大值")]
         public double? MaxValue { get; set; }

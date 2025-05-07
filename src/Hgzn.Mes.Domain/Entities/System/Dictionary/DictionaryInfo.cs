@@ -76,6 +76,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.Socket,
             DictionaryType.SerialPort,
             DictionaryType.TcpServer,
+            DictionaryType.UdpServer,
             DictionaryType.ABCD1,
             DictionaryType.BADC1,
             DictionaryType.CDAB1,

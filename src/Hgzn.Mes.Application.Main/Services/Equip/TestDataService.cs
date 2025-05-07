@@ -97,16 +97,14 @@ public class TestDataService : SugarCrudAppService<
     {
         try
         {
-            //// 发送 GET 请求
-            //var response = await _httpClient.GetAsync(url);
+            // 发送 GET 请求
+            var response = await _httpClient.GetAsync(url);
 
-            //// 确保请求成功
-            //response.EnsureSuccessStatusCode();
+            // 确保请求成功
+            response.EnsureSuccessStatusCode();
 
-            //// 读取响应内容
-            //var jsonResponse = await response.Content.ReadAsStringAsync();
-
-            var jsonResponse = File.ReadAllText("D:\\resource\\8院资料\\实验计划数据.txt");
+            // 读取响应内容
+            var jsonResponse = await response.Content.ReadAsStringAsync();
 
             var options = new JsonSerializerOptions
             {

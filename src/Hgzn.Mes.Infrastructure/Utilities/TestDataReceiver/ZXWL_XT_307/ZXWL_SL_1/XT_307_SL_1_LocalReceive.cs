@@ -15,16 +15,16 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
+namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1
 {
-    public class TestDataLocalReceive : ReceiveBase
+    public class XT_307_SL_1_LocalReceive : XT_307_SL_1_ReceiveBase, ILocalReceive
     {
         public Dictionary<string, int> DeviceStateTag = new Dictionary<string, int>()
         {
             // { },
         };
 
-        public TestDataLocalReceive(Guid equipId,
+        public XT_307_SL_1_LocalReceive(Guid equipId,
             ISqlSugarClient _client,
             IConnectionMultiplexer connectionMultiplexer,
             IMqttExplorer mqttExplorer) : base(equipId, _client, connectionMultiplexer, mqttExplorer) { }
@@ -39,7 +39,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         /// workStyle       字节10    不固定
         /// devHealthState   字节8     不固定
         /// acquData        字节2800  不固定
-        public async Task<string> Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);
@@ -103,7 +103,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             equipNotice.Id = Guid.NewGuid();
             EquipNotice sequipNotice = await SqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
 
-            return compNumber;
+            return _equipId;
         }
     }
 }

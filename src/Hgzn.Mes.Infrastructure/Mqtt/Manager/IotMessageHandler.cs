@@ -9,6 +9,7 @@ using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
@@ -115,7 +116,6 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         {
             var uri = Guid.Parse(topic.ConnUri!);
             var connType = topic.ConnType;
-            Guid? dataId = null;
             switch (connType)
             {
                 case EquipConnType.RfidReader:
@@ -131,8 +131,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     // 根据连接ID查询设备ID
                     EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
                     Guid equipId = con.EquipId;
-                    TestDataOnlineReceive testDataReceive = new TestDataOnlineReceive(equipId, _client, _connectionMultiplexer, _mqttExplorer);
-                    dataId = await testDataReceive.Handle(msg);
+                    OnlineReceiveDispatch dispatch = new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
+                    await dispatch.Handle(msg);
                     break;
             }
 
@@ -142,14 +142,13 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         {
             var uri = Guid.Parse(topic.ConnUri!);
             var connType = topic.ConnType;
-            Guid? dataId = null;
             if (connType == EquipConnType.IotServer)
             {
                 // 根据连接ID查询设备ID
                 EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
                 Guid equipId = con.EquipId;
-                TestDataOnlineReceive testDataReceive = new TestDataOnlineReceive(equipId, _client, _connectionMultiplexer, _mqttExplorer);
-                dataId = await testDataReceive.Handle(msg);
+                OnlineReceiveDispatch dispatch = new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
+                await dispatch.Handle(msg);
             }
 
         }

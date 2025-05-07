@@ -2,13 +2,13 @@
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 using System.ComponentModel;
 
-namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
+namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 
 /// <summary>
 /// 接收的数据
 /// </summary>
 [Description("接收的数据")]
-public class ReceiveData : UniversalEntity, IAudited
+public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
 {
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
