@@ -9,13 +9,15 @@ using SqlSugar;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
 {
-    public class ReceiveHelper
+    public static class ReceiveHelper
     {
         public static DbConnOptions LOCALDBCONFIG = new DbConnOptions
         {
@@ -67,6 +69,27 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             message = new byte[length];
             Buffer.BlockCopy(buffer, BodyStartIndex, message, 0, message.Length);
             return true;
+        }
+
+        public static async Task<EquipNotice> ExceptionRecordToLocalDB(ISqlSugarClient sqlSugarClient, Guid equipId, List<string> exception)
+        {
+            EquipNotice equipNotice = null!;
+            if (exception.Any())
+            {
+                equipNotice = new EquipNotice()
+                {
+                    EquipId = equipId,
+                    SendTime = DateTime.Now,
+                    NoticeType = EquipNoticeType.Alarm,
+                    Title = "Receive Alarm",
+                    Content = JsonConvert.SerializeObject(exception),
+                    Description = "",
+                };
+                // 将异常记录到数据库
+                equipNotice.Id = Guid.NewGuid();
+                EquipNotice sequipNotice = await sqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+            }
+            return equipNotice;
         }
 
         /// <summary>
@@ -157,5 +180,27 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             equipNotice.Id = Guid.NewGuid();
             EquipNotice sequipNotice = await sqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
         }
+
+        /// <summary>
+        /// 获取枚举的Description值
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string GetDescription(this Enum value)
+        {
+            // 获取枚举值的类型和字段信息
+            Type type = value.GetType();
+            string? name = Enum.GetName(type, value);
+            if (name == null) return value.ToString();
+
+            // 获取字段的DescriptionAttribute
+            FieldInfo? field = type.GetField(name);
+            DescriptionAttribute? attribute = field?.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                               .FirstOrDefault() as DescriptionAttribute;
+
+            // 返回Description或枚举名称
+            return attribute?.Description ?? value.ToString();
+        }
+
     }
 }

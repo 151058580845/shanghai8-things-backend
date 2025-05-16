@@ -101,7 +101,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
 
             // 将异常记录到数据库
             equipNotice.Id = Guid.NewGuid();
-            EquipNotice sequipNotice = await SqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+            EquipNotice sequipNotice = await _sqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
 
             return _equipId;
         }

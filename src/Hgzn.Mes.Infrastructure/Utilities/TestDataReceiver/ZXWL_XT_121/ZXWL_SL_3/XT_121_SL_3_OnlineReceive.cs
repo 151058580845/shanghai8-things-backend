@@ -94,7 +94,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_121.ZXWL_SL
             }
 
             // 将试验数据记录数据库
-            XT_121_SL_3_ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            XT_121_SL_3_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             await TestDataPublishToMQTT(receive);
 

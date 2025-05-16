@@ -61,11 +61,14 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             byte[] workStyle = new byte[10];
             Buffer.BlockCopy(buffer, 22, workStyle, 0, 10);
 
-            // 健康状态信息
+
+
+            // *** 健康状态信息
             // 状态类型
             byte stateType = buffer[32];
 
             // 自检状态1个uint,表中是4位的ulong,在C#中,直接用uint代替
+
             byte[] devHealthState = new byte[4];
             Buffer.BlockCopy(buffer, 33, devHealthState, 0, 4);
             uint ulDevHealthState = BitConverter.ToUInt32(devHealthState, 0);
@@ -75,7 +78,9 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             Buffer.BlockCopy(buffer, 37, devHealthState, 0, 4);
             uint ulSupplyVoltageState = BitConverter.ToUInt32(supplyVoltageState, 0);
 
-            // 物理量数量
+
+
+            // *** 物理量数量
             byte[] physicalQuantityCount = new byte[4];
             Buffer.BlockCopy(buffer, 41, physicalQuantityCount, 0, 4);
             uint ulPhysicalQuantityCount = BitConverter.ToUInt32(physicalQuantityCount, 0);
@@ -102,13 +107,13 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
                 MicroWare = workStyle[0],
                 Channel = workStyle[1],
                 ModelValid = workStyle[2],
-                Model1 = workStyle[3],
-                Model2 = workStyle[4],
-                Model3 = workStyle[5],
-                Model4 = workStyle[6],
-                Model5 = workStyle[7],
-                Model6 = workStyle[8],
-                Model7 = workStyle[9],
+                ArrayEndPolarizationMode = workStyle[3],
+                ArrayEndPowerMode = workStyle[4],
+                ArrayChannelMultiplexing = workStyle[5],
+                ChannelPolarizationMode1 = workStyle[6],
+                ChannelPolarizationMode2 = workStyle[7],
+                ChannelPowerMode = workStyle[8],
+                Reserved = workStyle[9],
                 StateType = stateType,
                 SelfTest = ulDevHealthState,
                 SupplyVoltageState = ulSupplyVoltageState,
@@ -139,7 +144,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             }
 
             // 将试验数据记录数据库
-            XT_307_SL_1_ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            XT_307_SL_1_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             await TestDataPublishToMQTT(receive);
             // 将异常记录到redis
@@ -147,7 +152,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             // 将异常发布到mqtt
             await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
             // 将异常记录到数据库
-            await ReceiveHelper.RecordExceptionToDB(SqlSugarClient, equipNotice);
+            await ReceiveHelper.RecordExceptionToDB(_sqlSugarClient, equipNotice);
             // 输出到日志
             OutputToLog(entity);
 

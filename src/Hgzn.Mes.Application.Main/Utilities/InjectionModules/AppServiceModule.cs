@@ -25,7 +25,7 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .PropertiesAutowired();
 
             builder.RegisterType<EquipLedgerService>().InstancePerLifetimeScope();
-            builder.RegisterType<TestAnalyseJob>().InstancePerLifetimeScope();
+            // builder.RegisterType<TestAnalyseJob>().InstancePerLifetimeScope();
         }
     }
 }

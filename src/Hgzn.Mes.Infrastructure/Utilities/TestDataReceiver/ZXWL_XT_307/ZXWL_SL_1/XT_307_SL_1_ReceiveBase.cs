@@ -9,27 +9,18 @@ using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1
 {
-    public class XT_307_SL_1_ReceiveBase
+    public class XT_307_SL_1_ReceiveBase : ReceiveBase
     {
         protected Dictionary<string, int> DeviceStateTag = new Dictionary<string, int>()
         {
             // { },
         };
 
-        protected ISqlSugarClient SqlSugarClient;
-        protected Guid _equipId;
-        protected readonly IConnectionMultiplexer _connectionMultiplexer;
-        protected readonly IMqttExplorer _mqttExplorer;
-
         public XT_307_SL_1_ReceiveBase(Guid equipId,
             ISqlSugarClient _client,
             IConnectionMultiplexer connectionMultiplexer,
-            IMqttExplorer mqttExplorer)
+            IMqttExplorer mqttExplorer) : base(equipId, _client, connectionMultiplexer, mqttExplorer)
         {
-            _equipId = equipId;
-            SqlSugarClient = _client;
-            _connectionMultiplexer = connectionMultiplexer;
-            _mqttExplorer = mqttExplorer;
         }
 
         // 定义状态位的枚举

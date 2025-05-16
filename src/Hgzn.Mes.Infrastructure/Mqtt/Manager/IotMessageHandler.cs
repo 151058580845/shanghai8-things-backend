@@ -6,7 +6,6 @@ using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
-using Hgzn.Mes.Infrastructure.Mqtt.Message;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;

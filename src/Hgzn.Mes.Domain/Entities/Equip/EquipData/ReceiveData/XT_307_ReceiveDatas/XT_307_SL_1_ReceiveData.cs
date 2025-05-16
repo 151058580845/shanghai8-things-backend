@@ -5,7 +5,7 @@ using System.ComponentModel;
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 
 /// <summary>
-/// 接收的数据
+/// 307_阵列馈电
 /// </summary>
 [Description("接收的数据")]
 public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
@@ -22,7 +22,7 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
     [Description("本机识别编码")]
     public string? Compld { get; set; }
 
-    #region 工作模式信息
+    #region 工作模式信息 10个
 
     [Description("微波/毫米波")]
     public byte MicroWare { get; set; }
@@ -34,29 +34,29 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
     public byte ModelValid { get; set; }
 
     [Description("阵面末端极化方式")]
-    public byte Model1 { get; set; }
+    public byte ArrayEndPolarizationMode { get; set; }
 
     [Description("阵面末端功率模式")]
-    public byte Model2 { get; set; }
+    public byte ArrayEndPowerMode { get; set; }
 
     [Description("阵列通道复用")]
-    public byte Model3 { get; set; }
+    public byte ArrayChannelMultiplexing { get; set; }
 
     [Description("通道极化方式1")]
-    public byte Model4 { get; set; }
+    public byte ChannelPolarizationMode1 { get; set; }
 
     [Description("通道极化方式2")]
-    public byte Model5 { get; set; }
+    public byte ChannelPolarizationMode2 { get; set; }
 
     [Description("通道功率模式")]
-    public byte Model6 { get; set; }
+    public byte ChannelPowerMode { get; set; }
 
     [Description("预留")]
-    public byte Model7 { get; set; }
+    public byte Reserved { get; set; }
 
     #endregion 工作模式信息
 
-    #region 健康状态信息
+    #region 健康状态信息 3个
 
     [Description("状态类型")]
     public byte StateType { get; set; }

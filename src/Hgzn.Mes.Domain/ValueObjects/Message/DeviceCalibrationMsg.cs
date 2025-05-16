@@ -1,7 +1,7 @@
 ﻿using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 
-namespace Hgzn.Mes.Infrastructure.Mqtt.Message
+namespace Hgzn.Mes.Domain.ValueObjects.Message
 {
     public class DeviceCalibrationMsg : IBinaryMessage
     {   

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDatas
 {
+    /// <summary>
+    /// 109_红外转台
+    /// </summary>
     public class XT_109_SL_3_ReceiveData : UniversalEntity, IAudited
     {
         public Guid? CreatorId { get; set; }
@@ -22,7 +25,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDat
         [Description("本机识别编码")]
         public string? Compld { get; set; }
 
-        #region 工作信息模式
+        #region 工作信息模式 3个
 
         [Description("本地还是远程")]
         public byte LocalOrRemote { get; set; }
@@ -32,6 +35,16 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDat
 
         [Description("预留")]
         public byte Reserved { get; set; }
+
+        #endregion
+
+        #region 健康状态信息 2个
+
+        [Description("状态类型")]
+        public byte StatusType { get; set; }
+
+        [Description("工作状态")]
+        public byte OperationStatus { get; set; }
 
         #endregion
 
@@ -50,10 +63,10 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDat
         public float ThreeAxisPitchGiven { get; set; }
 
         // 两轴转台控制参数
-        [Description("两轴转台方位轴给定1")]
-        public float TwoAxisAzimuthGiven1 { get; set; }
-        [Description("两轴转台方位轴给定2")]
-        public float TwoAxisAzimuthGiven2 { get; set; }
+        [Description("两轴转台方位轴给定")]
+        public float TwoAxisAzimuthGiven { get; set; }
+        [Description("两轴转台俯仰轴给定")]
+        public float TwoAxisPitchGiven { get; set; }
 
         // 三轴转台反馈参数
         [Description("三轴转台滚动轴反馈")]
@@ -64,10 +77,10 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDat
         public float ThreeAxisPitchFeedback { get; set; }
 
         // 两轴转台反馈参数
-        [Description("两轴转台方位轴反馈1")]
+        [Description("两轴转台方位轴反馈")]
         public float TwoAxisAzimuthFeedback1 { get; set; }
-        [Description("两轴转台方位轴反馈2")]
-        public float TwoAxisAzimuthFeedback2 { get; set; }
+        [Description("两轴转台俯仰轴反馈")]
+        public float TwoAxisPitchFeedback { get; set; }
 
         // 液压系统参数
         [Description("油压")]

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDatas
 {
+    /// <summary>
+    /// 121_红外转台
+    /// </summary>
     public class XT_121_SL_3_ReceiveData : UniversalEntity, IAudited
     {
         public Guid? CreatorId { get; set; }
@@ -35,6 +38,16 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDat
 
         #endregion
 
+        #region 健康状态信息
+
+        [Description("状态类型")]
+        public byte StatusType { get; set; }
+
+        [Description("工作状态")]
+        public byte OperationStatus { get; set; }
+
+        #endregion
+
         #region 物理量
 
         // 物理量参数数量
@@ -50,10 +63,10 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDat
         public float ThreeAxisPitchGiven { get; set; }
 
         // 两轴转台给定值
-        [Description("两轴转台方位轴给定1")]
-        public float TwoAxisAzimuthGiven1 { get; set; }
-        [Description("两轴转台方位轴给定2")]
-        public float TwoAxisAzimuthGiven2 { get; set; }
+        [Description("两轴转台方位轴给定")]
+        public float TwoAxisAzimuthGiven { get; set; }
+        [Description("两轴转台俯仰轴给定")]
+        public float TwoAxisPitchGiven { get; set; }
 
         // 三轴转台反馈值
         [Description("三轴转台滚动轴反馈")]
@@ -64,10 +77,10 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDat
         public float ThreeAxisPitchFeedback { get; set; }
 
         // 两轴转台反馈值
-        [Description("两轴转台方位轴反馈1")]
-        public float TwoAxisAzimuthFeedback1 { get; set; }
-        [Description("两轴转台方位轴反馈2")]
-        public float TwoAxisAzimuthFeedback2 { get; set; }
+        [Description("两轴转台方位轴反馈")]
+        public float TwoAxisAzimuthFeedback { get; set; }
+        [Description("两轴转台方位轴反馈")]
+        public float TwoAxisPitchFeedback { get; set; }
 
         #endregion
 

@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using SqlSugar;
 using StackExchange.Redis;
 using System;
@@ -17,14 +18,34 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         protected readonly IMqttExplorer _mqttExplorer;
 
         public ReceiveBase(Guid equipId,
-            ISqlSugarClient _client,
+            ISqlSugarClient client,
             IConnectionMultiplexer connectionMultiplexer,
             IMqttExplorer mqttExplorer)
         {
             _equipId = equipId;
-            _sqlSugarClient = _client;
+            _sqlSugarClient = client;
             _connectionMultiplexer = connectionMultiplexer;
             _mqttExplorer = mqttExplorer;
+        }
+
+        protected float[] GetPhysicalQuantity(byte[] buffer, int startIndex, out uint ulPhysicalQuantityCount)
+        {
+            byte[] physicalQuantityCount = new byte[4];
+            Buffer.BlockCopy(buffer, startIndex, physicalQuantityCount, 0, 4);
+            ulPhysicalQuantityCount = BitConverter.ToUInt32(physicalQuantityCount, 0);
+
+            // 剩余的都给物理量
+            byte[] acquData = new byte[ulPhysicalQuantityCount * 4];
+            Buffer.BlockCopy(buffer, startIndex + 4, acquData, 0, acquData.Length);
+
+            // 将 byte[] 转换为 float[] , 每个 float 占用 4 字节
+            int floatCount = acquData.Length / 4;
+            float[] floatData = new float[floatCount];
+            for (int i = 0; i < floatCount; i++)
+            {
+                floatData[i] = BitConverter.ToSingle(acquData, i * 4);
+            }
+            return floatData;
         }
     }
 }

@@ -52,23 +52,30 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL
 
             // 健康状态信息
             // 状态类型
-            byte stateType = buffer[25];
+            byte[] stateType = new byte[2];
+            Buffer.BlockCopy(buffer, 25, workStyle, 0, 2);
 
-            string exception = GetDevHealthExceptionName(stateType);
-
-            EquipNotice equipNotice = new EquipNotice()
+            // 健康状态信息第0为为1表示获取到了健康状态
+            if (stateType[0] == 1)
             {
-                EquipId = _equipId,
-                SendTime = DateTime.Now,
-                NoticeType = EquipNoticeType.Alarm,
-                Title = "Receive Alarm",
-                Content = exception,
-                Description = "",
-            };
+                string exception = GetDevHealthExceptionName(stateType[1]);
+                if (!string.IsNullOrEmpty(exception) && stateType[1] != 0)
+                {
+                    EquipNotice equipNotice = new EquipNotice()
+                    {
+                        EquipId = _equipId,
+                        SendTime = DateTime.Now,
+                        NoticeType = EquipNoticeType.Alarm,
+                        Title = "Receive Alarm",
+                        Content = exception,
+                        Description = "",
+                    };
 
-            // 将异常记录到数据库
-            equipNotice.Id = Guid.NewGuid();
-            EquipNotice sequipNotice = await SqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+                    // 将异常记录到数据库
+                    equipNotice.Id = Guid.NewGuid();
+                    EquipNotice sequipNotice = await _sqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+                }
+            }
 
             return _equipId;
         }

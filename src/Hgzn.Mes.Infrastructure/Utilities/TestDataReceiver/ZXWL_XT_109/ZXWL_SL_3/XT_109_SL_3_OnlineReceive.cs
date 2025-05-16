@@ -57,16 +57,17 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL
 
             // 健康状态信息
             // 状态类型
-            byte stateType = buffer[25];
+            byte[] stateType = new byte[2];
+            Buffer.BlockCopy(buffer, 25, stateType, 0, 2);
 
             // 物理量数量
             byte[] physicalQuantityCount = new byte[4];
-            Buffer.BlockCopy(buffer, 41, physicalQuantityCount, 0, 4);
+            Buffer.BlockCopy(buffer, 28, physicalQuantityCount, 0, 4);
             uint ulPhysicalQuantityCount = BitConverter.ToUInt32(physicalQuantityCount, 0);
 
             // 剩余的都给物理量
             byte[] acquData = new byte[ulPhysicalQuantityCount * 4];
-            Buffer.BlockCopy(buffer, 45, acquData, 0, acquData.Length);
+            Buffer.BlockCopy(buffer, 32, acquData, 0, acquData.Length);
 
             // 将 byte[] 转换为 float[] , 每个 float 占用 4 字节
             int floatCount = acquData.Length / 4;
@@ -100,7 +101,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL
             }
 
             // 将试验数据记录数据库
-            XT_109_SL_3_ReceiveData receive = await SqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            XT_109_SL_3_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
 
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             await TestDataPublishToMQTT(receive);
@@ -110,16 +111,19 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL
             #region 处理不健康状态
 
             // 获取自检状态异常
-            string exception = GetDevHealthExceptionName(stateType);
-
-            if (string.IsNullOrEmpty(exception))
+            if (stateType[0] == 1)
             {
-                // 将异常记录到redis
-                EquipNotice equipNotice = await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception);
-                // 将异常发布到mqtt
-                await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
-                // 将异常记录到数据库
-                await ReceiveHelper.RecordExceptionToDB(SqlSugarClient, equipNotice);
+                string exception = GetDevHealthExceptionName(stateType[1]);
+
+                if (string.IsNullOrEmpty(exception) && stateType[1] != 0)
+                {
+                    // 将异常记录到redis
+                    EquipNotice equipNotice = await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception);
+                    // 将异常发布到mqtt
+                    await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
+                    // 将异常记录到数据库
+                    await ReceiveHelper.RecordExceptionToDB(_sqlSugarClient, equipNotice);
+                }
             }
 
             #endregion

@@ -22,4 +22,9 @@ public enum EquipConnType
     /// </summary>
     [Description("温湿度计")]
     RKServer,
+    /// <summary>
+    /// 发卡器
+    /// </summary>
+    [Description("发卡器")]
+    CardIssuer,
 }

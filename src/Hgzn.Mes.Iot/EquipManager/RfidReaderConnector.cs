@@ -106,7 +106,8 @@ public class RfidReaderConnector : EquipConnectorBase
         // 4个天线读卡, 读取EPC数据区以及TID数据区
         var msgBaseInventoryEpc = new MsgBaseInventoryEpc
         {
-            AntennaEnable = (ushort)(eAntennaNo._1),
+            //AntennaEnable = (ushort)(eAntennaNo._1),
+            AntennaEnable = (uint)(eAntennaNo._1 | eAntennaNo._2 | eAntennaNo._3 | eAntennaNo._4),
             InventoryMode = (byte)eInventoryMode.Inventory,
             ReadTid = new ParamEpcReadTid
             {
