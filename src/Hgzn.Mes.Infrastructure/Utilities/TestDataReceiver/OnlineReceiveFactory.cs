@@ -1,7 +1,19 @@
-﻿using Hgzn.Mes.Infrastructure.Mqtt.Manager;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL_3;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_121.ZXWL_SL_3;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_0_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_103_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_108_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_112_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_119_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_202_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_314_ReceiveDatas;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL_1;
 using SqlSugar;
 using StackExchange.Redis;
 using System;
@@ -12,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 {
-    public class OnlineReceiveFactory
+    public class OnlineReceiveFactory : BaseFactory
     {
         protected ISqlSugarClient _sqlSugarClient;
         protected Guid _equipId;
@@ -30,16 +42,101 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             _mqttExplorer = mqttExplorer;
         }
 
-        public IOnlineReceive CreateLocalReceive(byte simuTestSysId, byte devTypeId)
+        private IReceive GetOrCreateOnlineReceive(byte simuTestSysId, byte devTypeId, Func<IReceive> newReveive)
+        {
+            string key = GetKey(LocalOrOnline.Online, simuTestSysId, devTypeId);
+            if (Receives.ContainsKey(key))
+                return Receives[key];
+            IReceive receive = newReveive();
+            Receives.Add(key, receive);
+            return receive;
+        }
+
+        public IOnlineReceive GetOrCreateOnlineReceive(byte simuTestSysId, byte devTypeId)
         {
             switch (simuTestSysId)
             {
-                case 4 when devTypeId == 3:
-                    return new XT_109_SL_3_OnlineReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
-                case 6 when devTypeId == 3:
-                    return new XT_121_SL_3_OnlineReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
+                // 0 移动设备
+                case 0 when devTypeId == 5:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_0_SL_5_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_0_SL_5HealthExceptionName, 3, 2));
+                case 0 when devTypeId == 6:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new XT_0_SL_6_OnlineReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer)); // 特殊处理
+                case 0 when devTypeId == 7:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_0_SL_7_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_7CommonHealthExceptionName, 2, 8));
+
+                // 310 微波/毫米波复合半实物仿真系统 
+                case 1 when devTypeId == 2:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_310_SL_2_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
+                case 1 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_310_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+
+                // 307 微波寻的半实物仿真系统
                 case 2 when devTypeId == 1:
-                    return new XT_307_SL_1_OnlineReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new XT_307_SL_1_OnlineReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer)); // 特殊处理
+                case 2 when devTypeId == 2:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_307_SL_2_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
+                case 2 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_307_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+
+                // 314 射频/光学制导半实物仿真系统
+                case 3 when devTypeId == 1:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new XT_314_SL_1_OnlineReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer)); // 特殊处理
+                case 3 when devTypeId == 2:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_314_SL_2_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
+                case 3 when devTypeId == 3:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_314_SL_3_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_3CommonHealthExceptionName, 3, 2));
+                case 3 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_314_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+
+                // 109 紧缩场射频光学半实物仿真系统
+                case 4 when devTypeId == 3:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_109_SL_3_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_3CommonHealthExceptionName, 3, 2));
+                case 4 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_109_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+                case 4 when devTypeId == 7:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_109_SL_7_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_7CommonHealthExceptionName, 2, 8));
+
+                // 108 光学复合半实物仿真系统
+                case 5 when devTypeId == 3:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_108_SL_3_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_3CommonHealthExceptionName, 3, 2));
+                case 5 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_108_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+                case 5 when devTypeId == 7:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_108_SL_7_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_7CommonHealthExceptionName, 2, 8));
+
+                // 121 三通道控制红外制导半实物仿真系统
+                case 6 when devTypeId == 3:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_121_SL_3_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_3CommonHealthExceptionName, 3, 2));
+                case 6 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_121_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+                case 6 when devTypeId == 7:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_121_SL_7_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_7CommonHealthExceptionName, 2, 8));
+
+                // 202 低温环境红外制导控制半实物仿真系统
+                case 6 when devTypeId == 3:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_202_SL_3_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_202_SL_3CommonHealthExceptionName, 3, 6));
+                case 6 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_202_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+                case 6 when devTypeId == 7:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_202_SL_7_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_7CommonHealthExceptionName, 2, 8));
+
+                // 103 机械式制导控制半实物仿真系统
+                case 8 when devTypeId == 2:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_103_SL_2_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
+                case 8 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_103_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+
+                // 119 独立回路半实物仿真系统
+                case 9 when devTypeId == 2:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_119_SL_2_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
+                case 9 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_119_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
+
+                // 112 独立回路/可见光制导半实物仿真系统
+                case 10 when devTypeId == 2:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_112_SL_2_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
+                case 10 when devTypeId == 4:
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_112_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
                 default:
                     return null!;
             }

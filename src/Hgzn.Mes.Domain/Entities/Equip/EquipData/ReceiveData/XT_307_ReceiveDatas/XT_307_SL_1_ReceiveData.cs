@@ -69,6 +69,8 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
 
     #endregion 健康状态信息
 
+    #region 物理量
+
     #region 物理量数量
 
     [Description("物理量数量")]
@@ -1894,7 +1896,9 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
 
     #endregion 水平粗控控制 分区6
 
-    #endregion 水平
+    #endregion 水平 
+
+    #endregion
 
     public Guid? LastModifierId { get; set; }
     public DateTime? LastModificationTime { get; set; }

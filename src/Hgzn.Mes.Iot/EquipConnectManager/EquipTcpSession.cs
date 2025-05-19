@@ -10,12 +10,10 @@ using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;
 using MySqlX.XDevAPI;
 using NetCoreServer;
 using SqlSugar;
 using StackExchange.Redis;
-using static Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1.XT_307_SL_1_OnlineReceive;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 using Buffer = System.Buffer;
 

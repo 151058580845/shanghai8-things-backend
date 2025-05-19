@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 {
-    public class OnlineReceiveDispatch : ReceiveBase
+    public class OnlineReceiveDispatch : BaseReceive
     {
         public OnlineReceiveDispatch(Guid equipId,
             ISqlSugarClient _client,
@@ -34,7 +34,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             // 根据仿真试验系统与设备类型,通过工厂创建各自的解析类
             // 以上所有系统固定占2个字节
             OnlineReceiveFactory onlineReceiveFactory = new OnlineReceiveFactory(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
-            IOnlineReceive onlineReceive = onlineReceiveFactory.CreateLocalReceive(simuTestSysId, devTypeId);
+            IOnlineReceive onlineReceive = onlineReceiveFactory.GetOrCreateOnlineReceive(simuTestSysId, devTypeId);
             await onlineReceive.Handle(msg);
         }
     }

@@ -137,29 +137,5 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             if (ulDevHealthState[1] == (byte)General_Status.Abnormal) exceptions.Add("工作状态" + General_Status.Abnormal.GetDescription());
             return exceptions;
         }
-
-        /// <summary>
-        /// 雷达源_ZXWL-SL-6
-        /// </summary>
-        /// <param name="ulDevHealthState"></param>
-        /// <returns></returns>
-        public static List<string> GetXT_0_SL_6HealthExceptionName(byte[] ulDevHealthState)
-        {
-            List<string> exceptions = new List<string>();
-            if (ulDevHealthState[0] == 0)
-            {
-                exceptions.Add(General_StatusType.DeviceHealthNotAcquired.GetDescription());
-                return exceptions;
-            }
-            // 只有第一个字节有数据
-            XT_0_SL_6DeviceStatus status = (XT_0_SL_6DeviceStatus)ulDevHealthState[1];
-            foreach (XT_0_SL_6DeviceStatus flag in Enum.GetValues(typeof(XT_0_SL_6DeviceStatus)))
-            {
-                if (status.HasFlag(flag))
-                    exceptions.Add(flag.GetDescription());
-            }
-            // 第二个字节是备用的,不进行解析
-            return exceptions;
-        }
     }
 }

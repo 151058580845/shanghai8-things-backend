@@ -11,10 +11,8 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_121.ZXWL_SL_3;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL_3;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 
 public class UdpServerConnector : EquipConnectorBase

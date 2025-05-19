@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
 {
-    public class GeneralOnlineReceive<T> : ReceiveBase, ILocalReceive where T : class, new()
+    public class GeneralOnlineReceive<T> : BaseReceive, IOnlineReceive where T : class, new()
     {
         private Func<byte[], List<string>> _getHealthException;
         private int _workStyleLength;

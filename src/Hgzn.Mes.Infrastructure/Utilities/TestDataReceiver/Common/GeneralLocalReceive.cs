@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
 {
-    public class GeneralLocalReceive : ReceiveBase, ILocalReceive
+    public class GeneralLocalReceive : BaseReceive, ILocalReceive
     {
         private Func<byte[], List<string>> _getHealthException;
         private int _workStyleLength;

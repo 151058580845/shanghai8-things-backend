@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 {
-    public class LocalReceiveDispatch : ReceiveBase
+    public class LocalReceiveDispatch : BaseReceive
     {
         public LocalReceiveDispatch(Guid equipId,
             ISqlSugarClient _client,
@@ -34,7 +34,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             // 根据仿真试验系统与设备类型,通过工厂创建各自的解析类
             // 以上所有系统固定占2个字节
             LocalReceiveFactory localReceiveFactory = new LocalReceiveFactory(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
-            ILocalReceive localReceive = localReceiveFactory.CreateLocalReceive(simuTestSysId, devTypeId);
+            ILocalReceive localReceive = localReceiveFactory.GetOrCreateLocalReceive(simuTestSysId, devTypeId);
             await localReceive.Handle(msg);
         }
     }
