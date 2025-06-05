@@ -1649,6 +1649,19 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now,
             ListClass = "info"
         };
+        public static readonly DictionaryInfo CardIssuer = new DictionaryInfo()
+        {
+            Id = Guid.Parse("D0FBB4B8-A434-4227-94D2-65586C34191B"), // 固定的 Guid 值
+            DictLabel = "发卡器",
+            DictValue = "CardIssuer",
+            ParentId = EquipProtocol.Id,
+            OrderNum = 1,
+            Remark = "发卡器",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
         #endregion
 
         #region 采集工作日

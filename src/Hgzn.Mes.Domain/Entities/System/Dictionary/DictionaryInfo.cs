@@ -50,7 +50,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 
         [Description("删除时间")]
         public DateTime? DeleteTime { get; set; }
-        public static DictionaryInfo[] Seeds  { get; } =
+        public static DictionaryInfo[] Seeds { get; } =
         {
             DictionaryType.Check,
             DictionaryType.Maintenance,
@@ -105,8 +105,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.Char,
             DictionaryType.String,
             DictionaryType.Bool,
-            
-            
+
+
             DictionaryType.AtMostOnce,
             DictionaryType.AtLeastOnce,
             DictionaryType.ExactlyOnce,
@@ -128,11 +128,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.BreakRoom,
             DictionaryType.Warehouse,
             DictionaryType.Restroom,
-            
+
             DictionaryType.Normal,
             DictionaryType.Lost,
             DictionaryType.InUse,
-            
+
             DictionaryType.testSystem1,
             DictionaryType.testSystem2,
             DictionaryType.testSystem3,
@@ -147,6 +147,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.RfidReader,
             DictionaryType.IotServer,
             DictionaryType.RKServer,
+            DictionaryType.CardIssuer,
 
             DictionaryType.Basic,
             DictionaryType.General,

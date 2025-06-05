@@ -16,12 +16,12 @@ namespace Hgzn.Mes.Iot.EquipManager;
 
 public class RfidReaderConnector : EquipConnectorBase
 {
-    private GClient _client = new();
-    private string? _serialNum { get; set; }
+    protected GClient _client = new();
+    protected string? _serialNum { get; set; }
 
-    private int _pushInterval { get; set; } 
+    protected int _pushInterval { get; set; }
 
-    private DateTime _timeLast { get; set; }
+    protected DateTime _timeLast { get; set; }
 
     public RfidReaderConnector(
         IConnectionMultiplexer connectionMultiplexer,
@@ -157,9 +157,9 @@ public class RfidReaderConnector : EquipConnectorBase
             .WithUri(_uri!)
             .WithDeviceType(_connType.ToString()!)
             .Build(), Encoding.UTF8.GetBytes(plain));
-    }    
-    
-    private async void TcpDisconnectedHandler(string readerName)
+    }
+
+    protected async void TcpDisconnectedHandler(string readerName)
     {
         LoggerAdapter.LogWarning($"serilnum: {_serialNum}, reader: {readerName} disconnected!");
         await CloseConnOnlyAsync();

@@ -76,11 +76,20 @@ namespace Hgzn.Mes.Iot.EquipManager
                             equipConnector = new UdpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType);
                             if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
                             break;
+                        // case ConnType.ModbusRtu:
+
                     }
                     break;
                 case EquipConnType.RKServer:
                     equipConnector = new HygrographConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
                         connType);
+                    if (!Connections.TryAdd(id, equipConnector))
+                        throw new Exception("equip exist");
+                    break;
+                case EquipConnType.CardIssuer:
+                    var interval2 = _configuration.GetValue<int>("PushInterval");
+                    equipConnector = new CardIssuerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
+                        connType, interval2);
                     if (!Connections.TryAdd(id, equipConnector))
                         throw new Exception("equip exist");
                     break;

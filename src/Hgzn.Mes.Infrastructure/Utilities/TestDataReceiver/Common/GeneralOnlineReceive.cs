@@ -11,6 +11,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
     public class GeneralOnlineReceive<T> : BaseReceive, IOnlineReceive where T : class, new()
     {
         private Func<byte[], List<string>> _getHealthException;
+        private const int _WORKSTYLEANALYSISLENGTH = 10;
+        private const int _STATETYPEANALYSISLENGTH = 9;
         private int _workStyleLength;
         private int _stateTypeLength;
 
@@ -43,20 +45,20 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
 
             // 工作模式信息
-            byte[] workStyle = new byte[_workStyleLength];
-            Buffer.BlockCopy(buffer, 22, workStyle, 0, _workStyleLength);
+            byte[] workStyle = new byte[_WORKSTYLEANALYSISLENGTH];
+            Buffer.BlockCopy(buffer, 22, workStyle, 0, _WORKSTYLEANALYSISLENGTH);
 
 
             // *** 健康状态信息
             // 状态类型
-            byte[] stateType = new byte[_stateTypeLength];
-            Buffer.BlockCopy(buffer, 22 + _workStyleLength, stateType, 0, _stateTypeLength);
+            byte[] stateType = new byte[_STATETYPEANALYSISLENGTH];
+            Buffer.BlockCopy(buffer, 22 + _WORKSTYLEANALYSISLENGTH, stateType, 0, _STATETYPEANALYSISLENGTH);
 
 
             // *** 物理量
             // 剩余的都给物理量
             uint ulPhysicalQuantityCount;
-            float[] floatData = GetPhysicalQuantity(buffer, 22 + _workStyleLength + _stateTypeLength, out ulPhysicalQuantityCount);
+            float[] floatData = GetPhysicalQuantity(buffer, 22 + _WORKSTYLEANALYSISLENGTH + _STATETYPEANALYSISLENGTH, out ulPhysicalQuantityCount);
 
 
             // *** 构建entity
@@ -69,7 +71,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             properties[3].SetValue(entity, devTypeId);
             properties[4].SetValue(entity, compNumber);
 
-            // 填充工作模式信息
+            // 填充工作模式信息,虽然我获取10个,但是实际是几个我就设置几个
             for (int i = 0; i < _workStyleLength; i++)
             {
                 properties[5 + i].SetValue(entity, workStyle[i]);

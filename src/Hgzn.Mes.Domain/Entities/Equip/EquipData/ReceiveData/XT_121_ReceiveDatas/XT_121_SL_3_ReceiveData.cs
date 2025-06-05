@@ -43,8 +43,16 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDat
         [Description("状态类型")]
         public byte StatusType { get; set; }
 
-        [Description("工作状态")]
-        public byte OperationStatus { get; set; }
+        [Description("滚转轴工作状态")]
+        public byte RollingAxisOperationStatus { get; set; }
+        [Description("偏航轴工作状态")]
+        public byte YawAxisOperationStatus { get; set; }
+        [Description("俯仰轴工作状态")]
+        public byte PitchAxisOperationStatus { get; set; }
+        [Description("高低轴工作状态")]
+        public byte ElevationAxisOperationStatus { get; set; }
+        [Description("方位轴工作状态")]
+        public byte AzimuthAxisOperationStatus { get; set; }
 
         #endregion
 
@@ -63,9 +71,9 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDat
         public float ThreeAxisPitchGiven { get; set; }
 
         // 两轴转台给定值
+        [Description("两轴转台高低轴给定")]
+        public float TwoAxisElevationGiven { get; set; }
         [Description("两轴转台方位轴给定")]
-        public float TwoAxisAzimuthGiven { get; set; }
-        [Description("两轴转台俯仰轴给定")]
         public float TwoAxisPitchGiven { get; set; }
 
         // 三轴转台反馈值
@@ -77,10 +85,14 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDat
         public float ThreeAxisPitchFeedback { get; set; }
 
         // 两轴转台反馈值
-        [Description("两轴转台方位轴反馈")]
-        public float TwoAxisAzimuthFeedback { get; set; }
+        [Description("两轴转台高低轴反馈")]
+        public float TwoAxisElevationFeedback { get; set; }
         [Description("两轴转台方位轴反馈")]
         public float TwoAxisPitchFeedback { get; set; }
+
+        // 周期
+        [Description("周期")]
+        public float Period { get; set; }
 
         #endregion
 

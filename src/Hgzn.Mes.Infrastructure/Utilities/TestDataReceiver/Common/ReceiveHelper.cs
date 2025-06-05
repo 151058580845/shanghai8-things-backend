@@ -65,7 +65,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             byte second = buffer[12];
 
             //报文数据
-            var length = messageLength - 6;
+            var length = messageLength - 13;
             message = new byte[length];
             Buffer.BlockCopy(buffer, BodyStartIndex, message, 0, message.Length);
             return true;

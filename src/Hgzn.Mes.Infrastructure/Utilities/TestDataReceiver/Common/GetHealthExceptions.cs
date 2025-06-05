@@ -30,6 +30,31 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         }
 
         /// <summary>
+        /// 112_雷达转台_ZXWL-SL-2
+        /// </summary>
+        /// <param name="ulDevHealthState"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static List<string> GetXT_112_SL_2CommonHealthExceptionName(byte[] ulDevHealthState)
+        {
+            List<string> exceptions = new List<string>();
+            if (ulDevHealthState[0] == 0) General_StatusType.DeviceHealthNotAcquired.GetDescription();
+            List<string> axis = new List<string>() { "滚转轴", "俯仰轴", "偏航轴" };
+            for (int i = 1; i < axis.Count + 1; i++)
+            {
+                var statusFlags = (XT_112_SL_2_OperationStatusEnum)ulDevHealthState[i];
+                if (statusFlags == XT_112_SL_2_OperationStatusEnum.NormalStatus)
+                    return exceptions;
+                exceptions.AddRange(Enum.GetValues(typeof(XT_112_SL_2_OperationStatusEnum))
+                .Cast<XT_112_SL_2_OperationStatusEnum>()
+                .Where(flag => flag != XT_112_SL_2_OperationStatusEnum.NormalStatus)
+                .Where(flag => statusFlags.HasFlag(flag))
+                .Select(flag => axis[i - 1] + flag.GetDescription()));
+            }
+            return exceptions;
+        }
+
+        /// <summary>
         /// 公共定义_固定电源_ZXWL-SL-4
         /// </summary>
         /// <param name="ulDevHealthState"></param>
@@ -70,29 +95,86 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         }
 
         /// <summary>
-        /// 非公共定义(但是我看在挺多地方也通用)_红外转台_ZXWL-SL-3
+        /// 121_红外转台_ZXWL-SL-3
         /// </summary>
         /// <param name="ulDevHealthState"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public static List<string> GetSL_3CommonHealthExceptionName(byte[] ulDevHealthState)
+        public static List<string> GetXT_121_SL_3CommonHealthExceptionName(byte[] ulDevHealthState)
         {
             List<string> exceptions = new List<string>();
             if (ulDevHealthState[0] == 0) General_StatusType.DeviceHealthNotAcquired.GetDescription();
-            SL_3_OperationStatusEnum status = ulDevHealthState[1] switch
+            List<string> axis = new List<string>() { "滚转轴", "偏航轴", "俯仰轴", "高低轴", "方位轴" };
+            for (int i = 1; i < axis.Count + 1; i++)
             {
-                0 => SL_3_OperationStatusEnum.NormalStatus,
-                1 => SL_3_OperationStatusEnum.SoftwareLimit,
-                2 => SL_3_OperationStatusEnum.OverSpeed,
-                3 => SL_3_OperationStatusEnum.Runaway,
-                4 => SL_3_OperationStatusEnum.FeedbackError,
-                _ => throw new ArgumentOutOfRangeException("statusBytes[1]", "无效的操作状态值")
-            };
-            if (status == SL_3_OperationStatusEnum.NormalStatus) return exceptions;
-            exceptions.Add(status.GetDescription());
+                var statusFlags = (XT_121_SL_3_OperationStatusEnum)ulDevHealthState[i];
+                if (statusFlags == XT_121_SL_3_OperationStatusEnum.NormalStatus)
+                    return exceptions;
+                exceptions.AddRange(Enum.GetValues(typeof(XT_121_SL_3_OperationStatusEnum))
+                .Cast<XT_121_SL_3_OperationStatusEnum>()
+                .Where(flag => flag != XT_121_SL_3_OperationStatusEnum.NormalStatus)
+                .Where(flag => statusFlags.HasFlag(flag))
+                .Select(flag => axis[i - 1] + flag.GetDescription()));
+            }
             return exceptions;
         }
 
+        /// <summary>
+        /// 109_红外转台_ZXWL-SL-3
+        /// </summary>
+        /// <param name="ulDevHealthState"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static List<string> GetXT_109_SL_3CommonHealthExceptionName(byte[] ulDevHealthState)
+        {
+            List<string> exceptions = new List<string>();
+            if (ulDevHealthState[0] == 0) General_StatusType.DeviceHealthNotAcquired.GetDescription();
+            List<string> axis = new List<string>() { "滚转轴", "俯仰轴", "偏航轴", "高低轴", "方位轴" };
+            for (int i = 1; i < axis.Count + 1; i++)
+            {
+                var statusFlags = (XT_109_SL_3_OperationStatusEnum)ulDevHealthState[i];
+                if (statusFlags == XT_109_SL_3_OperationStatusEnum.NormalStatus)
+                    return exceptions;
+                exceptions.AddRange(Enum.GetValues(typeof(XT_109_SL_3_OperationStatusEnum))
+                .Cast<XT_109_SL_3_OperationStatusEnum>()
+                .Where(flag => flag != XT_109_SL_3_OperationStatusEnum.NormalStatus)
+                .Where(flag => statusFlags.HasFlag(flag))
+                .Select(flag => axis[i - 1] + flag.GetDescription()));
+            }
+            return exceptions;
+        }
+
+        /// <summary>
+        /// 314_红外转台_ZXWL-SL-3
+        /// </summary>
+        /// <param name="ulDevHealthState"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static List<string> GetXT_314_SL_3CommonHealthExceptionName(byte[] ulDevHealthState)
+        {
+            List<string> exceptions = new List<string>();
+            if (ulDevHealthState[0] == 0) General_StatusType.DeviceHealthNotAcquired.GetDescription();
+            List<string> axis = new List<string>() { "消旋轴", "短臂轴", "长臂轴" };
+            for (int i = 1; i < axis.Count + 1; i++)
+            {
+                var statusFlags = (XT_314_SL_3_OperationStatusEnum)ulDevHealthState[i];
+                if (statusFlags == XT_314_SL_3_OperationStatusEnum.NormalStatus)
+                    return exceptions;
+                exceptions.AddRange(Enum.GetValues(typeof(XT_314_SL_3_OperationStatusEnum))
+                .Cast<XT_314_SL_3_OperationStatusEnum>()
+                .Where(flag => flag != XT_314_SL_3_OperationStatusEnum.NormalStatus)
+                .Where(flag => statusFlags.HasFlag(flag))
+                .Select(flag => axis[i - 1] + flag.GetDescription()));
+            }
+            return exceptions;
+        }
+
+        /// <summary>
+        /// 202_红外转台_ZXWL-SL-3
+        /// </summary>
+        /// <param name="ulDevHealthState"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public static List<string> GetXT_202_SL_3CommonHealthExceptionName(byte[] ulDevHealthState)
         {
             List<string> exceptions = new List<string>();

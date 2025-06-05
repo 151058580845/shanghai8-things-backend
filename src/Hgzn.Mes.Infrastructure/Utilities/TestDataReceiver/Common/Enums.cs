@@ -41,20 +41,75 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
     }
 
     /// <summary>
-    /// SL_3工作状态
+    /// XT_112_SL_2工作状态
     /// </summary>
-    public enum SL_3_OperationStatusEnum
+    public enum XT_112_SL_2_OperationStatusEnum
     {
         [Description("正常状态")]
         NormalStatus = 0,
-        [Description("软件限位")]
-        SoftwareLimit = 1,
-        [Description("超速")]
-        OverSpeed = 2,
-        [Description("飞车")]
-        Runaway,
-        [Description("反馈异常")]
-        FeedbackError,
+        [Description("正限位")]
+        PositiveLimit = 1 << 0,
+        [Description("负限位")]
+        NegativeLimit = 1 << 1,
+        [Description("限速")]
+        SpeedLimit = 1 << 2,
+        [Description("飞车保护")]
+        OverspeedProtection = 1 << 3,
+        [Description("驱动故障")]
+        DriveFailure = 1 << 4,
+    }
+
+    /// <summary>
+    /// XT_121_SL_3工作状态
+    /// </summary>
+    public enum XT_121_SL_3_OperationStatusEnum
+    {
+        [Description("正常状态")]
+        NormalStatus = 0,
+        [Description("正限位")]
+        PositiveLimit = 1 << 0,
+        [Description("负限位")]
+        NegativeLimit = 1 << 1,
+        [Description("限速")]
+        SpeedLimit = 1 << 2,
+        [Description("驱动故障")]
+        DriveFailure = 1 << 3,
+    }
+
+    /// <summary>
+    /// XT_314_SL_3工作状态(和121的一样)
+    /// </summary>
+    public enum XT_314_SL_3_OperationStatusEnum
+    {
+        [Description("正常状态")]
+        NormalStatus = 0,
+        [Description("正限位")]
+        PositiveLimit = 1 << 0,
+        [Description("负限位")]
+        NegativeLimit = 1 << 1,
+        [Description("限速")]
+        SpeedLimit = 1 << 2,
+        [Description("驱动故障")]
+        DriveFailure = 1 << 3,
+    }
+
+    /// <summary>
+    /// XT_109_SL_3工作状态(和XT_112_SL_2一样)
+    /// </summary>
+    public enum XT_109_SL_3_OperationStatusEnum
+    {
+        [Description("正常状态")]
+        NormalStatus = 0,
+        [Description("正限位")]
+        PositiveLimit = 1 << 0,
+        [Description("负限位")]
+        NegativeLimit = 1 << 1,
+        [Description("限速")]
+        SpeedLimit = 1 << 2,
+        [Description("飞车保护")]
+        OverspeedProtection = 1 << 3,
+        [Description("驱动故障")]
+        DriveFailure = 1 << 4,
     }
 
     /// <summary>
