@@ -35,6 +35,8 @@ RequireScopeUtil.Initialize();
 SettingUtil.Initialize(builder.Configuration);
 CryptoUtil.Initialize(SettingUtil.Jwt.KeyFolder);
 #endregion util Initialize
+
+builder.Services.AddHttpContextAccessor();
 // Change container to autoFac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(config =>
@@ -58,7 +60,6 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<OperLogFilterAttribute>();
 });
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

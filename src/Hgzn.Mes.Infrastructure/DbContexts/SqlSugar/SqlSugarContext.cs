@@ -19,27 +19,32 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Entities.Basic;
 using Hgzn.Mes.Domain.Shared;
+using Microsoft.AspNetCore.Http;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
 public sealed class SqlSugarContext
 {
-    private readonly ICurrentUser _currentUser;
     public ISqlSugarClient DbContext { get; set; } = null!;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
     private readonly DbConnOptions _dbOptions;
     private readonly ILogger<SqlSugarContext> _logger;
+    private Guid? _userId; 
 
     public SqlSugarContext(
         ILogger<SqlSugarContext> logger,
         DbConnOptions dbOptions,
         ISqlSugarClient client,
-        ICurrentUser currentUser
+        IHttpContextAccessor? httpContextAccessor
     )
     {
+        _httpContextAccessor = httpContextAccessor;
         _dbOptions = dbOptions;
         _logger = logger;
         DbContext = client;
-        _currentUser = currentUser;
+        var plain = _httpContextAccessor?.HttpContext?.User.Claims
+            .First(c => ClaimType.UserId == c.Type).Value;
+        _userId = plain is null ? new Guid?() : Guid.Parse(plain);
         // DbContext = new SqlSugarClient(Build(dbOptions));
         OnSqlSugarClientConfig(DbContext);
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
@@ -65,9 +70,9 @@ public sealed class SqlSugarContext
 
                 if (entityInfo.PropertyName.Equals(nameof(IAudited.LastModifierId)))
                 {
-                    if (_currentUser.Id != null)
+                    if (_userId != null)
                     {
-                        entityInfo.SetValue(_currentUser.Id);
+                        entityInfo.SetValue(_userId);
                     }
                 }
 
@@ -92,9 +97,9 @@ public sealed class SqlSugarContext
 
                 if (entityInfo.PropertyName.Equals(nameof(IAudited.CreatorId)))
                 {
-                    if (_currentUser.Id != null)
+                    if (_userId != null)
                     {
-                        entityInfo.SetValue(_currentUser.Id);
+                        entityInfo.SetValue(_userId);
                     }
                 }
 
