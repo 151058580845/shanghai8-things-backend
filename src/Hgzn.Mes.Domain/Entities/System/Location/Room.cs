@@ -41,6 +41,8 @@ public class Room : UniversalEntity, IOrder, IAudited
 
     public Guid? LastModifierId { get; set; }
 
+    public string? Remark { get; set; }
+
     /// <summary>
     /// 排序字段
     /// </summary>
@@ -49,31 +51,6 @@ public class Room : UniversalEntity, IOrder, IAudited
     [Description("是否是试验系统")] public bool IsTest { get; set; } = false;
     [Description("试验系统名称")]
     public string? TestName { get; set; }
-    #region static
 
-    public static Room room1 = new()
-    {
-        Id = Guid.Parse("065FB4E9-05C0-B88C-78FF-5539A928F71C"),
-        ParentId = Floor.floor1.Id,
-        CreationTime = DateTime.Now,
-        Name = "101",
-        Code = "101",
-        Length = 10,
-        Width = 11,
-        Height = 12
-    };
-    public static Room room2 = new()
-    {
-        Id = Guid.Parse("C1B6B59D-BD55-3980-A0F8-AF9504AF4EEA"),
-        ParentId = Floor.floor1.Id,
-        CreationTime = DateTime.Now,
-        Name = "102",
-        Code = "102",
-        Length = 120,
-        Width = 11,
-        Height = 12
-    };
-    #endregion
-
-    public static Room[] Seeds { get; } = [room1,room2];
+    public static Room[] Seeds { get; } = [];
 }
