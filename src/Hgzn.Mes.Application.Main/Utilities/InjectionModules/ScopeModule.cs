@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
@@ -25,8 +26,8 @@ public class ScopeModule:Module
                     .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
                 var logger = context.Resolve<ILogger<SqlSugarContext>>();
                 var client = context.Resolve<ISqlSugarClient>();
-                var user = context.Resolve<ICurrentUser>();
-                return new SqlSugarContext(logger, setting,client, user);
+                var accessor = context.Resolve<IHttpContextAccessor>();
+                return new SqlSugarContext(logger, setting, client, accessor);
             })
             .PropertiesAutowired()
             .InstancePerLifetimeScope();
