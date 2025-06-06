@@ -46,6 +46,11 @@ public class Room : UniversalEntity, IOrder, IAudited
     /// </summary>
     public int OrderNum { get; set; }
 
+    /// <summary>
+    /// 备注
+    /// </summary>
+    public string? Remark { get; set; }
+
     [Description("是否是试验系统")] public bool IsTest { get; set; } = false;
     [Description("试验系统名称")]
     public string? TestName { get; set; }
