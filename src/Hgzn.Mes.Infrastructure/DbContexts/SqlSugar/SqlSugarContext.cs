@@ -43,8 +43,8 @@ public sealed class SqlSugarContext
         _logger = logger;
         DbContext = client;
         var plain = _httpContextAccessor?.HttpContext?.User.Claims
-            .First(c => ClaimType.UserId == c.Type).Value;
-        _userId = plain is null ? new Guid?() : Guid.Parse(plain);
+            .FirstOrDefault(c => ClaimType.UserId == c.Type);
+        _userId = plain is null ? null : Guid.Parse(plain.Value);
         // DbContext = new SqlSugarClient(Build(dbOptions));
         OnSqlSugarClientConfig(DbContext);
         DbContext.Aop.OnLogExecuting = OnLogExecuting;

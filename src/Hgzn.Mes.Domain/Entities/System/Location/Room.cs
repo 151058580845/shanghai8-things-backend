@@ -55,5 +55,5 @@ public class Room : UniversalEntity, IOrder, IAudited
     [Description("试验系统名称")]
     public string? TestName { get; set; }
 
-    public static Room[] Seeds { get; } = [];
+    // public static Room[] Seeds { get; } = [];
 }
