@@ -41,8 +41,6 @@ public class Room : UniversalEntity, IOrder, IAudited
 
     public Guid? LastModifierId { get; set; }
 
-    public string? Remark { get; set; }
-
     /// <summary>
     /// 排序字段
     /// </summary>
