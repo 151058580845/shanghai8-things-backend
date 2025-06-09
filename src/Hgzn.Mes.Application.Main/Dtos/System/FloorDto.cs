@@ -81,7 +81,7 @@ public class FloorUpdateDto : UpdateDto
     /// <summary>
     /// 建筑物ID
     /// </summary>
-    public Guid BuildingId { get; set; }
+    public Guid ParentId { get; set; }
     /// <summary>
     /// 楼层名称
     /// </summary>
