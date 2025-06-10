@@ -48,6 +48,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         {
             if (Connections.TryGetValue(id, out var value))
             {
+                (_mqtt.RestartAsync()).Wait();
                 return value;
             }
 
