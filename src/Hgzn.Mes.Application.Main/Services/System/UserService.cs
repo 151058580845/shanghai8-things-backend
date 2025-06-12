@@ -138,10 +138,10 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public override async Task<IEnumerable<UserReadDto>> GetListAsync(UserQueryDto? query)
         {
             var users = await Queryable
-                .WhereIF(string.IsNullOrEmpty(query?.Phone), u => u.Phone == null || u.Phone.Contains(query!.Phone!))
-                .WhereIF(string.IsNullOrEmpty(query?.UserName) , u => u.Username.Contains(query!.UserName!))
+                .WhereIF(!string.IsNullOrEmpty(query?.Phone), u => u.Phone == null || u.Phone.Contains(query!.Phone!))
+                .WhereIF(!string.IsNullOrEmpty(query?.UserName) , u => u.Username.Contains(query!.UserName!))
                 .WhereIF(query?.DeptId != null, u => u.DeptId == query!.DeptId)
-                .WhereIF(query?.State == null, u => u.State == query!.State)
+                .WhereIF(query?.State != null, u => u.State == query!.State)
                 .Includes(u => u.Roles)
                 .ToListAsync();
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
