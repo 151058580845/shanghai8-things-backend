@@ -309,5 +309,6 @@ public class LocationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ResponseWrapper<int>> BindingLabels(BindingLabelDto dto) => 
         (await _locationLabelService.BindingLabelsAsync(dto)).Wrap();
+
     #endregion
 }
