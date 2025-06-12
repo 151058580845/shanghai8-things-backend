@@ -62,7 +62,6 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             Buffer.BlockCopy(buffer, 22, workStyle, 0, 10);
 
 
-
             // *** 健康状态信息
             // 状态类型
             byte stateType = buffer[32];
@@ -77,7 +76,6 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             byte[] supplyVoltageState = new byte[4];
             Buffer.BlockCopy(buffer, 37, devHealthState, 0, 4);
             uint ulSupplyVoltageState = BitConverter.ToUInt32(supplyVoltageState, 0);
-
 
 
             // *** 物理量数量

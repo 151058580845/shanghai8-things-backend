@@ -81,7 +81,7 @@ public class FloorUpdateDto : UpdateDto
     /// <summary>
     /// 建筑物ID
     /// </summary>
-    public Guid BuildingId { get; set; }
+    public Guid ParentId { get; set; }
     /// <summary>
     /// 楼层名称
     /// </summary>
@@ -94,7 +94,7 @@ public class FloorUpdateDto : UpdateDto
     /// <summary>
     /// 楼层面积（平方米）
     /// </summary>
-    public decimal Area { get; set; }
+    public decimal? Area { get; set; }
 
     /// <summary>
     /// 房间数量

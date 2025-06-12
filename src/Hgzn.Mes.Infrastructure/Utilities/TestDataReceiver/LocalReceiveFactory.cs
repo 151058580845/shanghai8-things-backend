@@ -74,13 +74,13 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 case 3 when devTypeId == 2:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
                 case 3 when devTypeId == 3:
-                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_3CommonHealthExceptionName, 3, 2));
+                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_314_SL_3CommonHealthExceptionName, 3, 4));
                 case 3 when devTypeId == 4:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
 
                 // 109 紧缩场射频光学半实物仿真系统
                 case 4 when devTypeId == 3:
-                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_3CommonHealthExceptionName, 3, 2));
+                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_109_SL_3CommonHealthExceptionName, 3, 6));
                 case 4 when devTypeId == 4:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
                 case 4 when devTypeId == 7:
@@ -88,7 +88,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 
                 // 108 光学复合半实物仿真系统
                 case 5 when devTypeId == 3:
-                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_3CommonHealthExceptionName, 3, 2));
+                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_112_SL_2CommonHealthExceptionName, 3, 2));// ---这个健康状态还没改,我随便写的-----------
                 case 5 when devTypeId == 4:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
                 case 5 when devTypeId == 7:
@@ -96,7 +96,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 
                 // 121 三通道控制红外制导半实物仿真系统
                 case 6 when devTypeId == 3:
-                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_3CommonHealthExceptionName, 3, 2));
+                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_121_SL_3CommonHealthExceptionName, 3, 6));
                 case 6 when devTypeId == 4:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
                 case 6 when devTypeId == 7:
@@ -124,7 +124,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 
                 // 112 独立回路/可见光制导半实物仿真系统
                 case 10 when devTypeId == 2:
-                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
+                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_112_SL_2CommonHealthExceptionName, 3, 4));
                 case 10 when devTypeId == 4:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
                 default:

@@ -13,6 +13,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
     public class GeneralLocalReceive : BaseReceive, ILocalReceive
     {
         private Func<byte[], List<string>> _getHealthException;
+        private const int _WORKSTYLEANALYSISLENGTH = 10;
+        private const int _STATETYPEANALYSISLENGTH = 9;
         private int _workStyleLength;
         private int _stateTypeLength;
 
@@ -49,13 +51,13 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
 
             // 工作模式信息
-            byte[] workStyle = new byte[_workStyleLength];
-            Buffer.BlockCopy(buffer, 22, workStyle, 0, _workStyleLength);
+            byte[] workStyle = new byte[_WORKSTYLEANALYSISLENGTH];
+            Buffer.BlockCopy(buffer, 22, workStyle, 0, _WORKSTYLEANALYSISLENGTH);
 
             // 健康状态信息
             // 状态类型
-            byte[] stateType = new byte[_stateTypeLength];
-            Buffer.BlockCopy(buffer, 22 + _workStyleLength, workStyle, 0, _stateTypeLength);
+            byte[] stateType = new byte[_STATETYPEANALYSISLENGTH];
+            Buffer.BlockCopy(buffer, 22 + _WORKSTYLEANALYSISLENGTH, workStyle, 0, _STATETYPEANALYSISLENGTH);
 
             // 健康状态信息第0为为1表示获取到了健康状态
             List<string> exception = _getHealthException(stateType);

@@ -2,6 +2,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
 using Hgzn.Mes.Application.Main.Auth;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
@@ -36,6 +37,8 @@ RequireScopeUtil.Initialize();
 SettingUtil.Initialize(builder.Configuration);
 CryptoUtil.Initialize(SettingUtil.Jwt.KeyFolder);
 #endregion util Initialize
+
+builder.Services.AddHttpContextAccessor();
 // Change container to autoFac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(config =>
@@ -59,7 +62,6 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<OperLogFilterAttribute>();
 });
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -279,7 +281,9 @@ if (StaticConfig.AppContext_ConvertInfinityDateTime == false)
 app.MapControllers();
 app.MapHub<OnlineHub>("/hub/online");
 // app.Services.GetService<InitialDatabase>()?.Initialize();
-app.Services.GetService<SqlSugarContext>()?.InitDatabase();
+var sqlSugarContext = app.Services.GetService<SqlSugarContext>();
+sqlSugarContext?.InitDatabase();
+var seedsText = await sqlSugarContext!.GetSeedsFromDatabase<EquipType>();
 app.Services.GetService<IMqttExplorer>()?.StartAsync();
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>

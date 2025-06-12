@@ -11,17 +11,19 @@ using System.Text;
 using System.Text.Json;
 using SqlSugar;
 using Hgzn.Mes.Domain.Shared.Utilities;
+using System.Collections.Concurrent;
 
 namespace Hgzn.Mes.Iot.EquipManager;
 
 public class RfidReaderConnector : EquipConnectorBase
 {
-    private GClient _client = new();
-    private string? _serialNum { get; set; }
+    protected GClient _client = new();
+    protected string? _serialNum { get; set; }
 
-    private int _pushInterval { get; set; } 
+    protected int _pushInterval { get; set; }
 
-    private DateTime _timeLast { get; set; }
+    protected DateTime _timeLast { get; set; }
+    protected ConcurrentQueue<string> _cacheTids {  get; set; } = new ConcurrentQueue<string>();
 
     public RfidReaderConnector(
         IConnectionMultiplexer connectionMultiplexer,
@@ -136,10 +138,20 @@ public class RfidReaderConnector : EquipConnectorBase
     private async void TagEpcLogEncapedHandler(EncapedLogBaseEpcInfo msg)
     {
         LoggerAdapter.LogTrace("epc on");
+        var tidExist = _cacheTids.Contains(msg.logBaseEpcInfo.Tid);
+        var timeout = (DateTime.UtcNow - _timeLast).TotalSeconds - _pushInterval > 0;
+        if (!tidExist)
+        {
+            _cacheTids.Enqueue(msg.logBaseEpcInfo.Tid);
+        }
 
-        if ((DateTime.UtcNow - _timeLast).TotalSeconds - _pushInterval < 0)
+        if (!timeout && tidExist)
         {
             return;
+        }
+        if (timeout)
+        {
+            _cacheTids.Clear();
         }
         _timeLast = DateTime.UtcNow;
         var data = new RfidMsg
@@ -157,11 +169,12 @@ public class RfidReaderConnector : EquipConnectorBase
             .WithUri(_uri!)
             .WithDeviceType(_connType.ToString()!)
             .Build(), Encoding.UTF8.GetBytes(plain));
-    }    
-    
-    private async void TcpDisconnectedHandler(string readerName)
+    }
+
+    protected async void TcpDisconnectedHandler(string readerName)
     {
         LoggerAdapter.LogWarning($"serilnum: {_serialNum}, reader: {readerName} disconnected!");
+        _client.OnTcpDisconnected -= TcpDisconnectedHandler;
         await CloseConnOnlyAsync();
     }
 }

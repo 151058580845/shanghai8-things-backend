@@ -38,13 +38,21 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDat
 
         #endregion
 
-        #region 健康状态信息 2个
+        #region 健康状态信息 6个
 
         [Description("状态类型")]
         public byte StatusType { get; set; }
 
-        [Description("工作状态")]
-        public byte OperationStatus { get; set; }
+        [Description("滚转轴工作状态")]
+        public byte RollingAxisOperationStatus { get; set; }
+        [Description("俯仰轴工作状态")]
+        public byte PitchAxisOperationStatus { get; set; }
+        [Description("偏航轴工作状态")]
+        public byte YawAxisOperationStatus { get; set; }
+        [Description("高低轴工作状态")]
+        public byte ElevationAxisOperationStatus { get; set; }
+        [Description("方位轴工作状态")]
+        public byte AzimuthAxisOperationStatus { get; set; }
 
         #endregion
 

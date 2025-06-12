@@ -44,8 +44,12 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_314_ReceiveDat
         [Description("状态类型")]
         public byte StatusType { get; set; }
 
-        [Description("工作状态")]
-        public byte OperationStatus { get; set; }
+        [Description("消旋轴工作状态")]
+        public byte RacemizationAxisOperationStatus { get; set; }
+        [Description("短臂轴工作状态")]
+        public byte ShortArmAxisOperationStatus { get; set; }
+        [Description("长臂轴工作状态")]
+        public byte LongArmAxisOperationStatus { get; set; }
 
         #endregion
 
@@ -71,6 +75,8 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_314_ReceiveDat
 
         [Description("大臂轴反馈")]
         public float ArmAxisFeedback { get; set; }
+        [Description("周期")]
+        public float Period { get; set; }
 
         #endregion
 

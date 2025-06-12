@@ -100,7 +100,7 @@ public class EquipConnectService : SugarCrudAppService<
     /// <returns></returns>
     public async Task PutStartConnect(Guid id)
     {
-        EquipConnect connect = await Queryable.Where(it => it.Id == id)
+        var connect = await Queryable.Where(it => it.Id == id)
            .Includes(t => t.EquipLedger, le => le.EquipType)
            .FirstAsync();
 

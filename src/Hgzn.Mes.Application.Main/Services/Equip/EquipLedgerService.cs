@@ -16,6 +16,7 @@ using System.Text.Json;
 using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Shared.Enums;
+using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -112,14 +113,27 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
-        var entities = await Queryable
+        var queryable = Queryable
             .WhereIF(!string.IsNullOrEmpty(query.EquipName), m => m.EquipName.Contains(query.EquipName!))
             .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
+            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.EquipName.Contains(query.AssetNumber!))
+            .WhereIF(!query.ResponsibleUserId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.ResponsibleUserId))
             .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
+            .WhereIF(query.NoRfidDevice == true, m => m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id)
             .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
             .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
-            .WhereIF(query.State != null, m => m.State == query.State)
+            .WhereIF(query.State != null, m => m.State == query.State);
+
+        if(query.BindingTagCount is not null && query.BindingTagCount > 0)
+        {
+            queryable = queryable
+                .Includes(eq => eq.Labels)
+                    .Where(eq => SqlFunc.Subqueryable<LocationLabel>()
+                    .Where(l => l.EquipLedgerId == eq.Id)
+                    .Count() == query.BindingTagCount);
+        }
+        var entities = await queryable
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
@@ -231,5 +245,19 @@ public class EquipLedgerService : SugarCrudAppService<
             .OrderByDescending(m => m.OrderNum)
             .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
+    }
+
+    public async Task<IEnumerable<EquipResponsibleUserReadDto>> GetEquipResponsibleUsersAsync()
+    {
+        var result = await Queryable
+            .Where(eq => eq.ResponsibleUserId != null)
+            .Distinct()
+            .Select(t => new EquipResponsibleUserReadDto
+            {
+                ResponsibleUserId = t.ResponsibleUserId,
+                ResponsibleUserName = t.ResponsibleUserName,
+            })
+            .ToArrayAsync();
+        return result;
     }
 }
