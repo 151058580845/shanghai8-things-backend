@@ -94,7 +94,13 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<bool>> ModifyRoleMenu(Guid roleId, List<Guid> menus) =>
             (await _roleService.ModifyRoleMenuAsync(roleId, menus)).Wrap();
-
+        [HttpPut]
+        [Route("{roleId:guid}/users")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:role:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<bool>> ModifyRoleUser(Guid roleId, List<Guid> users) =>
+            (await _roleService.ModifyRoleUserAsync(roleId, users)).Wrap();
         /// <summary>
         ///     获取支持的权限范围
         ///     auth: admin

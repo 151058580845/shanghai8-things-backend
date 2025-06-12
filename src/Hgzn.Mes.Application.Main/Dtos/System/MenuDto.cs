@@ -52,7 +52,6 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public string? Path { get; set; }
         public string? Name { get; set; }
         public MetaDto Meta { get; set; } = new MetaDto();
-    
         public string? component { get; set; }
         public List<MenuReaderRouterDto>? Children { get; set; }
     }

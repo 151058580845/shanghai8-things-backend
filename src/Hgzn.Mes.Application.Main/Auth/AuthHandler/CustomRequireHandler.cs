@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
@@ -33,23 +34,25 @@ namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
                 return;
             }
             var userId = Guid.Parse(uId);
-            var roleId = Guid.Parse(rId);
+            var roleId = await rId.Split(",").Select(Guid.Parse).ToListAsync();
+            //var roleId = Guid.Parse(rId);
 
-            if (roleId == Role.SuperRole.Id || roleId == Role.DevRole.Id)
+            if (roleId.Contains(Role.SuperRole.Id) || roleId.Contains(Role.DevRole.Id))
             {
                 context.Succeed(requirement);
                 return;
             }
             //使用缓存
-            var role = await _roleService.GetAsync(roleId);
-            if (role is null)
-            {
-                _logger.LogWarning("a token with invalid role");
-                context.Fail(new AuthorizationFailureReason(this, "unknow role"));
-                return;
-            }
+            
+            var scopeCode = await _roleService.GetRoleMenuCodeAsync(roleId);
+            // if (role is null)
+            // {
+            //     _logger.LogWarning("a token with invalid role");
+            //     context.Fail(new AuthorizationFailureReason(this, "unknow role"));
+            //     return;
+            // }
 
-            if (role.Menus.Any(s => s.ScopeCode is null || requirement.Scope.Contains(s.ScopeCode)))
+            if (scopeCode.Any(s => requirement.Scope.Contains(s)))
             {
                 _logger.LogTrace("scope match success");
                 context.Succeed(requirement);

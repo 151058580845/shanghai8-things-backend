@@ -56,13 +56,24 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         public async Task<ResponseWrapper<UserReadDto>> GetUser(Guid userId) =>
             (await _userService.GetAsync(userId)).Wrap();
 
+        // [HttpGet]
+        // [Authorize]
+        // [Route("role-id/{roleId:guid}")]
+        // [ProducesResponseType(StatusCodes.Status200OK)]
+        // [ProducesResponseType(StatusCodes.Status404NotFound)]
+        // [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
+        // public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUserListByRoleId(Guid roleId) =>
+        //     (await _userService.GetListByRoleIdAsync(roleId)).Wrap();
+        /// <summary>
+        /// 获取用户列表根据角色id
+        /// 
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        [Authorize]
-        [Route("role-id/{roleId:guid}")]
+        [Route("{roleId:guid}/ByRoleId")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
-        public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUserListByRoleId(Guid roleId) =>
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetMenuListByRoleidAsync(Guid roleId) =>
             (await _userService.GetListByRoleIdAsync(roleId)).Wrap();
         /// <summary>
         ///     模糊匹配用户名和昵称

@@ -26,6 +26,7 @@ using StackExchange.Redis;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +95,16 @@ builder.Services.AddAuthentication(options =>
             {
                 accessToken = context.Request.Query["access_token"];
                 context.Token = accessToken;
+            }
+            if (accessToken != null)
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var validatedToken = tokenHandler.ReadJwtToken(accessToken);
+                var userNameClaim = validatedToken?.Claims.FirstOrDefault(c => c.Type == ClaimType.Name)?.Value;
+                var userRoleClaim = validatedToken?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+                // 输出日志，调试用
+                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                logger.LogInformation($"用户: {userNameClaim}, 角色: {userRoleClaim}");
             }
             // var accessToken = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
             // //WebSocket不支持自定义报文头，所以把JWT通过url中的QueryString传递

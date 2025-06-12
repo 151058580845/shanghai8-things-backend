@@ -11,7 +11,9 @@ using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
 using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared.Exceptions;
+using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.Hub;
@@ -132,7 +134,25 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Where(u => u.Id == userId)
                 .Includes(u => u.Roles, r => r.Menus)
                 .FirstAsync();
-            return Mapper.Map<UserScopeReadDto>(user);
+            var userDto = Mapper.Map<UserScopeReadDto>(user);
+            
+            if (user.Roles.Any(r => r.Id == Role.DevRole.Id))
+            {
+                userDto.ScopeCodes = (await DbContext.Queryable<Menu>()
+                    .Where(t => t.Type == MenuType.Component)
+                    .Select(t => t.ScopeCode)
+                    .ToListAsync()).Where(t=>t != null)!;
+            }
+            else
+            {
+                userDto.ScopeCodes = (await user.Roles
+                    .SelectMany(r => r.Menus ?? Enumerable.Empty<Menu>())
+                    .Where(t => t.Type == MenuType.Component)
+                    .Select(t => t.ScopeCode)
+                    .ToListAsync()).Where(t=>t != null)!;;
+            }
+            
+            return userDto;
         }
 
         public override async Task<IEnumerable<UserReadDto>> GetListAsync(UserQueryDto? query)
@@ -141,7 +161,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .WhereIF(string.IsNullOrEmpty(query?.Phone), u => u.Phone == null || u.Phone.Contains(query!.Phone!))
                 .WhereIF(string.IsNullOrEmpty(query?.UserName) , u => u.Username.Contains(query!.UserName!))
                 .WhereIF(query?.DeptId != null, u => u.DeptId == query!.DeptId)
-                .WhereIF(query?.State == null, u => u.State == query!.State)
+                .WhereIF(query?.State != null, u => u.State == query!.State)
                 .Includes(u => u.Roles)
                 .ToListAsync();
             return Mapper.Map<IEnumerable<UserReadDto>>(users);

@@ -33,21 +33,22 @@ namespace Hgzn.Mes.Application.Main.Services.System
         {
             var roleId = Guid.Parse(claims.FirstOrDefault(c =>
                 c.Type == ClaimType.RoleId)!.Value);
-            IEnumerable<Menu> entities;
+            List<Menu> entities;
             if (roleId == Role.DevRole.Id)
             {
                 entities = await DbContext.Queryable<Menu>()
-                    .Where(t=>t.Type != MenuType.Component).ToArrayAsync();
+                    .Where(t=>t.Type != MenuType.Component).ToListAsync();
             }
             else
             {
                 var roles = await DbContext.Queryable<Role>()
                     .Where(r => r.Id == roleId)
-                    .Includes(r => r.Menus == null ? null : r.Menus.Where(t=>t.Type != MenuType.Component) )
+                    .Includes(r => r.Menus)// == null ? null : r.Menus.Where(t=>t.Type != MenuType.Component) 
                     .ToArrayAsync();
                 if (roles.Length == 0) throw new NotFoundException("role not found");
-                entities = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
+                entities = await roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!).Where(t=>t.Type != MenuType.Component).ToListAsync();
                 if (!entities.Any()) return [];
+                entities.Add(Menu.Root);
             }
             var allRoutes = await entities.Select(t => new MenuReaderRouterDto()
             {

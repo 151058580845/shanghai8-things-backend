@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Application.Main.Dtos;
+﻿using System.Collections;
+using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
@@ -67,6 +68,16 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public IEnumerable<ScopeDefReadDto> GetScopes() =>
             Mapper.Map<IEnumerable<ScopeDefReadDto>>(RequireScopeUtil.Scopes);
+        public async Task<IEnumerable<string>> GetRoleMenuCodeAsync(List<Guid> roleIds)
+        {
+            return (await DbContext.Queryable<RoleMenu>()
+                .Where(rm => roleIds.Contains(rm.RoleId))
+                .InnerJoin<Menu>((rm, m) => rm.MenuId == m.Id)
+                .Where((rm, m) => !string.IsNullOrEmpty(m.ScopeCode))
+                .Select((rm, m) => m.ScopeCode!)
+                .ToListAsync())
+                .Distinct();
+        }
 
         public async Task<PaginatedList<UserReadDto>> GetRoleUsersAsync(Guid roleId, UserQueryDto query)
         {
