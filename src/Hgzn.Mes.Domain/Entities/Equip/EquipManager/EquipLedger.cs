@@ -66,6 +66,12 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
 
     [Description("设备资源集（需要做文档管理功能）")]
     public Guid? ResourceId { get; set; }
+    
+    [Description("设备责任人")]
+    public Guid? ResponsibleUserId { get; set; }
+
+    [Description("设备责任人")]
+    public string? ResponsibleUserName { get; set; }
 
     [Description("备注")]
     public string? Remark { get; set; }
@@ -116,7 +122,7 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     // /// </summary>
     // public EquipType EquipType { get; set; } = EquipType.UserEquip;
 
-    public IEnumerable<LocationLabel>? Labels { get; set; }
+    public IEnumerable<LocationLabel> Labels { get; set; } = [];
     public bool State { get; set; } = true;
     public int OrderNum { get; set; } = 0;
     public bool SoftDeleted { get; set; }

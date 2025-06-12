@@ -65,6 +65,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("list")]
         public async Task<ResponseWrapper<IEnumerable<EquipLedgerReadDto>?>> GetListAsync(EquipLedgerQueryDto queryDto)
             => (await _equipLedgerService.GetListAsync(queryDto)).Wrap()!;
+
         /// <summary>
         /// 根据设备采集类型获取对应的列表
         /// </summary>
@@ -113,7 +114,6 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         /// <summary>
         /// 创建
         /// </summary>
-        /// <param name="id"></param>
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpPost]
@@ -164,7 +164,17 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         public async Task<ResponseWrapper<EquipLedgerReadDto>> GetAsync(Guid id) =>
             (await _equipLedgerService.GetAsync(id)).Wrap();
 
-
+        /// <summary>
+        /// 获取
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("reponse-users")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<IEnumerable<EquipResponsibleUserReadDto>>> GetResponsibleUsersAsync() =>
+            (await _equipLedgerService.GetEquipResponsibleUsersAsync()).Wrap()!;
 
         /// <summary>
         /// 修改状态
@@ -205,7 +215,6 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         /// <summary>
         /// Api批量导入
         /// </summary>
-        /// <param name="apiUrl"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("importByApi")]
@@ -244,6 +253,8 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
             });
             return equipLedgerCreates;
         }
+
+
 
         [HttpPut]
         [Route("label")]

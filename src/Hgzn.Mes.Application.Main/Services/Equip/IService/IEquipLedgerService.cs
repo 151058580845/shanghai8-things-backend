@@ -31,4 +31,6 @@ public interface IEquipLedgerService : ICrudAppService<
 
     Task<IEnumerable<EquipLedgerReadDto>> GetMissingDevicesAlarmAsync();
     Task<IEnumerable<EquipLedgerReadDto>?> GetListByTypeAsync(string? type);
+
+    Task<IEnumerable<EquipResponsibleUserReadDto>> GetEquipResponsibleUsersAsync();
 }

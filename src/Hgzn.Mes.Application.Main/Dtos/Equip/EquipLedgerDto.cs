@@ -5,10 +5,6 @@ using System.ComponentModel;
 
 namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 
-public class EquipLedgerDto
-{
-}
-
 public class EquipLedgerReadDto : ReadDto
 {
     [Description("设备编号")] public string EquipCode { get; set; } = null!;
@@ -34,6 +30,12 @@ public class EquipLedgerReadDto : ReadDto
     public string? DeviceStatusString { get; set; }
 
     [Description("有效期时间")] public DateTime? ValidityDate { get; set; }
+
+    [Description("设备责任人")]
+    public Guid? ResponsibleUserId { get; set; }
+
+    [Description("设备责任人")]
+    public string? ResponsibleUserName { get; set; }
 
     [Description("备注")] public string? Remark { get; set; }
 
@@ -63,6 +65,16 @@ public class EquipLedgerReadDto : ReadDto
     public DateTime? DeleteTime { get; set; }
 }
 
+public class EquipResponsibleUserReadDto : ReadDto
+{
+
+    [Description("设备责任人")]
+    public Guid? ResponsibleUserId { get; set; }
+
+    [Description("设备责任人")]
+    public string? ResponsibleUserName { get; set; }
+}
+
 public class EquipLedgerSearchReadDto : ReadDto
 {
     [Description("设备编号")] public string EquipCode { get; set; } = null!;
@@ -87,7 +99,7 @@ public class EquipLocationLabelReadDto : ReadDto
     [Description("设备型号")] public string? Model { get; set; } = null!;
     
     [Description("设备类型")] public string? EquipTypeName { get; set; } = null!;
-    
+
     [Description("标签Tid")] public string Tid { get; set; } = null!;
 
 }
@@ -144,6 +156,12 @@ public class EquipLedgerCreateDto : CreateDto
     /// 有效期时间
     /// </summary>
     public DateTime? ValidityDate { get; set; }
+
+    [Description("设备责任人")]
+    public Guid? ResponsibleUserId { get; set; }
+
+    [Description("设备责任人")]
+    public string? ResponsibleUserName { get; set; }
 
     /// <summary>
     /// 备注
@@ -278,6 +296,12 @@ public class EquipLedgerAppUpdateDto : UpdateDto
     /// </summary>
     public Guid? ResourceId { get; set; }
 
+    [Description("设备责任人")]
+    public Guid? ResponsibleUserId { get; set; }
+
+    [Description("设备责任人")]
+    public string? ResponsibleUserName { get; set; }
+
     /// <summary>
     /// 备注
     /// </summary>
@@ -310,5 +334,19 @@ public class EquipLedgerQueryDto : PaginatedTimeQueryDto
     /// 房间Id
     /// </summary>
     public Guid? RoomId { get; set; }
-    
+
+    /// <summary>
+    /// 设备责任人
+    /// </summary>
+    public Guid? ResponsibleUserId { get; set; }
+
+    /// <summary>
+    /// 资产编号
+    /// </summary>
+    public string? AssetNumber { get; set; }
+
+    public int? BindingTagCount {  get; set; }
+
+    public bool? NoRfidDevice { get; set; }
+
 }

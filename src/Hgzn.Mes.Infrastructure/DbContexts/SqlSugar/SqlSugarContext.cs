@@ -20,6 +20,10 @@ using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Entities.Basic;
 using Hgzn.Mes.Domain.Shared;
 using Microsoft.AspNetCore.Http;
+using System.Text;
+using Org.BouncyCastle.Asn1.X509.Qualified;
+using Microsoft.Extensions.Primitives;
+using AutoMapper.Internal;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -29,7 +33,7 @@ public sealed class SqlSugarContext
     private readonly IHttpContextAccessor? _httpContextAccessor;
     private readonly DbConnOptions _dbOptions;
     private readonly ILogger<SqlSugarContext> _logger;
-    private Guid? _userId; 
+    private Guid? _userId;
 
     public SqlSugarContext(
         ILogger<SqlSugarContext> logger,
@@ -129,7 +133,57 @@ public sealed class SqlSugarContext
 
 
     private const string DefaultConnectionStringName = "Default";
+    public async Task<string> GetSeedsFromDatabase<TEntity>() where TEntity : AggregateRoot
+    {
+        var entities = await DbContext.Queryable<TEntity>().ToArrayAsync();
+        var builder = new StringBuilder();
+        var type = typeof(TEntity);
+        var index = 0;
+        builder.Append("#region static\r\n\r\n");
 
+        foreach (var entity in entities)
+        {
+            builder.AppendLine($"public static {type.Name} {type.Name}_{index} = new ()");
+            builder.AppendLine("{");
+            foreach(var property in type.GetProperties())
+            {
+                var propertyPrefix = $"  {property.Name} = ";
+                var value = property.GetValue(entity);
+                var propertyType = property.PropertyType.IsNullableType() ?
+                    property.PropertyType.GetGenericArguments().First() : property.PropertyType;
+                var propertySuffix = Type.GetTypeCode(propertyType) switch
+                {
+                    TypeCode.DBNull or TypeCode.Empty => "null,",
+                    TypeCode.DateTime => string.IsNullOrEmpty(Convert.ToString(value)) ? "null," : $"DateTime.Parse(\"{value}\"),",
+                    TypeCode.String => value is null ? "null," : $"\"{value}\",",
+                    TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or
+                    TypeCode.Double or TypeCode.Single or TypeCode.Decimal or
+                    TypeCode.UInt64 or TypeCode.Int64 => value is null ? "null," : $"{value},",
+                    TypeCode.Boolean => $"{property.GetValue(entity)},".ToLower(),
+                    _ => $"{DealWithDefaultSuffix(propertyType, value)},"
+                };
+                builder.Append(propertyPrefix + propertySuffix + "\r\n");
+            }
+            builder.AppendLine("};\r\n");
+            index++;
+        }
+        builder.Append("#endregion static");
+
+        string DealWithDefaultSuffix(Type propertyType, object? value)
+        {
+            if (propertyType.IsEnum)
+            {
+                return value is null ? "null" : $"({propertyType.Name}){value}";
+            }
+            if (propertyType.Name == "guid" || propertyType.Name == "Guid")
+            {
+                return string.IsNullOrEmpty(Convert.ToString(value)) ? "null" : $"new Guid(\"{value}\")";
+            }
+            return $"throw new NotImplementedException()";
+        }
+
+        return builder.ToString();
+    }
     public void InitDatabase()
     {
         if (_dbOptions.DbType == DbType.OpenGauss || _dbOptions.DbType == DbType.PostgreSQL)
