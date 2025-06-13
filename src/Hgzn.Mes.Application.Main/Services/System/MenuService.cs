@@ -37,13 +37,13 @@ namespace Hgzn.Mes.Application.Main.Services.System
             if (roleId == Role.DevRole.Id)
             {
                 entities = await DbContext.Queryable<Menu>()
-                    .Where(t=>t.Type != MenuType.Component).ToArrayAsync();
+                    .Where(t => t.Type != MenuType.Component).OrderBy(x => x.OrderNum).ToArrayAsync();
             }
             else
             {
                 var roles = await DbContext.Queryable<Role>()
                     .Where(r => r.Id == roleId)
-                    .Includes(r => r.Menus == null ? null : r.Menus.Where(t=>t.Type != MenuType.Component) )
+                    .Includes(r => r.Menus == null ? null : r.Menus.Where(t => t.Type != MenuType.Component).OrderBy(x => x.OrderNum))
                     .ToArrayAsync();
                 if (roles.Length == 0) throw new NotFoundException("role not found");
                 entities = roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!);
@@ -116,7 +116,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<IEnumerable<MenuReadDto>> GetListByRoleIdAsync(Guid id)
         {
-            var list = await Queryable.Where(t=> SqlFunc.Subqueryable<RoleMenu>().Where(m=>m.RoleId == id && m.MenuId == t.Id).Any()).ToListAsync();
+            var list = await Queryable.Where(t => SqlFunc.Subqueryable<RoleMenu>().Where(m => m.RoleId == id && m.MenuId == t.Id).Any()).ToListAsync();
             return Mapper.Map<IEnumerable<MenuReadDto>>(list);
         }
 
@@ -141,7 +141,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public override async Task<IEnumerable<MenuReadDto>> GetListAsync(MenuQueryDto? queryDto)
         {
-            var entities = await Queryable.Where(t=>t.Name != "Root").ToListAsync();
+            var entities = await Queryable.Where(t => t.Name != "Root").ToListAsync();
             return Mapper.Map<IEnumerable<MenuReadDto>>(entities);
         }
     }

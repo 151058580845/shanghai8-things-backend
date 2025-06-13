@@ -17,7 +17,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         public MenuType Type { get; set; }
 
         public int OrderNum { get; set; } = -1;
-        
+
         public string? IconUrl { get; set; }
 
         public bool IsLink { get; set; }
@@ -76,6 +76,32 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue
         };
 
+        public static Menu BasisPlatform = new()
+        {
+            Id = new Guid("56c318dd-fa9e-45e8-89ee-c2b8b1581c41"),
+            Name = "基础物联网平台",
+            Code = "basisPlatform",
+            Description = "basisPlatform menu",
+            Type = MenuType.Catalogue,
+            Route = "/basisPlatform",
+            IconUrl = "ri:settings-3-line",
+            OrderNum = 10,
+            ParentId = Root.Id
+        };
+
+        public static Menu EquipmentResourceManagementApplication = new()
+        {
+            Id = new Guid("4275de80-8620-4187-842a-dd24aa01e9a9"),
+            Name = "设备资源管理应用",
+            Code = "equipmentResourceManagementApplication",
+            Description = "basisPlatform menu",
+            Type = MenuType.Catalogue,
+            Route = "/EquipmentResourceManagementApplication",
+            IconUrl = "ri:settings-3-line",
+            OrderNum = 11,
+            ParentId = Root.Id
+        };
+
         public static Menu System = new()
         {
             Id = new Guid("e3a57edf-0670-4657-af10-44c4620c1012"),
@@ -85,224 +111,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue,
             Route = "/system",
             IconUrl = "ri:settings-3-line",
-            OrderNum = 98,
-            ParentId = Root.Id
-        };
-
-        public static Menu Monitoring = new()
-        {
-            Id = new Guid("044808f5-afe5-42b4-9720-5c00900538ca"),
-            Name = "系统监控",
-            Code = "monitoring",
-            Description = "monitoring menu",
-            Type = MenuType.Catalogue,
-            Route = "/monitor",
-            IconUrl = "ep:monitor",
-            OrderNum = 99,
-            ParentId = Root.Id
-        };
-
-        // 在线用户
-        public static Menu Online = new()
-        {
-            Id = Guid.Parse("31b9f2b2-48f4-4eb8-bf3d-f1c5a53236cd"),
-            Name = "在线用户",
-            Code = "online",
-            ScopeCode = "system:onlinehub:list",
-            Type = MenuType.Menu,
-            Route = "monitor/online/index",
-            IconUrl = "ri:user-voice-line",
             OrderNum = 100,
-            RouteName = "OnlineUser",
-            ParentId = Monitoring.Id
-        };
-
-        // 用户管理
-        public static Menu User = new()
-        {
-            Id = Guid.Parse("a430cf74-865e-4329-b6f2-c365a8fcb4b9"),
-            Name = "用户管理",
-            Code = "user",
-            ScopeCode = "system:user:list",
-            Type = MenuType.Menu,
-            Route = "/system/user/index",
-            IconUrl = "ri:admin-line",
-            OrderNum = 100,
-            ParentId = System.Id,
-            RouteName = "SystemUser"
-        };
-
-        public static Menu UserQuery = new()
-        {
-            Id = Guid.Parse("fb9034d3-bd8f-44a3-b1c5-b44d2116fc17"),
-            Name = "用户查询",
-            Code = "userQuery",
-            ScopeCode = "system:user:query",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = User.Id
-        };
-
-        public static Menu UserAdd = new()
-        {
-            Id = Guid.Parse("4d0a67ae-b1d5-49a6-8978-c9cc0d3a0a2c"),
-            Name = "用户新增",
-            Code = "userAdd",
-            ScopeCode = "system:user:add",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = User.Id
-        };
-
-        public static Menu UserEdit = new()
-        {
-            Id = Guid.Parse("f1785827-f4c0-4a67-8b0e-03b53e5b9a92"),
-            Name = "用户修改",
-            Code = "userEdit",
-            ScopeCode = "system:user:edit",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = User.Id
-        };
-
-        public static Menu UserRemove = new()
-        {
-            Id = Guid.Parse("0a8f9837-dde1-4c64-bb8b-10d22c4c5631"),
-            Name = "用户删除",
-            Code = "userRemove",
-            ScopeCode = "system:user:remove",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = User.Id
-        };
-
-        public static Menu UserResetPwd = new()
-        {
-            Id = Guid.Parse("b342c51b-3d22-4c6f-91bc-9a734cda42b9"),
-            Name = "重置密码",
-            Code = "userResetPwd",
-            ScopeCode = "system:user:resetPwd",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = User.Id
-        };
-
-        // 角色管理
-        public static Menu Role = new()
-        {
-            Id = Guid.Parse("ab27c36e-bc06-46e9-b8ba-7a527924eb5e"),
-            Name = "角色管理",
-            Code = "role",
-            ScopeCode = "system:role:list",
-            Type = MenuType.Menu,
-            Route = "/system/role/index",
-            IconUrl = "ri:admin-fill",
-            OrderNum = 99,
-            ParentId = System.Id,
-            RouteName = "SystemRole"
-        };
-
-        public static Menu RoleQuery = new()
-        {
-            Id = Guid.Parse("26f1b4b4-9d1e-4385-bb6e-b3808c01b245"),
-            Name = "角色查询",
-            Code = "roleQuery",
-            ScopeCode = "system:role:query",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = Role.Id
-        };
-
-        public static Menu RoleAdd = new()
-        {
-            Id = Guid.Parse("7db1f33d-c0f6-466f-a63f-d58b944f1a44"),
-            Name = "角色新增",
-            Code = "roleAdd",
-            ScopeCode = "system:role:add",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = Role.Id
-        };
-
-        public static Menu RoleEdit = new()
-        {
-            Id = Guid.Parse("63dcb957-52fc-438f-9351-2c9c6e097a2c"),
-            Name = "角色修改",
-            Code = "roleEdit",
-            ScopeCode = "system:role:edit",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = Role.Id
-        };
-
-        public static Menu RoleRemove = new()
-        {
-            Id = Guid.Parse("2060d32a-7b65-42c0-b9ed-5c105b96b18e"),
-            Name = "角色删除",
-            Code = "roleRemove",
-            ScopeCode = "system:role:remove",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = Role.Id
-        };
-
-        // 菜单管理
-        public static Menu MenuRoot = new()
-        {
-            Id = Guid.Parse("b2f6f618-548a-4b0a-8e7b-1f24c3275dff"),
-            Name = "菜单管理",
-            Code = "menu",
-            ScopeCode = "system:menu:list",
-            Type = MenuType.Menu,
-            Route = "/system/menu/index",
-            IconUrl = "ep:menu",
-            OrderNum = 98,
-            ParentId = System.Id,
-            RouteName = "SystemMenu"
-        };
-
-        public static Menu MenuQuery = new()
-        {
-            Id = Guid.Parse("17e35b7d-0f76-4635-b39b-222b8a7e0ea4"),
-            Name = "菜单查询",
-            Code = "menuQuery",
-            ScopeCode = "system:menu:query",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = MenuRoot.Id
-        };
-
-        public static Menu MenuAdd = new()
-        {
-            Id = Guid.Parse("5a8f4d13-2e73-4c27-bd1b-8a5c19f93ef6"),
-            Name = "菜单新增",
-            Code = "menuAdd",
-            ScopeCode = "system:menu:add",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = MenuRoot.Id
-        };
-
-        public static Menu MenuEdit = new()
-        {
-            Id = Guid.Parse("7e96f8a4-b2be-4e5d-bc73-91e3812f63b7"),
-            Name = "菜单修改",
-            Code = "menuEdit",
-            ScopeCode = "system:menu:edit",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = MenuRoot.Id
-        };
-
-        public static Menu MenuRemove = new()
-        {
-            Id = Guid.Parse("a7c56b6c-d3a7-4a0d-bf4c-e06fd63165d3"),
-            Name = "菜单删除",
-            Code = "menuRemove",
-            ScopeCode = "system:menu:remove",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = MenuRoot.Id
+            ParentId = BasisPlatform.Id
         };
 
         // 部门管理
@@ -423,85 +233,6 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Post.Id
         };
 
-        // 操作日志
-        public static Menu OperationLog = new()
-        {
-            Id = Guid.Parse("6d0362a1-d89d-4973-a592-75e949abf28d"),
-            Name = "操作日志",
-            Code = "operationLog",
-            ScopeCode = "audit:operatorlog:list",
-            Type = MenuType.Menu,
-            Route = "/monitor/operation-logs",
-            IconUrl = "ri:history-fill",
-            OrderNum = 100,
-            ParentId = Monitoring.Id,
-            RouteName = "OperationLog",
-            Component = "monitor/logs/operation/index"
-        };
-
-        public static Menu OperationLogQuery = new()
-        {
-            Id = Guid.Parse("b7c36c6b-f8d7-4f8b-b139-e020f34cc544"),
-            Name = "操作查询",
-            Code = "operationLogQuery",
-            ScopeCode = "audit:operatorlog:query",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = OperationLog.Id
-        };
-
-        public static Menu OperationLogRemove = new()
-        {
-            Id = Guid.Parse("0f6a9b4b-3170-4b7c-a34e-8d7f7d306ba0"),
-            Name = "操作删除",
-            Code = "operationLogRemove",
-            ScopeCode = "audit:operatorlog:remove",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = OperationLog.Id
-        };
-
-        // 登录日志
-        public static Menu LoginLog = new()
-        {
-            Id = Guid.Parse("bfedbb92-678d-4cc5-8d88-3cb32b30dfbf"),
-            Name = "登录日志",
-            Code = "loginLog",
-            ScopeCode = "audit:loginlog:list",
-            Type = MenuType.Menu,
-            Route = "/monitor/login-logs",
-            IsShow = true,
-            IsLink = false,
-            IsCache = true,
-            Component = "monitor/logs/login/index",
-            IconUrl = "ri:window-line",
-            OrderNum = 100,
-            ParentId = Monitoring.Id,
-            RouteName = "LoginLog"
-        };
-
-        public static Menu LoginLogQuery = new()
-        {
-            Id = Guid.Parse("36e8e2e2-35fa-4bb0-bb44-b9a8e09ff795"),
-            Name = "登录查询",
-            Code = "loginLogQuery",
-            ScopeCode = "audit:loginlog:query",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = LoginLog.Id
-        };
-
-        public static Menu LoginLogRemove = new()
-        {
-            Id = Guid.Parse("05a5aeaf-4b26-42b8-8269-d6d740fa21f7"),
-            Name = "登录删除",
-            Code = "loginLogRemove",
-            ScopeCode = "audit:loginlog:remove",
-            Type = MenuType.Component,
-            OrderNum = 100,
-            ParentId = LoginLog.Id
-        };
-
         // 字典管理
         public static Menu Dict = new()
         {
@@ -512,7 +243,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:reading",
             Route = "/system/dict/index",
-            OrderNum = 95,
+            OrderNum = 100,
             ParentId = System.Id,
             RouteName = "SystemDict"
         };
@@ -630,7 +361,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:management",
             Route = "/system/config/index",
-            OrderNum = 95,
+            OrderNum = 102,
             ParentId = System.Id,
             RouteName = "SystemConfig"
         };
@@ -691,7 +422,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:barcode-box-fill",
             Route = "/system/code/index",
-            OrderNum = 95,
+            OrderNum = 101,
             ParentId = System.Id,
             RouteName = "SystemCode"
         };
@@ -705,7 +436,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:set-up",
             Route = "/system/config/index",
-            OrderNum = 96,
+            OrderNum = 102,
             ParentId = System.Id,
             RouteName = "SystemConfig"
         };
@@ -933,8 +664,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue,
             Route = "/equip",
             IconUrl = "ri:settings-3-line",
-            OrderNum = 100,
-            ParentId = Root.Id
+            OrderNum = 102,
+            ParentId = BasisPlatform.Id
         };
 
         // 设备类型
@@ -947,7 +678,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:equalizer-line",
             Route = "/equip/type/index",
-            OrderNum = 99,
+            OrderNum = 1000,
             ParentId = Equip.Id,
             RouteName = "EquipType"
         };
@@ -962,39 +693,26 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:equal-fill",
             Route = "/equip/ledger/index",
-            OrderNum = 98,
+            OrderNum = 1001,
             ParentId = Equip.Id,
             RouteName = "EquipLedger"
         };
-        
-        // 设备参数配置
-        public static Menu EquipConfig = new()
+
+        // 设备连接管理
+        public static Menu EquipConnectManagement = new()
         {
             Id = Guid.Parse("62a7f52b-1df2-462d-a4b6-0816c603e6fd"),
-            Name = "设备参数配置",
+            Name = "设备连接管理",
             Code = "equipConfig",
             ScopeCode = "equip:equipconnect:list",
             Type = MenuType.Menu,
             IconUrl = "ep:connection",
             Route = "/equip/connect/index",
-            OrderNum = 97,
+            OrderNum = 1002,
             ParentId = Equip.Id,
             RouteName = "EquipConfig"
         };
-        // 设备采集数据
-        public static Menu EquipTestAnalyse = new()
-        {
-            Id = Guid.Parse("372A3414-DCC0-2AAB-E54D-5F26AA3CDB7F"),
-            Name = "试验数据",
-            Code = "equipTestAnalyse",
-            ScopeCode = "equip:testanalyse:list",
-            Type = MenuType.Menu,
-            IconUrl = "ri:bar-chart-fill",
-            Route = "/equip/test-analyse/index",
-            OrderNum = 96,
-            ParentId = Equip.Id,
-            RouteName = "EquipTestAnalyse"
-        };
+
         // 设备采集配置
         public static Menu EquipDataConfig = new()
         {
@@ -1009,34 +727,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Equip.Id,
             RouteName = "EquipData"
         };
-        // 设备采集配置
-        public static Menu TestData = new()
-        {
-            Id = Guid.Parse("77A29618-FBD4-5D95-5180-D3366B4E9064"),
-            Name = "实验计划数据",
-            Code = "testData",
-            ScopeCode = "equip:testdata:list",
-            Type = MenuType.Menu,
-            IconUrl = "ri:bar-chart-box-line",
-            Route = "/equip/test-data/index",
-            OrderNum = 94,
-            ParentId = Equip.Id,
-            RouteName = "TestData"
-        };
-        // 设备历史记录
-        public static Menu EquipLedgerHistory = new()
-        {
-            Id = Guid.Parse("B46B7ECC-E9B9-4AE4-5B67-6902BBCE1B8B"),
-            Name = "设备历史记录",
-            Code = "equipLedgerHistory",
-            ScopeCode = "equip:equipledgerhistory:list",
-            Type = MenuType.Menu,
-            IconUrl = "fa-solid:history",
-            Route = "/equip/history/index",
-            OrderNum = 93,
-            ParentId = Equip.Id,
-            RouteName = "EquipLedgerHistory"
-        };
+
         // 设备通知信息
         public static Menu EquipNotice = new()
         {
@@ -1047,7 +738,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:alarm-warning-line",
             Route = "/equip/notice/index",
-            OrderNum = 92,
+            OrderNum = 1003,
             ParentId = Equip.Id,
             RouteName = "EquipNotice"
         };
@@ -1126,19 +817,23 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "EquipPlanRecord"
         };
 
-        public static Menu EquipLabel = new()
+        #endregion
+
+        #region 数据管理
+
+        // 数据管理
+        public static Menu DataManagement = new()
         {
-            Id = Guid.Parse("a2fa081e-c8ed-4382-bab7-556f8e3f6476"),
-            Name = "设备标签",
-            Code = "equip_label",
-            ScopeCode = "equip:label:list",
-            Type = MenuType.Menu,
-            IconUrl = "ep:location-information",
-            Route = "equip/label/index",
-            OrderNum = 86,
-            ParentId = Equip.Id,
-            RouteName = "equip_label"
+            Id = Guid.Parse("173492c1-badc-436e-9164-7198ad62a374"),
+            Name = "数据管理",
+            Code = "dataManagement",
+            Type = MenuType.Catalogue,
+            Route = "/dataManagement",
+            IconUrl = "ri:settings-3-line",
+            OrderNum = 103,
+            ParentId = BasisPlatform.Id
         };
+
         public static Menu EquipRkServer = new()
         {
             Id = Guid.Parse("DE767E24-FE2A-322B-980D-8A11F6CCDFDB"),
@@ -1148,10 +843,41 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:location-information",
             Route = "equip/rkserver/index",
-            OrderNum = 85,
-            ParentId = Equip.Id,
+            OrderNum = 1000,
+            ParentId = DataManagement.Id,
             RouteName = "equip_rk_server"
         };
+
+        // 试验数据
+        public static Menu EquipTestAnalyse = new()
+        {
+            Id = Guid.Parse("372A3414-DCC0-2AAB-E54D-5F26AA3CDB7F"),
+            Name = "试验数据",
+            Code = "equipTestAnalyse",
+            ScopeCode = "equip:testanalyse:list",
+            Type = MenuType.Menu,
+            IconUrl = "ri:bar-chart-fill",
+            Route = "/equip/test-analyse/index",
+            OrderNum = 1001,
+            ParentId = DataManagement.Id,
+            RouteName = "EquipTestAnalyse"
+        };
+
+        // 试验计划数据
+        public static Menu TestData = new()
+        {
+            Id = Guid.Parse("77A29618-FBD4-5D95-5180-D3366B4E9064"),
+            Name = "试验计划数据",
+            Code = "testData",
+            ScopeCode = "equip:testdata:list",
+            Type = MenuType.Menu,
+            IconUrl = "ri:bar-chart-box-line",
+            Route = "/equip/test-data/index",
+            OrderNum = 1002,
+            ParentId = DataManagement.Id,
+            RouteName = "TestData"
+        };
+
         #endregion
 
         #region 生产管理
@@ -1381,8 +1107,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue,
             Route = "/location",
             IconUrl = "ep:location",
-            OrderNum = 100,
-            ParentId = Root.Id
+            OrderNum = 104,
+            ParentId = BasisPlatform.Id
         };
 
         // 楼栋管理
@@ -1395,10 +1121,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ep:office-building",
             Route = "/location/building/index",
-            OrderNum = 99,
+            OrderNum = 1000,
             ParentId = Location.Id,
             RouteName = "building"
         };
+
         // 楼层管理
         public static Menu Floor = new()
         {
@@ -1409,10 +1136,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "ri:flood-fill",
             Route = "/location/floor/index",
-            OrderNum = 98,
+            OrderNum = 1001,
             ParentId = Location.Id,
             RouteName = "Floor"
         };
+
         // 房间管理
         public static Menu Room = new()
         {
@@ -1423,74 +1151,61 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Menu,
             IconUrl = "fa-solid:crosshairs",
             Route = "/location/room/index",
-            OrderNum = 97,
+            OrderNum = 1002,
             ParentId = Location.Id,
             RouteName = "Room"
         };
 
-        // 房间标签管理
-        public static Menu LocationLabel = new()
-        {
-            Id = Guid.Parse("A0F66616-B831-0768-3054-F00B1D9A296B"),
-            Name = "房间标签",
-            Code = "location_label",
-            ScopeCode = "system:label:list",
-            Type = MenuType.Menu,
-            IconUrl = "ep:location-information",
-            Route = "/location/label/index",
-            OrderNum = 96,
-            ParentId = Location.Id,
-            RouteName = "location_label"
-        };
         #endregion
 
-        #region 楼层管理
+        #region 展示管理
 
-        // 展示区域
+        // 设备状态监控应用
         public static Menu ShowSystem = new()
         {
             Id = Guid.Parse("6CF45997-C39B-6382-0995-AFE0CDE0038F"),
-            Name = "展示区域",
+            Name = "设备状态监控应用",
             Code = "showSystem",
             Type = MenuType.Catalogue,
             Route = "/show-system",
             IconUrl = "ep:location",
-            OrderNum = 100,
+            OrderNum = 10,
             ParentId = Root.Id
         };
 
-        // 大屏展示1
+        // 设备状态监控应用
         public static Menu ShowSystem1 = new()
         {
             Id = Guid.Parse("82BA9B27-6926-1657-B07D-B64281A35A26"),
-            Name = "展示系统",
+            Name = "设备状态监控应用",
             Code = "ShowSystem1",
             Type = MenuType.Menu,
             IconUrl = "ep:camera",
             Route = "/show-system/index",
-            OrderNum = 99,
+            OrderNum = 12,
             IsLink = false,
-            ParentId = ShowSystem.Id,
+            ParentId = Root.Id,
             RouteName = "ShowSystem1"
         };
-        // 大屏展示1
+
+        // 设备状态监控应用
         public static Menu ShowSystem2 = new()
         {
             Id = Guid.Parse("78BA5C57-4A86-7F44-282E-8F5EF117C72B"),
-            Name = "展示系统1",
+            Name = "设备状态监控应用",
             Code = "ShowSystem2",
             Type = MenuType.Menu,
             IconUrl = "ep:camera",
             Route = "/show-system/detail",
-            OrderNum = 99,
+            OrderNum = 12,
             IsLink = false,
             IsShow = false,
-            ParentId = ShowSystem.Id,
+            ParentId = System.Id,
             RouteName = "ShowSystem2"
         };
+
         #endregion
-        
-        
+
         #region 基础管理
 
         // 地点管理
@@ -1502,8 +1217,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue,
             Route = "/basic",
             IconUrl = "ep:turn-off",
-            OrderNum = 100,
-            ParentId = Root.Id
+            OrderNum = 101,
+            ParentId = BasisPlatform.Id
         };
 
         // 单位管理
@@ -1520,7 +1235,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Basic.Id,
             RouteName = "utils"
         };
-        
+
         // 供应商管理
         public static Menu Supplier = new()
         {
@@ -1549,16 +1264,441 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Basic.Id,
             RouteName = "customer"
         };
+
+        #region 用户管理
+
+        // 用户管理
+        public static Menu User = new()
+        {
+            Id = Guid.Parse("a430cf74-865e-4329-b6f2-c365a8fcb4b9"),
+            Name = "用户管理",
+            Code = "user",
+            ScopeCode = "system:user:list",
+            Type = MenuType.Menu,
+            Route = "/system/user/index",
+            IconUrl = "ri:admin-line",
+            OrderNum = 1000,
+            ParentId = Basic.Id,
+            RouteName = "SystemUser"
+        };
+
+        public static Menu UserQuery = new()
+        {
+            Id = Guid.Parse("fb9034d3-bd8f-44a3-b1c5-b44d2116fc17"),
+            Name = "用户查询",
+            Code = "userQuery",
+            ScopeCode = "system:user:query",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = User.Id
+        };
+
+        public static Menu UserAdd = new()
+        {
+            Id = Guid.Parse("4d0a67ae-b1d5-49a6-8978-c9cc0d3a0a2c"),
+            Name = "用户新增",
+            Code = "userAdd",
+            ScopeCode = "system:user:add",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = User.Id
+        };
+
+        public static Menu UserEdit = new()
+        {
+            Id = Guid.Parse("f1785827-f4c0-4a67-8b0e-03b53e5b9a92"),
+            Name = "用户修改",
+            Code = "userEdit",
+            ScopeCode = "system:user:edit",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = User.Id
+        };
+
+        public static Menu UserRemove = new()
+        {
+            Id = Guid.Parse("0a8f9837-dde1-4c64-bb8b-10d22c4c5631"),
+            Name = "用户删除",
+            Code = "userRemove",
+            ScopeCode = "system:user:remove",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = User.Id
+        };
+
+        public static Menu UserResetPwd = new()
+        {
+            Id = Guid.Parse("b342c51b-3d22-4c6f-91bc-9a734cda42b9"),
+            Name = "重置密码",
+            Code = "userResetPwd",
+            ScopeCode = "system:user:resetPwd",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = User.Id
+        };
+
+        #region 角色管理
+
+        // 角色管理
+        public static Menu Role = new()
+        {
+            Id = Guid.Parse("ab27c36e-bc06-46e9-b8ba-7a527924eb5e"),
+            Name = "角色管理",
+            Code = "role",
+            ScopeCode = "system:role:list",
+            Type = MenuType.Menu,
+            Route = "/system/role/index",
+            IconUrl = "ri:admin-fill",
+            OrderNum = 1001,
+            ParentId = Basic.Id,
+            RouteName = "SystemRole"
+        };
+
+        public static Menu RoleQuery = new()
+        {
+            Id = Guid.Parse("26f1b4b4-9d1e-4385-bb6e-b3808c01b245"),
+            Name = "角色查询",
+            Code = "roleQuery",
+            ScopeCode = "system:role:query",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = Role.Id
+        };
+
+        public static Menu RoleAdd = new()
+        {
+            Id = Guid.Parse("7db1f33d-c0f6-466f-a63f-d58b944f1a44"),
+            Name = "角色新增",
+            Code = "roleAdd",
+            ScopeCode = "system:role:add",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = Role.Id
+        };
+
+        public static Menu RoleEdit = new()
+        {
+            Id = Guid.Parse("63dcb957-52fc-438f-9351-2c9c6e097a2c"),
+            Name = "角色修改",
+            Code = "roleEdit",
+            ScopeCode = "system:role:edit",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = Role.Id
+        };
+
+        public static Menu RoleRemove = new()
+        {
+            Id = Guid.Parse("2060d32a-7b65-42c0-b9ed-5c105b96b18e"),
+            Name = "角色删除",
+            Code = "roleRemove",
+            ScopeCode = "system:role:remove",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = Role.Id
+        };
+
         #endregion
+
+        #endregion
+
+        #region 菜单管理
+
+        // 菜单管理
+        public static Menu MenuRoot = new()
+        {
+            Id = Guid.Parse("b2f6f618-548a-4b0a-8e7b-1f24c3275dff"),
+            Name = "菜单管理",
+            Code = "menu",
+            ScopeCode = "system:menu:list",
+            Type = MenuType.Menu,
+            Route = "/system/menu/index",
+            IconUrl = "ep:menu",
+            OrderNum = 1002,
+            ParentId = Basic.Id,
+            RouteName = "SystemMenu"
+        };
+
+        public static Menu MenuQuery = new()
+        {
+            Id = Guid.Parse("17e35b7d-0f76-4635-b39b-222b8a7e0ea4"),
+            Name = "菜单查询",
+            Code = "menuQuery",
+            ScopeCode = "system:menu:query",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = MenuRoot.Id
+        };
+
+        public static Menu MenuAdd = new()
+        {
+            Id = Guid.Parse("5a8f4d13-2e73-4c27-bd1b-8a5c19f93ef6"),
+            Name = "菜单新增",
+            Code = "menuAdd",
+            ScopeCode = "system:menu:add",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = MenuRoot.Id
+        };
+
+        public static Menu MenuEdit = new()
+        {
+            Id = Guid.Parse("7e96f8a4-b2be-4e5d-bc73-91e3812f63b7"),
+            Name = "菜单修改",
+            Code = "menuEdit",
+            ScopeCode = "system:menu:edit",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = MenuRoot.Id
+        };
+
+        public static Menu MenuRemove = new()
+        {
+            Id = Guid.Parse("a7c56b6c-d3a7-4a0d-bf4c-e06fd63165d3"),
+            Name = "菜单删除",
+            Code = "menuRemove",
+            ScopeCode = "system:menu:remove",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = MenuRoot.Id
+        };
+
+        #endregion
+
+        #region 日志管理
+
+        // 日志管理
+        public static Menu Monitoring = new()
+        {
+            Id = new Guid("044808f5-afe5-42b4-9720-5c00900538ca"),
+            Name = "日志管理",
+            Code = "monitoring",
+            Description = "monitoring menu",
+            Type = MenuType.Catalogue,
+            Route = "/monitor",
+            IconUrl = "ep:monitor",
+            OrderNum = 1003,
+            ParentId = Basic.Id
+        };
+
+        // 操作日志
+        public static Menu OperationLog = new()
+        {
+            Id = Guid.Parse("6d0362a1-d89d-4973-a592-75e949abf28d"),
+            Name = "操作日志",
+            Code = "operationLog",
+            ScopeCode = "audit:operatorlog:list",
+            Type = MenuType.Menu,
+            Route = "/monitor/operation-logs",
+            IconUrl = "ri:history-fill",
+            OrderNum = 100,
+            ParentId = Monitoring.Id,
+            RouteName = "OperationLog",
+            Component = "monitor/logs/operation/index"
+        };
+
+        public static Menu OperationLogQuery = new()
+        {
+            Id = Guid.Parse("b7c36c6b-f8d7-4f8b-b139-e020f34cc544"),
+            Name = "操作查询",
+            Code = "operationLogQuery",
+            ScopeCode = "audit:operatorlog:query",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = OperationLog.Id
+        };
+
+        public static Menu OperationLogRemove = new()
+        {
+            Id = Guid.Parse("0f6a9b4b-3170-4b7c-a34e-8d7f7d306ba0"),
+            Name = "操作删除",
+            Code = "operationLogRemove",
+            ScopeCode = "audit:operatorlog:remove",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = OperationLog.Id
+        };
+
+        // 登录日志
+        public static Menu LoginLog = new()
+        {
+            Id = Guid.Parse("bfedbb92-678d-4cc5-8d88-3cb32b30dfbf"),
+            Name = "登录日志",
+            Code = "loginLog",
+            ScopeCode = "audit:loginlog:list",
+            Type = MenuType.Menu,
+            Route = "/monitor/login-logs",
+            IsShow = true,
+            IsLink = false,
+            IsCache = true,
+            Component = "monitor/logs/login/index",
+            IconUrl = "ri:window-line",
+            OrderNum = 100,
+            ParentId = Monitoring.Id,
+            RouteName = "LoginLog"
+        };
+
+        public static Menu LoginLogQuery = new()
+        {
+            Id = Guid.Parse("36e8e2e2-35fa-4bb0-bb44-b9a8e09ff795"),
+            Name = "登录查询",
+            Code = "loginLogQuery",
+            ScopeCode = "audit:loginlog:query",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = LoginLog.Id
+        };
+
+        public static Menu LoginLogRemove = new()
+        {
+            Id = Guid.Parse("05a5aeaf-4b26-42b8-8269-d6d740fa21f7"),
+            Name = "登录删除",
+            Code = "loginLogRemove",
+            ScopeCode = "audit:loginlog:remove",
+            Type = MenuType.Component,
+            OrderNum = 100,
+            ParentId = LoginLog.Id
+        };
+
+        // 在线用户
+        public static Menu Online = new()
+        {
+            Id = Guid.Parse("31b9f2b2-48f4-4eb8-bf3d-f1c5a53236cd"),
+            Name = "在线用户",
+            Code = "online",
+            ScopeCode = "system:onlinehub:list",
+            Type = MenuType.Menu,
+            Route = "monitor/online/index",
+            IconUrl = "ri:user-voice-line",
+            OrderNum = 100,
+            RouteName = "OnlineUser",
+            ParentId = Monitoring.Id
+        };
+
+        #endregion
+
+        #endregion
+
+        #region 标签管理
+
+        // 标签管理
+        public static Menu LabelManagement = new()
+        {
+            Id = Guid.Parse("ad6f3d20-9d0a-47dc-8dc7-c2fe574eab00"),
+            Name = "标签管理",
+            Code = "labelManagement",
+            Type = MenuType.Catalogue,
+            Route = "/labelManagement",
+            IconUrl = "ri:settings-3-line",
+            OrderNum = 100,
+            ParentId = EquipmentResourceManagementApplication.Id
+        };
+
+        // 房间标签
+        public static Menu LocationLabel = new()
+        {
+            Id = Guid.Parse("A0F66616-B831-0768-3054-F00B1D9A296B"),
+            Name = "房间标签",
+            Code = "location_label",
+            ScopeCode = "system:label:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:location-information",
+            Route = "/location/label/index",
+            OrderNum = 1000,
+            ParentId = LabelManagement.Id,
+            RouteName = "location_label"
+        };
+
+        // 设备标签
+        public static Menu EquipLabel = new()
+        {
+            Id = Guid.Parse("a2fa081e-c8ed-4382-bab7-556f8e3f6476"),
+            Name = "设备标签",
+            Code = "equip_label",
+            ScopeCode = "equip:label:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:location-information",
+            Route = "equip/label/index",
+            OrderNum = 1001,
+            ParentId = LabelManagement.Id,
+            RouteName = "equip_label"
+        };
+
+        #endregion
+
+        #region 定位管理
+
+        // 定位管理
+        public static Menu OrientationManagement = new()
+        {
+            Id = Guid.Parse("cea13e82-ec36-4037-9d33-cc88eb90442d"),
+            Name = "定位管理",
+            Code = "orientationManagement",
+            Type = MenuType.Catalogue,
+            Route = "/orientationManagement",
+            IconUrl = "ri:settings-3-line",
+            OrderNum = 101,
+            ParentId = EquipmentResourceManagementApplication.Id
+        };
+
+        // Rfid跟踪历史
+        public static Menu EquipLedgerHistory = new()
+        {
+            Id = Guid.Parse("B46B7ECC-E9B9-4AE4-5B67-6902BBCE1B8B"),
+            Name = "Rfid跟踪历史",
+            Code = "equipLedgerHistory",
+            ScopeCode = "equip:equipledgerhistory:list",
+            Type = MenuType.Menu,
+            IconUrl = "fa-solid:history",
+            Route = "/equip/history/index",
+            OrderNum = 1000,
+            ParentId = OrientationManagement.Id,
+            RouteName = "EquipLedgerHistory"
+        };
+
+        // 设备定位
+        public static Menu EquipOrientation = new()
+        {
+            Id = Guid.Parse("6e0801e3-e866-436e-b0ff-f47845a3ff8d"),
+            Name = "设备定位",
+            Code = "equipOrientation",
+            ScopeCode = "equip:equipledgerhistory:list",
+            Type = MenuType.Menu,
+            IconUrl = "fa-solid:history",
+            Route = "/equip/history/index",
+            OrderNum = 1001,
+            ParentId = OrientationManagement.Id,
+            RouteName = "equiporientation"
+        };
+
+        // 设备资源可视化
+        public static Menu EquipVisualization = new()
+        {
+            Id = Guid.Parse("769332a0-16ba-47a6-9d1a-b36d14093863"),
+            Name = "设备资源可视化",
+            Code = "equipvisualization",
+            ScopeCode = "equip:equipledgerhistory:list",
+            Type = MenuType.Menu,
+            IconUrl = "fa-solid:history",
+            Route = "/equip/history/index",
+            OrderNum = 1002,
+            ParentId = OrientationManagement.Id,
+            RouteName = "equipvisualization"
+        };
+
+        #endregion
+
         public static Menu[] Seeds { get; } = [
             Root,
+            BasisPlatform,
+            EquipmentResourceManagementApplication,
             System,
             Monitoring,
-            Online,
+            // Online,
             User, UserQuery, UserAdd, UserEdit, UserRemove, UserResetPwd,
             Role, RoleQuery, RoleAdd, RoleEdit, RoleRemove,
             MenuRoot, MenuQuery, MenuAdd, MenuEdit, MenuRemove,
-            Dept, DeptQuery, DeptAdd, DeptEdit, DeptRemove,
+            // Dept, DeptQuery, DeptAdd, DeptEdit, DeptRemove,
             // Post, PostQuery, PostAdd, PostEdit, PostRemove,
             OperationLog, OperationLogQuery, OperationLogRemove,
             LoginLog, LoginLogQuery, LoginLogRemove,
@@ -1569,16 +1709,19 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipLedgerHistory,EquipNotice,EquipTestAnalyse,TestData,EquipRkServer,
+            Equip, EquipType, EquipLedger, EquipNotice,EquipTestAnalyse,TestData,
+            OrientationManagement, EquipLedgerHistory, EquipOrientation, EquipVisualization,
+            LabelManagement, EquipLabel,
+            DataManagement,EquipRkServer,
             //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,
-            EquipConfig, EquipDataConfig,
+            EquipConnectManagement, // EquipDataConfig,
             //Product, ProductPlan, ProductOrder, ProductSchedule,
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
             Location,Building,Floor,Room,
-            ShowSystem,ShowSystem1,ShowSystem2,
-            Basic,Supplier,Unit,Customer,
-            LocationLabel, EquipLabel
+            ShowSystem1, //ShowSystem,ShowSystem2,
+            Basic,// Supplier,Unit,Customer,
+            LocationLabel, 
         ];
 
         #endregion
