@@ -70,7 +70,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
-            DeptId = Dept.JxDept1.Id,
+            DeptId = Dept.Banzu1.Id,
             State = true,
             Gender = Gender.Male
         };
@@ -85,7 +85,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
-            DeptId = Dept.JxDept1.Id,
+            DeptId = Dept.Banzu1.Id,
             State = true,
             Gender = Gender.Female
         };
