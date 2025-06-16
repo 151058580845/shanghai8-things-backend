@@ -25,6 +25,8 @@ public class RfidReaderConnector : EquipConnectorBase
     protected DateTime _timeLast { get; set; }
     protected ConcurrentQueue<string> _cacheTids {  get; set; } = new ConcurrentQueue<string>();
 
+    public bool ConnState { get; private set; } = false;
+
     public RfidReaderConnector(
         IConnectionMultiplexer connectionMultiplexer,
         IMqttExplorer mqtt,
@@ -78,6 +80,7 @@ public class RfidReaderConnector : EquipConnectorBase
                         _serialNum = readerInfo.Imei;
                         await UpdateStateAsync(ConnStateType.On);
                     }
+                    ConnState = true;
                     return true;
                 }
                 break;
@@ -97,6 +100,7 @@ public class RfidReaderConnector : EquipConnectorBase
     private async Task CloseConnOnlyAsync()
     {
         _client?.Close();
+        ConnState = false;
         await UpdateStateAsync(ConnStateType.Stop);
     }
 

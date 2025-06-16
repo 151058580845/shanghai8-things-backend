@@ -3,6 +3,7 @@ namespace Hgzn.Mes.Iot.EquipManager;
 
 public interface IEquipConnector
 {
+    bool ConnState { get; }
     Task<bool> ConnectAsync(ConnInfo connInfo);
     Task CloseConnectionAsync();
     Task StartAsync(Guid uri);

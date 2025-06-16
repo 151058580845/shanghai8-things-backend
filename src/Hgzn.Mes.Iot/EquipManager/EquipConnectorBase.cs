@@ -31,6 +31,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         protected EquipConnect? _equipConnect;
         protected EquipConnType? _connType;
         protected string? _uri;
+        public bool ConnState { get; private set; } = false;
 
         public abstract Task CloseConnectionAsync();
 

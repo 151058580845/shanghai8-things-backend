@@ -23,7 +23,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         private readonly ISqlSugarClient _client;
         private IConnectionMultiplexer _connectionMultiplexer;
         private IConfiguration _configuration;
-        public static ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
+        public ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
 
         public ConnManager(
             ISqlSugarClient client,
