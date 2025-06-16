@@ -14,7 +14,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public string? Name { get; set; }
 
         //public string Salt { get; set; } = null!;
-        public string? Nick { get; set; }
+        public string? JobNumber { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -36,7 +36,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public string? Name { get; set; }
 
         // public string Salt { get; set; } = null!;
-        public string? Nick { get; set; }
+        public string? JobNumber { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -54,7 +54,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public string Phone { get; set; } = null!;
         public RoleReadDto Role { get; set; } = null!;
         public DateTime RegisterTime { get; set; }
-        public string? Nick { get; set; }
+        public string? JobNumber { get; set; }
         public UserSettingReadDto? Settings { get; set; }
 
         public UserDetailReadDto? Detail { get; set; }
@@ -77,7 +77,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
         public string Salt { get; set; } = null!;
 
-        public string? Nick { get; set; }
+        public string? JobNumber { get; set; }
 
         public string? Icon { get; set; }
 

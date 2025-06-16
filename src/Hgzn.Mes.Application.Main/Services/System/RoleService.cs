@@ -87,7 +87,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                     .Where(u => query.Filter == null ||
                     (u.Phone != null && u.Phone.Contains(query.Filter)) ||
                     u.Username.Contains(query.Filter) ||
-                    (u.Nick != null && u.Nick.Contains(query.Filter)))
+                    (u.JobNumber != null && u.JobNumber.Contains(query.Filter)))
                     .Where(u => query == null || u.State == query.State))
                 .Select(r => r.Users ?? Array.Empty<User>())
                 .ToArrayAsync();

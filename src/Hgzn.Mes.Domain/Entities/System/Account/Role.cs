@@ -51,7 +51,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public static readonly Role DevRole = new()
         {
             Id = new Guid("e8df3280-8ab1-4b45-8d6a-6c3e669317ac"),
-            Name = "developer",
+            Name = "开发者",
             Code = "dev",
             Description = "developer with all cathable resources even it was obselete"
         };
@@ -59,7 +59,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public static readonly Role SuperRole = new()
         {
             Id = new Guid("4fe6ebb8-5001-40b4-a59e-d193ad9186f8"),
-            Name = "super",
+            Name = "超级管理员",
             Code = "super",
             Description = "super user with all catchable resources"
         };
@@ -67,7 +67,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public static readonly Role AdminRole = new()
         {
             Id = new Guid("e1f23f37-919c-453b-aff1-1214415e54b8"),
-            Name = "administrator",
+            Name = "管理员",
             Code = "admin",
             Description = "admin to manage user resourcs"
         };
@@ -75,7 +75,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public static readonly Role MemberRole = new()
         {
             Id = new Guid("4a15f57a-0cb7-4cc9-95c0-91ba672a341c"),
-            Name = "member",
+            Name = "成员",
             Code = "member",
             Description = "normal user with some basic resources"
         };

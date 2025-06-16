@@ -19,7 +19,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public string? Name { get; set; }
 
         public string Salt { get; set; } = null!;
-        public string? Nick { get; set; }
+        public string? JobNumber { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -66,11 +66,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Username = "developer",
             Passphrase = "ZLdMAg0N2xN8NbXr5wsoevc/bBay/lJT4sLFbUClwTI=",
             Salt = "ue9OQmiW1aH5gzkFKXEB84ToTcHjuroMdzDxymov0CA=",
-            Nick = "initial-developer",
+            JobNumber = "initial-developer",
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
-            DeptId = Dept.JxDept1.Id,
+            DeptId = Dept.Banzu1.Id,
             State = true,
             Gender = Gender.Male
         };
@@ -81,11 +81,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Username = "admin",
             Passphrase = "qLGu+48XZDn5UC5TmgIgwb+29lIXYVA1i1vjPAjSY1A=",
             Salt = "hxF4RZh/IdmJmTuzjBChb1d5vdotQmESgTkxJ1Yede0=",
-            Nick = "initial-admin",
+            JobNumber = "initial-admin",
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
-            DeptId = Dept.JxDept1.Id,
+            DeptId = Dept.Banzu1.Id,
             State = true,
             Gender = Gender.Female
         };

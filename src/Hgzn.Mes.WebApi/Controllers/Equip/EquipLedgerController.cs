@@ -284,5 +284,18 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         public async Task<ResponseWrapper<int>> DeleteRanges(IEnumerable<Guid> ids) =>
             (await _locationLabelService.DeleteRangesAsync(ids)).Wrap();
 
+        /// <summary>
+        ///     获取指定设备的rfid绑定关系
+        /// </summary>
+        /// <param name="equipId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("id/{equipId:guid}/labels")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
+        public async Task<ResponseWrapper<IEnumerable<EquipLocationLabelReadDto>>> FindEquipLabelAsync(Guid equipId) =>
+            (await _locationLabelService.FindEquipLabelAsync(equipId)).Wrap();
+
     }
 }

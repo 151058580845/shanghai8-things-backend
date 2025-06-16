@@ -63,6 +63,25 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             return dtos;
         }
 
+        public async Task<IEnumerable<EquipLocationLabelReadDto>> FindEquipLabelAsync(Guid equipId)
+        {
+            var dtos = await DbContext.Queryable<LocationLabel>()
+                .Where(ll => ll.EquipLedgerId == equipId)
+                .Includes(ll => ll.EquipLedger, el => el!.EquipType)
+                .OrderByDescending(ll => ll.LastModificationTime)
+                .Select(ll => new EquipLocationLabelReadDto
+                {
+                    Id = ll.Id,
+                    AssetNumber = ll.EquipLedger!.AssetNumber,
+                    EquipName = ll.EquipLedger.EquipName,
+                    Model =  ll.EquipLedger.Model,
+                    EquipTypeName = ll.EquipLedger.EquipType!.TypeName,
+                    Tid = ll.TagId
+                })
+                .ToArrayAsync();
+            return dtos;
+        }
+
         public async Task<PaginatedList<RoomLocationLabelReadDto>> GetRoomLabelAsync(int pageIndex, int pageSize)
         {
             var dtos = await DbContext.Queryable<LocationLabel>()
