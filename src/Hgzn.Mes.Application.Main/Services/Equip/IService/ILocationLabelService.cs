@@ -16,6 +16,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip.IService
         Task<PaginatedList<RoomLocationLabelReadDto>> GetRoomLabelAsync(int pageIndex, int pageSize);
 
         Task<PaginatedList<EquipLocationLabelReadDto>> GetEquipLabelAsync(int pageIndex, int pageSize);
+        Task<IEnumerable<EquipLocationLabelReadDto>> FindEquipLabelAsync(Guid equipId);
 
         Task<int> BindingLabelsAsync(BindingLabelDto dto);
     }

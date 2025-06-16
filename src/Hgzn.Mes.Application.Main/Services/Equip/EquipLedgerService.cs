@@ -125,13 +125,16 @@ public class EquipLedgerService : SugarCrudAppService<
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
             .WhereIF(query.State != null, m => m.State == query.State);
 
-        if(query.BindingTagCount is not null && query.BindingTagCount > 0)
+        if(query.BindingTagCount is not null)
         {
-            queryable = queryable
-                .Includes(eq => eq.Labels)
-                    .Where(eq => SqlFunc.Subqueryable<LocationLabel>()
-                    .Where(l => l.EquipLedgerId == eq.Id)
-                    .Count() == query.BindingTagCount);
+            queryable = queryable.Includes(eq => eq.Labels);
+            queryable = query.BindingTagCount == -1 ?
+                queryable.Where(eq => SqlFunc.Subqueryable<LocationLabel>()
+                        .Where(l => l.EquipLedgerId == eq.Id)
+                        .Count() > 0) :
+                queryable.Where(eq => SqlFunc.Subqueryable<LocationLabel>()
+                        .Where(l => l.EquipLedgerId == eq.Id)
+                        .Count() == 0);
         }
         var entities = await queryable
             .Includes(t => t.Room)
