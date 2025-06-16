@@ -21,7 +21,6 @@ using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 
@@ -29,7 +28,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 {
     public class UserService : SugarCrudAppService<
         User, Guid,
-        UserReadDto, UserQueryDto,UserRegisterDto,UserUpdateDto>,
+        UserReadDto, UserQueryDto, UserCreateDto, UserUpdateDto>,
         IUserService
     {
         public UserService(
@@ -50,12 +49,30 @@ namespace Hgzn.Mes.Application.Main.Services.System
         private readonly ILogger<UserService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-
         public async Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto)
         {
-            var user = Mapper.Map<User>(registerDto);
-            var count = await DbContext.Insertable(user).ExecuteCommandAsync();
-            return count == 0 ? null : Mapper.Map<UserReadDto>(user);
+            var user = await DbContext.Queryable<User>()
+                .Where(u => u.Username == registerDto.Username)
+                .FirstAsync();
+            if (user is not null) throw new BadRequestException("username exist");
+            user = Mapper.Map<User>(registerDto);
+            var status = await DbContext.InsertNav(user)
+                .Include(u => u.Roles)
+                .ExecuteCommandAsync();
+            return status ? null : Mapper.Map<UserReadDto>(user);
+        }
+
+        public override async Task<UserReadDto?> CreateAsync(UserCreateDto createDto)
+        {
+            var user = await DbContext.Queryable<User>()
+                .Where(u => u.Username == createDto.Username)
+                .FirstAsync();
+            if (user is not null) throw new BadRequestException("username exist");
+            user = Mapper.Map<User>(createDto);
+            var status = await DbContext.InsertNav(user)
+                .Include(u => u.Roles)
+                .ExecuteCommandAsync();
+            return status ? null : Mapper.Map<UserReadDto>(user);
         }
 
         public async Task<string> LoginAsync(UserLoginDto credential)
@@ -97,15 +114,14 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var ipAddress = httpContext?.Connection.RemoteIpAddress?.ToString();
             var loginUser = _loginLogService.GetInfoByHttpContext(httpContext);
             
-     
             await _loginLogService.CreateAsync(new Dtos.Audit.LoginLogCreateDto() { 
-                   Browser= loginUser.Browser,
-                   Os = loginUser.Os,
-                   CreationTime = DateTime.UtcNow,
-                   LoginIp= ipAddress,
-                   LoginLocation= loginUser.LoginLocation,
-                   LoginUser= user.Username,
-                   LogMsg= user.Id.ToString()
+                Browser= loginUser.Browser,
+                Os = loginUser.Os,
+                CreationTime = DateTime.UtcNow,
+                LoginIp= ipAddress,
+                LoginLocation= loginUser.LoginLocation,
+                LoginUser= user.Username,
+                LogMsg= user.Id.ToString()
             });
 
             await _userDomainService.CacheTokenAsync(user.Id, token);
@@ -203,7 +219,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
 
             var user = await Queryable.FirstAsync(u => u.Username == passwordDto.Username) ??
-                       throw new NotFoundException("user not found");
+                    throw new NotFoundException("user not found");
             var bytes = Convert.FromBase64String(passwordDto.OldPassword);
             if (!user.Verify(bytes))
             {
@@ -217,7 +233,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public async Task<int> ResetPasswordAsync(Guid userId)
         {
             var user = await Queryable.FirstAsync(u => u.Id == userId) ??
-                       throw new NotFoundException("user not found");
+                    throw new NotFoundException("user not found");
             var hash = CryptoUtil.Sha256("12345678");
             _userDomainService.WithSalt(ref user, hash);
             return await DbContext.Updateable(user).ExecuteCommandAsync();
@@ -259,7 +275,5 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
         }
-
-
     }
 }

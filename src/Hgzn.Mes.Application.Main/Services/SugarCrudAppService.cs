@@ -24,7 +24,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
         get
         {
             LoggerAdapter.LogInformation((DbContext == null).ToString());
-            return DbContext.Queryable<TEntity>();
+            return DbContext!.Queryable<TEntity>();
         }
     }
 
@@ -115,11 +115,11 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto, TQueryDto, TC
     /// <param name="dto"></param>
     /// <returns></returns>
     [ScopeDefinition(ScopeMethodType.Add)]
-    public virtual async Task<TReadDto> CreateAsync(TCreateDto dto)
+    public virtual async Task<TReadDto?> CreateAsync(TCreateDto dto)
     {
         var entity = Mapper.Map<TEntity>(dto);
-        await DbContext.Insertable(entity).ExecuteCommandAsync();
-        return Mapper.Map<TReadDto>(entity);
+        var count = await DbContext.Insertable(entity).ExecuteCommandAsync();
+        return count == 0 ? null : Mapper.Map<TReadDto>(entity);
     }
 }
 

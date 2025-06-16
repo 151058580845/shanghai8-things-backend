@@ -12,8 +12,6 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         /// 姓名
         /// </summary>s
         public string? Name { get; set; }
-
-        //public string Salt { get; set; } = null!;
         public string? JobNumber { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
@@ -23,19 +21,38 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public bool State { get; set; }
         public Guid? DeptId{ get; set; }
         public Gender? Gender { get; set; }
+        public CaptchaAnswerDto? Captcha { get; set; }
+    }
+
+    public class UserCreateDto : CreateDto
+    {
+        public string Username { get; set; } = null!;
+        public string Password { get; set; } = null!;
+
+        /// <summary>
+        /// 姓名
+        /// </summary>s
+        public string? Name { get; set; }
+        public string? JobNumber { get; set; }
+        public string? Icon { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public DateTime RegisterTime { get; set; }
+        public IEnumerable<Guid>? RoleIds { get; set; }
+        public bool State { get; set; }
+        public Guid? DeptId { get; set; }
+        public Gender? Gender { get; set; }
     }
 
     public class UserUpdateDto : UpdateDto
     {
         public string Username { get; set; } = null!;
-        // public string Password { get; set; } = null!;
 
         /// <summary>
         /// 姓名
         /// </summary>s
         public string? Name { get; set; }
 
-        // public string Salt { get; set; } = null!;
         public string? JobNumber { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
@@ -44,8 +61,8 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public bool State { get; set; }
         public Guid? DeptId{ get; set; }
         public Gender? Gender { get; set; }
-        // public DateTime RegisterTime { get; set; }
     }
+
     public class UserReadDto : ReadDto
     {
         public string Username { get; set; } = null!;
@@ -66,13 +83,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
     public class UserScopeReadDto : ReadDto
     {
-        public Guid Id { get; set; }
-
         public string Username { get; set; } = null!;
 
         /// <summary>
         /// 姓名
-        /// </summary>s
+        /// </summary>
         public string? Name { get; set; }
 
         public string Salt { get; set; } = null!;
@@ -118,7 +133,6 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
     public class CaptchaReadDto : ReadDto
     {
-        public Guid Id { get; set; }
         public string Type { get; set; } = null!;
         public int[] Pixel { get; set; } = null!;
         public string Image { get; set; } = null!;

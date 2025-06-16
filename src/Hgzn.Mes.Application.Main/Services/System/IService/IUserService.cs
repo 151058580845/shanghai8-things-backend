@@ -6,7 +6,7 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
 {
     public interface IUserService : ICrudAppService<
         User, Guid,
-        UserReadDto, UserQueryDto,UserRegisterDto,UserUpdateDto>
+        UserReadDto, UserQueryDto, UserCreateDto, UserUpdateDto>
     {
         Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto);
 

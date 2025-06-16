@@ -24,6 +24,13 @@ namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.System
                     dest.Salt = Convert.ToBase64String(salt);
                     dest.Roles = [Role.MemberRole];
                 });
+            CreateMap<UserCreateDto, User>()
+                .AfterMap((src, dest) =>
+                {
+                    var bytes = Convert.FromBase64String(src.Password);
+                    dest.Passphrase = Convert.ToBase64String(CryptoUtil.Salt(bytes, out var salt));
+                    dest.Salt = Convert.ToBase64String(salt);
+                });
             CreateMap<Setting, UserSettingReadDto>();
             CreateMap<Setting, UserDetailReadDto>();
             CreateMap<Captcha, CaptchaReadDto>()

@@ -1,15 +1,9 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
-using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip
 {

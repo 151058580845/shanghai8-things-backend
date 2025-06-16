@@ -33,7 +33,7 @@ public interface ICrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto>
     where TQueryDto : QueryDto
     where TCreateDto : CreateDto
 {
-    Task<TReadDto> CreateAsync(TCreateDto dto); 
+    Task<TReadDto?> CreateAsync(TCreateDto dto); 
 }
 
 public interface ICrudAppService<TEntity, TKey, TReadDto, TQueryDto, TCreateDto, TUpdateDto> :

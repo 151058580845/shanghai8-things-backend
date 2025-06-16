@@ -64,9 +64,9 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         // [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
         // public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUserListByRoleId(Guid roleId) =>
         //     (await _userService.GetListByRoleIdAsync(roleId)).Wrap();
+
         /// <summary>
         /// 获取用户列表根据角色id
-        /// 
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -75,6 +75,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetMenuListByRoleidAsync(Guid roleId) =>
             (await _userService.GetListByRoleIdAsync(roleId)).Wrap();
+
         /// <summary>
         ///     模糊匹配用户名和昵称
         ///     auth: super
@@ -88,6 +89,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<IEnumerable<UserReadDto>>> GetUsers(UserQueryDto dto) =>
             (await _userService.GetListAsync(dto)).Wrap();
+
         /// <summary>
         ///     模糊匹配用户名和昵称
         ///     auth: super
@@ -101,6 +103,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Authorize(Policy = $"system:user:{ScopeMethodType.Query}")]
         public async Task<ResponseWrapper<PaginatedList<UserReadDto>>> GetPaginatedListAsync(UserQueryDto dto) =>
             (await _userService.GetPaginatedListAsync(dto)).Wrap();
+
         /// <summary>
         ///     删除用户
         ///     auth: super
@@ -114,19 +117,20 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Authorize(Policy = $"system:user:{ScopeMethodType.Remove}")]
         public async Task<ResponseWrapper<int>> Delete(Guid userId) =>
             (await _userService.DeleteAsync(userId)).Wrap();
+
         /// <summary>
-        ///     删除用户
+        ///     添加用户
         ///     auth: super
         /// </summary>
-        /// <param name="userId">用户guid</param>
         /// <returns>已删除用户数</returns>
         [HttpPost]
         [Route("create")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:user:{ScopeMethodType.Remove}")]
-        public async Task<ResponseWrapper<UserReadDto>> Delete(UserRegisterDto dto) =>
+        public async Task<ResponseWrapper<UserReadDto>> Create(UserCreateDto dto) =>
             (await _userService.CreateAsync(dto)).Wrap();
+
         /// <summary>
         ///     切换角色
         ///     auth: super
@@ -156,11 +160,9 @@ namespace Hgzn.Mes.WebApi.Controllers.System
 
         public async Task<ResponseWrapper<int>> ChangePassword(ChangePasswordDto passwordDto) =>
             (await _userService.ChangePasswordAsync(passwordDto)).Wrap();
-
-
-        
+   
         /// <summary>
-        ///     重置某个用户的密码
+        ///     更新用户信息
         ///     auth: admin
         /// </summary>
         /// <param name="userId">用户guid</param>
@@ -171,9 +173,23 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
-        public async Task<ResponseWrapper<UserReadDto>> ResetPassword(Guid userId,UserUpdateDto dto) =>
-            (await _userService.UpdateAsync(userId,dto)).Wrap();
-        
+        public async Task<ResponseWrapper<UserReadDto>> Update(Guid userId, UserUpdateDto dto) =>
+            (await _userService.UpdateAsync(userId, dto)).Wrap();
+
+        /// <summary>
+        ///     重置某个用户的密码
+        ///     auth: admin
+        /// </summary>
+        /// <param name="userId">用户guid</param>
+        /// <returns>重置状态</returns>
+        [HttpPut]
+        [Route("{userId}/password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
+        public async Task<ResponseWrapper<int>> ResetPassword(Guid userId) =>
+            (await _userService.ResetPasswordAsync(userId)).Wrap();
+
         /// <summary>
         /// 修改状态
         /// </summary>
