@@ -37,7 +37,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             if (roleId == Role.DevRole.Id)
             {
                 entities = await DbContext.Queryable<Menu>()
-                    .Where(t=>t.Type != MenuType.Component).ToListAsync();
+                    .Where(t => t.Type != MenuType.Component).OrderBy(x => x.OrderNum).ToListAsync();
             }
             else
             {
@@ -46,7 +46,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                     .Includes(r => r.Menus)// == null ? null : r.Menus.Where(t=>t.Type != MenuType.Component) 
                     .ToArrayAsync();
                 if (roles.Length == 0) throw new NotFoundException("role not found");
-                entities = await roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!).Where(t=>t.Type != MenuType.Component).ToListAsync();
+                entities = await roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!).Where(t => t.Type != MenuType.Component).OrderBy(x => x.OrderNum).ToListAsync();
                 if (!entities.Any()) return [];
                 entities.Add(Menu.Root);
             }
@@ -117,7 +117,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<IEnumerable<MenuReadDto>> GetListByRoleIdAsync(Guid id)
         {
-            var list = await Queryable.Where(t=> SqlFunc.Subqueryable<RoleMenu>().Where(m=>m.RoleId == id && m.MenuId == t.Id).Any()).ToListAsync();
+            var list = await Queryable.Where(t => SqlFunc.Subqueryable<RoleMenu>().Where(m => m.RoleId == id && m.MenuId == t.Id).Any()).ToListAsync();
             return Mapper.Map<IEnumerable<MenuReadDto>>(list);
         }
 
@@ -142,7 +142,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public override async Task<IEnumerable<MenuReadDto>> GetListAsync(MenuQueryDto? queryDto)
         {
-            var entities = await Queryable.Where(t=>t.Name != "Root").ToListAsync();
+            var entities = await Queryable.Where(t => t.Name != "Root").ToListAsync();
             return Mapper.Map<IEnumerable<MenuReadDto>>(entities);
         }
     }
