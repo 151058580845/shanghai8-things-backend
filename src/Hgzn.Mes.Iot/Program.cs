@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using SqlSugar;
 using StackExchange.Redis;
-using System;
 using System.Text.RegularExpressions;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -25,7 +24,6 @@ var logger = (new LoggerConfiguration()
 builder.Configuration.AddJsonFile(Path.Combine(Environment.CurrentDirectory, "appsettings.json"));
 //builder.Logging.AddSerilog(logger);
 builder.Services.AddSingleton<MqttMessageHandler>();
-builder.Services.AddSingleton<ConnManager>();
 builder.Services.AddSingleton<IConnectionMultiplexer, ConnectionMultiplexer>(_ =>
         ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
 builder.Services.AddScoped<ISqlSugarClient, SqlSugarClient>(context =>
@@ -41,6 +39,7 @@ builder.Services.AddSingleton<ConnManager>();
 builder.Services.AddSerilog(logger);
 
 builder.Services.AddHostedService<MqttWorker>();
+builder.Services.AddHostedService<ConnWorker>();
 
 // Add dbContext pool
 //builder.Services.AddPooledDbContextFactory<PatientDbContext>(options =>
@@ -55,6 +54,7 @@ var host = builder.Build();
 
 var loggerAdapter = host.Services.GetService<ILogger<LoggerAdapter>>()!;
 LoggerAdapter.Initialize(loggerAdapter);
+host.Services.GetService<ConnManager>()?.Initialize(host.Services.GetService<IMqttExplorer>()!);
 
 var connectionMultiplexer = host.Services.GetService<IConnectionMultiplexer>();
 if (connectionMultiplexer != null)

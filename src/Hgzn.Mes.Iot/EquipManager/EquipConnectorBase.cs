@@ -31,7 +31,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         protected EquipConnect? _equipConnect;
         protected EquipConnType? _connType;
         protected string? _uri;
-        public bool ConnState { get; private set; } = false;
+        public bool ConnState { get; protected set; } = false;
 
         public abstract Task CloseConnectionAsync();
 
@@ -47,7 +47,7 @@ namespace Hgzn.Mes.Iot.EquipManager
         {
             // 记录到redis服务器
             var database = _connectionMultiplexer.GetDatabase();
-            var key = string.Format(CacheKeyFormatter.EquipState, _equipConnect.EquipId, _uri);
+            var key = string.Format(CacheKeyFormatter.EquipState, _equipConnect!.EquipId, _uri);
             await database.StringSetAsync(key, (int)stateType);
             await _mqttExplorer.PublishAsync(UserTopicBuilder
             .CreateUserBuilder()

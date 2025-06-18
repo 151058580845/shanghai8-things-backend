@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos;
 using Hgzn.Mes.Application.Main.Dtos.System;
+using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.ValueObjects;
@@ -153,5 +154,18 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Authorize(Policy = $"system:role:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<RoleReadDto>> UpdateStateAsync(Guid id, bool state) =>
             (await _roleService.UpdateStateAsync(id, state)).Wrap();
+
+        /// <summary>
+        /// 获取菜单列表根据角色id
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{id:guid}/menus")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetRoleMenus(Guid id) =>
+        (await _roleService.GetRoleMenusAsync(id)).Wrap();
+
+
     }
 }

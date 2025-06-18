@@ -14,9 +14,9 @@ using SqlSugar;
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     public class MenuService : SugarCrudAppService<
-            Menu, Guid,
-            MenuReadDto, MenuQueryDto,
-            MenuCreateDto, MenuUpdateDto>,
+        Menu, Guid,
+        MenuReadDto, MenuQueryDto,
+        MenuCreateDto, MenuUpdateDto>,
         IMenuService
     {
         public override async Task<PaginatedList<MenuReadDto>> GetPaginatedListAsync(MenuQueryDto query)
@@ -29,7 +29,8 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<PaginatedList<MenuReadDto>>(entities);
         }
 
-        public async Task<IEnumerable<MenuReaderRouterDto>> GetCurrentUserMenusAsTreeAsync(IEnumerable<Claim> claims)
+        public async Task<IEnumerable<MenuReaderRouterDto>> GetCurrentUserMenusAsTreeAsync(
+            IEnumerable<Claim> claims)
         {
             var roleId = Guid.Parse(claims.FirstOrDefault(c =>
                 c.Type == ClaimType.RoleId)!.Value);
@@ -113,12 +114,6 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public Task<int> SetMenuRouteAsync()
         {
             throw new NotImplementedException();
-        }
-
-        public async Task<IEnumerable<MenuReadDto>> GetListByRoleIdAsync(Guid id)
-        {
-            var list = await Queryable.Where(t => SqlFunc.Subqueryable<RoleMenu>().Where(m => m.RoleId == id && m.MenuId == t.Id).Any()).ToListAsync();
-            return Mapper.Map<IEnumerable<MenuReadDto>>(list);
         }
 
         public async Task<int> DeleteMenuAsync(Guid id, bool force)

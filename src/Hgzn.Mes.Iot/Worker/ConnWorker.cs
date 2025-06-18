@@ -7,24 +7,25 @@ using Hgzn.Mes.Iot.EquipManager;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SqlSugar;
 
 namespace Hgzn.Mes.Iot.Worker
 {
     public class ConnWorker : BackgroundService
     {
         private readonly ILogger _logger;
-        private readonly SqlSugarContext _context;
+        private readonly ISqlSugarClient _sqlClient;
         private readonly ConnManager _manager;
         private readonly IConfiguration _configuration;
 
         public ConnWorker(
-            SqlSugarContext context,
+            ISqlSugarClient sqlClient ,
             ILogger<ConnWorker> logger,
             ConnManager manager,
             IConfiguration configuration)
         {
             _logger = logger;
-            _context = context;
+            _sqlClient = sqlClient;
             _manager = manager;
             _configuration = configuration;
         }
@@ -33,9 +34,9 @@ namespace Hgzn.Mes.Iot.Worker
             //延迟启动等待数据库初始化
             await Task.Delay(1000, stoppingToken);
             var interval = _configuration.GetValue<int>("ReConnInterval");
-            while (stoppingToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                var connections = await _context.DbContext.Queryable<EquipConnect>()
+                var connections = await _sqlClient.Queryable<EquipConnect>()
                     .Includes(ec => ec.EquipLedger, el => el!.EquipType)
                     .Where(ec => ec.State && ec.ConnectStr != null)
                     .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RfidReaderType.Id)
@@ -69,22 +70,22 @@ namespace Hgzn.Mes.Iot.Worker
                         var equip = _manager.GetEquip(connection.Id) ??
                             _manager.AddEquip(connection.Id, EquipConnType.RfidReader,
                             connection.ConnectStr!, connInfo);
-                        if (equip.ConnState)
+                        if (!equip.ConnState)
                         {
                             await equip!.ConnectAsync(connInfo);
                             await equip!.StartAsync(connection.Id);
-                            _logger.LogInformation($"start connection[{connection!.EquipLedger!.EquipName}](connId:{connection.Id}) succeed!");
+                            _logger.LogInformation($"start connection[{connection!.Name}](connId:{connection.Id}) succeed!");
                         }
                         else
                         {
-                            _logger.LogInformation($"connection[{connection.Id}] is exist");
+                            _logger.LogInformation($"connection[{connection!.Name}](connId:{connection.Id}) is exist");
                         }
 
                         await Task.Delay(500, stoppingToken);
                     }
                     catch
                     {
-                        _logger.LogError($"start equip[{connection!.EquipLedger!.EquipName}](connId:{connection.Id}) failed!");
+                        _logger.LogError($"start connection[{connection!.Name}](connId:{connection.Id}) failed!");
                     }
 
                 }

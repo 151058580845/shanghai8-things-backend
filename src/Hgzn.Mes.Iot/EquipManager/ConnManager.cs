@@ -21,8 +21,8 @@ namespace Hgzn.Mes.Iot.EquipManager
     {
         private IMqttExplorer _mqtt = null!;
         private readonly ISqlSugarClient _client;
-        private IConnectionMultiplexer _connectionMultiplexer;
-        private IConfiguration _configuration;
+        private readonly IConnectionMultiplexer _connectionMultiplexer;
+        private readonly IConfiguration _configuration;
         public ConcurrentDictionary<Guid, IEquipConnector> Connections { get; private set; } = new();
 
         public ConnManager(

@@ -18,5 +18,7 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
 
         Task<PaginatedList<UserReadDto>> GetRoleUsersAsync(Guid roleId, UserQueryDto dto);
         Task<bool> ModifyRoleUserAsync(Guid roleId, List<Guid> userIds);
+
+        Task<IEnumerable<MenuReadDto>> GetRoleMenusAsync(Guid id);
     }
 }

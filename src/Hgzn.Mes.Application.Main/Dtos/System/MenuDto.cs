@@ -4,7 +4,6 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 {
     public class MenuReadDto : ReadDto
     {
-        public Guid Id { get; set; }
 
         public string Name { get; set; } = null!;
 

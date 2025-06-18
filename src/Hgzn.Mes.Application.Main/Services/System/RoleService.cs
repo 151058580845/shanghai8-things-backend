@@ -10,6 +10,8 @@ using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
@@ -30,9 +32,6 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return await GetAsync(id);
         }
         
-
-
-
         public async Task<IEnumerable<RoleReadDto>> GetRolesAsync()
         {
             var roles = await Queryable
@@ -86,8 +85,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Includes(r => r.Users == null ? null : r.Users
                     .Where(u => query.Filter == null ||
                     (u.Phone != null && u.Phone.Contains(query.Filter)) ||
-                    u.Username.Contains(query.Filter) ||
-                    (u.JobNumber != null && u.JobNumber.Contains(query.Filter)))
+                    u.Username.Contains(query.Filter))
                     .Where(u => query == null || u.State == query.State))
                 .Select(r => r.Users ?? Array.Empty<User>())
                 .ToArrayAsync();
@@ -102,7 +100,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 UserId = m
             }).ToListAsync();
             var role = await GetAsync(roleId) ??
-                       throw new NotFoundException("role is not exist");
+                throw new NotFoundException("role is not exist");
             
             var result = await DbContext.Ado.UseTranAsync(async () =>
             {
@@ -185,6 +183,18 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
 
             return saverole;
+        }
+
+        public async Task<IEnumerable<MenuReadDto>> GetRoleMenusAsync(Guid id)
+        {
+            var menus = id == Role.DevRole.Id ?
+                await DbContext.Queryable<Menu>().ToListAsync() :
+                (await DbContext.Queryable<Role>()
+                    .Where(r => r.Id == id)
+                    .Includes(r => r.Menus)
+                    .FirstAsync()).Menus;
+
+            return Mapper.Map<IEnumerable<MenuReadDto>>(menus);
         }
     }
 }

@@ -25,8 +25,6 @@ public class RfidReaderConnector : EquipConnectorBase
     protected DateTime _timeLast { get; set; }
     protected ConcurrentQueue<string> _cacheTids {  get; set; } = new ConcurrentQueue<string>();
 
-    public bool ConnState { get; private set; } = false;
-
     public RfidReaderConnector(
         IConnectionMultiplexer connectionMultiplexer,
         IMqttExplorer mqtt,
@@ -76,7 +74,7 @@ public class RfidReaderConnector : EquipConnectorBase
                     _client.SendSynMsg(readerInfo);
                     if (readerInfo.RtCode == 0)
                     {
-                        LoggerAdapter.LogTrace("ger reader info success");
+                        LoggerAdapter.LogTrace($"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id}) ger reader info success");
                         _serialNum = readerInfo.Imei;
                         await UpdateStateAsync(ConnStateType.On);
                     }

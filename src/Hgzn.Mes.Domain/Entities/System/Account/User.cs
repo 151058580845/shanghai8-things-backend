@@ -63,10 +63,10 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public static readonly User DevUser = new()
         {
             Id = new Guid("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
-            Username = "developer",
+            Username = "000",
             Passphrase = "ZLdMAg0N2xN8NbXr5wsoevc/bBay/lJT4sLFbUClwTI=",
             Salt = "ue9OQmiW1aH5gzkFKXEB84ToTcHjuroMdzDxymov0CA=",
-            JobNumber = "initial-developer",
+            Name = "initial-developer",
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,
@@ -78,10 +78,10 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public static readonly User AdminUser = new()
         {
             Id = new Guid("d1c3f0fb-f716-4059-bd23-99a1bbfa503d"),
-            Username = "admin",
+            Username = "001",
             Passphrase = "qLGu+48XZDn5UC5TmgIgwb+29lIXYVA1i1vjPAjSY1A=",
             Salt = "hxF4RZh/IdmJmTuzjBChb1d5vdotQmESgTkxJ1Yede0=",
-            JobNumber = "initial-admin",
+            Name = "initial-admin",
             Email = "unknow",
             Phone = "unknow",
             RegisterTime = DateTime.UnixEpoch,

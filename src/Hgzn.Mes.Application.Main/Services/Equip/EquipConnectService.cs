@@ -18,6 +18,7 @@ using System.Text;
 using System.Text.Json;
 using Hgzn.Mes.Application.Main.Dtos.Base;
 using System.Security.Policy;
+using NPOI.SS.Formula.Functions;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -101,13 +102,17 @@ public class EquipConnectService : SugarCrudAppService<
     public async Task PutStartConnect(Guid id)
     {
         var connect = await Queryable.Where(it => it.Id == id)
-           .Includes(t => t.EquipLedger, le => le.EquipType)
+           .Includes(t => t.EquipLedger, le => le!.EquipType)
            .FirstAsync();
 
         switch (connect.ProtocolEnum)
         {
             case ConnType.ModbusTcp:
                 await Publish(connect, CmdType.Conn, ConnStateType.On, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
+                await DbContext.Updateable<EquipConnect>()
+                    .Where(ec => ec.Id == id)
+                    .SetColumns(t => new EquipConnect { State = true })
+                    .ExecuteCommandAsync();
                 break;
             default:
                 // TcpServer
@@ -126,8 +131,12 @@ public class EquipConnectService : SugarCrudAppService<
     public async Task StopConnectAsync(Guid connectId)
     {
         var connect = await Queryable.Where(it => it.Id == connectId)
-           .Includes(t => t.EquipLedger, le => le.EquipType)
+           .Includes(t => t.EquipLedger, le => le!.EquipType)
            .FirstAsync();
+        await DbContext.Updateable<EquipConnect>()
+            .Where(ec => ec.Id == connectId)
+            .SetColumns(t => new EquipConnect { State = false })
+            .ExecuteCommandAsync();
 
         await Publish(connect, CmdType.Conn, ConnStateType.Off, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
     }

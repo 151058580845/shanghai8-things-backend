@@ -13,6 +13,7 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
         Task<string> LoginAsync(UserLoginDto credential);
 
         Task LogoutAsync(IEnumerable<Claim> claims);
+        Task<int> DeleteRangeAsync(IEnumerable<Guid> ids);
 
         Task<UserScopeReadDto?> GetCurrentUserAsync(IEnumerable<Claim> claims);
 

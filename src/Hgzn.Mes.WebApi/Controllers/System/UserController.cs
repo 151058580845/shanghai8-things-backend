@@ -119,6 +119,20 @@ namespace Hgzn.Mes.WebApi.Controllers.System
             (await _userService.DeleteAsync(userId)).Wrap();
 
         /// <summary>
+        ///     删除用户
+        ///     auth: super
+        /// </summary>
+        /// <param name="userIds">用户guid</param>
+        /// <returns>已删除用户数</returns>
+        [HttpDelete]
+        [Route("ids")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:user:{ScopeMethodType.Remove}")]
+        public async Task<ResponseWrapper<int>> DeleteRange(IEnumerable<Guid> userIds) =>
+            (await _userService.DeleteRangeAsync(userIds)).Wrap();
+
+        /// <summary>
         ///     添加用户
         ///     auth: super
         /// </summary>

@@ -12,7 +12,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         /// 姓名
         /// </summary>s
         public string? Name { get; set; }
-        public string? JobNumber { get; set; }
+        public string? Nick { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -33,7 +33,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         /// 姓名
         /// </summary>s
         public string? Name { get; set; }
-        public string? JobNumber { get; set; }
+        public string? Nick { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -53,7 +53,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         /// </summary>s
         public string? Name { get; set; }
 
-        public string? JobNumber { get; set; }
+        public string? Nick { get; set; }
         public string? Icon { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -71,7 +71,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
         public string Phone { get; set; } = null!;
         public RoleReadDto Role { get; set; } = null!;
         public DateTime RegisterTime { get; set; }
-        public string? JobNumber { get; set; }
+        public string? Nick { get; set; }
         public UserSettingReadDto? Settings { get; set; }
 
         public UserDetailReadDto? Detail { get; set; }
@@ -92,7 +92,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
         public string Salt { get; set; } = null!;
 
-        public string? JobNumber { get; set; }
+        public string? Nick { get; set; }
 
         public string? Icon { get; set; }
 
@@ -155,9 +155,9 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
 
     public class UserQueryDto : PaginatedQueryDto
     {
-        public Guid? DeptId{get;set;}
-        public string? UserName{get;set;}
-        public string? Phone{get;set;}
+        public Guid? DeptId { get; set; }
+        public string? UserName { get; set; }
+        public string? Phone { get; set; }
         public bool? State { get; set; }
         public string? Filter { get; set; }
     }

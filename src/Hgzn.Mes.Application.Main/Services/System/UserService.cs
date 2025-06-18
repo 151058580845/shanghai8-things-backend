@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Captchas;
 using Hgzn.Mes.Application.Main.Captchas.Builder;
 using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Audit.IService;
 using Hgzn.Mes.Application.Main.Services.Base;
@@ -21,6 +22,7 @@ using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 
@@ -51,11 +53,19 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto)
         {
+            var targetRoleIds = (registerDto.RoleIds is null || !registerDto.RoleIds.Any()) ?
+                [Role.MemberRole.Id] : registerDto.RoleIds;
+            var roles = await DbContext.Queryable<Role>()
+                .Where(r => targetRoleIds.Contains(r.Id))
+                .ToListAsync();
+            if (roles is null || roles.Count == 0)
+                throw new BadRequestException("the choosing role not exist");
             var user = await DbContext.Queryable<User>()
                 .Where(u => u.Username == registerDto.Username)
                 .FirstAsync();
             if (user is not null) throw new BadRequestException("username exist");
             user = Mapper.Map<User>(registerDto);
+            user.Roles = roles;
             var status = await DbContext.InsertNav(user)
                 .Include(u => u.Roles)
                 .ExecuteCommandAsync();
@@ -64,11 +74,19 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public override async Task<UserReadDto?> CreateAsync(UserCreateDto createDto)
         {
+            var targetRoleIds = (createDto.RoleIds is null || !createDto.RoleIds.Any()) ?
+                [Role.MemberRole.Id] : createDto.RoleIds;
+            var roles = await DbContext.Queryable<Role>()
+                .Where(r => targetRoleIds.Contains(r.Id))
+                .ToListAsync();
+            if(roles is null || roles.Count == 0)
+                throw new BadRequestException("the choosing role not exist");
             var user = await DbContext.Queryable<User>()
                 .Where(u => u.Username == createDto.Username)
                 .FirstAsync();
             if (user is not null) throw new BadRequestException("username exist");
             user = Mapper.Map<User>(createDto);
+            user.Roles = roles;
             var status = await DbContext.InsertNav(user)
                 .Include(u => u.Roles)
                 .ExecuteCommandAsync();
@@ -92,6 +110,11 @@ namespace Hgzn.Mes.Application.Main.Services.System
             if (user is null || !user.Verify(bytes))
             {
                 throw new NotAcceptableException("user not found or password error");
+            }
+
+            if(user.Roles.Count == 0)
+            {
+                throw new NotAcceptableException("user must has at least one role");
             }
 
             var roleIds = string.Join(",", user.Roles.Select(r => r.Id));
@@ -141,6 +164,14 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Includes(u => u.Roles, r => r.Menus)
                 .FirstAsync();
             return Mapper.Map<UserReadDto>(user);
+        }
+
+        public async Task<int> DeleteRangeAsync(IEnumerable<Guid> ids)
+        {
+            var count = await DbContext.Deleteable<User>()
+                .Where(u => ids.Contains(u.Id))
+                .ExecuteCommandAsync();
+            return count;
         }
 
         public async Task<UserScopeReadDto?> GetCurrentUserAsync(IEnumerable<Claim> claims)
