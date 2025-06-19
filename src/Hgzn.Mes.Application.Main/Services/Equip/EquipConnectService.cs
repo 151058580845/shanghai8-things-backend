@@ -19,6 +19,7 @@ using System.Text.Json;
 using Hgzn.Mes.Application.Main.Dtos.Base;
 using System.Security.Policy;
 using NPOI.SS.Formula.Functions;
+using MySqlX.XDevAPI.Common;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -78,10 +79,20 @@ public class EquipConnectService : SugarCrudAppService<
             .WhereIF(!queryDto.EquipCode.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipCode.Contains(queryDto.EquipCode!));
 
         var result = await querable
-            .Includes(eq => eq.EquipLedger, el => el.EquipType)
+            .Includes(eq => eq.EquipLedger, el => el!.EquipType)
             .OrderBy(t => t.OrderNum)
             .ToArrayAsync();
         return Mapper.Map<IEnumerable<EquipConnectReadDto>>(result);
+    }
+
+
+    public async Task<IEnumerable<EquipConnectReadDto>> GetRfidIssuerConnectionsAsync()
+    {
+        var conns = await Queryable
+            .Includes(ec => ec.EquipLedger)
+            .Where(ec => ec.EquipLedger!.TypeId == EquipType.RfidIssuerType.Id)
+            .ToArrayAsync();
+        return Mapper.Map<IEnumerable<EquipConnectReadDto>>(conns);
     }
 
     public async override Task<EquipConnectReadDto?> UpdateAsync(Guid key, EquipConnectUpdateDto dto)

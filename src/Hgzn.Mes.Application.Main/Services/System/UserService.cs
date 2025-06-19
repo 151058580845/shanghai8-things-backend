@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Captchas;
 using Hgzn.Mes.Application.Main.Captchas.Builder;
 using Hgzn.Mes.Application.Main.Dtos;
+using Hgzn.Mes.Application.Main.Dtos.Audit;
 using Hgzn.Mes.Application.Main.Dtos.Base;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Audit.IService;
@@ -10,6 +11,7 @@ using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Application.Main.Utilities;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
+using Hgzn.Mes.Domain.Entities.System.Config;
 using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
@@ -22,7 +24,6 @@ using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 
@@ -35,8 +36,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
     {
         public UserService(
             IUserDomainService userDomainService,
-            ILogger<UserService> logger
-            , ILoginLogService loginLogService,
+            ILogger<UserService> logger,
+            IBaseConfigService baseConfigService,
+            ILoginLogService loginLogService,
             IHttpContextAccessor httpContextAccessor
         )
         {
@@ -44,12 +46,14 @@ namespace Hgzn.Mes.Application.Main.Services.System
             _logger = logger;
             _loginLogService = loginLogService;
             _httpContextAccessor = httpContextAccessor;
+            _baseConfigService = baseConfigService;
         }
 
         private  ILoginLogService  _loginLogService;
         private readonly IUserDomainService _userDomainService;
         private readonly ILogger<UserService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IBaseConfigService _baseConfigService;
 
         public async Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto)
         {
@@ -81,11 +85,13 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .ToListAsync();
             if(roles is null || roles.Count == 0)
                 throw new BadRequestException("the choosing role not exist");
-            var user = await DbContext.Queryable<User>()
-                .Where(u => u.Username == createDto.Username)
-                .FirstAsync();
-            if (user is not null) throw new BadRequestException("username exist");
-            user = Mapper.Map<User>(createDto);
+            if (await DbContext.Queryable<User>()
+                .AnyAsync(u => u.Username == createDto.Username))
+                throw new BadRequestException("username exist");
+            var user = Mapper.Map<User>(createDto);
+            var password = await _baseConfigService.GetValueByKeyAsync(BaseConfig.DefaultPassword.ConfigKey) ?? "12345678";
+            var hash = CryptoUtil.Sha256(password);
+            _userDomainService.WithSalt(ref user, hash);
             user.Roles = roles;
             var status = await DbContext.InsertNav(user)
                 .Include(u => u.Roles)
@@ -137,7 +143,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var ipAddress = httpContext?.Connection.RemoteIpAddress?.ToString();
             var loginUser = _loginLogService.GetInfoByHttpContext(httpContext);
             
-            await _loginLogService.CreateAsync(new Dtos.Audit.LoginLogCreateDto() { 
+            await _loginLogService.CreateAsync(new LoginLogCreateDto() { 
                 Browser= loginUser.Browser,
                 Os = loginUser.Os,
                 CreationTime = DateTime.UtcNow,

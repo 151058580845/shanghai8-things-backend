@@ -1609,10 +1609,25 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "location_label"
         };
 
+        // 设备发卡
+        public static Menu EquipLabelManage = new()
+        {
+            Id = Guid.Parse("a2fa081e-c8ed-4382-bab7-556f8e3f6476"),
+            Name = "设备发卡",
+            Code = "equipledger_label",
+            ScopeCode = "equip:ledger-label:list",
+            Type = MenuType.Menu,
+            IconUrl = "ep:location-information",
+            Route = "equip/ledger-label/index",
+            OrderNum = 1001,
+            ParentId = LabelManagement.Id,
+            RouteName = "equipledger_label"
+        };
+
         // 设备标签
         public static Menu EquipLabel = new()
         {
-            Id = Guid.Parse("a2fa081e-c8ed-4382-bab7-556f8e3f6476"),
+            Id = Guid.Parse("b3fa081e-c8ed-4382-bab7-556f8e3f6476"),
             Name = "设备标签",
             Code = "equip_label",
             ScopeCode = "equip:label:list",
@@ -1709,7 +1724,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipNotice,EquipTestAnalyse,TestData,
+            Equip, EquipType, EquipLedger, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
             OrientationManagement, EquipLedgerHistory, EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,
@@ -1721,7 +1736,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Location,Building,Floor,Room,
             ShowSystem1, //ShowSystem,ShowSystem2,
             Basic,// Supplier,Unit,Customer,
-            LocationLabel, 
+            LocationLabel,
         ];
 
         #endregion

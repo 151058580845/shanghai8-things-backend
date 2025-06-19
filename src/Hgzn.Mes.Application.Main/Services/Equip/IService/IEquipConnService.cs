@@ -18,4 +18,6 @@ public interface IEquipConnService : ICrudAppService<
 
     Task TestConnection(ConnType protocolEnum, string connectionString);
     Task<IEnumerable<NameValueDto>> GetNameValueListAsync();
+
+    Task<IEnumerable<EquipConnectReadDto>> GetRfidIssuerConnectionsAsync();
 }

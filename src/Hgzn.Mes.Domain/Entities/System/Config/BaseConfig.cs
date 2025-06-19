@@ -61,8 +61,17 @@ namespace Hgzn.Mes.Domain.Entities.System.Config
             Remark = "导入试验计划请求地址"
         };
 
+        public static BaseConfig DefaultPassword = new BaseConfig()
+        {
+            Id = Guid.Parse("d977CCBA-5A39-8C7F-CEB5-3855519BE067"),
+            ConfigName = "初始密码",
+            ConfigKey = "defaultPassword",
+            ConfigValue = "12345678",
+            Remark = ""
+        };
+
         #endregion
 
-        public static BaseConfig[] Seeds { get; } = [ImportUrl];
+        public static BaseConfig[] Seeds { get; } = [ImportUrl, DefaultPassword];
     }
 }

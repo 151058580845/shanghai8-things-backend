@@ -149,7 +149,17 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Edit}")]
         public async Task<ResponseWrapper<EquipConnectReadDto>> UpdateStateAsync(Guid id, bool state) =>
             (await _equipConnectService.UpdateStateAsync(id, state)).Wrap();
-        
-        
+
+        /// <summary>
+        /// rfid设备
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("issuer")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"equip:equipconnect:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<IEnumerable<EquipConnectReadDto>>> GetRfidIssuerConnectionsAsync() =>
+            (await _equipConnectService.GetRfidIssuerConnectionsAsync()).Wrap();
     }
 }
