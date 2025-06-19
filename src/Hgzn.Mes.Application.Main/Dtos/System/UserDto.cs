@@ -27,7 +27,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
     public class UserCreateDto : CreateDto
     {
         public string Username { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        public string? Password { get; set; }
 
         /// <summary>
         /// 姓名
