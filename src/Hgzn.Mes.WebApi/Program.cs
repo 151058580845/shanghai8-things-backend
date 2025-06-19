@@ -2,7 +2,9 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
 using Hgzn.Mes.Application.Main.Auth;
+using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Domain.Utilities;
@@ -11,6 +13,7 @@ using Hgzn.Mes.Infrastructure.Hub;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Hgzn.Mes.Infrastructure.Utilities.Filter;
+using Hgzn.Mes.WebApi;
 using Hgzn.Mes.WebApi.Utilities;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -42,7 +45,7 @@ builder.Services.AddHttpContextAccessor();
 // Change container to autoFac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(config =>
-    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
+    config.RegisterAssemblyModules(Assembly.GetExecutingAssembly(), Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
 
 // Add services to the container.
 builder.Host.UseSerilog((context, logger) =>
@@ -250,7 +253,7 @@ builder.Services.AddAutoMapper(config =>
 
 // Add mediatR
 builder.Services.AddMediatR(config =>
-    config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application)+".Main")));
+    config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
 
 builder.Services.AddHttpClient(); // 注册 IHttpClientFactory
 var app = builder.Build();
@@ -283,7 +286,7 @@ app.MapHub<OnlineHub>("/hub/online");
 // app.Services.GetService<InitialDatabase>()?.Initialize();
 var sqlSugarContext = app.Services.GetService<SqlSugarContext>();
 sqlSugarContext?.InitDatabase();
-var seedsText = await sqlSugarContext!.GetSeedsFromDatabase<EquipType>();
+// var seedsText = await sqlSugarContext!.GetSeedsFromDatabase<Room>();
 app.Services.GetService<IMqttExplorer>()?.StartAsync();
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>

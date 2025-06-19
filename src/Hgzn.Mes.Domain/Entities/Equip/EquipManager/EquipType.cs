@@ -29,7 +29,7 @@ public class EquipType : UniversalEntity, ISoftDelete, IState
 
     [Description("设备最后修改时间")]
     public DateTime? LastModificationTime { get; set; }
-    
+
     [Description("绑定的协议")]
     public string? ProtocolEnum { get; set; }
 
@@ -84,6 +84,8 @@ public class EquipType : UniversalEntity, ISoftDelete, IState
         DeleteTime = null,
         Id = new Guid("f365f053-5146-41dc-9a1b-59b104e992e9"),
     };
+
+    public static EquipType[] Seeds { get; } = new EquipType[] { RfidReaderType, RfidIssuerType };
 
     #endregion static
 }

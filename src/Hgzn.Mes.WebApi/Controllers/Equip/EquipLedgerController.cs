@@ -199,7 +199,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("import")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        //[Authorize(Policy = $"equip:equipledger:{ScopeMethodType.Add}")]
+        [Authorize(Policy = $"equip:equipledger:import")]
         public async Task<ResponseWrapper<int>> CreateAsync(IEnumerable<EquipLedgerCreateDto> inputs)
         {
             var addCount = 0;

@@ -698,6 +698,18 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "EquipLedger"
         };
 
+        // 设备台账导入
+        public static Menu EquipImport = new()
+        {
+            Id = Guid.Parse("8eba8377-bd61-4407-881e-fc241e390104"),
+            Name = "导入数据",
+            Code = "equipImport",
+            ScopeCode = "equip:equipledger:import",
+            Type = MenuType.Component,
+            OrderNum = 1002,
+            ParentId = EquipLedger.Id
+        };
+
         // 设备连接管理
         public static Menu EquipConnectManagement = new()
         {
@@ -1724,7 +1736,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
+            Equip, EquipType, EquipLedger,EquipImport, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
             OrientationManagement, EquipLedgerHistory, EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,
