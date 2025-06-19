@@ -88,12 +88,11 @@ namespace Hgzn.Mes.Application.Main.Services.System
             if (await DbContext.Queryable<User>()
                 .AnyAsync(u => u.Username == createDto.Username))
                 throw new BadRequestException("username exist");
+            var user = Mapper.Map<User>(createDto);
             var password = await _baseConfigService
                 .GetValueByKeyAsync(BaseConfig.DefaultPassword.ConfigKey) ?? "12345678";
-            createDto.Password = CryptoUtil.Sha256(password);
-            var user = Mapper.Map<User>(createDto);
-
-            _userDomainService.WithSalt(ref user, createDto.Password);
+            var hash = CryptoUtil.Sha256(password);
+            _userDomainService.WithSalt(ref user, hash);
             user.Roles = roles;
             var status = await DbContext.InsertNav(user)
                 .Include(u => u.Roles)
