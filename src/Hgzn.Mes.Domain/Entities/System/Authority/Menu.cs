@@ -4,7 +4,7 @@ using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Domain.Entities.System.Authority
 {
-    public class Menu : UniversalEntity, ISoftDelete, IAudited, IOrder, IState
+    public class Menu : UniversalEntity, ISoftDelete, IAudited, IOrder, IState, ISeedsGeneratable
     {
         public string Name { get; set; } = null!;
 

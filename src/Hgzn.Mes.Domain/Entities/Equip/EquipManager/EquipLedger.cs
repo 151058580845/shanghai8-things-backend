@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
 [Description("设备台账")]
-public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudited, ILocatable
+public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudited, ILocatable, ISeedsGeneratable
 {
     [Description("设备编号")]
     public string EquipCode { get; set; } = null!;

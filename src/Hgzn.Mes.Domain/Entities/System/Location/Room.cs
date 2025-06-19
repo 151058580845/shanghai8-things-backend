@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
 
-public class Room : UniversalEntity, IOrder, IAudited
+public class Room : UniversalEntity, IOrder, IAudited, ISeedsGeneratable
 {
     public Guid ParentId { get; set; }  // 外键，关联 FloorEntity
 

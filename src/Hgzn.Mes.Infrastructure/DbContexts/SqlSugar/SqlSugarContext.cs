@@ -21,8 +21,6 @@ using Hgzn.Mes.Domain.Entities.Basic;
 using Hgzn.Mes.Domain.Shared;
 using Microsoft.AspNetCore.Http;
 using System.Text;
-using Org.BouncyCastle.Asn1.X509.Qualified;
-using Microsoft.Extensions.Primitives;
 using AutoMapper.Internal;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
@@ -133,17 +131,35 @@ public sealed class SqlSugarContext
 
 
     private const string DefaultConnectionStringName = "Default";
-    public async Task<string> GetSeedsFromDatabase<TEntity>() where TEntity : AggregateRoot
+
+    public async Task GetSeedsCodeFromDatabaseAsync()
+    {
+        var entities = Assembly.Load("Hgzn.Mes." + nameof(Domain))
+            .GetTypes()
+            .Where(t => (typeof(ISeedsGeneratable)).IsAssignableFrom(t) && !t.Namespace!.Contains("Base"))
+            .ToArray();
+        foreach (var entity in entities)
+        {
+            var methodinfo = typeof(SqlSugarContext).GetMethod($"GetSeedsFromDatabaseAsync");
+            var task = (Task?)methodinfo?.MakeGenericMethod(entity).Invoke(this, null);
+            await task!.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    public async Task<string> GetSeedsFromDatabaseAsync<TEntity>() where TEntity : AggregateRoot
     {
         var entities = await DbContext.Queryable<TEntity>().ToArrayAsync();
         var builder = new StringBuilder();
         var type = typeof(TEntity);
         var index = 0;
         builder.Append("#region static\r\n\r\n");
-
+        var seedsBuilder = new StringBuilder();
+        seedsBuilder.AppendLine($"public static {type.Name} [] Seeds {{ get; }} = \r\n[");
         foreach (var entity in entities)
         {
+            if(index != 0) seedsBuilder.Append('\t');
             builder.AppendLine($"public static {type.Name} {type.Name}_{index} = new ()");
+            seedsBuilder.Append($"\t{type.Name}_{index},\r\n");
             builder.AppendLine("{");
             foreach(var property in type.GetProperties())
             {
@@ -151,38 +167,41 @@ public sealed class SqlSugarContext
                 var value = property.GetValue(entity);
                 var propertyType = property.PropertyType.IsNullableType() ?
                     property.PropertyType.GetGenericArguments().First() : property.PropertyType;
-                var propertySuffix = Type.GetTypeCode(propertyType) switch
+                //枚举类型typecode是对应的数值类型
+                var propertySuffix = propertyType.IsEnum ?
+                    (value is null ? "null," : $"({propertyType.Name}){(int)value},") :
+                    Type.GetTypeCode(propertyType) switch
                 {
                     TypeCode.DBNull or TypeCode.Empty => "null,",
                     TypeCode.DateTime => string.IsNullOrEmpty(Convert.ToString(value)) ? "null," : $"DateTime.Parse(\"{value}\"),",
-                    TypeCode.String => value is null ? "null," : $"\"{value}\",",
+                    TypeCode.String => value is null ? "null," : $"\"{((string)value).Replace("\\", "\\\\").Replace("\"", "\\\"")}\",",
                     TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or
                     TypeCode.Double or TypeCode.Single or TypeCode.Decimal or
                     TypeCode.UInt64 or TypeCode.Int64 => value is null ? "null," : $"{value},",
                     TypeCode.Boolean => $"{property.GetValue(entity)},".ToLower(),
-                    _ => $"{DealWithDefaultSuffix(propertyType, value)},"
+                    _ => DealWithDefaultSuffix(propertyType, value)
                 };
+                if (propertySuffix is null) continue;
                 builder.Append(propertyPrefix + propertySuffix + "\r\n");
             }
             builder.AppendLine("};\r\n");
             index++;
         }
-        builder.Append("#endregion static");
+        seedsBuilder.AppendLine("\t];");
+        builder.AppendLine("#endregion static");
 
-        string DealWithDefaultSuffix(Type propertyType, object? value)
+        builder.AppendLine(seedsBuilder.ToString());
+        string? DealWithDefaultSuffix(Type propertyType, object? value)
         {
-            if (propertyType.IsEnum)
-            {
-                return value is null ? "null" : $"({propertyType.Name}){value}";
-            }
             if (propertyType.Name == "guid" || propertyType.Name == "Guid")
             {
-                return string.IsNullOrEmpty(Convert.ToString(value)) ? "null" : $"new Guid(\"{value}\")";
+                return string.IsNullOrEmpty(Convert.ToString(value)) ? "null," : $"new Guid(\"{value}\"),";
             }
-            return $"throw new NotImplementedException()";
+            return null;
         }
-
-        return builder.ToString();
+        var code = builder.ToString();
+        LoggerAdapter.LogInformation($"[已生成种子代码<{typeof(TEntity).Name}>]:\r\n {code}\r\n");
+        return code;
     }
     public void InitDatabase()
     {

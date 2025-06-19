@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
 
-public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder
+public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder, ISeedsGeneratable
 {
     [Description("建筑物名称")]
     public string Name { get; set; } = null!;

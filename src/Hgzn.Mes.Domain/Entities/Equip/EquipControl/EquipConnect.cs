@@ -10,7 +10,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 /// 设备采集信息配置表
 /// </summary>
 [Description("设备采集信息配置表")]
-public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudited
+public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudited, ISeedsGeneratable
 {
     public DateTime CreationTime { get; set; }
     public Guid? CreatorId { get; set; }

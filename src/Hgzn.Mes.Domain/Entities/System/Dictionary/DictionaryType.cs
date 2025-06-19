@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 {
-    public class DictionaryType : UniversalEntity, ISoftDelete, IOrder, IState
+    public class DictionaryType : UniversalEntity, ISoftDelete, IOrder, IState, ISeedsGeneratable
     {
         [Description("排序")] public int OrderNum { get; set; } = 0;
 

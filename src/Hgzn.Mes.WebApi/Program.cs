@@ -286,8 +286,12 @@ app.MapHub<OnlineHub>("/hub/online");
 // app.Services.GetService<InitialDatabase>()?.Initialize();
 var sqlSugarContext = app.Services.GetService<SqlSugarContext>();
 sqlSugarContext?.InitDatabase();
-// var seedsText = await sqlSugarContext!.GetSeedsFromDatabase<Room>();
+if (app.Environment.IsDevelopment())
+{
+    await sqlSugarContext!.GetSeedsCodeFromDatabaseAsync();
+}
 app.Services.GetService<IMqttExplorer>()?.StartAsync();
+
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>
         await ExceptionLocalizerExtension.LocalizeException(context, app.Services.GetService<IStringLocalizer<Exception>>()!)));

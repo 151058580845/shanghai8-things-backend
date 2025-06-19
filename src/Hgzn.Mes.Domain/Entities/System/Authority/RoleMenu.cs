@@ -6,7 +6,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
     /// <summary>
     ///     关联表，如需使用可用Set获取
     /// </summary>
-    public class RoleMenu : IncrementEntity
+    public class RoleMenu : IncrementEntity, ISeedsGeneratable
     {
         public Guid MenuId { get; set; }
 

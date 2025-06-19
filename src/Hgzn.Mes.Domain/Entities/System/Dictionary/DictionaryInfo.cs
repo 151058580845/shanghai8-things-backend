@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 {
-    public class DictionaryInfo : UniversalEntity, ISoftDelete, IOrder, IState, IAudited
+    public class DictionaryInfo : UniversalEntity, ISoftDelete, IOrder, IState, IAudited, ISeedsGeneratable
     {
         [Description("排序")]
         public int OrderNum { get; set; } = 0;

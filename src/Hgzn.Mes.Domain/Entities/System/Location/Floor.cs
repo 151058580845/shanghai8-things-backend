@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
 
-public class Floor : UniversalEntity, IOrder, IAudited
+public class Floor : UniversalEntity, IOrder, IAudited, ISeedsGeneratable
 {
     [Description("对应建筑物的ID")]
     public Guid ParentId { get; set; }  // 对应建筑物的ID

@@ -1,15 +1,9 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
-
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Domain.Entities.System.Config
 {
-    public class BaseConfig : UniversalEntity, ISoftDelete, IState, IOrder
+    public class BaseConfig : UniversalEntity, ISoftDelete, IState, IOrder, ISeedsGeneratable
     {
         /// <summary>
         /// 配置名称 
