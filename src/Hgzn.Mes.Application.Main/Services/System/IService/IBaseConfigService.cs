@@ -15,6 +15,6 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
     BaseConfigReadDto, BaseConfigQueryDto,
     BaseConfigCreateDto, BaseConfigUpdateDto>
     {
-        Task<string> GetValueByKeyAsync(string key);
+        Task<string?> GetValueByKeyAsync(string key);
     }
 }

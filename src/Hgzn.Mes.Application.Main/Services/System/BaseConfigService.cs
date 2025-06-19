@@ -32,15 +32,10 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<PaginatedList<BaseConfig>, PaginatedList<BaseConfigReadDto>>(entities);
         }
 
-        public async Task<string> GetValueByKeyAsync(string key)
+        public async Task<string?> GetValueByKeyAsync(string key)
         {
             var entity = await Queryable.FirstAsync(t => t.ConfigKey == key);
-            if (entity == null)
-            {
-                throw new KeyNotFoundException(key);
-            }
-
-            return entity.ConfigValue!;
+            return entity?.ConfigValue;
         }
     }
 }
