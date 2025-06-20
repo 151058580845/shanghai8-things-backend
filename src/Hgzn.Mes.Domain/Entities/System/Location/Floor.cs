@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Location;
@@ -34,21 +35,43 @@ public class Floor : UniversalEntity, IOrder, IAudited, ISeedsGeneratable
     public Guid? LastModifierId { get; set; }
 
     public int OrderNum { get; set; } = 100;
-    
+
     #region static
 
-    public static Floor floor1 = new()
+    public static Floor Floor1 = new()
     {
-        Id = Guid.Parse("6EB67743-2A45-6108-F261-816B7899FE24"),
-        ParentId = Building.TestBuild.Id,
+        Id = Guid.Parse("6eb67743-2a45-6108-f261-816b7899fe24"),
+        ParentId = Building.BaYuanBuilding.Id,
         CreationTime = DateTime.Now,
         Name = "1楼",
         Code = "1",
-        Area = 1233,
-        NumberOfRooms = 2
+        Area = 0,
+        CreatorId = User.DevUser.Id,
+    };
+
+    public static Floor Floor2 = new()
+    {
+        Id = Guid.Parse("cacc6ace-e2cb-4d6d-855b-8fba3997ee5f"),
+        ParentId = Building.BaYuanBuilding.Id,
+        CreationTime = DateTime.Now,
+        Name = "2楼",
+        Code = "2",
+        Area = 0,
+        CreatorId = User.DevUser.Id,
+    };
+
+    public static Floor Floor3 = new()
+    {
+        Id = Guid.Parse("ab353f57-cdf7-4485-b766-aed8c61522de"),
+        ParentId = Building.BaYuanBuilding.Id,
+        CreationTime = DateTime.Now,
+        Name = "3楼",
+        Code = "3",
+        Area = 0,
+        CreatorId = User.DevUser.Id,
     };
 
     #endregion
 
-    public static Floor[] Seeds { get; } = [floor1];
+    public static Floor[] Seeds { get; } = [Floor1, Floor2, Floor3];
 }

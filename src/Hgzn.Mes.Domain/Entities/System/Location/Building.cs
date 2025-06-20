@@ -48,18 +48,18 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder, ISeedsGe
     
     #region static
 
-    public static Building TestBuild = new Building()
+    public static Building BaYuanBuilding = new Building()
     {
-        Id = Guid.Parse("CF89CCBA-5A39-8C7F-CEB5-3855519BE067"),
+        Id = Guid.Parse("4f125e25-3c84-4740-ace2-a7d8d7ca61a1"),
         CreationTime = DateTime.Now,
-        Name = "实验室",
-        Code = "Test",
-        Address = "123321",
-        Latitude = 1.234,
-        Longitude = 1.234,
+        Name = "上海机电工程研究所",
+        Code = "2#",
+        Address = "",
+        Latitude = 0,
+        Longitude = 0,
     };
 
     #endregion
 
-    public static Building[] Seeds { get; } = [TestBuild];
+    public static Building[] Seeds { get; } = [BaYuanBuilding];
 }
