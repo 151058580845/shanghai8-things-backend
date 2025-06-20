@@ -69,15 +69,22 @@ public class RfidReaderConnector : EquipConnectorBase
                 {
                     _client.OnEncapedTagEpcLog = TagEpcLogEncapedHandler;
                     _client.OnTcpDisconnected = TcpDisconnectedHandler;
+                    LoggerAdapter.LogInformation(
+                            $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> connect success!");
                     // 获得读写器信息
                     var readerInfo = new MsgAppGetReaderInfo();
                     _client.SendSynMsg(readerInfo);
                     if (readerInfo.RtCode == 0)
                     {
                         LoggerAdapter.LogInformation(
-                            $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> ger reader info success");
+                            $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> ger reader info success!");
                         _serialNum = readerInfo.Imei;
                         await UpdateStateAsync(ConnStateType.On);
+                    }
+                    else
+                    {
+                        LoggerAdapter.LogWarning(
+                            $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> ger reader error.");
                     }
                     ConnState = true;
                     return true;
