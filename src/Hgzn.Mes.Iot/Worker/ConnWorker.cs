@@ -74,7 +74,7 @@ namespace Hgzn.Mes.Iot.Worker
                             connection.ConnectStr!, connInfo);
                         if (!equip.ConnState)
                         {
-                            await equip!.CloseConnectionAsync();
+                            //await equip!.CloseConnectionAsync();
                             await equip!.ConnectAsync(connInfo);
                             await equip!.StartAsync(connection.Id);
                             _logger.LogInformation($"start connection[{connection!.Name}](connId:{connection.Id}) succeed!");
