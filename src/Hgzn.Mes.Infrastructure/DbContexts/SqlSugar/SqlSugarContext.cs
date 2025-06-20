@@ -157,7 +157,6 @@ public sealed class SqlSugarContext
         seedsBuilder.AppendLine($"public static {type.Name} [] Seeds {{ get; }} = \r\n[");
         foreach (var entity in entities)
         {
-            if(index != 0) seedsBuilder.Append('\t');
             builder.AppendLine($"public static {type.Name} {type.Name}_{index} = new ()");
             seedsBuilder.Append($"\t{type.Name}_{index},\r\n");
             builder.AppendLine("{");
@@ -187,7 +186,7 @@ public sealed class SqlSugarContext
             builder.AppendLine("};\r\n");
             index++;
         }
-        seedsBuilder.AppendLine("\t];");
+        seedsBuilder.AppendLine("];");
         builder.AppendLine("#endregion static");
 
         builder.AppendLine(seedsBuilder.ToString());

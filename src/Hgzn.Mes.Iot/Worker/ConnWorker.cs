@@ -1,12 +1,14 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.ValueObjects.Message.Base;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Iot.EquipManager;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1.X509;
 using SqlSugar;
 
 namespace Hgzn.Mes.Iot.Worker
@@ -72,6 +74,7 @@ namespace Hgzn.Mes.Iot.Worker
                             connection.ConnectStr!, connInfo);
                         if (!equip.ConnState)
                         {
+                            await equip!.CloseConnectionAsync();
                             await equip!.ConnectAsync(connInfo);
                             await equip!.StartAsync(connection.Id);
                             _logger.LogInformation($"start connection[{connection!.Name}](connId:{connection.Id}) succeed!");
