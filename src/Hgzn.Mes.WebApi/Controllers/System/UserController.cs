@@ -1,6 +1,7 @@
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.ValueObjects;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         ///     注入服务
         /// </summary>
         /// <param name="userService">用户服务</param>
+        /// <param name="attachmentService">附件服务</param>
         public UserController(
             IUserService userService,
             IAttachmentService attachmentService
@@ -43,14 +45,13 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<UserScopeReadDto>> GetCurrentUser()
         {
-            var dto = await _userService.GetCurrentUserAsync(HttpContext.User.Claims);
-            if (dto != null && !string.IsNullOrEmpty(dto.Icon))
+            var dto = (await _userService.GetCurrentUserAsync(HttpContext.User.Claims)) ??
+                throw new NotFoundException("user not found");
+            if (!string.IsNullOrEmpty(dto.Icon))
             {
                 dto.Icon = await _attachmentService.GetFileBase64Async(Guid.Parse(dto.Icon));
-                Console.WriteLine(dto.Icon);
-                return dto.Wrap();
             }
-            return null;
+            return dto.Wrap();
         }
 
         /// <summary>
