@@ -45,9 +45,14 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
         public LabelType LabelType { get; set; }
 
         public string? AssetNumber { get; set; }
+        
+        public bool? FilterEquipType { get; set; }
+
         public string? TagId { get; set; }
 
-        //模糊匹配设备名称和型号
+        /// <summary>
+        /// 模糊匹配设备名称和型号
+        /// </summary>
         public string? Query { get; set; }
     }
 

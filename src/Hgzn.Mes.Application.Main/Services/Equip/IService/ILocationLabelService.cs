@@ -19,5 +19,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip.IService
         Task<IEnumerable<EquipLocationLabelReadDto>> FindEquipLabelAsync(Guid equipId);
 
         Task<int> BindingLabelsAsync(BindingLabelDto dto);
+
+        Task<IEnumerable<LocationLabelReadDto>> QueryByDeviceTypes(IEnumerable<Guid>? typeIds);
     }
 }

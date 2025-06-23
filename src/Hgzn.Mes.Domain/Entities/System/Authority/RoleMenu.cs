@@ -15,7 +15,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         public static RoleMenu[] Seeds { get; set; } =
         [
             new RoleMenu { Id = 1, MenuId = Menu.Root.Id, RoleId = Role.DevRole.Id},
-            new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.SuperRole.Id}
+            new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.SuperRole.Id},
+            new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.AdminRole.Id}
         ];
     }
 }

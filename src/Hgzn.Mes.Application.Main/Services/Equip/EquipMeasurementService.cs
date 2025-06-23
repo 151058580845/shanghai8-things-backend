@@ -76,7 +76,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             }
 
             // 检查必要的列是否存在
-            string[] requiredColumns = { "是否计量设备", "责任人", "本地化资产编号", "型号", "资产名称", "有效期" };
+            string[] requiredColumns = { "是否计量设备仪器", "责任人", "本地化资产编号", "型号", "资产名称", "有效期" };
             foreach (var column in requiredColumns)
             {
                 if (!columnIndices.ContainsKey(column))
@@ -95,8 +95,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 if (dataRow == null)
                     continue; // 跳过空行
 
-                // 检查是否是计量设备
-                bool isMeasurementDevice = dataRow.GetCell(columnIndices["是否计量设备"])?.ToString()?.Trim() == "是" ? true : false;
+                // 检查是否是计量设备仪器
+                bool isMeasurementDevice = dataRow.GetCell(columnIndices["是否计量设备仪器"])?.ToString()?.Trim() == "是" ? true : false;
                 // 检查有效期
                 string? expiryDateStr = dataRow.GetCell(columnIndices["有效期"])?.ToString()?.Trim();
                 // 责任人
@@ -159,7 +159,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            var fullPath = Path.Combine(directoryPath, $"{DateTimeOffset.Now.ToUnixTimeMilliseconds}计量.xlsx");
+            var fullPath = Path.Combine(directoryPath, $"{DateTimeOffset.Now.ToUnixTimeMilliseconds()}计量.xlsx");
             if (!File.Exists(fullPath))
             {
                 using var reader = file.OpenReadStream();

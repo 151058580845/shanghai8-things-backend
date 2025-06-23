@@ -50,6 +50,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Notice
 
         [Description("创建人ID")]
         public Guid? CreatorId { get; set; }
+        public int CreatorLevel { get; set; } = 0;
 
         [Description("最后修改人ID")]
         public Guid? LastModifierId { get; set; }

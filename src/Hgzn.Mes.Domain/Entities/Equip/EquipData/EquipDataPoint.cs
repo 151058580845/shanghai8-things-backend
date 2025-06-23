@@ -19,6 +19,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
         public Guid? CreatorId { get; set; }
 
         [Description("创建时间")] public DateTime CreationTime { get; set; }
+        public int CreatorLevel { get; set; } = 0;
 
         [Description("编号")] public string Code { get; set; } = null!;
 

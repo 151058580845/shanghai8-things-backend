@@ -29,6 +29,7 @@ public class Contact: UniversalEntity, IAudited
 
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
+    public int CreatorLevel { get; set; } = 0;
     public Guid? LastModifierId { get; set; }
     public DateTime? LastModificationTime { get; set; }
 }

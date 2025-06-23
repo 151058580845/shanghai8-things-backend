@@ -23,7 +23,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
         {
             var entities = await Queryable
                 .Where(m => query.State == null || query.State == m.State)
-                .Where(m => query.Filter == null || m.Code.Contains(query.Filter) || m.Name.Contains(query.Filter))
+                .Where(m => query.Filter == null || m.Code!.Contains(query.Filter) || m.Name.Contains(query.Filter))
                 .OrderByDescending(m => m.OrderNum)
                 .ToPageListAsync(query.PageIndex, query.PageSize);
             return Mapper.Map<PaginatedList<MenuReadDto>>(entities);
@@ -32,10 +32,11 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public async Task<IEnumerable<MenuReaderRouterDto>> GetCurrentUserMenusAsTreeAsync(
             IEnumerable<Claim> claims)
         {
-            var roleId = Guid.Parse(claims.FirstOrDefault(c =>
-                c.Type == ClaimType.RoleId)!.Value);
+            var plain = (claims.FirstOrDefault(c =>
+                c.Type == ClaimType.RoleId) ?? throw new ForbiddenException("unexpected user")).Value;
+            var rids = plain.Split(',').Select(Guid.Parse);
             List<Menu> entities;
-            if (roleId == Role.DevRole.Id)
+            if (rids.Contains(Role.DevRole.Id))
             {
                 entities = await DbContext.Queryable<Menu>()
                     .Where(t => t.Type != MenuType.Component).OrderBy(x => x.OrderNum).ToListAsync();
@@ -43,13 +44,18 @@ namespace Hgzn.Mes.Application.Main.Services.System
             else
             {
                 var roles = await DbContext.Queryable<Role>()
-                    .Where(r => r.Id == roleId)
+                    .Where(r => rids.Contains(r.Id))
                     .Includes(r => r.Menus)// == null ? null : r.Menus.Where(t=>t.Type != MenuType.Component) 
                     .ToArrayAsync();
                 if (roles.Length == 0) throw new NotFoundException("role not found");
-                entities = await roles.Where(r => r.Menus != null).SelectMany(r => r.Menus!).Where(t => t.Type != MenuType.Component).OrderBy(x => x.OrderNum).ToListAsync();
-                if (!entities.Any()) return [];
-                entities.Add(Menu.Root);
+                entities = await roles
+                    .Where(r => r.Menus != null)
+                    .SelectMany(r => r.Menus!)
+                    .Where(t => t.Type != MenuType.Component)
+                    .OrderBy(x => x.OrderNum)
+                    .ToListAsync();
+                if (entities.Count <= 1) return [];
+                //entities.Add(Menu.Root);
             }
             var allRoutes = await entities.Select(t => new MenuReaderRouterDto()
             {

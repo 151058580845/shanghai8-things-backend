@@ -13,6 +13,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipMeasurementManager
         public Guid? CreatorId { get; set; }
 
         public DateTime CreationTime { get; set; }
+        public int CreatorLevel { get; set; } = 0;
 
         /// <summary>
         /// 是否计量设备

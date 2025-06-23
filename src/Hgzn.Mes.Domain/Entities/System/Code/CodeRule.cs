@@ -1,15 +1,17 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Code;
 
-public class CodeRule : UniversalEntity, ISoftDelete, IState, IOrder, ISeedsGeneratable
+public class CodeRule : UniversalEntity, ICreationAudited, ISoftDelete, IState, IOrder, ISeedsGeneratable
 {
     [Description("创建时间")]
     public DateTime CreationTime { get; set; }
 
     [Description("创建者ID")]
     public Guid? CreatorId { get; set; }
+    public int CreatorLevel { get; set; } = 0;
 
     [Description("最后修改者ID")]
     public Guid? LastModifierId { get; set; }

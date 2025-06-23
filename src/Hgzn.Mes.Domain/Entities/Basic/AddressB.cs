@@ -8,6 +8,7 @@ namespace Hgzn.Mes.Domain.Entities.Basic;
 public class AddressB: UniversalEntity, IAudited
 {
     public Guid? CreatorId { get; set; }
+    public int CreatorLevel { get; set; } = 0;
     public DateTime CreationTime { get; set; }
     public Guid? LastModifierId { get; set; }
     public DateTime? LastModificationTime { get; set; }

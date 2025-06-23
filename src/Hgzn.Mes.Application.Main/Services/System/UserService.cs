@@ -126,11 +126,13 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
 
             var roleIds = string.Join(",", user.Roles.Select(r => r.Id));
+            var minLevel = user.Roles.Min(r => r.Level);
             var token = JwtTokenUtil.GenerateJwtToken(SettingUtil.Jwt.Issuer, SettingUtil.Jwt.Audience,
                             SettingUtil.Jwt.ExpireMin,
                             new Claim(ClaimType.UserId, user.Id.ToString()),
                             new Claim(ClaimType.UserName, user.Username),
-                            new Claim(ClaimType.RoleId, roleIds)) ??
+                            new Claim(ClaimType.RoleId, roleIds),
+                            new Claim(ClaimType.Level, $"{minLevel}")) ??
                         throw new Exception("generate jwt token error");
 
             if (!await _userDomainService.VerifyTokenAsync(user.Id, token))
@@ -355,6 +357,25 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .ToListAsync();
 
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
+        }
+
+        public async Task<bool?> ChangeIconAsync(Guid userId,IFormFile file)
+        {
+            var directoryPath = Path.Combine(Environment.CurrentDirectory, "attachs");
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+            var fullPath = Path.Combine(directoryPath, $"{userId}-{DateTimeOffset.Now.ToUnixTimeMilliseconds()}-{file.FileName}");
+            if (!File.Exists(fullPath))
+            {
+                using var reader = file.OpenReadStream();
+                using var writer = new FileStream(fullPath, FileMode.Create);
+                await reader.CopyToAsync(writer);
+                writer.Close();
+                reader.Close();
+            }
+            return true;
         }
     }
 }

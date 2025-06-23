@@ -21,7 +21,7 @@ public class OperLogFilterAttribute : ActionFilterAttribute
 
 
     public OperLogFilterAttribute(ICurrentUser currentUser, SqlSugarContext sqlSugarContext,
-        ICurrentPrincipalAccessor currentPrincipalAccessor,  IActionContextAccessor actionContextAccessor)
+        ICurrentPrincipalAccessor currentPrincipalAccessor, IActionContextAccessor actionContextAccessor)
     {
         _currentUser = currentUser;
         _sugarContext = sqlSugarContext;
@@ -34,7 +34,12 @@ public class OperLogFilterAttribute : ActionFilterAttribute
         var resultContext = await next.Invoke();
         _currentPrincipalAccessor.Change(context.HttpContext.User);
         var ip = resultContext.HttpContext.GetClientIp();
-        var ipTool = IpTool.Search(ip);
+        IpInfo ipTool = null!;
+        try
+        {
+            ipTool = IpTool.Search(ip);
+        }
+        catch (Exception e) { }
 
         string location = ipTool.Province + "-" + ipTool.City;
         var pathList = resultContext.HttpContext.Request.Path.Value?.Split("/") ?? [];
@@ -49,8 +54,8 @@ public class OperLogFilterAttribute : ActionFilterAttribute
         {
             Id = Guid.NewGuid(),
             OperIp = ip,
-            Title =pathList.Length>2 ? pathList[2] : "",
-            OperType =permission.Length>2 ? permission[2] :"",
+            Title = pathList.Length > 2 ? pathList[2] : "",
+            OperType = permission.Length > 2 ? permission[2] : "",
             OperLocation = location,
             RequestMethod = resultContext.HttpContext.Request.Method,
             Method = resultContext.HttpContext.Request.Path.Value,
@@ -58,7 +63,7 @@ public class OperLogFilterAttribute : ActionFilterAttribute
             RequestParam = await resultContext.HttpContext.GetRequestValue(resultContext.HttpContext.Request.Method),
         };
 
-        
+
         await _sugarContext.DbContext.Insertable(logEntity).ExecuteCommandAsync();
     }
 }

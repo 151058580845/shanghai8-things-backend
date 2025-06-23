@@ -2,6 +2,7 @@
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Exceptions;
@@ -22,12 +23,33 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
                 .Includes(ll => ll.EquipLedger)
                 .Includes(ll => ll.Room)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber), ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!))
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.Model!.Contains(queryDto!.Query!));
+                .WhereIF(queryDto?.FilterEquipType == true,
+                    ll => ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
+                    ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber), 
+                    ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query),
+                    ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!) ||
+                    ll.EquipLedger!.Model!.Contains(queryDto!.Query!));
 
             var entities = await query
                 .OrderByDescending(m => m.CreationTime)
+                .ToArrayAsync();
+            return Mapper.Map<IEnumerable<LocationLabelReadDto>>(entities);
+        }
+
+        public async Task<IEnumerable<LocationLabelReadDto>> QueryByDeviceTypes(IEnumerable<Guid>? typeIds)
+        {
+            var targets = (typeIds?? 
+                await DbContext.Queryable<EquipType>()
+                .Where(et => et.Id != EquipType.RfidIssuerType.Id &&
+                    et.Id != EquipType.RfidReaderType.Id)
+                .Select(et => et.Id)
+                .ToArrayAsync()).ToList();
+            var entities = await Queryable
+                .Includes(ll => ll.EquipLedger)
+                .WhereIF(targets is not null && targets.Count != 0,
+                    ll => targets!.Contains(ll.EquipLedger!.TypeId!.Value))
                 .ToArrayAsync();
             return Mapper.Map<IEnumerable<LocationLabelReadDto>>(entities);
         }
@@ -39,11 +61,16 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
                 .Includes(ll => ll.EquipLedger)
                 .Includes(ll => ll.Room)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber), ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!))
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.Model!.Contains(queryDto!.Query!))
+                .WhereIF(queryDto?.FilterEquipType == true,
+                    ll => ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
+                    ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber),
+                    ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), 
+                    ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!) ||
+                    ll.EquipLedger!.Model!.Contains(queryDto!.Query!))
                 .OrderByDescending(m => m.CreationTime)
-                .ToPaginatedListAsync(queryDto!.PageIndex, queryDto.PageSize);
+                .ToPaginatedListAsync(queryDto!.PageIndex, queryDto.PageSize); 
             return Mapper.Map<PaginatedList<LocationLabelReadDto>>(entities);
         }
 

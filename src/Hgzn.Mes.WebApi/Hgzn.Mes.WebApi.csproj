@@ -30,6 +30,17 @@
     <ProjectReference Include="..\Hgzn.Mes.Infrastructure\Hgzn.Mes.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="attachs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="attachs\08e8bafc-1a6d-4ce8-a921-e95fae5ac56b-1750674454200.png" />
+    <None Remove="attachs\08e8bafc-1a6d-4ce8-a921-e95fae5ac56b-1750674376281.png" />
+    <None Remove="attachs\08e8bafc-1a6d-4ce8-a921-e95fae5ac56b-1750674358446.png" />
+    <None Remove="attachs\08e8bafc-1a6d-4ce8-a921-e95fae5ac56b-1750674020749.png" />
+  </ItemGroup>
+
   <PropertyGroup>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	<NoWarn>$(NoWarn);1591</NoWarn>

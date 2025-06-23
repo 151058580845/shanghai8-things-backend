@@ -53,7 +53,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var result = await DbContext.Ado.UseTranAsync(async () =>
             {
                 // 删除角色菜单
-                await DbContext.Deleteable<RoleMenu>().Where(s => s.RoleId == roleId).ExecuteCommandAsync();
+                await DbContext.Deleteable<RoleMenu>()
+                .Where(s => s.RoleId == roleId && s.MenuId != Menu.Root.Id )
+                .ExecuteCommandAsync();
     
                 // 插入新的角色菜单
                 await DbContext.Insertable(roleMenuns).ExecuteCommandAsync(); 

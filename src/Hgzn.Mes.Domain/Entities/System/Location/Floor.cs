@@ -30,6 +30,8 @@ public class Floor : UniversalEntity, IOrder, IAudited, ISeedsGeneratable
 
     public Guid? CreatorId { get; set; }
 
+    public int CreatorLevel { get; set; } = 0;
+
     public DateTime? LastModificationTime { get; set; }
 
     public Guid? LastModifierId { get; set; }

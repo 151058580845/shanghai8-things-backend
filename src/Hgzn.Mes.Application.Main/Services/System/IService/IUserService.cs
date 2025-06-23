@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Entities.System.Account;
+using Microsoft.AspNetCore.Http;
 
 namespace Hgzn.Mes.Application.Main.Services.System.IService
 {
@@ -31,5 +32,7 @@ namespace Hgzn.Mes.Application.Main.Services.System.IService
         /// <param name="roleId"></param>
         /// <returns></returns>
         Task<IEnumerable<UserReadDto>> GetListByRoleIdAsync(Guid roleId);
+
+        Task<bool?> ChangeIconAsync(Guid userId,IFormFile file);
     }
 }

@@ -72,4 +72,5 @@ public class CollectionConfig : UniversalEntity, ICreationAudited
 
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
+    public int CreatorLevel { get; set; } = 0;
 }

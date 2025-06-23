@@ -20,12 +20,15 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         /// </summary>
         /// <param name="userService">用户服务</param>
         public UserController(
-            IUserService userService
+            IUserService userService,
+            IAttachmentService attachmentService
             )
         {
+            _attachmentService = attachmentService;
             _userService = userService;
         }
 
+        private readonly IAttachmentService _attachmentService;
         private readonly IUserService _userService;
 
         /// <summary>
@@ -38,8 +41,17 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ResponseWrapper<UserScopeReadDto>> GetCurrentUser() =>
-            (await _userService.GetCurrentUserAsync(HttpContext.User.Claims)).Wrap();
+        public async Task<ResponseWrapper<UserScopeReadDto>> GetCurrentUser()
+        {
+            var dto = await _userService.GetCurrentUserAsync(HttpContext.User.Claims);
+            if (dto != null && !string.IsNullOrEmpty(dto.Icon))
+            {
+                dto.Icon = await _attachmentService.GetFileBase64Async(Guid.Parse(dto.Icon));
+                Console.WriteLine(dto.Icon);
+                return dto.Wrap();
+            }
+            return null;
+        }
 
         /// <summary>
         ///     获取指定Id的用户

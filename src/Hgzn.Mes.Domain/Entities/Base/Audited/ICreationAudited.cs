@@ -4,5 +4,6 @@
     {
         Guid? CreatorId { get; set; }
         DateTime CreationTime { get; set; }
+        int CreatorLevel { get; set; }
     }
 }

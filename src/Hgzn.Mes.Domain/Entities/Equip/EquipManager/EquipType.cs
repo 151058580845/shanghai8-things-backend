@@ -1,10 +1,12 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
 [Description("设备类型")]
-public class EquipType : UniversalEntity, ISoftDelete, IState, ISeedsGeneratable
+public class EquipType : UniversalEntity, ICreationAudited, ISoftDelete, IState, ISeedsGeneratable
 {
     [Description("设备类型编号")]
     public string TypeCode { get; set; } = null!;
@@ -36,6 +38,7 @@ public class EquipType : UniversalEntity, ISoftDelete, IState, ISeedsGeneratable
     public bool State { get; set; }
 
     public Guid? CreatorId { get; set; }
+    public int CreatorLevel { get; set; } = 0;
 
     /// <summary>
     /// 这个设备类型提前配置的可以采集的数据列表
@@ -61,7 +64,7 @@ public class EquipType : UniversalEntity, ISoftDelete, IState, ISeedsGeneratable
         LastModificationTime = null,
         ProtocolEnum = "RfidReader",
         State = true,
-        CreatorId = null,
+        CreatorId = User.DevUser.Id,
         SoftDeleted = false,
         DeleteTime = null,
         Id = new Guid("ece1d093-80b5-4343-8dbf-a9c330387c5e"),
