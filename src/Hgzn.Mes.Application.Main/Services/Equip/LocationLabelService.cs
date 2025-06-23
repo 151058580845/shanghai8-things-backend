@@ -17,9 +17,17 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
     {
         public override async Task<IEnumerable<LocationLabelReadDto>> GetListAsync(LocationLabelQueryDto? queryDto = null)
         {
-            var entities = await Queryable
+            var query = queryDto is null ? Queryable : Queryable
+                .Where(ll => ll.Type == queryDto.LabelType)
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
-                .OrderBy(m => m.CreationTime)
+                .Includes(ll => ll.EquipLedger)
+                .Includes(ll => ll.Room)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber), ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!))
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.Model!.Contains(queryDto!.Query!));
+
+            var entities = await query
+                .OrderByDescending(m => m.CreationTime)
                 .ToArrayAsync();
             return Mapper.Map<IEnumerable<LocationLabelReadDto>>(entities);
         }
@@ -31,8 +39,10 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
                 .Includes(ll => ll.EquipLedger)
                 .Includes(ll => ll.Room)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber), ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!))
-                .OrderBy(m => m.CreationTime)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), ll => ll.EquipLedger!.Model!.Contains(queryDto!.Query!))
+                .OrderByDescending(m => m.CreationTime)
                 .ToPaginatedListAsync(queryDto!.PageIndex, queryDto.PageSize);
             return Mapper.Map<PaginatedList<LocationLabelReadDto>>(entities);
         }
