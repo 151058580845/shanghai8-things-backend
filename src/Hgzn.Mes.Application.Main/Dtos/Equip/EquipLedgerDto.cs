@@ -326,7 +326,7 @@ public class EquipLedgerQueryDto : PaginatedTimeQueryDto
     public string? EquipCode { get; set; }
 
     /// <summary>
-    /// 设备类型名称
+    /// 设备名称
     /// </summary>
     public string? EquipName { get; set; }
 
@@ -355,7 +355,12 @@ public class EquipLedgerQueryDto : PaginatedTimeQueryDto
     /// </summary>
     public string? AssetNumber { get; set; }
 
-    public int? BindingTagCount { get; set; }
+    /// <summary>
+    /// 模糊匹配设备名称和型号
+    /// </summary>
+    public string? Query { get; set; }
+
+    public int? BindingTagCount {  get; set; }
 
     public bool? NoRfidDevice { get; set; }
 

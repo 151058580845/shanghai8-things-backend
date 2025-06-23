@@ -39,6 +39,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         [Description("创建者ID")]
         public Guid? CreatorId { get; set; }
 
+        public int CreatorLevel { get; set; } = 0;
+
         [Description("最后修改者ID")]
         public Guid? LastModifierId { get; set; }
 

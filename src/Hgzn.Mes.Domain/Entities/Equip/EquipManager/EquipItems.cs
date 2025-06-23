@@ -1,11 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager
 {
@@ -13,6 +8,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager
     {
         public DateTime CreationTime { get; set; }
         public Guid? CreatorId { get; set; }
+        public int CreatorLevel { get; set; } = 0;
         public DateTime? LastModificationTime { get; set; }
         public Guid? LastModifierId { get; set; }
         public bool IsDeleted { get; set; }

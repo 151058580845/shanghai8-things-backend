@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel;
 using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Shared.Enums;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
-public class EquipNotice:UniversalEntity
+public class EquipNotice : UniversalEntity, ICreationAudited
 {
     [Description("设备主键")]
     public Guid EquipId { get; set; }
@@ -23,5 +24,8 @@ public class EquipNotice:UniversalEntity
     
     [Description("通知描述")]
     public string? Description { get; set; }
+    public Guid? CreatorId { get; set; }
+    public int CreatorLevel { get; set; } = 0;
+    public DateTime CreationTime { get; set; }
 
 }

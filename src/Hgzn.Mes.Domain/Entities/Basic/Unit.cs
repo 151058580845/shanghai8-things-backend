@@ -15,6 +15,7 @@ public class Unit : UniversalEntity, IAudited
     [Description("备注")] public string? Remark { get; set; }
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
+    public int CreatorLevel { get; set; } = 0;
     public Guid? LastModifierId { get; set; }
     public DateTime? LastModificationTime { get; set; }
 }

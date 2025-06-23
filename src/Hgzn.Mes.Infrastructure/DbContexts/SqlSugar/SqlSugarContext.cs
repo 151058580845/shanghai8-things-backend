@@ -22,6 +22,7 @@ using Hgzn.Mes.Domain.Shared;
 using Microsoft.AspNetCore.Http;
 using System.Text;
 using AutoMapper.Internal;
+using Hgzn.Mes.Domain.Shared.Exceptions;
 
 namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 
@@ -32,6 +33,8 @@ public sealed class SqlSugarContext
     private readonly DbConnOptions _dbOptions;
     private readonly ILogger<SqlSugarContext> _logger;
     private Guid? _userId;
+    private List<Guid> _rids = [];
+    private int _level = 0;
 
     public SqlSugarContext(
         ILogger<SqlSugarContext> logger,
@@ -44,9 +47,18 @@ public sealed class SqlSugarContext
         _dbOptions = dbOptions;
         _logger = logger;
         DbContext = client;
-        var plain = _httpContextAccessor?.HttpContext?.User.Claims
-            .FirstOrDefault(c => ClaimType.UserId == c.Type);
-        _userId = plain is null ? null : Guid.Parse(plain.Value);
+        if(_httpContextAccessor?.HttpContext?.User.Claims is not null)
+        {
+            var plain = _httpContextAccessor?.HttpContext?.User.Claims
+                .FirstOrDefault(c => ClaimType.UserId == c.Type);
+            var str = _httpContextAccessor?.HttpContext?.User.Claims.FirstOrDefault(c =>
+                c.Type == ClaimType.RoleId);
+            if (str is not null) _rids = str.Value.Split(',').Select(Guid.Parse).ToList();
+            _userId = plain is null ? null : Guid.Parse(plain.Value);
+            var levelPlain = _httpContextAccessor?.HttpContext?.User.Claims
+                .FirstOrDefault(c => ClaimType.Level == c.Type);
+            _level = levelPlain is null ? -1 : int.Parse(levelPlain!.Value);
+        }
         // DbContext = new SqlSugarClient(Build(dbOptions));
         OnSqlSugarClientConfig(DbContext);
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
@@ -65,6 +77,13 @@ public sealed class SqlSugarContext
         switch (entityInfo.OperationType)
         {
             case DataFilterType.UpdateByObject:
+                
+                if (entityInfo.PropertyName.Equals(nameof(ICreationAudited.CreatorId)))
+                {
+                    var dataLevel = ((ICreationAudited) entityInfo.EntityValue).CreatorLevel;
+                    if (dataLevel < _level) 
+                        throw new ForbiddenException("not allowed to update this data");
+                }
                 if (entityInfo.PropertyName.Equals(nameof(IAudited.LastModificationTime)))
                 {
                     entityInfo.SetValue(DateTime.Now);
@@ -104,9 +123,20 @@ public sealed class SqlSugarContext
                         entityInfo.SetValue(_userId);
                     }
                 }
+                
+                if (entityInfo.PropertyName.Equals(nameof(IAudited.CreatorLevel)))
+                {
+                    entityInfo.SetValue(_level);
+                }
 
                 break;
             case DataFilterType.DeleteByObject:
+                if (entityInfo.PropertyName.Equals(nameof(ICreationAudited.CreatorId)))
+                {
+                    var dataLevel = ((ICreationAudited)entityInfo.EntityValue).CreatorLevel;
+                    if (dataLevel < _level)
+                        throw new ForbiddenException("not allowed to update this data");
+                }
                 if (entityInfo.PropertyName.Equals(nameof(UniversalEntity.Id)))
                 {
                     if (entityInfo.EntityValue is ISoftDelete softDelete)
@@ -199,7 +229,7 @@ public sealed class SqlSugarContext
             return null;
         }
         var code = builder.ToString();
-        LoggerAdapter.LogInformation($"[已生成种子代码<{typeof(TEntity).Name}>]:\r\n {code}\r\n");
+        LoggerAdapter.LogTrace($"[已生成种子代码<{typeof(TEntity).Name}>]:\r\n {code}\r\n");
         return code;
     }
     public void InitDatabase()

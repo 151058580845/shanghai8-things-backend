@@ -288,7 +288,7 @@ var sqlSugarContext = app.Services.GetService<SqlSugarContext>();
 sqlSugarContext?.InitDatabase();
 if (app.Environment.IsDevelopment())
 {
-    // await sqlSugarContext!.GetSeedsCodeFromDatabaseAsync();
+    await sqlSugarContext!.GetSeedsCodeFromDatabaseAsync();
 }
 app.Services.GetService<IMqttExplorer>()?.StartAsync();
 

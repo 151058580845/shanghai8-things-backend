@@ -8,7 +8,9 @@ public class LoginLog:UniversalEntity,ICreationAudited
 {
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
-    
+
+    public int CreatorLevel { get; set; } = 0;
+
     /// <summary>
     /// 登录用户 
     ///</summary>

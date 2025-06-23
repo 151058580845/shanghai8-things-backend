@@ -1902,4 +1902,5 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
 
     public Guid? LastModifierId { get; set; }
     public DateTime? LastModificationTime { get; set; }
+    public int CreatorLevel { get; set; } = 0;
 }

@@ -5,7 +5,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
 {
-    public class EquipReceiveData : UniversalEntity,ICreationAudited
+    public class EquipReceiveData : UniversalEntity, ICreationAudited
     {
         [Description("设备主键")] 
         public Guid? EquipId { get; set; }
@@ -21,6 +21,8 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
         
         public XT_307_SL_1_ReceiveData? ReceiveData { get; set; }
         public Guid? CreatorId { get; set; }
+
+        public int CreatorLevel { get; set; } = 0;
         public DateTime CreationTime { get; set; }
     }
 }

@@ -12,6 +12,7 @@ public class EquipConnectForward : UniversalEntity, ICreationAudited
 {
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; } = default!;
+    public int CreatorLevel { get; set; } = 0;
 
     [Description("源链接")]
     public Guid OriginatorId { get; set; }

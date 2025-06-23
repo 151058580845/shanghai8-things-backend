@@ -99,7 +99,7 @@ public class EquipLedgerService : SugarCrudAppService<
     public async Task<IEnumerable<EquipLedgerSearchReadDto>> GetAppSearchAsync()
     {
         var entities = await Queryable.Where(t => t.State == false).Includes(t => t.EquipType)
-            .Select<EquipLedgerSearchReadDto>(t => new EquipLedgerSearchReadDto()
+            .Select(t => new EquipLedgerSearchReadDto()
             {
                 Id = t.Id,
                 EquipCode = t.EquipCode,
@@ -122,9 +122,11 @@ public class EquipLedgerService : SugarCrudAppService<
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
         var queryable = Queryable
-            .WhereIF(!string.IsNullOrEmpty(query.EquipName), m => m.EquipName.Contains(query.EquipName!))
             .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
-            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.EquipName.Contains(query.AssetNumber!))
+            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.EquipName == query.AssetNumber)
+            .WhereIF(!string.IsNullOrEmpty(query.Query),
+                m => m.EquipName.Contains(query.Query!) ||
+                m.Model!.Contains(query.Query!))
             .WhereIF(!query.ResponsibleUserId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.ResponsibleUserId))
             .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
             .WhereIF(query.NoRfidDevice == true, m => m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id)
@@ -154,14 +156,22 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto? query = null)
     {
-        var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(query.EquipName), m => m.EquipName.Contains(query.EquipName!))
+        var queryable = query is null ? Queryable :
+            Queryable
             .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
+            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.EquipName == query.AssetNumber)
+            .WhereIF(!string.IsNullOrEmpty(query.Query),
+                m => m.EquipName.Contains(query.Query!) ||
+                m.Model!.Contains(query.Query!))
+            .WhereIF(!query.ResponsibleUserId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.ResponsibleUserId))
             .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
+            .WhereIF(query.NoRfidDevice == true, m => m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id)
             .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
             .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
-            .WhereIF(query?.State != null, m => m.State == query.State)
+            .WhereIF(query.State != null, m => m.State == query.State);
+
+        var entities = await queryable
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)

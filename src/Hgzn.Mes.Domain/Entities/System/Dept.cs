@@ -30,6 +30,8 @@ public class Dept : UniversalEntity, ISoftDelete, IAudited, IState, IOrder
     public bool SoftDeleted { get; set; }
     public DateTime? DeleteTime { get; set; }
     public Guid? CreatorId { get; set; }
+
+    public int CreatorLevel { get; set; } = 0;
     public DateTime CreationTime { get; set; }
     public Guid? LastModifierId { get; set; }
     public DateTime? LastModificationTime { get; set; }

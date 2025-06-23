@@ -11,14 +11,15 @@ namespace Hgzn.Mes.Domain.Utilities
         //public static ECDsa PublicECDsa { get; private set; } = ECDsa.Create();
         //public static ECDsa PrivateECDsa { get; private set; } = ECDsa.Create();
         public static string KeyId = "EC_KEY_2024";
-        public static ECDsaSecurityKey PrivateECDsaSecurityKey { get; private set; }
-        public static ECDsaSecurityKey PublicECDsaSecurityKey { get; private set; }
+        public static ECDsaSecurityKey PrivateECDsaSecurityKey { get; private set; } = null!;
+        public static ECDsaSecurityKey PublicECDsaSecurityKey { get; private set; } = null!;
         public static void Initialize(string keyFolder)
         {
             //if (SettingUtil.IsDevelopment)
             //{
-            //    var password = "dev@2024";
-            //    var password = "admin@2024";
+            //    //var password = "dev@2024";
+            //    //var password = "admin@2024";
+            //    var password = "super@2024";
             //    var secret = SHA256.HashData(Encoding.UTF8.GetBytes(password));
             //    var base64 = Convert.ToBase64String(secret);
             //    //------ to backend -------//

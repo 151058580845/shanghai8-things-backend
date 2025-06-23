@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Ericc.EntityFrameworkCore.OpenGauss.Infrastructure.Internal;
 using Hgzn.Mes.Application.Main.Captchas;
 using Hgzn.Mes.Application.Main.Captchas.Builder;
 using Hgzn.Mes.Application.Main.Dtos;
@@ -125,11 +126,13 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
 
             var roleIds = string.Join(",", user.Roles.Select(r => r.Id));
+            var minLevel = user.Roles.Min(r => r.Level);
             var token = JwtTokenUtil.GenerateJwtToken(SettingUtil.Jwt.Issuer, SettingUtil.Jwt.Audience,
                             SettingUtil.Jwt.ExpireMin,
                             new Claim(ClaimType.UserId, user.Id.ToString()),
                             new Claim(ClaimType.UserName, user.Username),
-                            new Claim(ClaimType.RoleId, roleIds)) ??
+                            new Claim(ClaimType.RoleId, roleIds),
+                            new Claim(ClaimType.Level, $"{minLevel}")) ??
                         throw new Exception("generate jwt token error");
 
             if (!await _userDomainService.VerifyTokenAsync(user.Id, token))
@@ -171,6 +174,48 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Includes(u => u.Roles, r => r.Menus)
                 .FirstAsync();
             return Mapper.Map<UserReadDto>(user);
+        }
+
+        public override async Task<UserReadDto?> UpdateAsync(Guid uid, UserUpdateDto dto)
+        {
+            await DbContext.Ado.BeginTranAsync();
+            var count = 0;
+            try
+            {
+                var user = await DbContext.Queryable<User>()
+                    .Includes(u => u.Roles)
+                    .FirstAsync(u => u.Id == uid) ??
+                    throw new NotFoundException("uesr not found!");
+                var entity = Mapper.Map(dto, user);
+                count += await DbContext.Updateable(entity).ExecuteCommandAsync();
+
+                if (dto.RoleIds != null && dto.RoleIds.Any() &&
+                    !user.Roles.Select(r => r.Id).SequenceEqual(dto.RoleIds))
+                {
+                    if (!await DbContext.Queryable<Role>()
+                        .AnyAsync(r => dto.RoleIds!.Contains(r.Id)))
+                    {
+                        throw new BadRequestException("one or more role not exist!");
+                    }
+                    var relation = dto.RoleIds.Select(rid =>
+                        new UserRole { UserId = uid, RoleId = rid }).ToList();
+
+                    count += await DbContext.Deleteable<UserRole>()
+                        .Where(ur => ur.UserId == uid).ExecuteCommandAsync();
+
+                    count += await DbContext.Insertable<UserRole>(relation).ExecuteCommandAsync();
+                    user = await DbContext.Queryable<User>()
+                        .Includes(u => u.Roles)
+                        .FirstAsync();
+                }
+                await DbContext.Ado.CommitTranAsync();
+                return Mapper.Map<UserReadDto>(entity);
+            }
+            catch
+            {
+                await DbContext.Ado.RollbackTranAsync();
+                return null;
+            }
         }
 
         public async Task<int> DeleteRangeAsync(IEnumerable<Guid> ids)
