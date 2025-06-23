@@ -17,6 +17,7 @@ namespace Hgzn.Mes.WebApi.Utilities
                 {
                     NotFoundException => StatusCodes.Status404NotFound,
                     NotAcceptableException => StatusCodes.Status406NotAcceptable,
+                    ForbiddenException => StatusCodes.Status403Forbidden,
                     _ => StatusCodes.Status500InternalServerError
                 };
 
