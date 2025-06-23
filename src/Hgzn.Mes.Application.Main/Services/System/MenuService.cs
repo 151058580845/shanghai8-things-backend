@@ -54,8 +54,8 @@ namespace Hgzn.Mes.Application.Main.Services.System
                     .Where(t => t.Type != MenuType.Component)
                     .OrderBy(x => x.OrderNum)
                     .ToListAsync();
-                if (entities.Count == 0) return [];
-                entities.Add(Menu.Root);
+                if (entities.Count <= 1) return [];
+                //entities.Add(Menu.Root);
             }
             var allRoutes = await entities.Select(t => new MenuReaderRouterDto()
             {

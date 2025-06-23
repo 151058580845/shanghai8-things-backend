@@ -1,6 +1,7 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared.Enums;
 using System.ComponentModel;
 
@@ -14,6 +15,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
 {
     public DateTime CreationTime { get; set; }
     public Guid? CreatorId { get; set; }
+    public int CreatorLevel { get; set; } = 0;
     public DateTime? LastModificationTime { get; set; }
     public Guid? LastModifierId { get; set; }
     public bool State { get; set; } = true;
@@ -69,7 +71,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("32b9cdd2-c7ff-4216-951c-558eeaa31fca"),
         CreationTime = DateTime.Parse("2025-06-09 10:54:51.876426"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -91,7 +93,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("ab7281e4-1332-4641-8c36-bc7a5841e332"),
         CreationTime = DateTime.Parse("2025-06-09 10:55:31.418074"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -113,7 +115,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("14790a24-7b53-4a0d-b604-b20d5f6e3f0f"),
         CreationTime = DateTime.Parse("2025-06-09 10:55:51.110209"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -135,7 +137,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("590f3746-8672-4e5f-8967-1c0c2b9ce8d6"),
         CreationTime = DateTime.Parse("2025-06-09 10:55:44.583823"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 10:55:54.741941"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -157,7 +159,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("3e52a100-a9c3-49ab-b39e-6f5e051da2ed"),
         CreationTime = DateTime.Parse("2025-06-09 10:56:11.227984"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -179,7 +181,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("fad2a767-ed83-4c2f-95ac-846f2ad62578"),
         CreationTime = DateTime.Parse("2025-06-09 10:56:30.415543"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -201,7 +203,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("0c6d861f-d28d-4cd3-80a9-67b772f65b63"),
         CreationTime = DateTime.Parse("2025-06-09 10:56:47.376833"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -223,7 +225,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("b9cd13ac-5070-4100-8d90-be581af51465"),
         CreationTime = DateTime.Parse("2025-06-09 10:57:02.300652"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -245,7 +247,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("077331ae-f756-411a-b376-b3c657486cad"),
         CreationTime = DateTime.Parse("2025-06-09 10:57:19.114299"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -267,7 +269,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("39f33178-bdc7-4f0c-a8e0-0f2ef417aa6a"),
         CreationTime = DateTime.Parse("2025-06-09 10:58:16.458112"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -289,7 +291,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("dac5d430-bac5-4d59-908d-241ab962baed"),
         CreationTime = DateTime.Parse("2025-06-09 10:57:52.180373"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 10:58:37.085713"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -311,7 +313,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("1b91ee81-50d9-4e12-ab0d-ff2d29ad10f8"),
         CreationTime = DateTime.Parse("2025-06-09 10:59:02.359014"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -333,7 +335,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("07762c49-9fea-4bca-bf17-4395b82f34f7"),
         CreationTime = DateTime.Parse("2025-06-09 10:59:26.695966"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -355,7 +357,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("135f2f74-9305-41eb-bd63-4f19495d231f"),
         CreationTime = DateTime.Parse("2025-06-09 10:59:43.838209"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -377,7 +379,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("3b007e2e-b494-4737-86ff-ee95bf495d58"),
         CreationTime = DateTime.Parse("2025-06-09 11:00:07.872816"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -399,7 +401,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("4c56e0de-274f-42cf-8899-41b7a4c22f29"),
         CreationTime = DateTime.Parse("2025-06-09 11:01:56.376158"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -421,7 +423,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("ad2f945b-25c4-45fa-a0d1-65102a674700"),
         CreationTime = DateTime.Parse("2025-06-09 11:00:46.26056"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:12:34.332861"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -443,7 +445,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("372b749c-e2fa-4115-a9b7-189f4ead4a04"),
         CreationTime = DateTime.Parse("2025-06-09 10:57:34.545493"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -465,7 +467,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("522a3434-bf77-44ca-a11a-3b66db9fea85"),
         CreationTime = DateTime.Parse("2025-06-09 10:58:04.954589"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -487,7 +489,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("430c852a-1a98-4d2a-9df4-897aa888166b"),
         CreationTime = DateTime.Parse("2025-06-09 10:58:32.022314"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:13:14.210817"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -509,7 +511,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("65b3806a-1e12-43b9-b5f4-2d36b30bd82b"),
         CreationTime = DateTime.Parse("2025-06-09 10:59:06.694083"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:12:48.014415"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -531,7 +533,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("2cec055f-3895-4387-9003-6e5204f9bc00"),
         CreationTime = DateTime.Parse("2025-06-09 10:57:48.707483"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:12:15.756667"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -553,7 +555,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("8276d274-62e4-4c3a-b9a0-522f2b24ea08"),
         CreationTime = DateTime.Parse("2025-06-09 10:58:45.385493"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:13:28.456422"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -575,7 +577,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("9990d3d4-d75e-4e8e-a4c2-3dc18af1b087"),
         CreationTime = DateTime.Parse("2025-06-09 10:59:22.412957"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:13:49.643178"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -597,7 +599,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("11b9fcbd-36ae-4d6d-abc1-c02bfe0f980c"),
         CreationTime = DateTime.Parse("2025-06-09 10:59:37.725323"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:14:04.778047"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -619,7 +621,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("1f9e8558-b8b5-4226-a656-d239f6606a99"),
         CreationTime = DateTime.Parse("2025-06-09 10:59:53.895993"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:14:18.39789"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -641,7 +643,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("a09a7162-d11e-4601-996e-793c2df7b44a"),
         CreationTime = DateTime.Parse("2025-06-09 11:01:31.925729"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:14:39.841358"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -663,7 +665,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("a656859e-cec7-4fd8-a3b5-8214483481aa"),
         CreationTime = DateTime.Parse("2025-06-09 11:00:11.429478"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -685,7 +687,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("172e1133-7d3e-4031-aef0-5da197401261"),
         CreationTime = DateTime.Parse("2025-06-09 11:00:30.511917"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -707,7 +709,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("3daf04f9-320b-4475-8a28-8eb1487bbbd8"),
         CreationTime = DateTime.Parse("2025-06-09 11:01:50.712103"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:15:05.777516"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -729,7 +731,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("7659fe7b-7953-4dae-8c77-fb760342b5e5"),
         CreationTime = DateTime.Parse("2025-06-09 11:02:33.815809"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -751,7 +753,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("9159c53f-cce8-41a3-8f1d-9eac89f8a5c1"),
         CreationTime = DateTime.Parse("2025-06-09 11:02:59.775384"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -773,7 +775,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("af822d51-b8fc-4a46-bb13-2ee4ff14a758"),
         CreationTime = DateTime.Parse("2025-06-09 11:02:18.07039"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -795,7 +797,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("69d47eba-285a-48b5-b360-bcf55488a606"),
         CreationTime = DateTime.Parse("2025-06-09 11:02:03.334873"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:15:25.149718"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -817,7 +819,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("942da2b4-bea8-47b7-88a0-bb88b0ddf927"),
         CreationTime = DateTime.Parse("2025-06-09 11:02:16.021986"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -839,7 +841,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("e8173f93-6452-438a-ad0d-5afca4dafc42"),
         CreationTime = DateTime.Parse("2025-06-09 10:57:03.018776"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -861,7 +863,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("a03b6f89-eb4f-412b-8b25-c8d270c94584"),
         CreationTime = DateTime.Parse("2025-06-09 11:03:23.35518"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -883,7 +885,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("e33fb125-48cc-4340-a4e7-38c552fcba41"),
         CreationTime = DateTime.Parse("2025-06-09 11:04:02.152226"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -905,7 +907,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("b4eb3dbb-dea4-4bef-a131-7d887b91df71"),
         CreationTime = DateTime.Parse("2025-06-09 11:04:27.043564"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -927,7 +929,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("ec8eafb7-12b9-418d-9daf-a336c86f97dd"),
         CreationTime = DateTime.Parse("2025-06-09 11:04:42.829063"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -949,7 +951,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("3abcfa6f-313f-485a-b0f9-911b588d2d6d"),
         CreationTime = DateTime.Parse("2025-06-09 11:05:07.2316"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -971,7 +973,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("5db98e88-6aba-4f0a-b761-965694709296"),
         CreationTime = DateTime.Parse("2025-06-09 11:05:24.36458"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -993,7 +995,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("9559771b-d8c6-4600-ade4-9dcf1218677b"),
         CreationTime = DateTime.Parse("2025-06-09 11:05:44.756898"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -1015,7 +1017,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("5afda793-f924-4dea-842d-1b916d88c091"),
         CreationTime = DateTime.Parse("2025-06-09 11:03:42.826871"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = null,
         LastModifierId = null,
         State = true,
@@ -1037,7 +1039,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("26093d6f-0587-4b34-868e-0a526ee6e9fb"),
         CreationTime = DateTime.Parse("2025-06-09 11:01:07.797216"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:14:50.419511"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -1059,7 +1061,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("980ca220-9bbe-4bc5-8d9b-5b8401701d71"),
         CreationTime = DateTime.Parse("2025-06-09 10:57:33.005498"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 13:15:58.891319"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,
@@ -1081,7 +1083,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
     {
         Id = Guid.Parse("112975d5-48c1-45c9-9265-8cbb82d1d40f"),
         CreationTime = DateTime.Parse("2025-06-09 15:09:21.447084"),
-        CreatorId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
+        CreatorId = User.DevUser.Id,
         LastModificationTime = DateTime.Parse("2025-06-09 15:42:16.299623"),
         LastModifierId = Guid.Parse("08e8bafc-1a6d-4ce8-a921-e95fae5ac56b"),
         State = true,

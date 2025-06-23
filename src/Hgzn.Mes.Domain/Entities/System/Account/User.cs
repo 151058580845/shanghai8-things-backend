@@ -55,6 +55,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
 
         public Guid? CreatorId { get; set; }
         public DateTime CreationTime { get; set; }
+        public int CreatorLevel { get; set; } = 0;
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
 
@@ -75,10 +76,25 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Gender = Gender.Male
         };
 
+        public static readonly User SuperUser = new()
+        {
+            Id = new Guid("950ead5a-d93a-45e3-8268-505967bb753a"),
+            Username = "001",
+            Passphrase = "JH0yoMLEexMKJINJEk3hW9tYy5QMdXc0hkB8v2KydFo=",
+            Salt = "jrqWKWWcLih7MjrONBiEFCPP3/AcmyhmhAY1seCvl70=",
+            Name = "initial-super",
+            Email = "unknow",
+            Phone = "unknow",
+            RegisterTime = DateTime.UnixEpoch,
+            DeptId = Dept.Banzu1.Id,
+            State = true,
+            Gender = Gender.Male
+        };
+
         public static readonly User AdminUser = new()
         {
             Id = new Guid("d1c3f0fb-f716-4059-bd23-99a1bbfa503d"),
-            Username = "001",
+            Username = "002",
             Passphrase = "qLGu+48XZDn5UC5TmgIgwb+29lIXYVA1i1vjPAjSY1A=",
             Salt = "hxF4RZh/IdmJmTuzjBChb1d5vdotQmESgTkxJ1Yede0=",
             Name = "initial-admin",
@@ -87,12 +103,12 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             RegisterTime = DateTime.UnixEpoch,
             DeptId = Dept.Banzu1.Id,
             State = true,
-            Gender = Gender.Female
+            Gender = Gender.Male
         };
 
         public static User[] Seeds { get; } =
         [
-            DevUser, AdminUser
+            DevUser, SuperUser, AdminUser
         ];
     }
 }

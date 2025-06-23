@@ -126,11 +126,13 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
 
             var roleIds = string.Join(",", user.Roles.Select(r => r.Id));
+            var minLevel = user.Roles.Min(r => r.Level);
             var token = JwtTokenUtil.GenerateJwtToken(SettingUtil.Jwt.Issuer, SettingUtil.Jwt.Audience,
                             SettingUtil.Jwt.ExpireMin,
                             new Claim(ClaimType.UserId, user.Id.ToString()),
                             new Claim(ClaimType.UserName, user.Username),
-                            new Claim(ClaimType.RoleId, roleIds)) ??
+                            new Claim(ClaimType.RoleId, roleIds),
+                            new Claim(ClaimType.Level, $"{minLevel}")) ??
                         throw new Exception("generate jwt token error");
 
             if (!await _userDomainService.VerifyTokenAsync(user.Id, token))

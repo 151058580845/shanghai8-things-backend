@@ -21,6 +21,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip
         public Room? Room { get; set; }
         public Guid? CreatorId { get; set; }
         public DateTime CreationTime { get; set; }
+        public int CreatorLevel { get; set; } = 0;
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
     }

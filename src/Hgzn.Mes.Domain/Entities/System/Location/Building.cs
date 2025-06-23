@@ -35,6 +35,8 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder, ISeedsGe
 
     public DateTime? LastModificationTime { get; set; }
 
+    public int CreatorLevel { get; set; } = 0;
+
     public Guid? LastModifierId { get; set; }
 
     public int OrderNum { get; set; } = 100;

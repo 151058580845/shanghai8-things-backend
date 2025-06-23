@@ -5,7 +5,7 @@ using Hgzn.Mes.Domain.Shared.Enums.Log;
 
 namespace Hgzn.Mes.Domain.Entities.Audit;
 
-public class OperatorLog:UniversalEntity,ICreationAudited
+public class OperatorLog:UniversalEntity, ICreationAudited
 {
     /// <summary>
     /// 操作模块    
@@ -55,4 +55,6 @@ public class OperatorLog:UniversalEntity,ICreationAudited
 
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
+
+    public int CreatorLevel { get; set; } = 0;
 }

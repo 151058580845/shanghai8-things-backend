@@ -45,6 +45,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
 
         public DateTime CreationTime { get; set; }
 
+        public int CreatorLevel { get; set; } = 0;
+
         public Guid? LastModifierId { get; set; }
 
         public DateTime? LastModificationTime { get; set; }

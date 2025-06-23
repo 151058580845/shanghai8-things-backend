@@ -10,6 +10,11 @@ public static class ClaimType
     public static string UserName { get; set; } = "username";
 
     /// <summary>
+    /// 用户角色等级
+    /// </summary>
+    public static string Level { get; set; } = "level";
+
+    /// <summary>
     /// Default: <see cref="ClaimTypes.GivenName"/>
     /// </summary>
     public static string Name { get; set; } = "name";

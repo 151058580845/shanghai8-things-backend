@@ -1,11 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.Entities.Base;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_108_ReceiveDatas
 {
@@ -163,5 +158,6 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_108_ReceiveDat
 
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
+        public int CreatorLevel { get; set; } = 0;
     }
 }

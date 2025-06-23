@@ -26,5 +26,6 @@ public class EquipLedgerHistory: UniversalEntity,ICreationAudited
     [Description("操作类型")]
     public int Type { get; set; }
     public Guid? CreatorId { get; set; }
+    public int CreatorLevel { get; set; } = 0;
     public DateTime CreationTime { get; set; }
 }

@@ -115,5 +115,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT__ReceiveDatas
 
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
+
+        public int CreatorLevel { get; set; } = 0;
     }
 }
