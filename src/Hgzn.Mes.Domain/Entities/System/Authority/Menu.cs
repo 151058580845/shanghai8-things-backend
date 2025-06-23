@@ -1427,7 +1427,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Route = "/system/menu/index",
             IconUrl = "ep:menu",
             OrderNum = 1002,
-            ParentId = Basic.Id,
+            ParentId = System.Id,
             RouteName = "SystemMenu"
         };
 
@@ -1439,7 +1439,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "system:menu:query",
             Type = MenuType.Component,
             OrderNum = 100,
-            ParentId = MenuRoot.Id
+            ParentId = System.Id
         };
 
         public static Menu MenuAdd = new()
@@ -1450,7 +1450,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "system:menu:add",
             Type = MenuType.Component,
             OrderNum = 100,
-            ParentId = MenuRoot.Id
+            ParentId = System.Id
         };
 
         public static Menu MenuEdit = new()
@@ -1461,7 +1461,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "system:menu:edit",
             Type = MenuType.Component,
             OrderNum = 100,
-            ParentId = MenuRoot.Id
+            ParentId = System.Id
         };
 
         public static Menu MenuRemove = new()
@@ -1472,7 +1472,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ScopeCode = "system:menu:remove",
             Type = MenuType.Component,
             OrderNum = 100,
-            ParentId = MenuRoot.Id
+            ParentId = System.Id
         };
 
         #endregion

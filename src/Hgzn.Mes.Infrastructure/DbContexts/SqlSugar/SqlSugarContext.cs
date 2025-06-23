@@ -199,7 +199,7 @@ public sealed class SqlSugarContext
             return null;
         }
         var code = builder.ToString();
-        LoggerAdapter.LogInformation($"[已生成种子代码<{typeof(TEntity).Name}>]:\r\n {code}\r\n");
+        LoggerAdapter.LogTrace($"[已生成种子代码<{typeof(TEntity).Name}>]:\r\n {code}\r\n");
         return code;
     }
     public void InitDatabase()

@@ -185,7 +185,7 @@ public class RfidReaderConnector : EquipConnectorBase
             .WithUri(_uri!)
             .WithDeviceType(_connType.ToString()!)
             .Build(), Encoding.UTF8.GetBytes(plain));
-        LoggerAdapter.LogTrace($"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}>tid:{msg.logBaseEpcInfo.Tid} flag updated!");
+        LoggerAdapter.LogTrace($"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> tid:{msg.logBaseEpcInfo.Tid} flag updated!");
     }
 
     protected async void TcpDisconnectedHandler(string readerName)
