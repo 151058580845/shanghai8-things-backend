@@ -74,8 +74,8 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return (await DbContext.Queryable<RoleMenu>()
                 .Where(rm => roleIds.Contains(rm.RoleId))
                 .InnerJoin<Menu>((rm, m) => rm.MenuId == m.Id)
-                .Where((rm, m) => !string.IsNullOrEmpty(m.ScopeCode))
-                .Select((rm, m) => m.ScopeCode!)
+                .Where((rm, m) => !string.IsNullOrEmpty(m.Code))
+                .Select((rm, m) => m.Code!)
                 .ToListAsync())
                 .Distinct();
         }
