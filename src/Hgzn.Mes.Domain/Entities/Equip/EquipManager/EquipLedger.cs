@@ -34,6 +34,9 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     [Description("资产编号")]
     public string? AssetNumber { get; set; }
 
+    [Description("是否计量设备")]
+    public bool? IsMeasurementDevice { get; set; }
+
     [Description("使用部门ID")]
     public Guid? DepartmentId { get; set; }
 
@@ -66,7 +69,7 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
 
     [Description("设备资源集（需要做文档管理功能）")]
     public Guid? ResourceId { get; set; }
-    
+
     [Description("设备责任人")]
     public Guid? ResponsibleUserId { get; set; }
 

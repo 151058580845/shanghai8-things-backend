@@ -63,6 +63,11 @@ public class EquipLedgerReadDto : ReadDto
     public int OrderNum { get; set; } = 0;
     public bool SoftDeleted { get; set; }
     public DateTime? DeleteTime { get; set; }
+
+    /// <summary>
+    /// 是否计量设备
+    /// </summary>
+    public bool? IsMeasurementDevice { get; set; }
 }
 
 public class EquipResponsibleUserReadDto : ReadDto
@@ -97,7 +102,7 @@ public class EquipLocationLabelReadDto : ReadDto
     [Description("设备名称")] public string? EquipName { get; set; } = null!;
 
     [Description("设备型号")] public string? Model { get; set; } = null!;
-    
+
     [Description("设备类型")] public string? EquipTypeName { get; set; } = null!;
 
     [Description("标签Tid")] public string Tid { get; set; } = null!;
@@ -173,6 +178,11 @@ public class EquipLedgerCreateDto : CreateDto
     /// 设备当前的IP地址
     /// </summary>
     public string? IpAddress { get; set; }
+
+    /// <summary>
+    /// 是否计量设备
+    /// </summary>
+    public bool? IsMeasurementDevice { get; set; }
 }
 
 public class EquipLedgerUpdateDto : UpdateDto
@@ -345,7 +355,7 @@ public class EquipLedgerQueryDto : PaginatedTimeQueryDto
     /// </summary>
     public string? AssetNumber { get; set; }
 
-    public int? BindingTagCount {  get; set; }
+    public int? BindingTagCount { get; set; }
 
     public bool? NoRfidDevice { get; set; }
 

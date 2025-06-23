@@ -3,6 +3,7 @@ using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
+using Microsoft.AspNetCore.Http;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip.IService;
 
@@ -16,7 +17,7 @@ public interface IEquipLedgerService : ICrudAppService<
     Task<IEnumerable<RfidEquipReadDto>> GetRfidEquipsListAsync(Guid equipId);
 
     Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListAsync(string? equipCode, string? equipName);
-    Task<int> UpdateEquipRoomId(Dictionary<string,Guid> equipIds);
+    Task<int> UpdateEquipRoomId(Dictionary<string, Guid> equipIds);
     Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListInIdsAsync(List<Guid> equipIds);
     Task<IEnumerable<EquipLedgerSearchReadDto>> GetAppSearchAsync();
 
@@ -28,6 +29,8 @@ public interface IEquipLedgerService : ICrudAppService<
     /// <param name="url"></param>
     /// <returns></returns>
     Task<int> PostImportDatas(string url);
+
+    Task<bool?> ImportAsync(IFormFile file);
 
     Task<IEnumerable<EquipLedgerReadDto>> GetMissingDevicesAlarmAsync();
     Task<IEnumerable<EquipLedgerReadDto>?> GetListByTypeAsync(string? type);

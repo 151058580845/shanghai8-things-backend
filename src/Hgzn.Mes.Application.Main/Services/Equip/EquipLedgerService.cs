@@ -17,6 +17,12 @@ using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Shared.Enums;
 using SqlSugar;
+using Microsoft.AspNetCore.Http;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using Hgzn.Mes.Application.Main.Services.System;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -28,10 +34,12 @@ public class EquipLedgerService : SugarCrudAppService<
 {
 
     private readonly HttpClient _httpClient;
+    private readonly ICodeRuleService _codeRuleService;
 
-    public EquipLedgerService(HttpClient httpClient)
+    public EquipLedgerService(HttpClient httpClient, ICodeRuleService codeRuleService)
     {
         _httpClient = httpClient;
+        _codeRuleService = codeRuleService;
     }
 
     public async Task<EquipLedger> GetEquipByIpAsync(string ipAddress)
@@ -107,7 +115,7 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public async Task<IEnumerable<EquipLedger>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms)
     {
-        var equipList = await Queryable.Where(t =>t.RoomId != null && rooms.Contains(t.RoomId!.Value)).ToListAsync();
+        var equipList = await Queryable.Where(t => t.RoomId != null && rooms.Contains(t.RoomId!.Value)).ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedger>>(equipList);
     }
 
@@ -125,7 +133,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
             .WhereIF(query.State != null, m => m.State == query.State);
 
-        if(query.BindingTagCount is not null)
+        if (query.BindingTagCount is not null)
         {
             queryable = queryable.Includes(eq => eq.Labels);
             queryable = query.BindingTagCount == -1 ?
@@ -196,7 +204,7 @@ public class EquipLedgerService : SugarCrudAppService<
             var result = JsonSerializer.Deserialize<List<EquipLedgerCreateDto>>(jsonResponse, options);
 
             var changeCount = 0;
-            if (result!=null && result.Any())
+            if (result != null && result.Any())
             {
 
                 foreach (var item in result)
@@ -242,7 +250,7 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         // var protocol = Enum.Parse<EquipConnType>(type, true);
         var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(protocolEnum), m => m.EquipType!.ProtocolEnum == protocolEnum &&(!m.EquipName.Contains("测试") || !m.EquipCode.Contains("测试")))
+            .WhereIF(!string.IsNullOrEmpty(protocolEnum), m => m.EquipType!.ProtocolEnum == protocolEnum && (!m.EquipName.Contains("测试") || !m.EquipCode.Contains("测试")))
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
@@ -262,5 +270,135 @@ public class EquipLedgerService : SugarCrudAppService<
             })
             .ToArrayAsync();
         return result;
+    }
+
+    public async Task<bool?> ImportAsync(IFormFile file)
+    {
+        var directoryPath = Path.Combine(Environment.CurrentDirectory, "attachs");
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+        var fullPath = Path.Combine(directoryPath, $"{DateTimeOffset.Now.ToUnixTimeMilliseconds()}计量.xlsx");
+        if (!File.Exists(fullPath))
+        {
+            using var reader = file.OpenReadStream();
+            using var writer = new FileStream(fullPath, FileMode.Create);
+            await reader.CopyToAsync(writer);
+            writer.Close();
+            reader.Close();
+            await CheckExpiringMeasurementDevices(fullPath);
+        }
+        return true;
+    }
+
+    public async Task CheckExpiringMeasurementDevices(string filePath)
+    {
+        // 用于存储结果的列表
+        var results = new List<string>();
+
+        IWorkbook workbook;
+        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+        {
+            // 根据文件扩展名选择不同的 Workbook 实现
+            if (filePath.EndsWith(".xlsx"))
+                workbook = new XSSFWorkbook(fileStream);
+            else if (filePath.EndsWith(".xls"))
+                workbook = new HSSFWorkbook(fileStream);
+            else
+                throw new NotSupportedException("文件格式不支持，仅支持 .xls 或 .xlsx 文件。");
+        }
+
+        // 获取第一个工作表
+        ISheet sheet = workbook.GetSheetAt(0);
+
+        // 获取标题行（假设第一行是标题）
+        IRow headerRow = sheet.GetRow(0);
+        if (headerRow == null)
+            throw new InvalidDataException("Excel 文件没有标题行！");
+
+        // 构建列名到列索引的映射
+        Dictionary<string, int> columnIndices = new Dictionary<string, int>();
+        for (int col = 0; col < headerRow.LastCellNum; col++)
+        {
+            string? header = headerRow.GetCell(col)?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(header))
+                columnIndices[header] = col;
+        }
+
+        // 检查必要的列是否存在
+        string[] requiredColumns = { "是否计量设备仪器", "责任人", "本地化资产编号", "型号", "资产名称", "有效期" };
+        foreach (var column in requiredColumns)
+        {
+            if (!columnIndices.ContainsKey(column))
+                throw new InvalidDataException($"Excel 文件中缺少必要的列：{column}");
+        }
+
+        // 获取当前日期
+        DateTime currentDate = DateTime.Now;
+
+        EquipLedger[] oldEquipMeasurements = await DbContext.Queryable<EquipLedger>().ToArrayAsync();
+
+        // 遍历每一行（从第 2 行开始）
+        for (int row = 1; row <= sheet.LastRowNum; row++)
+        {
+            IRow dataRow = sheet.GetRow(row);
+            if (dataRow == null)
+                continue; // 跳过空行
+
+            // 检查是否是计量设备仪器
+            bool? isMeasurementDevice = dataRow.GetCell(columnIndices["是否计量设备仪器"])?.ToString()?.Trim() == "是" ? true : false;
+            // 检查有效期
+            string? expiryDateStr = dataRow.GetCell(columnIndices["有效期"])?.ToString()?.Trim();
+            // 责任人
+            string? responsiblePersonStr = dataRow.GetCell(columnIndices["责任人"])?.ToString()?.Trim();
+            // 本地化资产编号
+            string? localAssetNumberStr = dataRow.GetCell(columnIndices["本地化资产编号"])?.ToString()?.Trim();
+            // 型号
+            string? modelStr = dataRow.GetCell(columnIndices["型号"])?.ToString()?.Trim();
+            // 资产名称
+            string? assetNameStr = dataRow.GetCell(columnIndices["资产名称"])?.ToString()?.Trim();
+
+            bool isExist = false;
+            foreach (EquipLedger item in oldEquipMeasurements)
+            {
+                if (item.EquipName == assetNameStr && item.Model == modelStr && item.AssetNumber == localAssetNumberStr && item.IsMeasurementDevice == isMeasurementDevice &&
+                    !string.IsNullOrEmpty(expiryDateStr) && item.ValidityDate.ToString() != expiryDateStr)
+                {
+                    // 进入此判断说明有效期不一致,需要更新
+                    DbContext.Updateable(item).SetColumns(it => new EquipLedger()
+                    {
+                        ValidityDate = DateTime.Parse(expiryDateStr),
+                        ResponsibleUserName = responsiblePersonStr,
+                        AssetNumber = localAssetNumberStr,
+                        Model = modelStr,
+                        EquipName = assetNameStr,
+                        IsMeasurementDevice = isMeasurementDevice,
+                    }).ExecuteCommand();
+                    isExist = true;
+                }
+            }
+            if (!isExist && !string.IsNullOrEmpty(expiryDateStr))
+            {
+                EquipLedgerCreateDto input = new EquipLedgerCreateDto()
+                {
+                    EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ"),
+                    ValidityDate = DateTime.Parse(expiryDateStr),
+                    ResponsibleUserName = responsiblePersonStr,
+                    AssetNumber = localAssetNumberStr,
+                    Model = modelStr,
+                    EquipName = assetNameStr,
+                    IsMeasurementDevice = isMeasurementDevice,
+                    DeviceStatus = DeviceStatus.Normal.ToString(),
+                    DeviceLevel = EquipLevelEnum.Basic.ToString(),
+                };
+                try
+                {
+
+                    await CreateAsync(input);
+                }
+                catch (Exception e) { }
+            }
+        }
     }
 }

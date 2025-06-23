@@ -77,7 +77,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("list/type/{type}")]
         public async Task<ResponseWrapper<IEnumerable<EquipLedgerReadDto>?>> GetListByTypeAsync(string? type)
             => (await _equipLedgerService.GetListByTypeAsync(type)).Wrap()!;
-        
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -199,18 +199,11 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("import")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"equip:equipledger:import")]
-        public async Task<ResponseWrapper<int>> CreateAsync(IEnumerable<EquipLedgerCreateDto> inputs)
+        // [Authorize(Policy = $"equip:equipledger:import")]
+        public async Task<ResponseWrapper<bool?>> ImportAsync()
         {
-            var addCount = 0;
-            foreach (var item in inputs)
-            {
-                if (await _equipLedgerService.CreateAsync(item) != null) addCount += 1;
-            }
-
-            return addCount.Wrap();
+            return (await _equipLedgerService.ImportAsync(Request.Form.Files[0])).Wrap()!;
         }
-
 
         /// <summary>
         /// Api批量导入
