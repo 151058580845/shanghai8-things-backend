@@ -16,7 +16,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         [
             new RoleMenu { Id = 1, MenuId = Menu.Root.Id, RoleId = Role.DevRole.Id},
             new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.SuperRole.Id},
-            new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.AdminRole.Id}
+            new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.AdminRole.Id},
+            new RoleMenu { Id = 2, MenuId = Menu.Root.Id, RoleId = Role.MemberRole.Id}
         ];
     }
 }
