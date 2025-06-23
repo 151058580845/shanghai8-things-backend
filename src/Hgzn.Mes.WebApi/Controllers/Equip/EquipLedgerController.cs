@@ -6,6 +6,7 @@ using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Enums;
@@ -296,6 +297,19 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [AllowAnonymous]
         public async Task<ResponseWrapper<IEnumerable<EquipLocationLabelReadDto>>> FindEquipLabelAsync(Guid equipId) =>
             (await _locationLabelService.FindEquipLabelAsync(equipId)).Wrap();
+
+        /// <summary>
+        ///     获取指定设备类型的rfid绑定关系
+        /// </summary>
+        /// <param name="typeIds"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("equip-type/labels")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
+        public async Task<ResponseWrapper<IEnumerable<LocationLabelReadDto>>> QueryByDeviceType(IEnumerable<Guid>? typeIds = null) =>
+            (await _locationLabelService.QueryByDeviceTypes(typeIds)).Wrap();
 
     }
 }
