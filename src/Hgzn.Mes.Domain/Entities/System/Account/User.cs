@@ -2,11 +2,12 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net.Mime;
 using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 using Hgzn.Mes.Domain.ValueObjects.UserValue;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
-    public class User : UniversalEntity, ISoftDelete, IState
+    public class User : UniversalEntity, IAudited, ISoftDelete, IState
     {
         /// <summary>
         /// 用户名

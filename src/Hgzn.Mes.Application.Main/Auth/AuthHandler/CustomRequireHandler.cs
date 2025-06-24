@@ -37,7 +37,8 @@ namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
             var roleId = await rId.Split(",").Select(Guid.Parse).ToListAsync();
             //var roleId = Guid.Parse(rId);
 
-            if (roleId.Contains(Role.SuperRole.Id) || roleId.Contains(Role.DevRole.Id))
+            if (roleId.Contains(Role.SuperRole.Id) || roleId.Contains(Role.DevRole.Id) ||
+                requirement.Scope.Contains("list") || requirement.Scope.Contains("query"))
             {
                 context.Succeed(requirement);
                 return;
@@ -51,7 +52,6 @@ namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
             //     context.Fail(new AuthorizationFailureReason(this, "unknow role"));
             //     return;
             // }
-
             if (scopeCode.Any(s => requirement.Scope.Contains(s)))
             {
                 _logger.LogTrace("scope match success");

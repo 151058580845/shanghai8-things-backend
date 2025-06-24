@@ -53,6 +53,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                     .SelectMany(r => r.Menus!)
                     .Where(t => t.Type != MenuType.Component)
                     .OrderBy(x => x.OrderNum)
+                    .Distinct()
                     .ToListAsync();
                 if (entities.Count <= 1) return [];
                 //entities.Add(Menu.Root);
