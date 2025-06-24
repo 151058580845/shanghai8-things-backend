@@ -54,7 +54,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .Select(t => new NameValueDto
             {
                 Id = t.Id,
-                Name = t.EquipName,
+                Name = t.AssetNumber,
                 Value = t.Id.ToString()
             }).ToListAsync();
         return entities;
