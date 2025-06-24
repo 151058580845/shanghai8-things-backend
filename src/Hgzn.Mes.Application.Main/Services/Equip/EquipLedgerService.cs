@@ -125,10 +125,10 @@ public class EquipLedgerService : SugarCrudAppService<
         var queryable = Queryable
             .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
             .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.EquipName == query.AssetNumber)
+            .WhereIF(query.ResponsibleUserId is not null, m => m.ResponsibleUserId.Equals(query.ResponsibleUserId))
             .WhereIF(!string.IsNullOrEmpty(query.Query),
                 m => m.EquipName.Contains(query.Query!) ||
                 m.Model!.Contains(query.Query!))
-            .WhereIF(!query.ResponsibleUserId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.ResponsibleUserId))
             .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
             .WhereIF(query.NoRfidDevice == true, m => m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id)
             .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
@@ -165,7 +165,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .WhereIF(!string.IsNullOrEmpty(query.Query),
                 m => m.EquipName.Contains(query.Query!) ||
                 m.Model!.Contains(query.Query!))
-            .WhereIF(!query.ResponsibleUserId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.ResponsibleUserId))
+            .WhereIF(query.ResponsibleUserId is not null, m => m.ResponsibleUserId.Equals(query.ResponsibleUserId))
             .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
             .WhereIF(query.NoRfidDevice == true, m => m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id)
             .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))

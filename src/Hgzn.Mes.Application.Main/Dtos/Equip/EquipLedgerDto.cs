@@ -242,6 +242,12 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// 设备当前的IP地址
     /// </summary>
     public string? IpAddress { get; set; }
+
+    [Description("设备责任人")]
+    public Guid? ResponsibleUserId { get; set; }
+
+    [Description("设备责任人")]
+    public string? ResponsibleUserName { get; set; }
 }
 
 public class EquipLedgerAppUpdateDto : UpdateDto
