@@ -200,7 +200,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [Route("import")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        // [Authorize(Policy = $"equip:equipledger:import")]
+        [Authorize(Policy = $"equip:equipledger:import")]
         public async Task<ResponseWrapper<bool?>> ImportAsync()
         {
             return (await _equipLedgerService.ImportAsync(Request.Form.Files[0])).Wrap()!;

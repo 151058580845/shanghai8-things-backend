@@ -700,15 +700,51 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "EquipLedger"
         };
 
-        // 设备台账导入
-        public static Menu EquipImport = new()
+        // 台账新增
+        public static Menu EquipAdd = new()
         {
-            Id = Guid.Parse("8eba8377-bd61-4407-881e-fc241e390104"),
-            Name = "导入数据",
-            Code = "equipImport",
-            ScopeCode = "equip:equipledger:import",
+            Id = Guid.Parse("27deb649-a9bb-4811-9d37-00841c8b72df"),
+            Name = "台账新增",
+            Code = "equipAdd",
+            ScopeCode = "equip:equipledger:add",
             Type = MenuType.Component,
             OrderNum = 1002,
+            ParentId = EquipLedger.Id
+        };
+
+        // 台账修改
+        public static Menu EquipEdit = new()
+        {
+            Id = Guid.Parse("2ff3e073-9444-4f72-b446-b69f86606567"),
+            Name = "台账修改",
+            Code = "equipEdit",
+            ScopeCode = "equip:equipledger:edit",
+            Type = MenuType.Component,
+            OrderNum = 1003,
+            ParentId = EquipLedger.Id
+        };
+
+        // 台账查询
+        public static Menu EquipQuery = new()
+        {
+            Id = Guid.Parse("524fa02f-2c48-4779-bed8-e978b2f7c206"),
+            Name = "台账查询",
+            Code = "equipQuery",
+            ScopeCode = "equip:equipledger:query",
+            Type = MenuType.Component,
+            OrderNum = 1004,
+            ParentId = EquipLedger.Id
+        };
+
+        // 台账删除
+        public static Menu EquipRemove = new()
+        {
+            Id = Guid.Parse("eeb46cb3-eaec-4e49-b7d3-aaefba3af2f4"),
+            Name = "台账删除",
+            Code = "equipRemove",
+            ScopeCode = "equip:equipledger:remove",
+            Type = MenuType.Component,
+            OrderNum = 1005,
             ParentId = EquipLedger.Id
         };
 
@@ -725,6 +761,54 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             OrderNum = 1002,
             ParentId = Equip.Id,
             RouteName = "EquipConfig"
+        };
+
+        // 设备连接新增
+        public static Menu EquipConnectAdd = new()
+        {
+            Id = Guid.Parse("7b13d4b0-92b9-4d80-b647-24ff8f87edc0"),
+            Name = "设备连接新增",
+            Code = "equipConnectAdd",
+            ScopeCode = "equip:equipconnect:add",
+            Type = MenuType.Component,
+            OrderNum = 1002,
+            ParentId = EquipConnectManagement.Id
+        };
+
+        // 设备连接修改
+        public static Menu EquipConnectEdit = new()
+        {
+            Id = Guid.Parse("ceef19dc-17c6-4cdc-8c02-2c86f65afc6d"),
+            Name = "设备连接修改",
+            Code = "equipConnectEdit",
+            ScopeCode = "equip:equipconnect:edit",
+            Type = MenuType.Component,
+            OrderNum = 1003,
+            ParentId = EquipConnectManagement.Id
+        };
+
+        // 设备连接查询
+        public static Menu EquipConnectQuery = new()
+        {
+            Id = Guid.Parse("d1165f41-b5c5-41f4-8a10-58088488ac3f"),
+            Name = "设备连接查询",
+            Code = "equipConnectQuery",
+            ScopeCode = "equip:equipconnect:query",
+            Type = MenuType.Component,
+            OrderNum = 1004,
+            ParentId = EquipConnectManagement.Id
+        };
+
+        // 设备连接删除
+        public static Menu EquipConnectRemove = new()
+        {
+            Id = Guid.Parse("ce029ac3-959c-4fa6-8916-eaa5ffe8587c"),
+            Name = "设备连接删除",
+            Code = "equipConnectRemove",
+            ScopeCode = "equip:equipconnect:remove",
+            Type = MenuType.Component,
+            OrderNum = 1005,
+            ParentId = EquipConnectManagement.Id
         };
 
         // 设备采集配置
@@ -1738,12 +1822,12 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger,EquipImport, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
+            Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
             OrientationManagement, EquipLedgerHistory, EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,
             //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,
-            EquipConnectManagement, // EquipDataConfig,
+            EquipConnectManagement, EquipConnectAdd, EquipConnectQuery, EquipConnectEdit, EquipConnectRemove, // EquipDataConfig,
             //Product, ProductPlan, ProductOrder, ProductSchedule,
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
