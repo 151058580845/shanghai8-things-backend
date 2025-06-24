@@ -35,6 +35,10 @@ public sealed class SqlSugarContext
     private Guid? _userId;
     private List<Guid> _rids = [];
     private int _level = 0;
+    /// <summary>
+    /// 所有软删除的数据表
+    /// </summary>
+    private static readonly Dictionary<string, EntityInfo> EntityInfos=new();
 
     public SqlSugarContext(
         ILogger<SqlSugarContext> logger,
@@ -64,8 +68,60 @@ public sealed class SqlSugarContext
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
         DbContext.Aop.DataExecuting = DataExecuting;
-        // DbContext.Aop.DataExecuted = DataExecuted;
+        DbContext.Aop.OnExecutingChangeSql = OnExecutingChangeSql;
     }
+
+    /// <summary>
+    /// 软删除，将delete变成update
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <param name="parameters"></param>
+    /// <returns></returns>
+    private KeyValuePair<string, SugarParameter[]> OnExecutingChangeSql(string sql, SugarParameter[] parameters)
+    {
+        var span = sql.AsSpan().TrimStart();
+        if (!span.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase)) 
+            return new(sql, parameters);
+        // 定位 FROM 后的表名
+        var fromIdx = span.IndexOf("FROM ", StringComparison.OrdinalIgnoreCase);
+        if (fromIdx < 0) 
+            return new(sql, parameters);
+        var afterFrom = span[(fromIdx + 5)..];
+        var endIdx     = afterFrom.IndexOfAny(new[] {' ', '\r', '\n', '\t'});
+        if (endIdx < 0) 
+            return new(sql, parameters);
+
+        var tableName = afterFrom[..endIdx].ToString();
+        tableName = tableName
+            .Trim()                   // 去两头空格
+            .Trim('"', '[', ']');     // 去双引号和方括号
+        if (!EntityInfos.TryGetValue(tableName, out var ei) ||
+            !typeof(ISoftDelete).IsAssignableFrom(ei.Type))
+        {
+            return new(sql, parameters);
+        }
+        
+        // 从元数据里拿到对应 C# 属性映射到的列名
+        var colSoftDeleted = ei.Columns
+            .First(c => c.PropertyName == nameof(ISoftDelete.SoftDeleted))
+            .DbColumnName;
+        var colDeleteTime  = ei.Columns
+            .First(c => c.PropertyName == nameof(ISoftDelete.DeleteTime))
+            .DbColumnName;
+        var pars = parameters ?? [];
+        // 拼 WHERE 子句
+        var whereIdx = span.IndexOf("WHERE", StringComparison.OrdinalIgnoreCase);
+        var remainder = whereIdx >= 0 
+            ? span[whereIdx..].ToString() 
+            : "";
+        var newSql = $"UPDATE {tableName} SET {colSoftDeleted} = @__softDeleted, {colDeleteTime}  = @__deleteTime {remainder}";
+        var newPars = pars
+            .Append(new SugarParameter("@__softDeleted", true))
+            .Append(new SugarParameter("@__deleteTime", DateTime.Now))
+            .ToArray();
+        return new(newSql, newPars);
+    }
+
 
     private void DataExecuted(object oldValue, DataAfterModel entityInfo)
     {
@@ -131,27 +187,28 @@ public sealed class SqlSugarContext
 
                 break;
             case DataFilterType.DeleteByObject:
-                if (entityInfo.PropertyName.Equals(nameof(ICreationAudited.CreatorId)))
-                {
-                    var dataLevel = ((ICreationAudited)entityInfo.EntityValue).CreatorLevel;
-                    if (dataLevel < _level)
-                        throw new ForbiddenException("not allowed to update this data");
-                }
-                if (entityInfo.PropertyName.Equals(nameof(UniversalEntity.Id)))
-                {
-                    if (entityInfo.EntityValue is ISoftDelete softDelete)
-                    {
-                        if (entityInfo.PropertyName.Equals(nameof(ISoftDelete.SoftDeleted)))
-                        {
-                            entityInfo.SetValue(1);
-                        }
-
-                        if (entityInfo.PropertyName.Equals(nameof(ISoftDelete.DeleteTime)))
-                        {
-                            entityInfo.SetValue(DateTime.Now);
-                        }
-                    }
-                }
+                // entityInfo.SetValue(oldValue);
+                // if (entityInfo.PropertyName.Equals(nameof(ICreationAudited.CreatorId)))
+                // {
+                //     var dataLevel = ((ICreationAudited)entityInfo.EntityValue).CreatorLevel;
+                //     if (dataLevel < _level)
+                //         throw new ForbiddenException("not allowed to update this data");
+                // }
+                // if (entityInfo.PropertyName.Equals(nameof(UniversalEntity.Id)))
+                // {
+                //     if (entityInfo.EntityValue is ISoftDelete softDelete)
+                //     {
+                //         if (entityInfo.PropertyName.Equals(nameof(ISoftDelete.SoftDeleted)))
+                //         {
+                //             entityInfo.SetValue(1);
+                //         }
+                //
+                //         if (entityInfo.PropertyName.Equals(nameof(ISoftDelete.DeleteTime)))
+                //         {
+                //             entityInfo.SetValue(DateTime.Now);
+                //         }
+                //     }
+                // }
 
                 break;
             default:
@@ -305,12 +362,15 @@ public sealed class SqlSugarContext
                     {
                         tablePrefix = name[4] + '_';
                     }
-
                     tableName = table != null ? table.Name : name?[^1].ToSnakeCase();
                     var tableDesc = t.GetCustomAttribute<DescriptionAttribute>();
 
                     e.DbTableName = tablePrefix + tableName;
                     e.TableDescription = tableDesc?.Description;
+                    if (typeof(ISoftDelete).IsAssignableFrom(t) && !EntityInfos.ContainsKey(e.DbTableName.ToLower()))
+                    {
+                        EntityInfos.Add(e.DbTableName.ToLower(), e);
+                    }
                 },
                 EntityService = (p, c) =>
                 {
@@ -397,7 +457,7 @@ public sealed class SqlSugarContext
     {
         //是否开启软删除查询
         if (_dbOptions.IsSoftDelete)
-            sqlSugarClient.QueryFilter.AddTableFilter<ISoftDelete>(t => t.SoftDeleted == false);
+            sqlSugarClient.QueryFilter.AddTableFilter<ISoftDelete>(t => !t.SoftDeleted);
     }
 
     public void SeedData()
