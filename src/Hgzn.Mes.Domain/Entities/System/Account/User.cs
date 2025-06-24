@@ -58,7 +58,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
 
         public Guid? CreatorId { get; set; }
         public DateTime CreationTime { get; set; }
-        public int CreatorLevel { get; set; } = 0;
+        public int CreatorLevel { get; set; } = 5;
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
 
@@ -76,6 +76,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             RegisterTime = DateTime.UnixEpoch,
             DeptId = Dept.Banzu1.Id,
             State = true,
+            CreatorLevel = -1,
             Gender = Gender.Male
         };
 
@@ -91,6 +92,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             RegisterTime = DateTime.UnixEpoch,
             DeptId = Dept.Banzu1.Id,
             State = true,
+            CreatorLevel = -1,
             Gender = Gender.Male
         };
 
@@ -106,6 +108,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             RegisterTime = DateTime.UnixEpoch,
             DeptId = Dept.Banzu1.Id,
             State = true,
+            CreatorLevel = 2,
             Gender = Gender.Male
         };
 

@@ -78,6 +78,129 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue
         };
 
+        #region API组合权限
+
+        #region ApiRoot
+
+        public static Menu APIRoot = new()
+        {
+            Id = new Guid("315a2f4d-07e7-4e06-986e-9bb5760527fa"),
+            Name = "后端接口根权限",
+            Code = "apiRoot",
+            Description = "后端接口跟权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = Root.Id
+        };
+
+        #endregion APIRoot
+
+        #region 基础增删改查
+
+        public static Menu APIRemove = new()
+        {
+            Id = new Guid("7b931be6-0692-4835-900c-c4bd1bc31ea3"),
+            Name = "后端接口删除权限",
+            ScopeCode = $"{ScopeMethodType.Remove:F}".ToLower(),
+            Code = "apiRemove",
+            Description = "批量赋予后端接口删除权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIEdit = new()
+        {
+            Id = new Guid("5470e938-b833-4eea-8223-335691dbf4fa"),
+            Name = "后端接口修改权限",
+            ScopeCode = $"{ScopeMethodType.Edit:F}".ToLower(),
+            Code = "apiEdit",
+            Description = "批量赋予后端接口修改权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIAdd = new()
+        {
+            Id = new Guid("b9096eb5-dd82-4b64-aea0-b649dcee97b1"),
+            Name = "后端接口新增权限",
+            ScopeCode = $"{ScopeMethodType.Add:F}".ToLower(),
+            Code = "apiAdd",
+            Description = "批量赋予后端接口新增权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIQuery = new()
+        {
+            Id = new Guid("35c5ad6a-5047-4aaa-aac6-9a3f976407dd"),
+            Name = "后端接口查询权限",
+            ScopeCode = $"{ScopeMethodType.Query:F}".ToLower(),
+            Code = "apiQuery",
+            Description = "批量赋予后端接口查询权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIList = new()
+        {
+            Id = new Guid("26fc1d1d-1361-4e17-9d33-ae111156bc26"),
+            Name = "后端接口列表权限",
+            ScopeCode = $"{ScopeMethodType.List:F}".ToLower(),
+            Code = "apiList",
+            Description = "批量赋予后端接口列表权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        #endregion
+
+        #region 接口范围控制
+
+        public static Menu APIBasic = new()
+        {
+            Id = new Guid("8be0c076-0993-40f3-a3a0-6403275aa2fb"),
+            Name = "后端接口基础管理权限",
+            ScopeCode = $"basic",
+            Code = "apiBasic",
+            Description = "批量赋予后端接口列表权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIEquip = new()
+        {
+            Id = new Guid("618c7135-34b3-43cb-b460-ec094fa65a11"),
+            Name = "后端接口设备权限",
+            ScopeCode = $"basic",
+            Code = "apiEquip",
+            Description = "批量赋予后端接口设备权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APISystem = new()
+        {
+            Id = new Guid("c0303ac0-d1b9-4c23-9883-6ed9417a1286"),
+            Name = "后端接口系统管理权限",
+            ScopeCode = $"system",
+            Code = "apiSystem",
+            Description = "批量赋予后端接口系统管理权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        #endregion 接口范围控制
+
+        #endregion
+
         public static Menu BasisPlatform = new()
         {
             Id = new Guid("56c318dd-fa9e-45e8-89ee-c2b8b1581c41"),
@@ -1835,6 +1958,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ShowSystem1, //ShowSystem,ShowSystem2,
             Basic,// Supplier,Unit,Customer,
             LocationLabel,
+            APIRoot, APIQuery, APIList, APIAdd, APIRemove, APIEdit, APISystem, APIEquip, APIBasic,
         ];
 
         #endregion

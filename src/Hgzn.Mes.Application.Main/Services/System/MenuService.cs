@@ -39,7 +39,8 @@ namespace Hgzn.Mes.Application.Main.Services.System
             if (rids.Contains(Role.DevRole.Id))
             {
                 entities = await DbContext.Queryable<Menu>()
-                    .Where(t => t.Type != MenuType.Component).OrderBy(x => x.OrderNum).ToListAsync();
+                    .Where(t => t.Type == MenuType.Catalogue || t.Type == MenuType.Menu)
+                    .OrderBy(x => x.OrderNum).ToListAsync();
             }
             else
             {
@@ -51,7 +52,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 entities = await roles
                     .Where(r => r.Menus != null)
                     .SelectMany(r => r.Menus!)
-                    .Where(t => t.Type != MenuType.Component)
+                    .Where(t => t.Type == MenuType.Catalogue || t.Type == MenuType.Menu)
                     .OrderBy(x => x.OrderNum)
                     .Distinct()
                     .ToListAsync();

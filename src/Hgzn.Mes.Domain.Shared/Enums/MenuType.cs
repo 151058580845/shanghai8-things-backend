@@ -4,6 +4,7 @@
     {
         Catalogue = 0,  //目录
         Menu = 1,  //菜单
-        Component = 2//组件
+        Component = 2, //组件
+        API, //API配置权限
     }
 }
