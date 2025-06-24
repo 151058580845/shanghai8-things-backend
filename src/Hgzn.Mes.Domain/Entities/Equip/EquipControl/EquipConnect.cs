@@ -1091,7 +1091,7 @@ public class EquipConnect : UniversalEntity, ISoftDelete, IState, IOrder, IAudit
         Code = "202506090849************20584TEX",
         EquipId = Guid.Parse("c925bb29-682d-404c-ae89-a22d19c6c3a0"),
         ProtocolEnum = (Hgzn.Mes.Domain.Shared.Enums.ConnType)6,
-        ConnectStr = "{\"address\":\"192.168.1.168\",\"port\":\"8160\",\"sendTimeout\":1000,\"receiveTimeout\":1000}",
+        ConnectStr = "{\"address\":\"192.168.2.168\",\"port\":\"8160\",\"sendTimeout\":1000,\"receiveTimeout\":1000}",
         CollectionConfigId = null,
         CollectionExtension = null,
         ForwardRate = 10,
