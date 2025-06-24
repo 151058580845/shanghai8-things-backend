@@ -4,6 +4,7 @@ using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
+using Microsoft.AspNetCore.Http;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services;
@@ -18,6 +19,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
     /// </summary>
     public SqlSugarContext SqlSugarContext { get; init; } = null!;
     public ISqlSugarClient DbContext => SqlSugarContext.DbContext;
+    public IHttpContextAccessor? HttpContextAccessor { get; init; }
 
     protected ISugarQueryable<TEntity> Queryable
     {
@@ -39,7 +41,7 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
         var entity = await DbContext.Queryable<TEntity>().InSingleAsync(key);
         if (entity != null)
         {
-            return await DbContext.Deleteable(entity).ExecuteCommandAsync();
+            return await DbContext.DeleteAsync(entity, HttpContextAccessor);
         }
         return 0;
     }
