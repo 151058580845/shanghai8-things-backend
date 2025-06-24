@@ -23,6 +23,7 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Domain.Entities.System.Account;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -388,12 +389,17 @@ public class EquipLedgerService : SugarCrudAppService<
                     isExist = true;
                 }
             }
-            if (!isExist && !string.IsNullOrEmpty(expiryDateStr))
+            if (!isExist)
             {
+                Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))?.Id;
+                DateTime? dt = null;
+                if (!string.IsNullOrEmpty(expiryDateStr))
+                    dt = DateTime.Parse(expiryDateStr);
                 EquipLedgerCreateDto input = new EquipLedgerCreateDto()
                 {
                     EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ"),
-                    ValidityDate = DateTime.Parse(expiryDateStr),
+                    ValidityDate = dt,
+                    ResponsibleUserId = userId,
                     ResponsibleUserName = responsiblePersonStr,
                     AssetNumber = localAssetNumberStr,
                     Model = modelStr,
