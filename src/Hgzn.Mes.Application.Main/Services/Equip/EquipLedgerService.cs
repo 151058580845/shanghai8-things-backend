@@ -151,6 +151,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
+            .OrderByDescending(m => m.CreationTime)
             .ToPaginatedListAsync(query.PageIndex, query.PageSize);
         return Mapper.Map<PaginatedList<EquipLedgerReadDto>>(entities);
     }
@@ -176,6 +177,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
+            .OrderByDescending(m => m.CreationTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
