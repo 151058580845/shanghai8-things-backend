@@ -375,7 +375,7 @@ public class EquipLedgerService : SugarCrudAppService<
             bool isExist = false;
             foreach (EquipLedger item in oldEquipMeasurements)
             {
-                if (item.EquipName == assetNameStr && item.Model == modelStr && item.AssetNumber == localAssetNumberStr && item.IsMeasurementDevice == isMeasurementDevice &&
+                if (item.AssetNumber == localAssetNumberStr && item.IsMeasurementDevice == isMeasurementDevice &&
                     !string.IsNullOrEmpty(expiryDateStr) && item.ValidityDate.ToString() != expiryDateStr)
                 {
                     // 进入此判断说明有效期不一致,需要更新
