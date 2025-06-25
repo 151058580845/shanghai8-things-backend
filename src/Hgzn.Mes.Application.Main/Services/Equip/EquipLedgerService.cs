@@ -379,10 +379,12 @@ public class EquipLedgerService : SugarCrudAppService<
                 if (item.AssetNumber == localAssetNumberStr && item.IsMeasurementDevice == isMeasurementDevice &&
                     !string.IsNullOrEmpty(expiryDateStr) && item.ValidityDate.ToString() != expiryDateStr)
                 {
+                    Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))?.Id;
                     // 进入此判断说明有效期不一致,需要更新
                     DbContext.Updateable(item).SetColumns(it => new EquipLedger()
                     {
                         ValidityDate = DateTime.Parse(expiryDateStr),
+                        ResponsibleUserId = userId,
                         ResponsibleUserName = responsiblePersonStr,
                         AssetNumber = localAssetNumberStr,
                         Model = modelStr,
@@ -413,7 +415,6 @@ public class EquipLedgerService : SugarCrudAppService<
                 };
                 try
                 {
-
                     await CreateAsync(input);
                 }
                 catch (Exception e) { }
