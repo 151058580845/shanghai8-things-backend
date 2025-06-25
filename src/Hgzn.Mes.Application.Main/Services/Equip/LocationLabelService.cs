@@ -61,9 +61,10 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
                 .Includes(ll => ll.EquipLedger)
                 .Includes(ll => ll.Room)
-                .WhereIF(queryDto?.FilterEquipType == true,
-                    ll => ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
-                    ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id)
+                .WhereIF(queryDto?.FilterEquipType == true, 
+                    ll => ll.EquipLedger!.TypeId == null ||
+                    (ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
+                    ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id))
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber),
                     ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.Query), 
