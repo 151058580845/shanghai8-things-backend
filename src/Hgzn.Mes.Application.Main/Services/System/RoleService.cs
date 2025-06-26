@@ -4,14 +4,12 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Entities.System.Authority;
-using Hgzn.Mes.Domain.Entities.System.Code;
+
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.System
@@ -74,8 +72,8 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return (await DbContext.Queryable<RoleMenu>()
                 .Where(rm => roleIds.Contains(rm.RoleId))
                 .InnerJoin<Menu>((rm, m) => rm.MenuId == m.Id)
-                .Where((rm, m) => !string.IsNullOrEmpty(m.Code))
-                .Select((rm, m) => m.Code!)
+                .Where((rm, m) => !string.IsNullOrEmpty(m.ScopeCode))
+                .Select((rm, m) => m.ScopeCode!)
                 .ToListAsync())
                 .Distinct();
         }

@@ -44,6 +44,7 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ResponseWrapper<IEnumerable<MenuReadDto>>> GetRootMenusAsTree() =>
             (await _menuService.GetRootMenusAsTreeAsync()).Wrap();
+
         /// <summary>
         ///     获取树形菜单
         ///     auth: anonymous

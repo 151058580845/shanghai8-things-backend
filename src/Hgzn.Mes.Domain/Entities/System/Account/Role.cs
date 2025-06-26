@@ -58,7 +58,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Name = "开发者",
             Code = "dev",
             Level = 0,
-            Description = "developer with all cathable resources even it was obselete"
+            Description = "developer with all cathable resources even it was obselete",
+            CreatorLevel = -1,
         };
 
         public static readonly Role SuperRole = new()
@@ -67,7 +68,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Name = "超级管理员",
             Code = "super",
             Level = 1,
-            Description = "super user with all catchable resources"
+            Description = "super user with all catchable resources",
+            CreatorLevel = -1,
         };
 
         public static readonly Role AdminRole = new()
@@ -76,7 +78,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Name = "管理员",
             Code = "admin",
             Level = 2,
-            Description = "admin to manage user resourcs"
+            Description = "admin to manage user resourcs",
+            CreatorLevel = -1,
         };
 
         public static readonly Role MemberRole = new()
@@ -85,7 +88,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
             Name = "成员",
             Code = "member",
             Level = 3,
-            Description = "normal user with some basic resources"
+            Description = "normal user with some basic resources",
+            CreatorLevel = -1,
         };
 
         #endregion static roles

@@ -51,7 +51,6 @@ namespace Hgzn.Mes.Application.Main.Auth.AuthHandler
             //     context.Fail(new AuthorizationFailureReason(this, "unknow role"));
             //     return;
             // }
-
             if (scopeCode.Any(s => requirement.Scope.Contains(s)))
             {
                 _logger.LogTrace("scope match success");

@@ -78,6 +78,129 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             Type = MenuType.Catalogue
         };
 
+        #region API组合权限
+
+        #region ApiRoot
+
+        public static Menu APIRoot = new()
+        {
+            Id = new Guid("315a2f4d-07e7-4e06-986e-9bb5760527fa"),
+            Name = "后端接口根权限",
+            Code = "apiRoot",
+            Description = "后端接口跟权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = Root.Id
+        };
+
+        #endregion APIRoot
+
+        #region 基础增删改查
+
+        public static Menu APIRemove = new()
+        {
+            Id = new Guid("7b931be6-0692-4835-900c-c4bd1bc31ea3"),
+            Name = "后端接口删除权限",
+            ScopeCode = $"{ScopeMethodType.Remove:F}".ToLower(),
+            Code = "apiRemove",
+            Description = "批量赋予后端接口删除权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIEdit = new()
+        {
+            Id = new Guid("5470e938-b833-4eea-8223-335691dbf4fa"),
+            Name = "后端接口修改权限",
+            ScopeCode = $"{ScopeMethodType.Edit:F}".ToLower(),
+            Code = "apiEdit",
+            Description = "批量赋予后端接口修改权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIAdd = new()
+        {
+            Id = new Guid("b9096eb5-dd82-4b64-aea0-b649dcee97b1"),
+            Name = "后端接口新增权限",
+            ScopeCode = $"{ScopeMethodType.Add:F}".ToLower(),
+            Code = "apiAdd",
+            Description = "批量赋予后端接口新增权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIQuery = new()
+        {
+            Id = new Guid("35c5ad6a-5047-4aaa-aac6-9a3f976407dd"),
+            Name = "后端接口查询权限",
+            ScopeCode = $"{ScopeMethodType.Query:F}".ToLower(),
+            Code = "apiQuery",
+            Description = "批量赋予后端接口查询权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIList = new()
+        {
+            Id = new Guid("26fc1d1d-1361-4e17-9d33-ae111156bc26"),
+            Name = "后端接口列表权限",
+            ScopeCode = $"{ScopeMethodType.List:F}".ToLower(),
+            Code = "apiList",
+            Description = "批量赋予后端接口列表权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        #endregion
+
+        #region 接口范围控制
+
+        public static Menu APIBasic = new()
+        {
+            Id = new Guid("8be0c076-0993-40f3-a3a0-6403275aa2fb"),
+            Name = "后端接口基础管理权限",
+            ScopeCode = $"basic",
+            Code = "apiBasic",
+            Description = "批量赋予后端接口列表权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APIEquip = new()
+        {
+            Id = new Guid("618c7135-34b3-43cb-b460-ec094fa65a11"),
+            Name = "后端接口设备权限",
+            ScopeCode = $"basic",
+            Code = "apiEquip",
+            Description = "批量赋予后端接口设备权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        public static Menu APISystem = new()
+        {
+            Id = new Guid("c0303ac0-d1b9-4c23-9883-6ed9417a1286"),
+            Name = "后端接口系统管理权限",
+            ScopeCode = $"system",
+            Code = "apiSystem",
+            Description = "批量赋予后端接口系统管理权限",
+            Type = MenuType.API,
+            OrderNum = 10,
+            ParentId = APIRoot.Id
+        };
+
+        #endregion 接口范围控制
+
+        #endregion
+
         public static Menu BasisPlatform = new()
         {
             Id = new Guid("56c318dd-fa9e-45e8-89ee-c2b8b1581c41"),
@@ -700,15 +823,51 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "EquipLedger"
         };
 
-        // 设备台账导入
-        public static Menu EquipImport = new()
+        // 台账新增
+        public static Menu EquipAdd = new()
         {
-            Id = Guid.Parse("8eba8377-bd61-4407-881e-fc241e390104"),
-            Name = "导入数据",
-            Code = "equipImport",
-            ScopeCode = "equip:equipledger:import",
+            Id = Guid.Parse("27deb649-a9bb-4811-9d37-00841c8b72df"),
+            Name = "台账新增",
+            Code = "equipAdd",
+            ScopeCode = "equip:equipledger:add",
             Type = MenuType.Component,
             OrderNum = 1002,
+            ParentId = EquipLedger.Id
+        };
+
+        // 台账修改
+        public static Menu EquipEdit = new()
+        {
+            Id = Guid.Parse("2ff3e073-9444-4f72-b446-b69f86606567"),
+            Name = "台账修改",
+            Code = "equipEdit",
+            ScopeCode = "equip:equipledger:edit",
+            Type = MenuType.Component,
+            OrderNum = 1003,
+            ParentId = EquipLedger.Id
+        };
+
+        // 台账查询
+        public static Menu EquipQuery = new()
+        {
+            Id = Guid.Parse("524fa02f-2c48-4779-bed8-e978b2f7c206"),
+            Name = "台账查询",
+            Code = "equipQuery",
+            ScopeCode = "equip:equipledger:query",
+            Type = MenuType.Component,
+            OrderNum = 1004,
+            ParentId = EquipLedger.Id
+        };
+
+        // 台账删除
+        public static Menu EquipRemove = new()
+        {
+            Id = Guid.Parse("eeb46cb3-eaec-4e49-b7d3-aaefba3af2f4"),
+            Name = "台账删除",
+            Code = "equipRemove",
+            ScopeCode = "equip:equipledger:remove",
+            Type = MenuType.Component,
+            OrderNum = 1005,
             ParentId = EquipLedger.Id
         };
 
@@ -725,6 +884,54 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             OrderNum = 1002,
             ParentId = Equip.Id,
             RouteName = "EquipConfig"
+        };
+
+        // 设备连接新增
+        public static Menu EquipConnectAdd = new()
+        {
+            Id = Guid.Parse("7b13d4b0-92b9-4d80-b647-24ff8f87edc0"),
+            Name = "设备连接新增",
+            Code = "equipConnectAdd",
+            ScopeCode = "equip:equipconnect:add",
+            Type = MenuType.Component,
+            OrderNum = 1002,
+            ParentId = EquipConnectManagement.Id
+        };
+
+        // 设备连接修改
+        public static Menu EquipConnectEdit = new()
+        {
+            Id = Guid.Parse("ceef19dc-17c6-4cdc-8c02-2c86f65afc6d"),
+            Name = "设备连接修改",
+            Code = "equipConnectEdit",
+            ScopeCode = "equip:equipconnect:edit",
+            Type = MenuType.Component,
+            OrderNum = 1003,
+            ParentId = EquipConnectManagement.Id
+        };
+
+        // 设备连接查询
+        public static Menu EquipConnectQuery = new()
+        {
+            Id = Guid.Parse("d1165f41-b5c5-41f4-8a10-58088488ac3f"),
+            Name = "设备连接查询",
+            Code = "equipConnectQuery",
+            ScopeCode = "equip:equipconnect:query",
+            Type = MenuType.Component,
+            OrderNum = 1004,
+            ParentId = EquipConnectManagement.Id
+        };
+
+        // 设备连接删除
+        public static Menu EquipConnectRemove = new()
+        {
+            Id = Guid.Parse("ce029ac3-959c-4fa6-8916-eaa5ffe8587c"),
+            Name = "设备连接删除",
+            Code = "equipConnectRemove",
+            ScopeCode = "equip:equipconnect:remove",
+            Type = MenuType.Component,
+            OrderNum = 1005,
+            ParentId = EquipConnectManagement.Id
         };
 
         // 设备采集配置
@@ -1738,12 +1945,12 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger,EquipImport, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
+            Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
             OrientationManagement, EquipLedgerHistory, EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,
             //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,
-            EquipConnectManagement, // EquipDataConfig,
+            EquipConnectManagement, EquipConnectAdd, EquipConnectQuery, EquipConnectEdit, EquipConnectRemove, // EquipDataConfig,
             //Product, ProductPlan, ProductOrder, ProductSchedule,
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
@@ -1751,6 +1958,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ShowSystem1, //ShowSystem,ShowSystem2,
             Basic,// Supplier,Unit,Customer,
             LocationLabel,
+            APIRoot, APIQuery, APIList, APIAdd, APIRemove, APIEdit, APISystem, APIEquip, APIBasic,
         ];
 
         #endregion

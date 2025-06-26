@@ -68,7 +68,7 @@ public sealed class SqlSugarContext
         DbContext.Aop.OnLogExecuting = OnLogExecuting;
         DbContext.Aop.OnLogExecuted = OnLogExecuted;
         DbContext.Aop.DataExecuting = DataExecuting;
-        DbContext.Aop.OnExecutingChangeSql = OnExecutingChangeSql;
+        //DbContext.Aop.OnExecutingChangeSql = OnExecutingChangeSql;
     }
 
     /// <summary>

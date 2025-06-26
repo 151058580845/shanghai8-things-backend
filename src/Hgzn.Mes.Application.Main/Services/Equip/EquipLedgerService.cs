@@ -23,6 +23,7 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Domain.Entities.System.Account;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -53,7 +54,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .Select(t => new NameValueDto
             {
                 Id = t.Id,
-                Name = t.EquipName,
+                Name = t.AssetNumber,
                 Value = t.Id.ToString()
             }).ToListAsync();
         return entities;
@@ -122,14 +123,14 @@ public class EquipLedgerService : SugarCrudAppService<
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
         var queryable = Queryable
-            .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
-            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.EquipName == query.AssetNumber)
+            .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipCode.Contains(query.EquipCode!))
+            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.AssetNumber!.Equals(query.AssetNumber))
+            .WhereIF(query.ResponsibleUserId is not null, m => m.ResponsibleUserId.Equals(query.ResponsibleUserId))
             .WhereIF(!string.IsNullOrEmpty(query.Query),
-                m => m.EquipName.Contains(query.Query!) ||
-                m.Model!.Contains(query.Query!))
-            .WhereIF(!query.ResponsibleUserId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.ResponsibleUserId))
+                m => m.EquipName.Contains(query.Query!) || m.Model!.Contains(query.Query!))
             .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
-            .WhereIF(query.NoRfidDevice == true, m => m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id)
+            .WhereIF(query.NoRfidDevice == true, m => m.TypeId == null ||
+                (m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id))
             .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
             .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
@@ -150,6 +151,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
+            .OrderByDescending(m => m.CreationTime)
             .ToPaginatedListAsync(query.PageIndex, query.PageSize);
         return Mapper.Map<PaginatedList<EquipLedgerReadDto>>(entities);
     }
@@ -158,14 +160,15 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         var queryable = query is null ? Queryable :
             Queryable
-            .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipName.Contains(query.EquipCode!))
-            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.EquipName == query.AssetNumber)
+            .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipCode.Contains(query.EquipCode!))
+            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.AssetNumber == query.AssetNumber)
             .WhereIF(!string.IsNullOrEmpty(query.Query),
                 m => m.EquipName.Contains(query.Query!) ||
                 m.Model!.Contains(query.Query!))
-            .WhereIF(!query.ResponsibleUserId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.ResponsibleUserId))
+            .WhereIF(query.ResponsibleUserId is not null, m => m.ResponsibleUserId.Equals(query.ResponsibleUserId))
             .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
-            .WhereIF(query.NoRfidDevice == true, m => m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id)
+            .WhereIF(query.NoRfidDevice == true, m => m.TypeId == null ||
+                (m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id))
             .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
             .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
@@ -175,6 +178,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
+            .OrderByDescending(m => m.CreationTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
@@ -372,13 +376,15 @@ public class EquipLedgerService : SugarCrudAppService<
             bool isExist = false;
             foreach (EquipLedger item in oldEquipMeasurements)
             {
-                if (item.EquipName == assetNameStr && item.Model == modelStr && item.AssetNumber == localAssetNumberStr && item.IsMeasurementDevice == isMeasurementDevice &&
+                if (item.AssetNumber == localAssetNumberStr && item.IsMeasurementDevice == isMeasurementDevice &&
                     !string.IsNullOrEmpty(expiryDateStr) && item.ValidityDate.ToString() != expiryDateStr)
                 {
+                    Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))?.Id;
                     // 进入此判断说明有效期不一致,需要更新
                     DbContext.Updateable(item).SetColumns(it => new EquipLedger()
                     {
                         ValidityDate = DateTime.Parse(expiryDateStr),
+                        ResponsibleUserId = userId,
                         ResponsibleUserName = responsiblePersonStr,
                         AssetNumber = localAssetNumberStr,
                         Model = modelStr,
@@ -388,12 +394,17 @@ public class EquipLedgerService : SugarCrudAppService<
                     isExist = true;
                 }
             }
-            if (!isExist && !string.IsNullOrEmpty(expiryDateStr))
+            if (!isExist)
             {
+                Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))?.Id;
+                DateTime? dt = null;
+                if (!string.IsNullOrEmpty(expiryDateStr))
+                    dt = DateTime.Parse(expiryDateStr);
                 EquipLedgerCreateDto input = new EquipLedgerCreateDto()
                 {
                     EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ"),
-                    ValidityDate = DateTime.Parse(expiryDateStr),
+                    ValidityDate = dt,
+                    ResponsibleUserId = userId,
                     ResponsibleUserName = responsiblePersonStr,
                     AssetNumber = localAssetNumberStr,
                     Model = modelStr,
@@ -404,7 +415,6 @@ public class EquipLedgerService : SugarCrudAppService<
                 };
                 try
                 {
-
                     await CreateAsync(input);
                 }
                 catch (Exception e) { }
