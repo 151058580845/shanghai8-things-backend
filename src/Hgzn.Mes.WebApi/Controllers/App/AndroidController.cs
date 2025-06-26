@@ -40,8 +40,12 @@ public class AndroidController:ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<ResponseWrapper<PaginatedList<EquipLocationLabelReadDto>>> GetEquipLabelAsync(int pageIndex = 1, int pageSize = 100) =>
-        (await _locationLabelService.GetEquipLabelAsync(pageIndex, pageSize)).Wrap();
+    public async Task<ResponseWrapper<PaginatedList<EquipLocationLabelReadDto>>> GetEquipLabelAsync(int pageIndex = 1,
+        int pageSize = 100)
+    {
+        var list = await _locationLabelService.GetEquipLabelAsync(pageIndex, pageSize);
+        return list.Wrap();
+    }
 
     /// <summary>
     ///     手持端获取房间rfid绑定关系

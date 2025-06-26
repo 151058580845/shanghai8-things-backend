@@ -420,6 +420,7 @@ public sealed class SqlSugarContext
                     c.IfTable<EquipDataPoint>()
                      .OneToOne(t => t.EquipReceiveData, nameof(EquipDataPoint.EquipReceiveDataId))
                      .OneToOne(t => t.Connection, nameof(EquipDataPoint.ConnectionId));
+                    
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();
