@@ -54,7 +54,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 case 0 when devTypeId == 7:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_7CommonHealthExceptionName, 2, 8));
 
-                // 310 微波/毫米波复合半实物仿真系统 
+                // 310 微波/毫米波复合半实物仿真系统
                 case 1 when devTypeId == 2:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
                 case 1 when devTypeId == 4:

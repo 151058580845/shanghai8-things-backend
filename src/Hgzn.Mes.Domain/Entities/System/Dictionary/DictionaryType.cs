@@ -1456,11 +1456,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         public static readonly DictionaryInfo testSystem1 = new DictionaryInfo()
         {
             Id = Guid.Parse("331ADCC8-201D-294F-3745-77BDC37FCA7A"), // 固定的 Guid 值
-            DictLabel = "试验系统1",
-            DictValue = "test1",
+            DictLabel = "微波/毫米波复合半实物仿真系统",
+            DictValue = "微波/毫米波复合半实物仿真系统",
             ParentId = testSystem.Id,
             OrderNum = 1,
-            Remark = "试验系统1",
+            Remark = "微波/毫米波复合半实物仿真系统",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,
@@ -1470,11 +1470,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         public static readonly DictionaryInfo testSystem2 = new DictionaryInfo()
         {
             Id = Guid.Parse("543025D1-5FFC-7C3A-4DD7-BB70E02FEBD8"), // 固定的 Guid 值
-            DictLabel = "试验系统2",
-            DictValue = "test2",
+            DictLabel = "微波寻的半实物仿真系统",
+            DictValue = "微波寻的半实物仿真系统",
             ParentId = testSystem.Id,
             OrderNum = 1,
-            Remark = "试验系统2",
+            Remark = "微波寻的半实物仿真系统",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,
@@ -1484,11 +1484,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         public static readonly DictionaryInfo testSystem3 = new DictionaryInfo()
         {
             Id = Guid.Parse("C2D80616-06C8-0BA5-CDFB-EC52A6E561E6"), // 固定的 Guid 值
-            DictLabel = "试验系统3",
-            DictValue = "test3",
+            DictLabel = "射频/光学制导半实物仿真系统",
+            DictValue = "射频/光学制导半实物仿真系统",
             ParentId = testSystem.Id,
             OrderNum = 1,
-            Remark = "试验系统3",
+            Remark = "射频/光学制导半实物仿真系统",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,
@@ -1498,11 +1498,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         public static readonly DictionaryInfo testSystem4 = new DictionaryInfo()
         {
             Id = Guid.Parse("E11D4C2C-7A52-4BED-20C0-4E42D7A6E34D"), // 固定的 Guid 值
-            DictLabel = "试验系统4",
-            DictValue = "test4",
+            DictLabel = "紧缩场射频光学半实物仿真系统",
+            DictValue = "紧缩场射频光学半实物仿真系统",
             ParentId = testSystem.Id,
             OrderNum = 1,
-            Remark = "试验系统4",
+            Remark = "紧缩场射频光学半实物仿真系统",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,
@@ -1512,11 +1512,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         public static readonly DictionaryInfo testSystem5 = new DictionaryInfo()
         {
             Id = Guid.Parse("1A1BA401-383C-0D30-595C-A9260E6076EF"), // 固定的 Guid 值
-            DictLabel = "试验系统5",
-            DictValue = "test5",
+            DictLabel = "光学复合半实物仿真系统",
+            DictValue = "光学复合半实物仿真系统",
             ParentId = testSystem.Id,
             OrderNum = 1,
-            Remark = "试验系统5",
+            Remark = "光学复合半实物仿真系统",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,
@@ -1526,11 +1526,67 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
         public static readonly DictionaryInfo testSystem6 = new DictionaryInfo()
         {
             Id = Guid.Parse("108E4CDC-DE38-442C-3DC1-D5F283C27464"), // 固定的 Guid 值
-            DictLabel = "试验系统6",
-            DictValue = "test6",
+            DictLabel = "三通道控制红外制导半实物仿真系统",
+            DictValue = "三通道控制红外制导半实物仿真系统",
             ParentId = testSystem.Id,
             OrderNum = 1,
-            Remark = "试验系统6",
+            Remark = "三通道控制红外制导半实物仿真系统",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo testSystem7 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("4e4b8bfe-f9d8-4ec6-a318-87b9ad474544"), // 固定的 Guid 值
+            DictLabel = "低温环境红外制导控制半实物仿真系统",
+            DictValue = "低温环境红外制导控制半实物仿真系统",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "低温环境红外制导控制半实物仿真系统",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo testSystem8 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("734077ee-b26a-41b6-9d6c-0915a0237ad9"), // 固定的 Guid 值
+            DictLabel = "机械式制导控制半实物仿真系统",
+            DictValue = "机械式制导控制半实物仿真系统",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "机械式制导控制半实物仿真系统",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo testSystem9 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("62689350-5b9a-406e-8b16-5beca4d22b2c"), // 固定的 Guid 值
+            DictLabel = "独立回路半实物仿真系统",
+            DictValue = "独立回路半实物仿真系统",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "独立回路半实物仿真系统",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now,
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo testSystem10 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("32c72aad-9df9-49b9-bb2d-aee068fc1edd"), // 固定的 Guid 值
+            DictLabel = "独立回路/可见光制导半实物仿真系统",
+            DictValue = "独立回路/可见光制导半实物仿真系统",
+            ParentId = testSystem.Id,
+            OrderNum = 1,
+            Remark = "独立回路/可见光制导半实物仿真系统",
             SoftDeleted = false,
             State = true,
             CreationTime = DateTime.Now,

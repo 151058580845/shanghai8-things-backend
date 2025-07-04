@@ -11,6 +11,25 @@ public interface ITestDataService : ICrudAppService<
 {
     public Task<int> CreateAsync(IEnumerable<TestDataCreateDto> data);
     Task<IEnumerable<TestDataListReadDto>> GetListByTestAsync(string testName);
+
+    /// <summary>
+    /// 获取历史的试验计划数据
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<TestDataReadDto>> GetHistoryListByTestAsync();
+
+    /// <summary>
+    /// 获取当下的试验计划数据
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<TestDataReadDto>> GetCurrentListByTestAsync();
+
+    /// <summary>
+    /// 获取未来的试验计划数据
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<TestDataReadDto>> GetFeatureListByTestAsync();
+
     /// <summary>
     /// 批量api导入功能
     /// </summary>

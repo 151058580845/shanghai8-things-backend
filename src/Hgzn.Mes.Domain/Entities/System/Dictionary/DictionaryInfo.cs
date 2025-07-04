@@ -141,6 +141,10 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             DictionaryType.testSystem4,
             DictionaryType.testSystem5,
             DictionaryType.testSystem6,
+            DictionaryType.testSystem7,
+            DictionaryType.testSystem8,
+            DictionaryType.testSystem9,
+            DictionaryType.testSystem10,
 
             DictionaryType.ParserDevice,
             DictionaryType.Amplifier,

@@ -168,4 +168,27 @@ public class TestDataService : SugarCrudAppService<
         }
     }
 
+    public async Task<IEnumerable<TestDataReadDto>> GetHistoryListByTestAsync()
+    {
+        List<TestData> entities = await Queryable
+            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) < DateTime.Now)
+            .ToListAsync();
+        return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
+    }
+
+    public async Task<IEnumerable<TestDataReadDto>> GetCurrentListByTestAsync()
+    {
+        List<TestData> entities = await Queryable
+            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) > DateTime.Now &&
+                        x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) < DateTime.Now).ToListAsync();
+        return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
+    }
+
+    public async Task<IEnumerable<TestDataReadDto>> GetFeatureListByTestAsync()
+    {
+        List<TestData> entities = await Queryable
+            .Where(x => x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) > DateTime.Now)
+            .ToListAsync();
+        return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
+    }
 }
