@@ -23,7 +23,7 @@ public class RfidReaderConnector : EquipConnectorBase
     protected int _pushInterval { get; set; }
 
     protected DateTime _timeLast { get; set; }
-    protected ConcurrentQueue<string> _cacheTids {  get; set; } = new ConcurrentQueue<string>();
+    protected ConcurrentQueue<string> _cacheTids { get; set; } = new ConcurrentQueue<string>();
 
     public RfidReaderConnector(
         IConnectionMultiplexer connectionMultiplexer,

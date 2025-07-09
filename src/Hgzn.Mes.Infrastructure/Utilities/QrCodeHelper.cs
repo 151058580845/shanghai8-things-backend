@@ -1,14 +1,15 @@
-﻿using QRCoder;
+﻿using Microsoft.Extensions.Logging;
+using QRCoder;
 using SkiaSharp;
 
 namespace Hgzn.Mes.Infrastructure.Utilities;
 
 public static class QrCodeHelper
 {
-    private static async Task CreateQrCode(string content,string filePath)
+    private static async Task CreateQrCode(string content, string filePath)
     {
         using QRCodeGenerator qrGenerator = new QRCodeGenerator();
-        var qrCodeData = qrGenerator.CreateQrCode(content,QRCodeGenerator.ECCLevel.Q);
+        var qrCodeData = qrGenerator.CreateQrCode(content, QRCodeGenerator.ECCLevel.Q);
         using var qrCode = new BitmapByteQRCode(qrCodeData);
         var qrCodeImage = qrCode.GetGraphic(20);
         using var ms = new MemoryStream(qrCodeImage);
@@ -31,6 +32,6 @@ public static class QrCodeHelper
         }
         var imageBytes = await File.ReadAllBytesAsync(filePath);
         var base64String = Convert.ToBase64String(imageBytes);
-        return "data:image/jpeg;base64,"+base64String;
+        return "data:image/jpeg;base64," + base64String;
     }
 }

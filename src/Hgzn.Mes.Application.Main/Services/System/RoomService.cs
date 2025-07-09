@@ -9,7 +9,9 @@ using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Shared.Utilities;
+using Hgzn.Mes.Infrastructure.DbContexts.Ef;
 using Hgzn.Mes.Infrastructure.Utilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Hgzn.Mes.Application.Main.Services.System;
@@ -88,8 +90,8 @@ public class RoomService : SugarCrudAppService<
         var entity = await base.GetAsync(key);
         var qrCode = Mapper.Map<RoomQrCode>(entity);
         //生成二维码
-        entity.QrCode =
-            await QrCodeHelper.GetOrCreateQrCode(entity.ToString(), JsonConvert.SerializeObject(qrCode), "RoomImgFolder");
+        // entity.QrCode =
+        //    await QrCodeHelper.GetOrCreateQrCode(entity.ToString(), JsonConvert.SerializeObject(qrCode), "RoomImgFolder");
         return entity;
     }
 }

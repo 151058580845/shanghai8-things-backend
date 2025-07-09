@@ -317,7 +317,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
         {
             var user = await Queryable.FirstAsync(u => u.Id == userId) ??
                     throw new NotFoundException("user not found");
-            var hash = CryptoUtil.Sha256("12345678");
+           string defaultPsd = await _baseConfigService
+                .GetValueByKeyAsync(BaseConfig.DefaultPassword.ConfigKey) ?? "12345678";
+            var hash = CryptoUtil.Sha256(defaultPsd);
             _userDomainService.WithSalt(ref user, hash);
             return await DbContext.Updateable(user).ExecuteCommandAsync();
         }

@@ -193,7 +193,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 .FirstAsync();
 
             var time = DateTime.UtcNow;
-            var record = new EquipLocationRecord {
+            var record = new EquipLocationRecord
+            {
                 DateTime = time,
                 Tid = msg.Tid,
                 Userdata = msg.Userdata,
@@ -207,7 +208,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
             string? roomName = equip?.Room?.Name;
             //原先设备已绑定则解绑
-            if (equip?.RoomId is not null && equip.RoomId == rfidReader.RoomId)
+            // 需求变更,现在没有搬出房间警告,只更新设备的房间状态
+            if (false && equip?.RoomId is not null && equip.RoomId == rfidReader.RoomId)
             {
                 if ((equip.LastMoveTime is null ||
                 (time - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
@@ -220,21 +222,31 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             }
             else//未绑定设备绑定至新房间
             {
-                equip!.RoomId = rfidReader.RoomId;
-                roomName = rfidReader.RoomName;
-                equip.LastMoveTime = time;
+                if (rfidReader.RoomId != null)
+                {
+                    equip!.RoomId = rfidReader.RoomId;
+                    roomName = rfidReader.RoomName;
+                    equip.LastMoveTime = time;
+                }
+                else
+                {
+                    _logger.LogInformation("roomID 为空");
+                }
             }
-            record.RoomId = equip.RoomId;
-            record.RoomName = roomName;
-            await _mqttExplorer.PublishAsync(UserTopicBuilder
-            .CreateUserBuilder()
-            .WithPrefix(TopicType.App)
-            .WithDirection(MqttDirection.Up)
-            .WithTag(MqttTag.Notice)
-            .WithUri(label!.EquipLedgerId.ToString()!)
-            .Build(), Encoding.UTF8.GetBytes(roomName ?? ""));
-            await _client.Updateable(equip).ExecuteCommandAsync();
-            await _client.Insertable(record).ExecuteCommandAsync();
+            if (rfidReader.RoomId != null)
+            {
+                record.RoomId = equip?.RoomId;
+                record.RoomName = roomName;
+                await _mqttExplorer.PublishAsync(UserTopicBuilder
+                .CreateUserBuilder()
+                .WithPrefix(TopicType.App)
+                .WithDirection(MqttDirection.Up)
+                .WithTag(MqttTag.Notice)
+                .WithUri(label!.EquipLedgerId.ToString()!)
+                .Build(), Encoding.UTF8.GetBytes(roomName ?? ""));
+                await _client.Updateable(equip).ExecuteCommandAsync();
+                await _client.Insertable(record).ExecuteCommandAsync();
+            }
         }
 
         private void HandleHealthAsync(IotTopic topic,

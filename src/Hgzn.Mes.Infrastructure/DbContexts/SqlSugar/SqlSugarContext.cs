@@ -38,7 +38,7 @@ public sealed class SqlSugarContext
     /// <summary>
     /// 所有软删除的数据表
     /// </summary>
-    private static readonly Dictionary<string, EntityInfo> EntityInfos=new();
+    private static readonly Dictionary<string, EntityInfo> EntityInfos = new();
 
     public SqlSugarContext(
         ILogger<SqlSugarContext> logger,
@@ -51,7 +51,7 @@ public sealed class SqlSugarContext
         _dbOptions = dbOptions;
         _logger = logger;
         DbContext = client;
-        if(_httpContextAccessor?.HttpContext?.User.Claims is not null)
+        if (_httpContextAccessor?.HttpContext?.User.Claims is not null)
         {
             var plain = _httpContextAccessor?.HttpContext?.User.Claims
                 .FirstOrDefault(c => ClaimType.UserId == c.Type);
@@ -80,15 +80,15 @@ public sealed class SqlSugarContext
     private KeyValuePair<string, SugarParameter[]> OnExecutingChangeSql(string sql, SugarParameter[] parameters)
     {
         var span = sql.AsSpan().TrimStart();
-        if (!span.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase)) 
+        if (!span.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase))
             return new(sql, parameters);
         // 定位 FROM 后的表名
         var fromIdx = span.IndexOf("FROM ", StringComparison.OrdinalIgnoreCase);
-        if (fromIdx < 0) 
+        if (fromIdx < 0)
             return new(sql, parameters);
         var afterFrom = span[(fromIdx + 5)..];
-        var endIdx     = afterFrom.IndexOfAny(new[] {' ', '\r', '\n', '\t'});
-        if (endIdx < 0) 
+        var endIdx = afterFrom.IndexOfAny(new[] { ' ', '\r', '\n', '\t' });
+        if (endIdx < 0)
             return new(sql, parameters);
 
         var tableName = afterFrom[..endIdx].ToString();
@@ -100,19 +100,19 @@ public sealed class SqlSugarContext
         {
             return new(sql, parameters);
         }
-        
+
         // 从元数据里拿到对应 C# 属性映射到的列名
         var colSoftDeleted = ei.Columns
             .First(c => c.PropertyName == nameof(ISoftDelete.SoftDeleted))
             .DbColumnName;
-        var colDeleteTime  = ei.Columns
+        var colDeleteTime = ei.Columns
             .First(c => c.PropertyName == nameof(ISoftDelete.DeleteTime))
             .DbColumnName;
         var pars = parameters ?? [];
         // 拼 WHERE 子句
         var whereIdx = span.IndexOf("WHERE", StringComparison.OrdinalIgnoreCase);
-        var remainder = whereIdx >= 0 
-            ? span[whereIdx..].ToString() 
+        var remainder = whereIdx >= 0
+            ? span[whereIdx..].ToString()
             : "";
         var newSql = $"UPDATE {tableName} SET {colSoftDeleted} = @__softDeleted, {colDeleteTime}  = @__deleteTime {remainder}";
         var newPars = pars
@@ -133,11 +133,11 @@ public sealed class SqlSugarContext
         switch (entityInfo.OperationType)
         {
             case DataFilterType.UpdateByObject:
-                
+
                 if (entityInfo.PropertyName.Equals(nameof(ICreationAudited.CreatorId)))
                 {
-                    var dataLevel = ((ICreationAudited) entityInfo.EntityValue).CreatorLevel;
-                    if (dataLevel < _level) 
+                    int? dataLevel = (entityInfo.EntityValue as ICreationAudited)?.CreatorLevel;
+                    if (dataLevel != null && dataLevel < _level)
                         throw new ForbiddenException("not allowed to update this data");
                 }
                 if (entityInfo.PropertyName.Equals(nameof(IAudited.LastModificationTime)))
@@ -179,7 +179,7 @@ public sealed class SqlSugarContext
                         entityInfo.SetValue(_userId);
                     }
                 }
-                
+
                 if (entityInfo.PropertyName.Equals(nameof(IAudited.CreatorLevel)))
                 {
                     entityInfo.SetValue(_level);
@@ -247,7 +247,7 @@ public sealed class SqlSugarContext
             builder.AppendLine($"public static {type.Name} {type.Name}_{index} = new ()");
             seedsBuilder.Append($"\t{type.Name}_{index},\r\n");
             builder.AppendLine("{");
-            foreach(var property in type.GetProperties())
+            foreach (var property in type.GetProperties())
             {
                 var propertyPrefix = $"  {property.Name} = ";
                 var value = property.GetValue(entity);
@@ -257,16 +257,16 @@ public sealed class SqlSugarContext
                 var propertySuffix = propertyType.IsEnum ?
                     (value is null ? "null," : $"({propertyType.Name}){(int)value},") :
                     Type.GetTypeCode(propertyType) switch
-                {
-                    TypeCode.DBNull or TypeCode.Empty => "null,",
-                    TypeCode.DateTime => string.IsNullOrEmpty(Convert.ToString(value)) ? "null," : $"DateTime.Parse(\"{value}\"),",
-                    TypeCode.String => value is null ? "null," : $"\"{((string)value).Replace("\\", "\\\\").Replace("\"", "\\\"")}\",",
-                    TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or
-                    TypeCode.Double or TypeCode.Single or TypeCode.Decimal or
-                    TypeCode.UInt64 or TypeCode.Int64 => value is null ? "null," : $"{value},",
-                    TypeCode.Boolean => $"{property.GetValue(entity)},".ToLower(),
-                    _ => DealWithDefaultSuffix(propertyType, value)
-                };
+                    {
+                        TypeCode.DBNull or TypeCode.Empty => "null,",
+                        TypeCode.DateTime => string.IsNullOrEmpty(Convert.ToString(value)) ? "null," : $"DateTime.Parse(\"{value}\"),",
+                        TypeCode.String => value is null ? "null," : $"\"{((string)value).Replace("\\", "\\\\").Replace("\"", "\\\"")}\",",
+                        TypeCode.Int16 or TypeCode.UInt16 or TypeCode.Int32 or TypeCode.UInt32 or
+                        TypeCode.Double or TypeCode.Single or TypeCode.Decimal or
+                        TypeCode.UInt64 or TypeCode.Int64 => value is null ? "null," : $"{value},",
+                        TypeCode.Boolean => $"{property.GetValue(entity)},".ToLower(),
+                        _ => DealWithDefaultSuffix(propertyType, value)
+                    };
                 if (propertySuffix is null) continue;
                 builder.Append(propertyPrefix + propertySuffix + "\r\n");
             }
@@ -420,7 +420,7 @@ public sealed class SqlSugarContext
                     c.IfTable<EquipDataPoint>()
                      .OneToOne(t => t.EquipReceiveData, nameof(EquipDataPoint.EquipReceiveDataId))
                      .OneToOne(t => t.Connection, nameof(EquipDataPoint.ConnectionId));
-                    
+
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;
                     var name = p.Name.ToSnakeCase();

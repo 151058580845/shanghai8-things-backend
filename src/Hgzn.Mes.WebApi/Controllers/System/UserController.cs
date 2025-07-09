@@ -183,11 +183,11 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         [Route("pwd")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
+        // [Authorize(Policy = $"system:user:{ScopeMethodType.Edit}")]
 
         public async Task<ResponseWrapper<int>> ChangePassword(ChangePasswordDto passwordDto) =>
             (await _userService.ChangePasswordAsync(passwordDto)).Wrap();
-   
+
         /// <summary>
         ///     更新用户信息
         ///     auth: admin

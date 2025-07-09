@@ -7,7 +7,7 @@ using Hgzn.Mes.Domain.ValueObjects.UserValue;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
-    public class User : UniversalEntity, IAudited, ISoftDelete, IState
+    public class User : UniversalEntity, /*IAudited*/ILastModificationAudited, ISoftDelete, IState
     {
         /// <summary>
         /// 用户名
@@ -28,9 +28,9 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public string? Phone { get; set; }
         public DateTime RegisterTime { get; set; }
         public Setting? Settings { get; set; }
-        
+
         public Gender Gender { get; set; } = Gender.Unknow;
-        
+
         [Description("部门Id")]
         public Guid? DeptId { get; set; }
 
