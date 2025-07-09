@@ -99,7 +99,7 @@ public class EquipLedgerService : SugarCrudAppService<
     /// <returns></returns>
     public async Task<IEnumerable<EquipLedgerSearchReadDto>> GetAppSearchAsync()
     {
-        var entities = await Queryable.Where(t => t.State == false).Includes(t => t.EquipType)
+        var entities = await Queryable.Where(t => t.DeviceStatus == DeviceStatus.Lost).Includes(t => t.EquipType)
             .Select(t => new EquipLedgerSearchReadDto()
             {
                 Id = t.Id,
