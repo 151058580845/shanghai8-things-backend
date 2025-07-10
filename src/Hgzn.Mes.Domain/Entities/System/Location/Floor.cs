@@ -44,7 +44,7 @@ public class Floor : UniversalEntity, IOrder, IAudited, ISeedsGeneratable
     {
         Id = Guid.Parse("6eb67743-2a45-6108-f261-816b7899fe24"),
         ParentId = Building.BaYuanBuilding.Id,
-        CreationTime = DateTime.Now,
+        CreationTime = DateTime.Now.ToLocalTime(),
         Name = "1楼",
         Code = "1",
         Area = 0,
@@ -55,7 +55,7 @@ public class Floor : UniversalEntity, IOrder, IAudited, ISeedsGeneratable
     {
         Id = Guid.Parse("cacc6ace-e2cb-4d6d-855b-8fba3997ee5f"),
         ParentId = Building.BaYuanBuilding.Id,
-        CreationTime = DateTime.Now,
+        CreationTime = DateTime.Now.ToLocalTime(),
         Name = "2楼",
         Code = "2",
         Area = 0,
@@ -66,7 +66,7 @@ public class Floor : UniversalEntity, IOrder, IAudited, ISeedsGeneratable
     {
         Id = Guid.Parse("ab353f57-cdf7-4485-b766-aed8c61522de"),
         ParentId = Building.BaYuanBuilding.Id,
-        CreationTime = DateTime.Now,
+        CreationTime = DateTime.Now.ToLocalTime(),
         Name = "3楼",
         Code = "3",
         Area = 0,

@@ -79,7 +79,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
                 equipNotice = new EquipNotice()
                 {
                     EquipId = equipId,
-                    SendTime = DateTime.Now,
+                    SendTime = DateTime.Now.ToLocalTime(),
                     NoticeType = EquipNoticeType.Alarm,
                     Title = "Receive Alarm",
                     Content = JsonConvert.SerializeObject(exception),
@@ -111,7 +111,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             EquipNotice equipNotice = new EquipNotice()
             {
                 EquipId = equipId,
-                SendTime = DateTime.Now,
+                SendTime = DateTime.Now.ToLocalTime(),
                 NoticeType = EquipNoticeType.Alarm,
                 Title = "Receive Alarm",
                 Content = JsonConvert.SerializeObject(exception),
@@ -139,7 +139,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             EquipNotice equipNotice = new EquipNotice()
             {
                 EquipId = equipId,
-                SendTime = DateTime.Now,
+                SendTime = DateTime.Now.ToLocalTime(),
                 NoticeType = EquipNoticeType.Alarm,
                 Title = "Receive Alarm",
                 Content = JsonConvert.SerializeObject(exception),

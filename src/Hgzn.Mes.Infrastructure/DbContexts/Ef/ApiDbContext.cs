@@ -48,7 +48,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
                     {
                         entityEntry.State = EntityState.Unchanged;
                         delete.SoftDeleted = true;
-                        delete.DeleteTime = DateTime.UtcNow;
+                        delete.DeleteTime = DateTime.Now.ToLocalTime();
                     }
                 }
                 if (entityEntry.Entity is ICreationAudited creationAudited)
@@ -56,7 +56,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
                     var plain = _httpContextAccessor?.HttpContext?.User.Claims
                         .First(c => ClaimType.UserId == c.Type).Value;
                     var userId = plain is null ? new Guid?() : Guid.Parse(plain);
-                    creationAudited.CreationTime = DateTime.UtcNow;
+                    creationAudited.CreationTime = DateTime.Now.ToLocalTime();
                     creationAudited.CreatorId = userId;
                 }
                 if (entityEntry.Entity is ILastModificationAudited lastModificationAudited)
@@ -64,7 +64,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.Ef
                     var plain = _httpContextAccessor?.HttpContext?.User.Claims
                         .First(c => ClaimType.UserId == c.Type).Value;
                     var userId = plain is null ? new Guid?() : Guid.Parse(plain);
-                    lastModificationAudited.LastModificationTime = DateTime.UtcNow;
+                    lastModificationAudited.LastModificationTime = DateTime.Now.ToLocalTime();
                     lastModificationAudited.LastModifierId = userId;
                 }
             }

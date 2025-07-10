@@ -58,7 +58,7 @@ public class HygrographConnector:EquipConnectorBase
             RoomName = _dictionaryRoom[_dictionary[deviceId].RoomId.ToString()!].Name,
             Temperature = data1.Tem,
             Humidness = data1.Hum,
-            CreateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            CreateTime = DateTime.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
         };
         Console.WriteLine(JsonSerializer.Serialize(entity));
         

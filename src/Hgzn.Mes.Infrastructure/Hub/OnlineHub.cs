@@ -54,7 +54,7 @@ public class OnlineHub : Microsoft.AspNetCore.SignalR.Hub
                 Browser = loginUser.Browser,
                     LoginLocation = loginUser.LoginLocation,
                 Ipaddr = loginUser.LoginIp,
-                LoginTime = DateTime.Now,
+                LoginTime = DateTime.Now.ToLocalTime(),
                 Os = loginUser.Os,
                 UserName = name ?? "Null",
                 UserId = userId
@@ -65,7 +65,7 @@ public class OnlineHub : Microsoft.AspNetCore.SignalR.Hub
                 //先移除之前的用户id，一个用户只能一个
                 OnlineUsers.RemoveAll(u => u.UserId == userId);
                 _logger.LogInformation(
-                    $"{DateTime.Now}：{name},{Context.ConnectionId}连接服务端success，当前已连接{OnlineUsers.Count}个");
+                    $"{DateTime.Now.ToLocalTime()}：{name},{Context.ConnectionId}连接服务端success，当前已连接{OnlineUsers.Count}个");
             }
 
             //全部移除之后，再进行添加
@@ -81,7 +81,7 @@ public class OnlineHub : Microsoft.AspNetCore.SignalR.Hub
 
     public static void RemoveByUserId(Guid userId) {
          OnlineUsers.RemoveAll(u => u.UserId == userId);
-      //  _logger.LogInformation($"{DateTime.Now}：{userId},{Context.ConnectionId}已经删除！");
+      //  _logger.LogInformation($"{DateTime.Now.ToLocalTime()}：{userId},{Context.ConnectionId}已经删除！");
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)

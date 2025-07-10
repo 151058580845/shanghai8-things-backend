@@ -53,7 +53,7 @@ public class NoticeUpdateDto : UpdateDto
     public int? OrderNum { get; set; }
     public bool? State { get; set; }
 
-    public DateTime SendTime { get; set; } = DateTime.Now;
+    public DateTime SendTime { get; set; } = DateTime.Now.ToLocalTime();
 
     /// <summary>
     /// target_groups：接收范围（部门、角色、特定用户列表）。

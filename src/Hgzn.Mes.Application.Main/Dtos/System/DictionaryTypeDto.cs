@@ -8,7 +8,7 @@ public class DictionaryTypeDto
 
 public class DictionaryTypeReadDto : ReadDto
 {
-    public DateTime CreationTime { get; set; } = DateTime.Now;
+    public DateTime CreationTime { get; set; } = DateTime.Now.ToLocalTime();
     public Guid? CreatorId { get; set; }
     public string DictName { get; set; } = string.Empty;
     public string DictType { get; set; } = string.Empty;

@@ -64,11 +64,11 @@ namespace Hgzn.Mes.Iot.EquipManager
         {
             LoggerAdapter.LogTrace("epc on");
 
-            if ((DateTime.UtcNow - _timeLast).TotalSeconds - _pushInterval < 0)
+            if ((DateTime.Now.ToLocalTime() - _timeLast).TotalSeconds - _pushInterval < 0)
             {
                 return;
             }
-            _timeLast = DateTime.UtcNow;
+            _timeLast = DateTime.Now.ToLocalTime();
             var data = new RfidMsg
             {
                 Tid = msg.logBaseEpcInfo.Tid,

@@ -16,7 +16,7 @@ public class NoticeTarget : UniversalEntity
     public Guid NoticeObjectId { get; set; }
 
     [Description("通知发送时间")]
-    public DateTime NoticeTime { get; set; } = DateTime.Now;
+    public DateTime NoticeTime { get; set; } = DateTime.Now.ToLocalTime();
 
     [Description("阅读状态")]
     public bool IsRead { get; set; } = false;

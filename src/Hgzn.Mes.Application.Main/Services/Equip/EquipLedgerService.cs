@@ -256,7 +256,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .Includes(e => e.Room)
             .Where(e => e.IsMovable &&
             (e.RoomId == null || (int)e.Room!.Purpose >= (int)RoomPurpose.Hallway) &&
-            DateTime.UtcNow.AddMinutes(-30) >= e.LastMoveTime).ToArrayAsync();
+            DateTime.Now.ToLocalTime().AddMinutes(-30) >= e.LastMoveTime).ToArrayAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
@@ -349,7 +349,7 @@ public class EquipLedgerService : SugarCrudAppService<
         }
 
         // 获取当前日期
-        DateTime currentDate = DateTime.Now;
+        DateTime currentDate = DateTime.Now.ToLocalTime();
 
         EquipLedger[] oldEquipMeasurements = await DbContext.Queryable<EquipLedger>().ToArrayAsync();
 

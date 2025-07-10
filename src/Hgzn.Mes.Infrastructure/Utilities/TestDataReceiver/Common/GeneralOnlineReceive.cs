@@ -66,7 +66,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             // 使用反射将后面指定数量个物理量数据进行填充
             PropertyInfo[] properties = typeof(T).GetProperties();
             properties[0].SetValue(entity, _equipId);
-            properties[1].SetValue(entity, DateTime.Now);
+            properties[1].SetValue(entity, DateTime.Now.ToLocalTime());
             properties[2].SetValue(entity, simuTestSysId);
             properties[3].SetValue(entity, devTypeId);
             properties[4].SetValue(entity, compNumber);

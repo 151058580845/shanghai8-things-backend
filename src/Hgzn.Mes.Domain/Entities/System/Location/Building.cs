@@ -53,7 +53,7 @@ public class Building : UniversalEntity, IAudited, ISoftDelete, IOrder, ISeedsGe
     public static Building BaYuanBuilding = new Building()
     {
         Id = Guid.Parse("4f125e25-3c84-4740-ace2-a7d8d7ca61a1"),
-        CreationTime = DateTime.Now,
+        CreationTime = DateTime.Now.ToLocalTime(),
         Name = "上海机电工程研究所",
         Code = "2#",
         Address = "",

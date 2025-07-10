@@ -92,7 +92,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             EquipNotice equipNotice = new EquipNotice()
             {
                 EquipId = _equipId,
-                SendTime = DateTime.Now,
+                SendTime = DateTime.Now.ToLocalTime(),
                 NoticeType = EquipNoticeType.Alarm,
                 Title = "Receive Alarm",
                 Content = JsonConvert.SerializeObject(exception),

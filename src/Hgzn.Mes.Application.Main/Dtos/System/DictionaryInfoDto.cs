@@ -8,7 +8,7 @@ public class DictionaryInfoDto
 
 public class DictionaryInfoReadDto : ReadDto
 {
-    public DateTime CreationTime { get; set; } = DateTime.Now;
+    public DateTime CreationTime { get; set; } = DateTime.Now.ToLocalTime();
     public Guid? CreatorId { get; set; }
     public string? Remark { get; set; }
     public string? ListClass { get; set; }

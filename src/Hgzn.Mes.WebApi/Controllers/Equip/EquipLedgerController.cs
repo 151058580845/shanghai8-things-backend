@@ -239,11 +239,11 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
                 EquipCode = "123",
                 EquipName = "挖掘机",
                 Model = "测试形",
-                PurchaseDate = DateTime.Now,
+                PurchaseDate = DateTime.Now.ToLocalTime(),
                 Remark = "测试",
                 RoomId = Guid.NewGuid(),
                 TypeId = Guid.NewGuid(),
-                ValidityDate = DateTime.Now
+                ValidityDate = DateTime.Now.ToLocalTime()
             });
             return equipLedgerCreates;
         }

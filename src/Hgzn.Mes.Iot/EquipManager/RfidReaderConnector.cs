@@ -155,7 +155,7 @@ public class RfidReaderConnector : EquipConnectorBase
     {
         LoggerAdapter.LogTrace($"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> epc flag on!");
         var tidExist = _cacheTids.Contains(msg.logBaseEpcInfo.Tid);
-        var timeout = (DateTime.UtcNow - _timeLast).TotalSeconds - _pushInterval > 0;
+        var timeout = (DateTime.Now.ToLocalTime() - _timeLast).TotalSeconds - _pushInterval > 0;
         if (!tidExist)
         {
             _cacheTids.Enqueue(msg.logBaseEpcInfo.Tid);
@@ -169,7 +169,7 @@ public class RfidReaderConnector : EquipConnectorBase
         {
             _cacheTids.Clear();
         }
-        _timeLast = DateTime.UtcNow;
+        _timeLast = DateTime.Now.ToLocalTime();
         var data = new RfidMsg
         {
             Tid = msg.logBaseEpcInfo.Tid,

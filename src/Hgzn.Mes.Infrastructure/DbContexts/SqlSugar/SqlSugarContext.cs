@@ -117,7 +117,7 @@ public sealed class SqlSugarContext
         var newSql = $"UPDATE {tableName} SET {colSoftDeleted} = @__softDeleted, {colDeleteTime}  = @__deleteTime {remainder}";
         var newPars = pars
             .Append(new SugarParameter("@__softDeleted", true))
-            .Append(new SugarParameter("@__deleteTime", DateTime.Now))
+            .Append(new SugarParameter("@__deleteTime", DateTime.Now.ToLocalTime()))
             .ToArray();
         return new(newSql, newPars);
     }
@@ -142,7 +142,7 @@ public sealed class SqlSugarContext
                 }
                 if (entityInfo.PropertyName.Equals(nameof(IAudited.LastModificationTime)))
                 {
-                    entityInfo.SetValue(DateTime.Now);
+                    entityInfo.SetValue(DateTime.Now.ToLocalTime());
                 }
 
                 if (entityInfo.PropertyName.Equals(nameof(IAudited.LastModifierId)))
@@ -168,7 +168,7 @@ public sealed class SqlSugarContext
                 {
                     // if (!DateTime.MinValue.Equals(oldValue))
                     // {
-                    entityInfo.SetValue(DateTime.Now);
+                    entityInfo.SetValue(DateTime.Now.ToLocalTime());
                     // }
                 }
 
@@ -205,7 +205,7 @@ public sealed class SqlSugarContext
                 //
                 //         if (entityInfo.PropertyName.Equals(nameof(ISoftDelete.DeleteTime)))
                 //         {
-                //             entityInfo.SetValue(DateTime.Now);
+                //             entityInfo.SetValue(DateTime.Now.ToLocalTime());
                 //         }
                 //     }
                 // }
@@ -533,7 +533,7 @@ public sealed class SqlSugarContext
     //     if (entity is { SoftDeleted: false })
     //     {
     //         entity.SoftDeleted = true;
-    //         entity.DeleteTime = DateTime.Now;
+    //         entity.DeleteTime = DateTime.Now.ToLocalTime();
     //         await DbContext.Updateable(entity).ExecuteCommandAsync();
     //     }
     // }
@@ -582,7 +582,7 @@ public sealed class SqlSugarContext
     public Task BackUpDataBaseAsync()
     {
         string directory = Path.Combine(Directory.GetCurrentDirectory(), "database_backup");
-        string fileName = DateTime.Now.ToString($"yyyyMMdd_HHmmss") + $"_{DbContext.Ado.Connection.Database}";
+        string fileName = DateTime.Now.ToLocalTime().ToString($"yyyyMMdd_HHmmss") + $"_{DbContext.Ado.Connection.Database}";
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);

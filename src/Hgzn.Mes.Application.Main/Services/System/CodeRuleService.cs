@@ -79,7 +79,7 @@ public class CodeRuleService : SugarCrudAppService<
                         // 如果为空设置 上一次的重置天数
                         if (string.IsNullOrEmpty(rule.SourceKey)  )
                         {
-                            rule.SourceKey =DateTime.Now.ToString("yyyyMMdd");
+                            rule.SourceKey =DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
                         }
 
                         bool isParsed = DateTime.TryParseExact(
@@ -92,10 +92,10 @@ public class CodeRuleService : SugarCrudAppService<
 
                        // DateTime.TryParse(rule.SourceKey.ToString(), out DateTime ruleDate);
                         // 重置流水号
-                        if (ruleDate.Day != DateTime.Now.Day)
+                        if (ruleDate.Day != DateTime.Now.ToLocalTime().Day)
                         {
                             rule.NowFlow = rule.InitialNowFlow;
-                            rule.SourceKey = DateTime.Now.ToString("yyyyMMdd");
+                            rule.SourceKey = DateTime.Now.ToLocalTime().ToString("yyyyMMdd");
                         }
 
                         rule.NowFlow++;
@@ -112,7 +112,7 @@ public class CodeRuleService : SugarCrudAppService<
                         break;
 
                     case "Date":
-                        sb.Append(DateTime.Now.ToString(rule.DateFormat));
+                        sb.Append(DateTime.Now.ToLocalTime().ToString(rule.DateFormat));
                         break;
 
                     case "AttributeValue":

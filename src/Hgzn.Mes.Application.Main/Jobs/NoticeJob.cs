@@ -85,7 +85,7 @@ public class NoticeJob : INoticeJob
                 NoticeId = noticeId,
                 NoticeTargetType = notice.Target,
                 NoticeObjectId = target,
-                NoticeTime = DateTime.Now
+                NoticeTime = DateTime.Now.ToLocalTime()
             });
         }
         // //发送给对应用户

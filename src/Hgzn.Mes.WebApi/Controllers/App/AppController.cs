@@ -203,7 +203,7 @@ public class AppController : ControllerBase
                 System = item.Name,
                 Device = "这是一个设备名",
                 Value = "这个设备正在发疯",
-                Time = DateTime.Now.ToString(),
+                Time = DateTime.Now.ToLocalTime().ToString(),
             });
         }
         // 关键设备利用率数据

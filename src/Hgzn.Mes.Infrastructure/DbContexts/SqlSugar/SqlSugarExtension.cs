@@ -27,7 +27,7 @@ namespace Hgzn.Mes.Infrastructure.DbContexts.SqlSugar
             {
                 var target = entity as ISoftDelete;
                 target!.SoftDeleted = true;
-                target!.DeleteTime = DateTime.UtcNow;
+                target!.DeleteTime = DateTime.Now.ToLocalTime().ToLocalTime();
                 return await context.Updateable(entity).ExecuteCommandAsync();
             }
             

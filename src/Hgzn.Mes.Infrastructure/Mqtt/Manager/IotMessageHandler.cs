@@ -98,7 +98,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             {
                 Id = Guid.NewGuid(),
                 EquipId = equipId,
-                SendTime = DateTime.Now,
+                SendTime = DateTime.Now.ToLocalTime(),
                 Title = "设备连接操作",
                 Content = "",
                 Description = "",
@@ -192,7 +192,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 .Includes(eq => eq.Room)
                 .FirstAsync();
 
-            var time = DateTime.UtcNow;
+            var time = DateTime.Now.ToLocalTime();
             var record = new EquipLocationRecord
             {
                 DateTime = time,

@@ -20,7 +20,7 @@ namespace Hgzn.Mes.Application.Main.Utilities
             var credentials = new SigningCredentials(CryptoUtil.PrivateECDsaSecurityKey, SecurityAlgorithms.EcdsaSha256);
             // 生成令牌时，使用带有 KeyId 的 SecurityKey
             // var credentials = new SigningCredentials(new ECDsaSecurityKey(CryptoUtil.PrivateECDsaSecurityKey.ECDsa){ KeyId ="EC_KEY_2024" }, SecurityAlgorithms.EcdsaSha256);
-            var nbf = DateTime.UtcNow;
+            var nbf = DateTime.Now.ToLocalTime();
             var expire = nbf + expires;
             // var token = new JwtSecurityToken(issuer, audience,
             //     claims, nbf, expire, credentials);

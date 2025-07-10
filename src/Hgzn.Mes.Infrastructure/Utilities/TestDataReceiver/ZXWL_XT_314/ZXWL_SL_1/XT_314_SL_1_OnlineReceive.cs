@@ -100,7 +100,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
             XT_314_SL_1_ReceiveData entity = new XT_314_SL_1_ReceiveData()
             {   
                 Id = _equipId,
-                CreationTime = DateTime.Now,
+                CreationTime = DateTime.Now.ToLocalTime(),
                 SimuTestSysld = simuTestSysId,
                 DevTypeld = devTypeId,
                 Compld = compNumber,

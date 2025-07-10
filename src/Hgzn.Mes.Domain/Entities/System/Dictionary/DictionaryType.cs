@@ -44,7 +44,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "Type of equipment maintenance",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now
+            CreationTime = DateTime.Now.ToLocalTime()
         };
 
         public static readonly DictionaryInfo Check = new DictionaryInfo()
@@ -57,7 +57,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "点检",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -71,7 +71,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "保养",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -100,7 +100,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "未开始",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -114,7 +114,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "进行中",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -128,7 +128,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "已完成",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -157,7 +157,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "小时",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -171,7 +171,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "天",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -185,7 +185,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "周",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -199,7 +199,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "月",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -213,7 +213,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "季度",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -227,7 +227,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "年",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -256,7 +256,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "流水号",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -270,7 +270,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "常量",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -284,7 +284,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "日期",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -298,7 +298,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "基础元素值",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -327,7 +327,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "日期格式：年月日（yyyyMMdd）",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -356,7 +356,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "Modbus TCP协议",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -370,7 +370,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "Modbus RTU协议",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -384,7 +384,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "Modbus UDP协议",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -398,7 +398,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "Modbus ASCII协议",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -412,7 +412,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "HTTP协议",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -426,7 +426,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "Socket协议",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -440,7 +440,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "串口通信",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -454,7 +454,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "TCP服务器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -468,7 +468,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "UDP服务器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -497,7 +497,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "ABCD排列",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -511,7 +511,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "BADC排列",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -525,7 +525,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "CDAB排列",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -539,7 +539,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "DCBA排列",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -568,7 +568,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "ABCD排列",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -582,7 +582,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "BADC排列",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -596,7 +596,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "CDAB排列",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -610,7 +610,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "DCBA排列",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -654,7 +654,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "读线圈",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -668,7 +668,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "读离散量",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -682,7 +682,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "读输入寄存器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -696,7 +696,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "读保持寄存器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -725,7 +725,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "写线圈",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -739,7 +739,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "写离散量",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -753,7 +753,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "写输入寄存器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -767,7 +767,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "写保持寄存器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -796,7 +796,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "短整型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -810,7 +810,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "无符号短整型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -825,7 +825,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "整型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -839,7 +839,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "无符号整型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -853,7 +853,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "长整型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -867,7 +867,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "无符号长整型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -881,7 +881,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "单精度浮点型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -895,7 +895,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "双精度浮点型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -909,7 +909,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "十进制浮点型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -923,7 +923,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "字符型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -937,7 +937,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "字符串型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -951,7 +951,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "布尔型",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -980,7 +980,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "最多一次交互",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -994,7 +994,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "最少一次交互",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1008,7 +1008,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "只传一次交互",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1037,7 +1037,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "常量值",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1051,7 +1051,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "点位编码标识",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1080,7 +1080,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "无",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1094,7 +1094,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "一个",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1108,7 +1108,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "两个",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1122,7 +1122,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "1.5",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1151,7 +1151,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "奇数",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1165,7 +1165,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "偶数",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1179,7 +1179,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "标记",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1193,7 +1193,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "空间",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1207,7 +1207,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "空间",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1236,7 +1236,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "试验室",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1250,7 +1250,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "监控室",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1264,7 +1264,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "杂物间",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1278,7 +1278,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "会议室",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1292,7 +1292,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "休息室",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1306,7 +1306,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "仓库",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1320,7 +1320,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "试验室",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1349,7 +1349,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "设备正常运行",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1363,7 +1363,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "设备丢失",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1377,7 +1377,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "设备正在使用中",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1406,7 +1406,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "关键设备",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1420,7 +1420,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "一般设备",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1434,7 +1434,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "普通设备",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1463,7 +1463,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "微波/毫米波复合半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1477,7 +1477,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "微波寻的半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1491,7 +1491,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "射频/光学制导半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1505,7 +1505,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "紧缩场射频光学半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1519,7 +1519,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "光学复合半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1533,7 +1533,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "三通道控制红外制导半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1547,7 +1547,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "低温环境红外制导控制半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1561,7 +1561,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "机械式制导控制半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1575,7 +1575,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "独立回路半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1589,7 +1589,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "独立回路/可见光制导半实物仿真系统",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1618,7 +1618,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "解析器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1632,7 +1632,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "放大器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1646,7 +1646,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "粗控",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1675,7 +1675,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "RFID读写器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1689,7 +1689,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "数据采集适配器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
         public static readonly DictionaryInfo RKServer = new DictionaryInfo()
@@ -1702,7 +1702,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "温湿度计",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
         public static readonly DictionaryInfo CardIssuer = new DictionaryInfo()
@@ -1715,7 +1715,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "发卡器",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
         #endregion
@@ -1743,7 +1743,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "周一",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1757,7 +1757,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "周二",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1771,7 +1771,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "周三",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1785,7 +1785,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "周四",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1799,7 +1799,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "周五",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1813,7 +1813,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "周六",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 
@@ -1827,7 +1827,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             Remark = "周日",
             SoftDeleted = false,
             State = true,
-            CreationTime = DateTime.Now,
+            CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
 

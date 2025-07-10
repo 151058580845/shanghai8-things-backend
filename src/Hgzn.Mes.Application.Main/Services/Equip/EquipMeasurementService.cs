@@ -32,7 +32,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             List<EquipMeasurementReadDto> ret = new List<EquipMeasurementReadDto>();
             foreach (EquipMeasurement item in equipMeasurements)
             {
-                if (item.IsMeasurementDevice == true && item.ExpiryDate != null && (item.ExpiryDate - DateTime.Now).Value.TotalDays < 30)
+                if (item.IsMeasurementDevice == true && item.ExpiryDate != null && (item.ExpiryDate - DateTime.Now.ToLocalTime()).Value.TotalDays < 30)
                 {
                     // 进入此判断说明需要计量
                     ret.Add(Mapper.Map<EquipMeasurementReadDto>(ret));
@@ -84,7 +84,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             }
 
             // 获取当前日期
-            DateTime currentDate = DateTime.Now;
+            DateTime currentDate = DateTime.Now.ToLocalTime();
 
             EquipMeasurement[] oldEquipMeasurements = await DbContext.Queryable<EquipMeasurement>().ToArrayAsync();
 

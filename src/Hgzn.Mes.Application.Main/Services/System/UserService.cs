@@ -150,7 +150,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             await _loginLogService.CreateAsync(new LoginLogCreateDto() { 
                 Browser= loginUser.Browser,
                 Os = loginUser.Os,
-                CreationTime = DateTime.UtcNow,
+                CreationTime = DateTime.Now.ToLocalTime(),
                 LoginIp= ipAddress,
                 LoginLocation= loginUser.LoginLocation,
                 LoginUser= user.Username,

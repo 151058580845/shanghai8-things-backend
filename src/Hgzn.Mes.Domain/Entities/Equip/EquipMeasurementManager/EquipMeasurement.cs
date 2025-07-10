@@ -48,7 +48,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipMeasurementManager
         /// <summary>
         /// 是否即将到期（计算属性）
         /// </summary>
-        public bool? IsExpiringSoon => (ExpiryDate - DateTime.Now)?.TotalDays <= 30;
+        public bool? IsExpiringSoon => (ExpiryDate - DateTime.Now.ToLocalTime())?.TotalDays <= 30;
 
         /// <summary>
         /// 输出格式

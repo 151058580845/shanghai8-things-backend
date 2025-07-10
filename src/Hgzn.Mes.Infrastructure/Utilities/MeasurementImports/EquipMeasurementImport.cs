@@ -57,7 +57,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.MeasurementImports
             }
 
             // 获取当前日期
-            DateTime currentDate = DateTime.Now;
+            DateTime currentDate = DateTime.Now.ToLocalTime();
 
             // 遍历每一行（从第 2 行开始）
             for (int row = 1; row <= sheet.LastRowNum; row++)

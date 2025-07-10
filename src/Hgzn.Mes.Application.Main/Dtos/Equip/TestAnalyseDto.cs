@@ -46,7 +46,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (string.IsNullOrEmpty(reader.GetString()))
-                return DateTime.Now;
+                return DateTime.Now.ToLocalTime();
             if (reader.TokenType == JsonTokenType.String && DateTime.TryParseExact(reader.GetString(), DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime))
             {
                 return dateTime;
