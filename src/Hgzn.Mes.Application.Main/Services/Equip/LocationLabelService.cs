@@ -95,7 +95,9 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     EquipName = ll.EquipLedger.EquipName,
                     Model = ll.EquipLedger.Model,
                     EquipTypeName = ll.EquipLedger.EquipType.TypeName,
-                    Tid = ll.TagId
+                    Tid = ll.TagId,
+                    ResponsibleUserId = ll.EquipLedger.ResponsibleUserId,
+                    ResponsibleUserName = ll.EquipLedger.ResponsibleUserName
                 })
                 .ToPaginatedListAsync(pageIndex, pageSize);
             return dtos;

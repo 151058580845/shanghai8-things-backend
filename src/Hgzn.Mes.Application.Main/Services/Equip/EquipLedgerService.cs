@@ -109,7 +109,9 @@ public class EquipLedgerService : SugarCrudAppService<
                 TypeName = t.EquipType!.TypeName,
                 Model = t.Model,
                 RoomId = t.RoomId,
-                AssetNumber = t.AssetNumber
+                AssetNumber = t.AssetNumber,
+                ResponsibleUserId = t.ResponsibleUserId,
+                ResponsibleUserName = t.ResponsibleUserName
             }).ToListAsync();
         return entities;
     }

@@ -93,6 +93,12 @@ public class EquipLedgerSearchReadDto : ReadDto
     [Description("资产编号")] public string? AssetNumber { get; set; }
 
     [Description("安装地点")] public Guid? RoomId { get; set; }
+
+    [Description("设备责任人")]
+    public Guid? ResponsibleUserId { get; set; }
+
+    [Description("设备责任人")]
+    public string? ResponsibleUserName { get; set; }
 }
 
 public class EquipLocationLabelReadDto : ReadDto
@@ -106,6 +112,10 @@ public class EquipLocationLabelReadDto : ReadDto
     [Description("设备类型")] public string? EquipTypeName { get; set; } = null!;
 
     [Description("标签Tid")] public string Tid { get; set; } = null!;
+
+    [Description("设备责任人")] public Guid? ResponsibleUserId { get; set; }
+
+    [Description("设备责任人")] public string? ResponsibleUserName { get; set; }
 
 }
 
