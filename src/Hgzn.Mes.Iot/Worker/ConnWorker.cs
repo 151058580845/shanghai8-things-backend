@@ -21,7 +21,7 @@ namespace Hgzn.Mes.Iot.Worker
         private readonly IConfiguration _configuration;
 
         public ConnWorker(
-            ISqlSugarClient sqlClient ,
+            ISqlSugarClient sqlClient,
             ILogger<ConnWorker> logger,
             ConnManager manager,
             IConfiguration configuration)
@@ -41,7 +41,8 @@ namespace Hgzn.Mes.Iot.Worker
                 var connections = await _sqlClient.Queryable<EquipConnect>()
                     .Includes(ec => ec.EquipLedger, el => el!.EquipType)
                     .Where(ec => ec.State && ec.ConnectStr != null)
-                    .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RfidReaderType.Id)
+                    .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RfidReaderType.Id || ec.EquipLedger!.EquipType!.Id == EquipType.RfidIssuerType.Id)
+                    .Where(ec => !ec.SoftDeleted)
                     .ToArrayAsync();
 
                 //关闭多余的连接
@@ -69,13 +70,16 @@ namespace Hgzn.Mes.Iot.Worker
                             Type = CmdType.Conn,
                             StateType = ConnStateType.On,
                         };
+                        EquipConnType equipConnectType = EquipConnType.RfidReader;
+                        if (connection?.EquipLedger?.EquipType?.ProtocolEnum == "CardIssuer")
+                            equipConnectType = EquipConnType.CardIssuer;
                         var equip = _manager.GetEquip(connection.Id) ??
-                            _manager.AddEquip(connection.Id, EquipConnType.RfidReader,
+                            _manager.AddEquip(connection.Id, equipConnectType,
                             connection.ConnectStr!, connInfo);
                         if (!equip.ConnState)
                         {
                             //await equip!.CloseConnectionAsync();
-                            await equip!.ConnectAsync(connInfo);
+                            bool connetRet = await equip!.ConnectAsync(connInfo);
                             await equip!.StartAsync(connection.Id);
                             _logger.LogInformation($"start connection[{connection!.Name}](connId:{connection.Id}) succeed!");
                         }
