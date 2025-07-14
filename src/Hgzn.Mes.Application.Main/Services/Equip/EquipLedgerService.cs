@@ -97,7 +97,7 @@ public class EquipLedgerService : SugarCrudAppService<
     /// 获取待搜索记录
     /// </summary>
     /// <returns></returns>
-    public async Task<IEnumerable<EquipLedgerSearchReadDto>> GetAppSearchAsync()
+    public async Task<PaginatedList<EquipLedgerSearchReadDto>> GetAppSearchAsync(int pageIndex, int pageSize)
     {
         var entities = await Queryable.Where(t => t.DeviceStatus == DeviceStatus.Lost).Includes(t => t.EquipType)
             .Select(t => new EquipLedgerSearchReadDto()
@@ -112,7 +112,7 @@ public class EquipLedgerService : SugarCrudAppService<
                 AssetNumber = t.AssetNumber,
                 ResponsibleUserId = t.ResponsibleUserId,
                 ResponsibleUserName = t.ResponsibleUserName
-            }).ToListAsync();
+            }).ToPaginatedListAsync(pageIndex, pageSize);
         return entities;
     }
 
