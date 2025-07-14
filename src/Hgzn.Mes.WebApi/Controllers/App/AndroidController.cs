@@ -70,8 +70,8 @@ public class AndroidController:ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<ResponseWrapper<IEnumerable<EquipLedgerSearchReadDto>>> GetAppSearchAsync() =>
-        (await _equipLedgerService.GetAppSearchAsync()).Wrap();
+    public async Task<ResponseWrapper<PaginatedList<EquipLedgerSearchReadDto>>> GetAppSearchAsync(int pageIndex = 1, int pageSize = 100) =>
+        (await _equipLedgerService.GetAppSearchAsync(pageIndex,pageSize)).Wrap();
     
     /// <summary>
     /// 手持端巡检记录上传
