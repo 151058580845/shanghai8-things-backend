@@ -24,6 +24,7 @@ using NPOI.XSSF.UserModel;
 using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
+using System.Collections;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 

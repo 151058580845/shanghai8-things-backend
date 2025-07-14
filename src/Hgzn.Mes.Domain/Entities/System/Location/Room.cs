@@ -276,27 +276,6 @@ public class Room : UniversalEntity, IOrder, IAudited, ISeedsGeneratable
         },
         new Room
         {
-            Id = Guid.Parse("3ab95c12-40d9-48fd-9e93-3865d97d1aa7"),
-            ParentId = Guid.Parse("6eb67743-2a45-6108-f261-816b7899fe24"),
-            Name = "121",
-            Code = "121",
-            Length = 0d,
-            Width = 0d,
-            Height = 0d,
-            Purpose = (Hgzn.Mes.Domain.Shared.Enum.RoomPurpose)0,
-            GroupId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
-            CreationTime = DateTime.Parse("2025-06-06 14:33:06.655344"),
-            CreatorId = User.DevUser.Id,
-            LastModificationTime = null,
-            LastModifierId = null,
-            OrderNum = 0,
-            IsTest = false,
-            TestName = null,
-            Remark = null,
-
-        },
-        new Room
-        {
             Id = Guid.Parse("a6ce46f1-d51f-45c8-a22e-2db3126da6cf"),
             ParentId = Guid.Parse("6eb67743-2a45-6108-f261-816b7899fe24"),
             Name = "119",

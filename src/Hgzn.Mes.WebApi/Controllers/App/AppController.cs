@@ -5,6 +5,7 @@ using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.Shared.Extensions;
+using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,20 @@ public class AppController : ControllerBase
     private ITestDataService _testDataService;
     private IDictionaryInfoService _dictionaryInfoService;
     private IRoomService _roomService;
+    private Dictionary<string, Guid> _sys_roomNameDic = new Dictionary<string, Guid>()
+    {
+        { "微波/毫米波复合半实物仿真系统", Guid.Parse("4c246470-da66-4408-b287-09fd82ffa3d4")}, // 310
+        { "微波寻的半实物仿真系统", Guid.Parse("83168845-ef46-4aed-9187-de2024488230")}, // 307
+        { "射频/光学制导半实物仿真系统", Guid.Parse("7412dda2-5413-43ab-9976-255df60c3e14")}, // 314
+        { "紧缩场射频光学半实物仿真系统", Guid.Parse("09b374e8-4e7f-4146-9fe0-375edc7b9d7a")}, // 109
+        { "光学复合半实物仿真系统", Guid.Parse("0ac9885d-da23-4c0f-a66c-2ba467b8086c")}, // 108
+        { "三通道控制红外制导半实物仿真系统", Guid.Parse("24be4856-d95f-4ba0-b2aa-7049fedc3e39")}, // 121(这里原来有两个121需要检查一下现在数据库用的是哪个121) // 先做这个
+        { "低温环境红外制导控制半实物仿真系统", Guid.Parse("916edd0e-df70-4137-806c-41817587e438")}, // 202-2
+        { "机械式制导控制半实物仿真系统", Guid.Parse("7d6b322d-bf48-4963-bfe6-579560e84530")}, // 103
+        { "独立回路半实物仿真系统", Guid.Parse("a6ce46f1-d51f-45c8-a22e-2db3126da6cf")}, // 119
+        { "独立回路/可见光制导半实物仿真系统", Guid.Parse("ddd64e08-5f2a-4578-84cb-2f90caa898e9")}, // 112
+        { "移动设备", Guid.Empty}, // 0
+    };
 
     public AppController(IEquipLedgerService equipLedgerService,
         ITestDataService testDataService,
@@ -57,13 +72,20 @@ public class AppController : ControllerBase
         List<SystemDeviceData> list = new List<SystemDeviceData>();
         foreach (Application.Main.Dtos.Base.NameValueDto test in testList)
         {
+            int iTemperature = 0;
+            int iHumidity = 0;
+            if (test.Value != null && _sys_roomNameDic.ContainsKey(test.Value) && RKData.RoomId_TemperatureAndHumidness.ContainsKey(_sys_roomNameDic[test.Value]))
+            {
+                iTemperature = (int)RKData.RoomId_TemperatureAndHumidness[_sys_roomNameDic[test.Value]].Item1;
+                iHumidity = (int)RKData.RoomId_TemperatureAndHumidness[_sys_roomNameDic[test.Value]].Item2;
+            }
             list.Add(new SystemDeviceData()
             {
                 Name = test.Value,
                 Quantity = 10,
-                Temperature = 99,
-                Humidity = 50,
-                Status = "掉了一颗螺丝",
+                Temperature = iTemperature,
+                Humidity = iHumidity,
+                Status = "正常",
             });
         }
         testRead.SystemDeviceList = list;

@@ -16,16 +16,16 @@ using StackExchange.Redis;
 
 namespace Hgzn.Mes.Iot.EquipManager;
 
-public class HygrographConnector:EquipConnectorBase
+public class HygrographConnector : EquipConnectorBase
 {
     private RKServer _server;
     private List<EquipLedger> _equipLedgers;
     private Dictionary<int, EquipLedger> _dictionary = new();
     private Dictionary<string, Room> _dictionaryRoom = new();
-    public HygrographConnector(IConnectionMultiplexer connectionMultiplexer, 
-        IMqttExplorer mqttExplorer, 
-        ISqlSugarClient sugarClient, 
-        string uri, 
+    public HygrographConnector(IConnectionMultiplexer connectionMultiplexer,
+        IMqttExplorer mqttExplorer,
+        ISqlSugarClient sugarClient,
+        string uri,
         EquipConnType connType)
         : base(connectionMultiplexer, mqttExplorer, sugarClient, uri, connType)
     {
@@ -55,13 +55,14 @@ public class HygrographConnector:EquipConnectorBase
             EquipCode = deviceId.ToString(),
             EquipId = _dictionary[deviceId].Id,
             IpAddress = _dictionary[deviceId].IpAddress,
+            RoomId = _dictionary[deviceId]?.RoomId,
             RoomName = _dictionaryRoom[_dictionary[deviceId].RoomId.ToString()!].Name,
             Temperature = data1.Tem,
             Humidness = data1.Hum,
             CreateTime = DateTime.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
         };
         Console.WriteLine(JsonSerializer.Serialize(entity));
-        
+
         _mqttExplorer.PublishAsync(IotTopicBuilder
             .CreateIotBuilder()
             .WithPrefix(TopicType.Iot)
@@ -69,7 +70,7 @@ public class HygrographConnector:EquipConnectorBase
             .WithTag(MqttTag.Data)
             .WithUri(_uri!)
             .WithDeviceType(_connType.ToString()!)
-            .Build(),Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entity,DefaultJsonSerializerOptions)));
+            .Build(), Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entity, DefaultJsonSerializerOptions)));
     }
 
     public override async Task CloseConnectionAsync()
@@ -99,7 +100,7 @@ public class HygrographConnector:EquipConnectorBase
         SocketConnInfo conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions) ?? throw new ArgumentNullException("conn");
         try
         {
-            _server = RKServer.Initiate(conn.Address,conn.Port);
+            _server = RKServer.Initiate(conn.Address, conn.Port);
             _server.OnReceiveRealtimeData += ServerOnOnReceiveRealtimeData;
             _server.Start();
             await UpdateStateAsync(ConnStateType.On);

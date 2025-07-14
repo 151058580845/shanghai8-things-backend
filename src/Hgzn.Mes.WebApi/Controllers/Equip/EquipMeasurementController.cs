@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hgzn.Mes.WebApi.Controllers.Equip
 {
+    /// <summary>
+    /// 设备计量
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class EquipMeasurementController : ControllerBase

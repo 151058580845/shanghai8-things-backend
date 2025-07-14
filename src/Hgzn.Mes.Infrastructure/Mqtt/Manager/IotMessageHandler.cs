@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using Hgzn.Mes.Domain.Shared;
@@ -8,6 +9,7 @@ using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;
 using Microsoft.Extensions.Configuration;
@@ -134,8 +136,26 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     OnlineReceiveDispatch dispatch = new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
                     await dispatch.Handle(msg);
                     break;
+                case EquipConnType.RKServer:
+                    // 处理RKServer设备数据
+                    var rkData = JsonSerializer.Deserialize<HygrographData>(msg, Options.CustomJsonSerializerOptions);
+                    if (rkData is null)
+                    {
+                        _logger.LogWarning("unexpected RKServer device msg");
+                        return;
+                    }
+                    // 处理RKServer数据逻辑
+                    await HandleRkServerDataAsync(uri, rkData);
+                    break;
             }
 
+        }
+
+        private async Task HandleRkServerDataAsync(Guid uri, HygrographData rkData)
+        {
+            // 将推送过来的消息解析到静态内存中保存
+            if (rkData.RoomId != null && rkData.RoomId != Guid.Empty && rkData.Temperature != null && rkData.Humidness != null)
+                RKData.RoomId_TemperatureAndHumidness[rkData.RoomId.Value] = new Tuple<float, float>(rkData.Temperature.Value, rkData.Humidness.Value);
         }
 
         private async Task HandleTransmitAsync(IotTopic topic, byte[] msg)
