@@ -3,6 +3,7 @@ using Hgzn.Mes.Infrastructure.DbContexts.Ef;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,7 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .SingleInstance();
 
             builder.RegisterGeneric(typeof(PaginatedListConverter<,>));
+            builder.RegisterType(typeof(RedisHelper)).SingleInstance();
 
             #region 注册Mqtt
 
@@ -42,7 +44,7 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
                 .AsSelf()
                 .SingleInstance();
             #endregion
-            
+
             builder.RegisterType<ThreadCurrentPrincipalAccessor>()
                 .As<ICurrentPrincipalAccessor>()
                 .SingleInstance();

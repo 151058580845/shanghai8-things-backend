@@ -131,8 +131,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                .Select(ll => new RoomLocationLabelReadDto
                {
                    RoomId = ll.RoomId,
-                   RoomName = ll.EquipLedger.AssetNumber,
-                   RoomCode = ll.EquipLedger.EquipName,
+                   RoomName = ll.Room.Name,
+                   RoomCode = ll.Room.Code,
                    Tid = ll.TagId
                })
                .ToPaginatedListAsync(pageIndex, pageSize);

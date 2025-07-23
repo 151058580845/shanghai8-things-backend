@@ -5,7 +5,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 
 public class EquipLedgerHistoryDto
 {
-    
+
 }
 
 public class EquipLedgerHistoryReadDto : ReadDto
@@ -19,7 +19,7 @@ public class EquipLedgerHistoryReadDto : ReadDto
     [Description("所在房间")]
     public Guid? RoomId { get; set; }
     public string RoomName { get; set; } = null!;
-    
+
     [Description("操作时间")]
     public DateTime OperatorTime { get; set; }
 
@@ -36,14 +36,31 @@ public class EquipLedgerHistoryReadDto : ReadDto
 public class EquipLedgerHistoryCreateDto : CreateDto
 {
     [Description("设备主键")]
-    public Guid EquipId { get; set; }
+    public Guid? EquipId { get; set; }
 
     [Description("设备名称")]
-    public string EquipCode { get; set; } = null!;
+    public string? EquipCode { get; set; }
+
+    [Description("资产编号")]
+    public string? AssetNumber { get; set; }
+    [Description("设备名称")]
+    public string? EquipName { get; set; }
+    [Description("Rfid手持枪中记录的Id")]
+    public Guid? Id { get; set; }
+    [Description("型号")]
+    public string? Model { get; set; }
+    [Description("责任人")]
+    public string? ResponsibleUserId { get; set; }
+    [Description("责任人")]
+    public string? ResponsibleUserName { get; set; }
+    [Description("房间名称")]
+    public string? RoomName { get; set; }
+    [Description("设备类型")]
+    public string? TypeId { get; set; }
 
     [Description("所在房间")]
     public Guid? RoomId { get; set; }
-    
+
     [Description("操作时间")]
     public long OperatorTime { get; set; }
 
@@ -57,20 +74,20 @@ public class EquipLedgerHistoryCreateDto : CreateDto
 
 public class EquipLedgerHistoryUpdateDto : UpdateDto
 {
-    
+
 }
 
 public class EquipLedgerHistoryQueryDto : PaginatedQueryDto
 {
     [Description("设备主键")]
-    public Guid? EquipId { get; set; }=Guid.Empty;
+    public Guid? EquipId { get; set; } = Guid.Empty;
 
     [Description("设备名称")]
     public string? EquipCode { get; set; }
 
     [Description("所在房间")]
-    public Guid? RoomId { get; set; }=Guid.Empty;
-    
+    public Guid? RoomId { get; set; } = Guid.Empty;
+
     [Description("操作时间")]
     public DateTime? OperatorTime { get; set; }
 
@@ -80,4 +97,4 @@ public class EquipLedgerHistoryQueryDto : PaginatedQueryDto
      * */
     [Description("操作类型")] public int? Type { get; set; } = 0;
 }
-    
+

@@ -31,7 +31,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             this._stateTypeLength = stateTypeLength;
         }
 
-        public async Task<Guid> Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg, DateTime sendTime)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);
@@ -57,11 +57,12 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             // 健康状态信息
             // 状态类型
             byte[] stateType = new byte[_STATETYPEANALYSISLENGTH];
-            Buffer.BlockCopy(buffer, 22 + _WORKSTYLEANALYSISLENGTH, workStyle, 0, _STATETYPEANALYSISLENGTH);
+            Buffer.BlockCopy(buffer, 22 + _WORKSTYLEANALYSISLENGTH, stateType, 0, _STATETYPEANALYSISLENGTH);
 
             // 健康状态信息第0为为1表示获取到了健康状态
             List<string> exception = _getHealthException(stateType);
-            await ReceiveHelper.ExceptionRecordToLocalDB(_sqlSugarClient, _equipId, exception);
+            if (exception.Count > 0)
+                await ReceiveHelper.ExceptionRecordToLocalDB(_sqlSugarClient, _equipId, exception);
 
             // 本地解析不记录物理量
 

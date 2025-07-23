@@ -103,6 +103,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 状态（实验中、维修中、空闲中等）
         /// </summary>
         public string Status { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 系统所在的房间ID,用于获取MQTT推上来的温湿度数据,不展示
+        /// </summary>
+        public string RoomId { get; set; }
     }
 
     /// <summary>

@@ -86,8 +86,40 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDat
 
         #endregion
 
+        [Description("运行时间")]
+        public uint? RunTime { get; set; }
+
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
         public int CreatorLevel { get; set; } = 0;
+
+        public static XT_310_SL_2_ReceiveData[] Seeds { get; } = new XT_310_SL_2_ReceiveData[]
+        {
+            new XT_310_SL_2_ReceiveData()
+            {
+                CreationTime = DateTime.Now.ToLocalTime(),
+                SimuTestSysld = 1,
+                DevTypeld = 2,
+                Compld = "123456789987654321",
+                OperationStatus = 1,
+                IsTrajectoryConnected = 1,
+                Reserved = 0,
+                StatusType = 1,
+                SelfTestStatus = 0,
+                HealthOperationStatus = 1,
+                PhysicalQuantityCount = 9,
+                InnerFramePosition = 1,
+                MiddleFramePosition = 2,
+                OuterFramePosition = 3,
+                InnerFrameVelocity = 4,
+                MiddleFrameVelocity = 5,
+                OuterFrameVelocity = 6,
+                InnerFrameAcceleration = 7,
+                MiddleFrameAcceleration = 8,
+                OuterFrameAcceleration = 9,
+                RunTime = 300000,
+                LastModificationTime = DateTime.MaxValue,
+            }
+        };
     }
 }

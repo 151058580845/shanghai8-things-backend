@@ -113,6 +113,9 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDat
 
         #endregion
 
+        [Description("运行时间")]
+        public uint? RunTime { get; set; }
+
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
         public int CreatorLevel { get; set; } = 0;

@@ -144,8 +144,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                         _logger.LogWarning("unexpected RKServer device msg");
                         return;
                     }
-                    // 处理RKServer数据逻辑
-                    await HandleRkServerDataAsync(uri, rkData);
+                    // 处理RKServer数据逻辑,这个数据本来是打算从后台内存中读取的,现在修改为根据MQTT推送的消息,在前端获取,所以现在随便传个数字过去就行,在前端改
+                    // await HandleRkServerDataAsync(uri, rkData);
                     break;
             }
 

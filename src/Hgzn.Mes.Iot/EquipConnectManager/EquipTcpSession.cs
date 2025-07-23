@@ -61,7 +61,8 @@ public class EquipTcpSession : TcpSession
             if (_dataQueue.TryDequeue(out var buffer))
             {
                 byte[] newBuffer;
-                _hasData = ReceiveHelper.GetMessage(buffer, size, out newBuffer);
+                DateTime time;
+                _hasData = ReceiveHelper.GetMessage(buffer, out time, out newBuffer);
                 if (_hasData && newBuffer != null)
                 {
                     if (_forwardLength != null && _forwardNum == _forwardLength)
@@ -72,7 +73,7 @@ public class EquipTcpSession : TcpSession
                                         .WithTag(MqttTag.Transmit)
                                         .WithDeviceType(EquipConnType.IotServer.ToString())
                                         .WithUri(_equipConnect.Id.ToString()).Build();
-                        await _mqttExplorer.PublishAsync(topic, newBuffer);
+                        await _mqttExplorer.PublishAsync(topic, buffer);
                         _forwardNum = 0;
                     }
                     _forwardNum++;
@@ -82,7 +83,7 @@ public class EquipTcpSession : TcpSession
                     SqlSugarClient localDbClient = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
 
                     LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, localDbClient, _connectionMultiplexer, _mqttExplorer);
-                    await dispatch.Handle(newBuffer);
+                    await dispatch.Handle(buffer);
                 }
 
             }

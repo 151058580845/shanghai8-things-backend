@@ -24,6 +24,9 @@ public class EquipNotice : UniversalEntity, ICreationAudited
     
     [Description("通知描述")]
     public string? Description { get; set; }
+
+    [Description("试验系统ID")]
+    public byte? SimuTestSysId { get; set; }
     public Guid? CreatorId { get; set; }
     public int CreatorLevel { get; set; } = 0;
     public DateTime CreationTime { get; set; }

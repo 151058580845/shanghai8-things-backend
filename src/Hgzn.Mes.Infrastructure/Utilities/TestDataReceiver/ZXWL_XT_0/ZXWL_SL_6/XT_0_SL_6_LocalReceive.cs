@@ -11,7 +11,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
     {
         public XT_0_SL_6_LocalReceive(Guid equipId, ISqlSugarClient client, IConnectionMultiplexer connectionMultiplexer, IMqttExplorer mqttExplorer) : base(equipId, client, connectionMultiplexer, mqttExplorer) { }
 
-        public async Task<Guid> Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg, DateTime sendTime)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);
@@ -31,17 +31,17 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
             string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
 
             // 工作模式信息
-            byte[] workStyle = new byte[6];
-            Buffer.BlockCopy(buffer, 22, workStyle, 0, 6);
+            byte[] workStyle = new byte[10];
+            Buffer.BlockCopy(buffer, 22, workStyle, 0, 10);
 
             // 健康状态信息
-            // 状态类型
-            byte[] stateType = new byte[3];
-            Buffer.BlockCopy(buffer, 28, workStyle, 0, 3);
+            byte[] healthInfo = new byte[3];
+            Buffer.BlockCopy(buffer, 32, healthInfo, 0, 3);
 
-            // 健康状态信息第0为为1表示获取到了健康状态
-            List<string> exception = GetXT_0_SL_6HealthExceptionName(stateType);
-            await ReceiveHelper.ExceptionRecordToLocalDB(_sqlSugarClient, _equipId, exception);
+            // 异常解析
+            List<string> exception = GetXT_0_SL_6HealthExceptionName(healthInfo);
+            if (exception.Count > 0)
+                await ReceiveHelper.ExceptionRecordToLocalDB(_sqlSugarClient, _equipId, exception);
 
             // 本地解析不记录物理量
 

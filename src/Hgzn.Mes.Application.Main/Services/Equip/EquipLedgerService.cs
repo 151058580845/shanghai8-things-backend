@@ -72,11 +72,12 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public Task<int> UpdateEquipRoomId(Dictionary<string, Guid> equipIds)
     {
-        var keys = equipIds.Keys.ToArray();
-        var list = Queryable.Where(t => keys.Contains(t.EquipCode)).ToList();
+        string[] keys = equipIds.Keys.ToArray();
+        List<EquipLedger> list = Queryable.Where(t => keys.Contains(t.AssetNumber)).ToList();
         foreach (var equipLedger in list)
         {
-            equipLedger.RoomId = equipIds[equipLedger.EquipCode];
+            if (equipLedger.AssetNumber == null) continue;
+            equipLedger.RoomId = equipIds[equipLedger.AssetNumber];
         }
 
         return DbContext.Updateable(list).ExecuteCommandAsync();
@@ -423,5 +424,47 @@ public class EquipLedgerService : SugarCrudAppService<
                 catch (Exception e) { }
             }
         }
+    }
+
+    /// <summary>
+    /// 根据设备ID获取设备名称
+    /// </summary>
+    /// <param name="equipId"></param>
+    /// <returns></returns>
+    public async Task<string> GetEquipName(Guid equipId)
+    {
+        string equipName = null!;
+        try
+        {
+            equipName = await Queryable.Where(x => x.Id == equipId).Select(x => x.EquipName).FirstAsync();
+        }
+        catch (Exception) { }
+        return equipName;
+    }
+
+    /// <summary>
+    /// 根据资产编号获取设备
+    /// </summary>
+    /// <param name="assetNumber"></param>
+    /// <returns></returns>
+    public async Task<bool?> SetEquipExistByAssetNumber(string? assetNumber)
+    {
+        var abnormalEntities = await Queryable
+            .Where(x => x.AssetNumber == assetNumber && x.DeviceStatus != DeviceStatus.Normal)
+            .ToListAsync();
+        if (!abnormalEntities.Any())
+            return false;
+        abnormalEntities.ForEach(item => item.DeviceStatus = DeviceStatus.Normal);
+        await DbContext.Updateable(abnormalEntities)
+            .UpdateColumns(x => new { x.DeviceStatus })
+            .ExecuteCommandAsync();
+
+        return true;
+    }
+
+    public async Task<IEnumerable<EquipLedgerReadDto>> GetListByAssetNumberAsync(string? assetNumber)
+    {
+        var entitys = await Queryable.Where(x => x.AssetNumber == assetNumber).ToArrayAsync();
+        return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entitys);
     }
 }

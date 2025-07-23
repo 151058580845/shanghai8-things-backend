@@ -4,7 +4,9 @@ using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using NPOI.SS.Formula.Functions;
 using SqlSugar;
 using StackExchange.Redis;
 using System;
@@ -30,25 +32,20 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             EnabledSaasMultiTenancy = false
         };
         private const int BodyStartIndex = 13;
-        public static bool GetMessage(byte[] buffer, long size, out byte[] message)
+        public static bool GetMessage(byte[] buffer, out DateTime time, out byte[] message)
         {
             //标准头
             var header = buffer[0];
             if (header != 0x5A)
             {
                 LoggerAdapter.LogWarning("报头符错误。");
+                time = DateTime.MinValue;
                 message = null!;
                 return false;
             }
 
             //报文长度
             var messageLength = BitConverter.ToUInt32(buffer, 1);
-            //if (messageLength != size)
-            //{
-            //    LoggerAdapter.LogWarning($"报文长度错误：接收到的长度为 {size}，报文中声明的长度为 {messageLength}");
-            //    message = null!;
-            //    return false;
-            //}
 
             //解析报文流水号（1字节）
             byte number = buffer[5];
@@ -68,6 +65,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             var length = messageLength - 13;
             message = new byte[length];
             Buffer.BlockCopy(buffer, BodyStartIndex, message, 0, message.Length);
+            time = new DateTime(year, month, day, hour, minute, second);
             return true;
         }
 
@@ -102,50 +100,92 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         /// <param name="equipId"></param>
         /// <param name="exception"></param>
         /// <returns></returns>
-        public static async Task<EquipNotice> ExceptionRecordToRedis(IConnectionMultiplexer connectionMultiplexer, byte simuTestSysId, byte devTypeId, byte[] compId, Guid equipId, List<string> exception)
+        public static async Task ExceptionRecordToRedis(IConnectionMultiplexer connectionMultiplexer, byte simuTestSysId, byte devTypeId, byte[] compId, Guid equipId, List<string> exception, DateTime sendTime, uint runTime)
         {
             // 记录到redis
             IDatabase redisDb = connectionMultiplexer.GetDatabase();
-            var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, compId);
-            await redisDb.StringSetAsync(key, exception.Count);
-            EquipNotice equipNotice = new EquipNotice()
+            // 记录异常信息
+            var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, equipId);
+            foreach (string item in exception)
             {
-                EquipId = equipId,
-                SendTime = DateTime.Now.ToLocalTime(),
-                NoticeType = EquipNoticeType.Alarm,
-                Title = "Receive Alarm",
-                Content = JsonConvert.SerializeObject(exception),
-                Description = "",
-            };
-            return equipNotice;
+                await redisDb.SetAddAsync(key, item);
+            }
+            // 记录运行时长
+            var runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, simuTestSysId, devTypeId, equipId);
+            await ReportRunningTimeAsync(redisDb, runTimeKey, sendTime, runTime);
+            await CleanupOldDataAsync(redisDb, runTimeKey);
         }
 
-        /// <summary>
-        /// 将异常记录到redis
-        /// </summary>
-        /// <param name="connectionMultiplexer"></param>
-        /// <param name="simuTestSysId"></param>
-        /// <param name="devTypeId"></param>
-        /// <param name="compId"></param>
-        /// <param name="equipId"></param>
-        /// <param name="exception"></param>
-        /// <returns></returns>
-        public static async Task<EquipNotice> ExceptionRecordToRedis(IConnectionMultiplexer connectionMultiplexer, byte simuTestSysId, byte devTypeId, byte[] compId, Guid equipId, string exception)
+        public static async Task ReportRunningTimeAsync(IDatabase redisDb, string key, DateTime sendTime, uint accumulatedSeconds)
         {
-            // 记录到redis
+            var now = sendTime;
+            var today = now.ToString("yyyy-MM-dd");
+
+            // 1. 更新 Redis HASH（记录当天最新秒数）
+            await redisDb.HashSetAsync(
+                key: $"{key}:days",
+                hashField: today,
+                value: accumulatedSeconds
+            );
+
+            // 2. 更新 Redis ZSET（记录活跃日期，用于后续清理）
+            int dateNumber = int.Parse(now.Date.ToString("yyyyMMdd"));
+            await redisDb.SortedSetAddAsync(
+                key: $"{key}:active_dates",
+                member: today,
+                score: dateNumber
+            );
+        }
+
+        public static async Task<uint> GetLast30DaysRunningTimeAsync(IConnectionMultiplexer connectionMultiplexer, string key)
+        {
             IDatabase redisDb = connectionMultiplexer.GetDatabase();
-            var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, compId);
-            await redisDb.StringSetAsync(key, 1);
-            EquipNotice equipNotice = new EquipNotice()
+            var now = DateTime.Now.ToLocalTime();
+            var thirtyDaysAgo = now.AddDays(-30).Date;
+
+            // 1. 从 Redis HASH 获取所有日期字段
+            var allDays = await redisDb.HashGetAllAsync($"{key}:days");
+
+            // 2. 过滤近30天的数据并累加
+            uint totalSeconds = 0;
+            foreach (var day in allDays)
             {
-                EquipId = equipId,
-                SendTime = DateTime.Now.ToLocalTime(),
-                NoticeType = EquipNoticeType.Alarm,
-                Title = "Receive Alarm",
-                Content = JsonConvert.SerializeObject(exception),
-                Description = "",
-            };
-            return equipNotice;
+                var date = DateTime.Parse(day.Name);
+                if (date >= thirtyDaysAgo)
+                {
+                    totalSeconds += (uint)day.Value;
+                }
+            }
+
+            return totalSeconds;
+        }
+
+        public static async Task CleanupOldDataAsync(IDatabase redisDb, string key)
+        {
+            var thirtyDaysAgo = DateTime.Now.ToLocalTime().AddDays(-30).Date;
+            int dateNumber = int.Parse(thirtyDaysAgo.Date.ToString("yyyyMMdd"));
+            // 1. 从 ZSET 获取30天前的日期
+            var oldDates = await redisDb.SortedSetRangeByScoreAsync(
+                key: $"{key}:active_dates",
+                start: 0,
+                stop: dateNumber
+            );
+
+            // 2. 删除 HASH 中的旧数据
+            if (oldDates.Length > 0)
+            {
+                await redisDb.HashDeleteAsync(
+                    key: $"{key}:days",
+                    hashFields: oldDates.Select(x => (RedisValue)x.ToString()).ToArray()
+                );
+
+                // 3. 从 ZSET 移除旧日期
+                await redisDb.SortedSetRemoveRangeByScoreAsync(
+                    key: $"{key}:active_dates",
+                    start: 0,
+                    stop: thirtyDaysAgo.Ticks
+                );
+            }
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using SqlSugar;
 using StackExchange.Redis;
 using System;
@@ -19,23 +20,29 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 
         public async Task Handle(byte[] msg)
         {
-            string data = Encoding.UTF8.GetString(msg);
-            LoggerAdapter.LogTrace(data);
+            byte[] newBuffer;
+            DateTime time;
+            if (ReceiveHelper.GetMessage(msg, out time, out newBuffer))
+            {
+                string data = Encoding.UTF8.GetString(newBuffer);
+                LoggerAdapter.LogTrace(data);
 
-            // 使用 eventData.Data 作为 buffer
-            byte[] buffer = msg;
+                // 使用 eventData.Data 作为 buffer
+                byte[] buffer = newBuffer;
 
-            // 仿真试验系统识别编码
-            byte simuTestSysId = buffer[0];
+                // 仿真试验系统识别编码
+                byte simuTestSysId = buffer[0];
 
-            // 设备类型识别编码
-            byte devTypeId = buffer[1];
+                // 设备类型识别编码
+                byte devTypeId = buffer[1];
 
-            // 根据仿真试验系统与设备类型,通过工厂创建各自的解析类
-            // 以上所有系统固定占2个字节
-            OnlineReceiveFactory onlineReceiveFactory = new OnlineReceiveFactory(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
-            IOnlineReceive onlineReceive = onlineReceiveFactory.GetOrCreateOnlineReceive(simuTestSysId, devTypeId);
-            await onlineReceive.Handle(msg);
+                // 根据仿真试验系统与设备类型,通过工厂创建各自的解析类
+                // 以上所有系统固定占2个字节
+                OnlineReceiveFactory onlineReceiveFactory = new OnlineReceiveFactory(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
+                IOnlineReceive onlineReceive = onlineReceiveFactory.GetOrCreateOnlineReceive(simuTestSysId, devTypeId);
+                await onlineReceive.Handle(newBuffer, time);
+            }
+
         }
     }
 }

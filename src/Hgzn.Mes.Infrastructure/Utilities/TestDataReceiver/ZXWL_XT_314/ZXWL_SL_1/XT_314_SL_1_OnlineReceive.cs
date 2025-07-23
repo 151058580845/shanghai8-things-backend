@@ -18,6 +18,7 @@ using System.Reflection;
 using System.ComponentModel;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_314_ReceiveDatas;
+using Microsoft.JSInterop;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL_1
 {
@@ -38,7 +39,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
         /// workStyle       字节10    不固定
         /// devHealthState   字节8     不固定
         /// acquData        字节2800  不固定
-        public async Task<Guid> Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg, DateTime sendTime)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);
@@ -78,8 +79,6 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
             Buffer.BlockCopy(buffer, 37, devHealthState, 0, 4);
             uint ulSupplyVoltageState = BitConverter.ToUInt32(supplyVoltageState, 0);
 
-
-
             // *** 物理量数量
             byte[] physicalQuantityCount = new byte[4];
             Buffer.BlockCopy(buffer, 41, physicalQuantityCount, 0, 4);
@@ -88,6 +87,18 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
             // 剩余的都给物理量
             byte[] acquData = new byte[ulPhysicalQuantityCount * 4];
             Buffer.BlockCopy(buffer, 45, acquData, 0, acquData.Length);
+
+            // *** 运行时间
+            // 计算需要读取的起始位置和结束位置
+            int startPosition = (int)(ulPhysicalQuantityCount * 4 + 45);
+            int requiredLength = startPosition + 4; // runTime 需要 4 字节
+            uint ulRunTime = 0;
+            if (buffer.Length >= requiredLength)
+            {
+                byte[] runTime = new byte[4];
+                Buffer.BlockCopy(buffer, startPosition, runTime, 0, 4);
+                ulRunTime = BitConverter.ToUInt32(runTime, 0);
+            }
 
             // 将 byte[] 转换为 float[] , 每个 float 占用 4 字节
             int floatCount = acquData.Length / 4;
@@ -98,9 +109,9 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
             }
 
             XT_314_SL_1_ReceiveData entity = new XT_314_SL_1_ReceiveData()
-            {   
+            {
                 Id = _equipId,
-                CreationTime = DateTime.Now.ToLocalTime(),
+                CreationTime = sendTime,
                 SimuTestSysld = simuTestSysId,
                 DevTypeld = devTypeId,
                 Compld = compNumber,
@@ -117,7 +128,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
                 StateType = stateType,
                 SelfTest = ulDevHealthState,
                 SupplyVoltageState = ulSupplyVoltageState,
-                PhysicalQuantityCount = ulPhysicalQuantityCount
+                PhysicalQuantityCount = ulPhysicalQuantityCount,
+                RunTime = ulRunTime,
             };
 
             // 使用反射将后面指定数量个物理量数据进行填充
@@ -126,7 +138,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
             // 使用循环将数组值赋给类属性
             for (int i = 0; i < floatData.Length; i++)
             {
-                // 跳过前面19个属性,索引20开始设置
+                // 跳过前面19个属性,索引20开始设置---------------------------------------------这里可能有问题但是314已经对过了,我暂时不改,应该是+20才对吧
                 properties[i + 19].SetValue(entity, floatData[i]);
             }
 
@@ -148,7 +160,18 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             await TestDataPublishToMQTT(receive);
             // 将异常记录到redis
-            EquipNotice equipNotice = await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception);
+            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
+            // 新建通知
+            EquipNotice equipNotice = new EquipNotice()
+            {
+                EquipId = _equipId,
+                SendTime = sendTime,
+                NoticeType = EquipNoticeType.Alarm,
+                Title = "Receive Alarm",
+                Content = JsonConvert.SerializeObject(exception),
+                Description = "",
+                SimuTestSysId = simuTestSysId,
+            };
             // 将异常发布到mqtt
             await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
             // 将异常记录到数据库

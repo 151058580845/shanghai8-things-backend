@@ -1900,6 +1900,8 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
 
     #endregion
 
+    [Description("运行时间")]
+    public uint? RunTime { get; set; }
     public Guid? LastModifierId { get; set; }
     public DateTime? LastModificationTime { get; set; }
     public int CreatorLevel { get; set; } = 0;

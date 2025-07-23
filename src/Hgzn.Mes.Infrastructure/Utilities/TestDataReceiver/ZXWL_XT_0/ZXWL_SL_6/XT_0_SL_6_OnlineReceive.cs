@@ -2,8 +2,10 @@
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
+using Newtonsoft.Json;
 using SqlSugar;
 using StackExchange.Redis;
 using System;
@@ -19,7 +21,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
     {
         public XT_0_SL_6_OnlineReceive(Guid equipId, ISqlSugarClient client, IConnectionMultiplexer connectionMultiplexer, IMqttExplorer mqttExplorer) : base(equipId, client, connectionMultiplexer, mqttExplorer) { }
 
-        public async Task<Guid> Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg, DateTime sendTime)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);
@@ -48,14 +50,19 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
             // *** 物理量
             // 剩余的都给物理量
             byte[] physicalQuantityCount = new byte[4];
-            Buffer.BlockCopy(buffer, 35, physicalQuantityCount, 0, 4);
+            Buffer.BlockCopy(buffer, 41, physicalQuantityCount, 0, 4);
             uint ulPhysicalQuantityCount = BitConverter.ToUInt32(physicalQuantityCount, 0);
+
+            // *** 运行时间
+            byte[] runTime = new byte[4];
+            Buffer.BlockCopy(buffer, 105, runTime, 0, 4);
+            uint ulRunTime = BitConverter.ToUInt32(runTime, 0);
 
             // *** 构建entity
             XT_0_SL_6_ReceiveData entity = new XT_0_SL_6_ReceiveData()
             {
                 Id = _equipId,
-                CreationTime = DateTime.Now.ToLocalTime(),
+                CreationTime = sendTime,
                 SimuTestSysld = simuTestSysId,
                 DevTypeld = devTypeId,
                 Compld = compNumber,
@@ -69,42 +76,54 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
                 SelfTestStatus = selfTestStatus,
                 PhysicalParameterCount = ulPhysicalQuantityCount,
                 // 这里一下byte一下float的没啥规律,且只有这一组是这样的,干脆全部手写
-                MainCtrlDrfm1NetStatus = buffer[39],
-                MainCtrlDrfm2NetStatus = buffer[40],
-                Fpga1Status = buffer[41],
-                Fpga2Status = buffer[42],
-                Dsp1Status = buffer[43],
-                Dsp2Status = buffer[44],
-                Fpga1Adc1Dac1Status = buffer[45],
-                Fpga2Adc2Dac2Status = buffer[46],
-                Fpga1Dsp1SrioStatus = buffer[47],
-                Fpga2Dsp2SrioStatus = buffer[48],
-                Drfm1Temperature = BitConverter.ToSingle(buffer, 49),
-                Drfm2Temperature = BitConverter.ToSingle(buffer, 53),
-                MicrowaveCtrlStatus = buffer[57],
-                FrequencySynthesizerStatus = buffer[58],
-                IfInputPower = BitConverter.ToSingle(buffer, 59),
-                IfOutputPower = BitConverter.ToSingle(buffer, 63),
-                Backup1 = BitConverter.ToSingle(buffer, 67),
-                Backup2 = BitConverter.ToSingle(buffer, 71),
-                Backup3 = BitConverter.ToSingle(buffer, 75),
-                Backup4 = BitConverter.ToSingle(buffer, 79),
-                Backup5 = BitConverter.ToSingle(buffer, 83),
-                Backup6 = BitConverter.ToSingle(buffer, 87),
-                Backup7 = BitConverter.ToSingle(buffer, 91),
-                Backup8 = BitConverter.ToSingle(buffer, 95),
+                MainCtrlDrfm1NetStatus = buffer[45],
+                MainCtrlDrfm2NetStatus = buffer[46],
+                Fpga1Status = buffer[47],
+                Fpga2Status = buffer[48],
+                Dsp1Status = buffer[49],
+                Dsp2Status = buffer[50],
+                Fpga1Adc1Dac1Status = buffer[51],
+                Fpga2Adc2Dac2Status = buffer[52],
+                Fpga1Dsp1SrioStatus = buffer[53],
+                Fpga2Dsp2SrioStatus = buffer[54],
+                Drfm1Temperature = BitConverter.ToSingle(buffer, 55),
+                Drfm2Temperature = BitConverter.ToSingle(buffer, 59),
+                MicrowaveCtrlStatus = buffer[63],
+                FrequencySynthesizerStatus = buffer[64],
+                IfInputPower = BitConverter.ToSingle(buffer, 65),
+                IfOutputPower = BitConverter.ToSingle(buffer, 69),
+                Backup1 = BitConverter.ToSingle(buffer, 73),
+                Backup2 = BitConverter.ToSingle(buffer, 77),
+                Backup3 = BitConverter.ToSingle(buffer, 83),
+                Backup4 = BitConverter.ToSingle(buffer, 85),
+                Backup5 = BitConverter.ToSingle(buffer, 89),
+                Backup6 = BitConverter.ToSingle(buffer, 93),
+                Backup7 = BitConverter.ToSingle(buffer, 97),
+                Backup8 = BitConverter.ToSingle(buffer, 101),
+                RunTime = ulRunTime,
             };
 
             // *** 处理异常信息
             byte[] healthInfo = new byte[3];
-            Buffer.BlockCopy(buffer, 32, workStyle, 0, 3);
+            Buffer.BlockCopy(buffer, 32, healthInfo, 0, 3);
             List<string> exception = GetXT_0_SL_6HealthExceptionName(healthInfo);
             // 将试验数据记录数据库
             XT_0_SL_6_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
             // 将试验数据的数据部分推送到mqtt给前端进行展示(暂时不进行数据展示)
             // await TestDataPublishToMQTT(receive);
             // 将异常记录到redis
-            EquipNotice equipNotice = await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception);
+            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
+            // 新建通知
+            EquipNotice equipNotice = new EquipNotice()
+            {
+                EquipId = _equipId,
+                SendTime = sendTime,
+                NoticeType = EquipNoticeType.Alarm,
+                Title = "Receive Alarm",
+                Content = JsonConvert.SerializeObject(exception),
+                Description = "",
+                SimuTestSysId = simuTestSysId,
+            };
             // 将异常发布到mqtt
             await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
             // 将异常记录到数据库

@@ -32,9 +32,9 @@ public class TestDataReadDto : ReadDto
     public string ReqManager { get; set; }
     [Description("申请调度员工编号")]
     public string ReqManagerCode { get; set; }
-    [Description("系统责任人,多个人名用 英文‘,’ 分隔")]
+    [Description("制导控制专业代表,多个人名用 英文‘,’ 分隔")]
     public string GncResp { get; set; }
-    [Description("系统责任人员工编号")]
+    [Description("制导控制专业代表员工编号")]
     public string GncRespCode { get; set; }
     [Description("试验专业代表,多个人名用 英文‘,’ 分隔")]
     public string SimuResp { get; set; }
@@ -44,7 +44,7 @@ public class TestDataReadDto : ReadDto
     public string SimuStaff { get; set; }
     [Description("试验参与人员代码编号,多个人名用 英文‘,’ 分隔")]
     public string simuStaffCodes { get; set; }
-    [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
+    [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔,没有这个字段")]
     public string QncResp { get; set; }
     [Description("产品信息")]
     public string ProductInfo { get; set; }

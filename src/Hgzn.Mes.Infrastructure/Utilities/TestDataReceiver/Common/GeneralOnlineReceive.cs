@@ -1,6 +1,8 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Newtonsoft.Json;
 using SqlSugar;
 using StackExchange.Redis;
 using System.Reflection;
@@ -28,7 +30,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             this._stateTypeLength = stateTypeLength;
         }
 
-        public async Task<Guid> Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg, DateTime sendTime)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);
@@ -60,13 +62,24 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             uint ulPhysicalQuantityCount;
             float[] floatData = GetPhysicalQuantity(buffer, 22 + _WORKSTYLEANALYSISLENGTH + _STATETYPEANALYSISLENGTH, out ulPhysicalQuantityCount);
 
+            // *** 运行时间
+            // 计算需要拷贝的起始位置和需要的总长度
+            int startPosition = (int)((ulPhysicalQuantityCount + 1) * 4 + 22 + _WORKSTYLEANALYSISLENGTH + _STATETYPEANALYSISLENGTH);
+            int requiredLength = startPosition + 4;
+            uint ulRunTime = 0;
+            if (buffer.Length >= requiredLength)
+            {
+                byte[] runTime = new byte[4];
+                Buffer.BlockCopy(buffer, startPosition, runTime, 0, 4);
+                ulRunTime = BitConverter.ToUInt32(runTime, 0);
+            }
 
             // *** 构建entity
             T entity = new T();
             // 使用反射将后面指定数量个物理量数据进行填充
             PropertyInfo[] properties = typeof(T).GetProperties();
             properties[0].SetValue(entity, _equipId);
-            properties[1].SetValue(entity, DateTime.Now.ToLocalTime());
+            properties[1].SetValue(entity, sendTime);
             properties[2].SetValue(entity, simuTestSysId);
             properties[3].SetValue(entity, devTypeId);
             properties[4].SetValue(entity, compNumber);
@@ -94,6 +107,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
                 properties[6 + _workStyleLength + _stateTypeLength + i].SetValue(entity, floatData[i]);
             }
 
+            // 填充运行时间
+            properties[6 + _workStyleLength + _stateTypeLength + floatData.Length].SetValue(entity, ulRunTime);
 
             // *** 处理异常信息
             List<string> exception = _getHealthException(stateType);
@@ -102,7 +117,18 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             // 将试验数据的数据部分推送到mqtt给前端进行展示(暂时不进行数据展示)
             // await TestDataPublishToMQTT(receive);
             // 将异常记录到redis
-            EquipNotice equipNotice = await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception);
+            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
+            // 新建通知
+            EquipNotice equipNotice = new EquipNotice()
+            {
+                EquipId = _equipId,
+                SendTime = sendTime,
+                NoticeType = EquipNoticeType.Alarm,
+                Title = "Receive Alarm",
+                Content = JsonConvert.SerializeObject(exception),
+                Description = "",
+                SimuTestSysId = simuTestSysId,
+            };
             // 将异常发布到mqtt
             await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
             // 将异常记录到数据库

@@ -49,7 +49,7 @@ public class TestData : UniversalEntity
         {
             Id = Guid.Parse("1279ef0b-0274-4bf0-bd88-ac72d653af37"),
             TestDataId = "368ed946-c938-40f1-af15-b9e4171ed6a4",
-            SysName = "种子仿真系统资源名称1",
+            SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称1",
             TaskName = "种子试验名称1",
             DevPhase = "种子当前型号研制阶段1",
@@ -62,25 +62,15 @@ public class TestData : UniversalEntity
             GncRespCode = "种子系统责任人编号1",
             SimuResp = "种子试验专业代表1",
             simuRespCode = "种子试验专业代表编号1",
-            SimuStaff = "种子试验参与人员1",
+            SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号1",
-            QncResp = "种子制导控制专业代表1",
-            UUT = new List<TestDataProduct>()
-            {
-                new TestDataProduct()
-                {
-                    TestDataId = Guid.Parse("6ced84af-5572-45bb-bfec-c339a15b4e5b"),
-                    Name = "种子名称1",
-                    Code = "种子编号1",
-                    TechnicalStatus = "种子技术状1"
-                }
-            }
+            QncResp = "种子制导控制专业代表1"
         },
         new TestData()
         {
             Id = Guid.Parse("fabbcc05-4987-4d67-9be7-6bacc8b3f6ac"),
             TestDataId = "dc29d70c-1d83-4458-871e-f21837392c16",
-            SysName = "种子仿真系统资源名称2",
+            SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称2",
             TaskName = "种子试验名称2",
             DevPhase = "种子当前型号研制阶段2",
@@ -93,25 +83,15 @@ public class TestData : UniversalEntity
             GncRespCode = "种子系统责任人编号2",
             SimuResp = "种子试验专业代表2",
             simuRespCode = "种子试验专业代表编号2",
-            SimuStaff = "种子试验参与人员2",
+            SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号2",
-            QncResp = "种子制导控制专业代表2",
-            UUT = new List<TestDataProduct>()
-            {
-                new TestDataProduct()
-                {
-                    TestDataId = Guid.Parse("53af4b35-03c3-4bae-895c-926d7e94a24d"),
-                    Name = "种子名称2",
-                    Code = "种子编号2",
-                    TechnicalStatus = "种子技术状2"
-                }
-            }
+            QncResp = "种子制导控制专业代表2"
         },
         new TestData()
         {
             Id = Guid.Parse("b6d79d9f-f519-41cb-b167-35382b5a65cc"),
             TestDataId = "3e226e28-f6c2-4706-a7ee-01156099709f",
-            SysName = "种子仿真系统资源名称3",
+            SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称3",
             TaskName = "种子试验名称3",
             DevPhase = "种子当前型号研制阶段3",
@@ -124,19 +104,9 @@ public class TestData : UniversalEntity
             GncRespCode = "种子系统责任人编号3",
             SimuResp = "种子试验专业代表3",
             simuRespCode = "种子试验专业代表编号3",
-            SimuStaff = "种子试验参与人员3",
+            SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号3",
-            QncResp = "种子制导控制专业代表3",
-            UUT = new List<TestDataProduct>()
-            {
-                new TestDataProduct()
-                {
-                    TestDataId = Guid.Parse("fbb81773-3356-468e-b853-ff6c02a944ff"),
-                    Name = "种子名称3",
-                    Code = "种子编号3",
-                    TechnicalStatus = "种子技术状3"
-                }
-            }
+            QncResp = "种子制导控制专业代表3"
         },
     };
 }

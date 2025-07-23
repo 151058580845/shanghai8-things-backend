@@ -41,7 +41,9 @@ namespace Hgzn.Mes.Iot.Worker
                 var connections = await _sqlClient.Queryable<EquipConnect>()
                     .Includes(ec => ec.EquipLedger, el => el!.EquipType)
                     .Where(ec => ec.State && ec.ConnectStr != null)
-                    .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RfidReaderType.Id || ec.EquipLedger!.EquipType!.Id == EquipType.RfidIssuerType.Id)
+                    .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RfidReaderType.Id ||
+                    ec.EquipLedger!.EquipType!.Id == EquipType.RfidIssuerType.Id ||
+                    ec.EquipLedger!.EquipType!.Id == EquipType.RKType.Id)
                     .Where(ec => !ec.SoftDeleted)
                     .ToArrayAsync();
 

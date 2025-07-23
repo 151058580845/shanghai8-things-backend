@@ -172,6 +172,7 @@ public class TestDataService : SugarCrudAppService<
     {
         List<TestData> entities = await Queryable
             .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) < DateTime.Now.ToLocalTime())
+            .Includes(x => x.UUT)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }
@@ -180,7 +181,9 @@ public class TestDataService : SugarCrudAppService<
     {
         List<TestData> entities = await Queryable
             .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) > DateTime.Now.ToLocalTime() &&
-                        x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) < DateTime.Now.ToLocalTime()).ToListAsync();
+                        x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) < DateTime.Now.ToLocalTime())
+            .Includes(x => x.UUT)
+            .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }
 
@@ -188,6 +191,7 @@ public class TestDataService : SugarCrudAppService<
     {
         List<TestData> entities = await Queryable
             .Where(x => x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) > DateTime.Now.ToLocalTime())
+            .Includes(x => x.UUT)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }

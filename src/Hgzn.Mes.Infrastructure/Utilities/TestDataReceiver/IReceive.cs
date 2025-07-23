@@ -8,6 +8,6 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 {
     public interface IReceive
     {
-        public Task<Guid> Handle(byte[] msg);
+        public Task<Guid> Handle(byte[] msg, DateTime time);
     }
 }

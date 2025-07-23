@@ -39,7 +39,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
         /// workStyle       字节10    不固定
         /// devHealthState   字节8     不固定
         /// acquData        字节2800  不固定
-        public async Task<Guid> Handle(byte[] msg)
+        public async Task<Guid> Handle(byte[] msg, DateTime sendTime)
         {
             string data = Encoding.UTF8.GetString(msg);
             LoggerAdapter.LogTrace(data);
@@ -89,19 +89,22 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
                     exception = GetSupplyVoltageExceptionName(ulSupplyVoltageState);
             }
 
-            EquipNotice equipNotice = new EquipNotice()
+            if (exception.Count > 0)
             {
-                EquipId = _equipId,
-                SendTime = DateTime.Now.ToLocalTime(),
-                NoticeType = EquipNoticeType.Alarm,
-                Title = "Receive Alarm",
-                Content = JsonConvert.SerializeObject(exception),
-                Description = "",
-            };
+                EquipNotice equipNotice = new EquipNotice()
+                {
+                    EquipId = _equipId,
+                    SendTime = sendTime,
+                    NoticeType = EquipNoticeType.Alarm,
+                    Title = "Receive Alarm",
+                    Content = JsonConvert.SerializeObject(exception),
+                    Description = "",
+                };
 
-            // 将异常记录到数据库
-            equipNotice.Id = Guid.NewGuid();
-            EquipNotice sequipNotice = await _sqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+                // 将异常记录到数据库
+                equipNotice.Id = Guid.NewGuid();
+                EquipNotice sequipNotice = await _sqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+            }
 
             return _equipId;
         }

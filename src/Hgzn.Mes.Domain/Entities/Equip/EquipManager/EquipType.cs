@@ -88,7 +88,25 @@ public class EquipType : UniversalEntity, ICreationAudited, ISoftDelete, IState,
         Id = new Guid("f365f053-5146-41dc-9a1b-59b104e992e9"),
     };
 
-    public static EquipType[] Seeds { get; } = new EquipType[] { RfidReaderType, RfidIssuerType };
+    public static EquipType RKType = new()
+    {
+        TypeCode = "RK",
+        TypeName = "温湿度计",
+        Description = null,
+        Icon = null,
+        OrderNum = 0,
+        ParentId = null,
+        CreationTime = DateTime.Parse("2025/6/9 15:07:43"),
+        LastModificationTime = null,
+        ProtocolEnum = "RKServer",
+        State = true,
+        CreatorId = new Guid("50397a79-9792-40d0-b27f-0baf608f720e"),
+        SoftDeleted = false,
+        DeleteTime = null,
+        Id = new Guid("87460f4b-af0b-4f23-81b3-50554f928870"),
+    };
+
+    public static EquipType[] Seeds { get; } = new EquipType[] { RfidReaderType, RfidIssuerType, RKType };
 
     #endregion static
 }

@@ -35,5 +35,16 @@ public interface IEquipLedgerService : ICrudAppService<
     Task<IEnumerable<EquipLedgerReadDto>> GetMissingDevicesAlarmAsync();
     Task<IEnumerable<EquipLedgerReadDto>?> GetListByTypeAsync(string? type);
 
+    Task<bool?> SetEquipExistByAssetNumber(string? assetNumber);
+
+    Task<IEnumerable<EquipLedgerReadDto>> GetListByAssetNumberAsync(string? assetNumber);
+
     Task<IEnumerable<EquipResponsibleUserReadDto>> GetEquipResponsibleUsersAsync();
+
+    /// <summary>
+    /// 根据设备ID获取设备名称
+    /// </summary>
+    /// <param name="equipId"></param>
+    /// <returns></returns>
+    Task<string> GetEquipName(Guid equipId);
 }

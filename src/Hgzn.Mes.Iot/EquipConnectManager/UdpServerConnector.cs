@@ -106,7 +106,8 @@ public class UdpServerConnector : EquipConnectorBase
                 LoggerAdapter.LogInformation($"Received {buffer.Length} bytes from {remoteEndPoint}");
                 // 获取报文数据
                 byte[] newBuffer;
-                ReceiveHelper.GetMessage(buffer, buffer.Length, out newBuffer);
+                DateTime time;
+                ReceiveHelper.GetMessage(buffer, out time, out newBuffer);
                 // 获取部署在采集器里的数据库
                 SqlSugarClient localDbClient = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
                 LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, localDbClient, _connectionMultiplexer, _mqttExplorer);

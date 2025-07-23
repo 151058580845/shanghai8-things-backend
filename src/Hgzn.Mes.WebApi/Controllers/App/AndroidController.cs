@@ -13,7 +13,7 @@ namespace Hgzn.Mes.WebApi.Controllers.App;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class AndroidController:ControllerBase
+public class AndroidController : ControllerBase
 {
     private readonly IEquipLedgerService _equipLedgerService;
     private readonly IEquipLedgerHistoryService _equipLedgerHistoryService;
@@ -60,7 +60,7 @@ public class AndroidController:ControllerBase
     [AllowAnonymous]
     public async Task<ResponseWrapper<PaginatedList<RoomLocationLabelReadDto>>> GetRoomLabelAsync(int pageIndex = 1, int pageSize = 100) =>
         (await _locationLabelService.GetRoomLabelAsync(pageIndex, pageSize)).Wrap();
-    
+
     /// <summary>
     /// 手持端获取搜索目标
     /// </summary>
@@ -71,8 +71,8 @@ public class AndroidController:ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
     public async Task<ResponseWrapper<PaginatedList<EquipLedgerSearchReadDto>>> GetAppSearchAsync(int pageIndex = 1, int pageSize = 100) =>
-        (await _equipLedgerService.GetAppSearchAsync(pageIndex,pageSize)).Wrap();
-    
+        (await _equipLedgerService.GetAppSearchAsync(pageIndex, pageSize)).Wrap();
+
     /// <summary>
     /// 手持端巡检记录上传
     /// </summary>
@@ -85,8 +85,18 @@ public class AndroidController:ControllerBase
     [AllowAnonymous]
     public async Task<ResponseWrapper<int>> PostAppStoreAsync(List<EquipLedgerHistoryCreateDto> list)
     {
+        var tasks = list.Select(async item =>
+        {
+            var ledgers = await _equipLedgerService.GetListByAssetNumberAsync(item.AssetNumber);
+            foreach (var el in ledgers)
+            {
+                item.EquipCode = el.EquipCode;
+                item.EquipId = el.Id;
+            }
+        });
+        await Task.WhenAll(tasks);
         var result = (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
-        var dictionary =  list.Where(t=>t.RoomId != null).ToDictionary(t => t.EquipCode, s => s.RoomId.Value);
+        var dictionary = list.Where(t => t.RoomId != null).ToDictionary(t => t.AssetNumber, s => s.RoomId.Value);
         var equipList = await _equipLedgerService.UpdateEquipRoomId(dictionary);
         return equipList.Wrap();
     }
@@ -101,6 +111,19 @@ public class AndroidController:ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [AllowAnonymous]
-    public async Task<ResponseWrapper<int>> PostAppSearchAsync(List<EquipLedgerHistoryCreateDto> list) =>
-        (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
+    public async Task<ResponseWrapper<int>> PostAppSearchAsync(List<EquipLedgerHistoryCreateDto> list)
+    {
+        var tasks = list.Select(async item =>
+        {
+            await _equipLedgerService.SetEquipExistByAssetNumber(item.AssetNumber);
+            var ledgers = await _equipLedgerService.GetListByAssetNumberAsync(item.AssetNumber);
+            foreach (var el in ledgers)
+            {
+                item.EquipCode = el.EquipCode;
+                item.EquipId = el.Id;
+            }
+        });
+        await Task.WhenAll(tasks);
+        return (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
+    }
 }
