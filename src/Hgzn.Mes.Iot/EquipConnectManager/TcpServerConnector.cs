@@ -2,7 +2,9 @@
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
+using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using Hgzn.Mes.Iot.EquipManager;
 using SqlSugar;
 using StackExchange.Redis;
@@ -13,6 +15,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
     public class TcpServerConnector : EquipConnectorBase
     {
         private EquipTcpServer _server = null!;
+        private ISqlSugarClient _localsqlSugarClinet;
 
         public TcpServerConnector(
             IConnectionMultiplexer connectionMultiplexer,
@@ -21,6 +24,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             string uri, EquipConnType connType) :
             base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
         {
+            _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
         }
 
         public override async Task CloseConnectionAsync()
@@ -57,7 +61,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
                     LoggerAdapter.LogInformation($"ip: {conn.Address}, port: {conn.Port}, port out of range!");
                     return false;
                 }
-                _server = new EquipTcpServer("0.0.0.0", conn.Port, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer);
+                _server = new EquipTcpServer("0.0.0.0", conn.Port, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer, _localsqlSugarClinet);
                 _server.Start();
                 await UpdateStateAsync(ConnStateType.On);
                 await UpdateOperationAsync(ConnStateType.On);

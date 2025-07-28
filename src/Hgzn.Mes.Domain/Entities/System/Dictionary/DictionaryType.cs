@@ -487,6 +487,106 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             State = true
         };
 
+        public static readonly DictionaryInfo BaudRate2400 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("31ac1ded-ff4a-427b-bbc9-2c72049eb510"), // 固定的 Guid 值
+            DictLabel = "2400",
+            DictValue = "2400",
+            ParentId = BaudRate.Id,
+            OrderNum = 41,
+            Remark = "BaudRate2400",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now.ToLocalTime(),
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BaudRate4800 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("da7cbf0b-6ed0-4042-8306-493ca75e2b18"), // 固定的 Guid 值
+            DictLabel = "4800",
+            DictValue = "4800",
+            ParentId = BaudRate.Id,
+            OrderNum = 42,
+            Remark = "BaudRate4800",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now.ToLocalTime(),
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BaudRate9600 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("d9f7cb86-596b-4d37-932a-dc6722dc54e7"), // 固定的 Guid 值
+            DictLabel = "9600",
+            DictValue = "9600",
+            ParentId = BaudRate.Id,
+            OrderNum = 43,
+            Remark = "BaudRate9600",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now.ToLocalTime(),
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BaudRate19200 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("e1ee1250-e6b9-4422-bcb3-de3ad31250cf"), // 固定的 Guid 值
+            DictLabel = "19200",
+            DictValue = "19200",
+            ParentId = BaudRate.Id,
+            OrderNum = 44,
+            Remark = "BaudRate19200",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now.ToLocalTime(),
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BaudRate38400 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("1375ca1b-b647-4615-aa01-68378b41c9dc"), // 固定的 Guid 值
+            DictLabel = "38400",
+            DictValue = "38400",
+            ParentId = BaudRate.Id,
+            OrderNum = 45,
+            Remark = "BaudRate38400",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now.ToLocalTime(),
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BaudRate57600 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("2540c2a0-0c44-4aa5-bcc7-04a99df7b08a"), // 固定的 Guid 值
+            DictLabel = "57600",
+            DictValue = "57600",
+            ParentId = BaudRate.Id,
+            OrderNum = 46,
+            Remark = "BaudRate57600",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now.ToLocalTime(),
+            ListClass = "info"
+        };
+
+        public static readonly DictionaryInfo BaudRate115200 = new DictionaryInfo()
+        {
+            Id = Guid.Parse("90345bc1-a7ab-419b-8372-64003874429e"), // 固定的 Guid 值
+            DictLabel = "115200",
+            DictValue = "115200",
+            ParentId = BaudRate.Id,
+            OrderNum = 47,
+            Remark = "BaudRate115200",
+            SoftDeleted = false,
+            State = true,
+            CreationTime = DateTime.Now.ToLocalTime(),
+            ListClass = "info"
+        };
+
+        /* 字节序
+        
         public static readonly DictionaryInfo ABCD1 = new DictionaryInfo()
         {
             Id = Guid.Parse("b12593a1-5d8f-4b6d-aee9-91e6250efb21"), // 固定的 Guid 值
@@ -542,6 +642,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             CreationTime = DateTime.Now.ToLocalTime(),
             ListClass = "info"
         };
+
+        */
 
         #endregion
 

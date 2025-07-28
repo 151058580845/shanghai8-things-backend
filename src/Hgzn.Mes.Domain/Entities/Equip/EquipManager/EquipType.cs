@@ -106,7 +106,25 @@ public class EquipType : UniversalEntity, ICreationAudited, ISoftDelete, IState,
         Id = new Guid("87460f4b-af0b-4f23-81b3-50554f928870"),
     };
 
-    public static EquipType[] Seeds { get; } = new EquipType[] { RfidReaderType, RfidIssuerType, RKType };
+    public static EquipType IotType = new()
+    {
+        TypeCode = "Iot",
+        TypeName = "数据采集器",
+        Description = null,
+        Icon = null,
+        OrderNum = 0,
+        ParentId = null,
+        CreationTime = DateTime.Parse("2025/6/9 15:07:43"),
+        LastModificationTime = null,
+        ProtocolEnum = "IotServer",
+        State = true,
+        CreatorId = new Guid("2a2cfbca-a467-4f78-8ce7-60963a3a952c"),
+        SoftDeleted = false,
+        DeleteTime = null,
+        Id = new Guid("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+    };
+
+    public static EquipType[] Seeds { get; } = new EquipType[] { RfidReaderType, RfidIssuerType, RKType, IotType };
 
     #endregion static
 }

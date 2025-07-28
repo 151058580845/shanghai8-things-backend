@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Google.Protobuf.WellKnownTypes;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
@@ -7,6 +8,7 @@ using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Iot.EquipManager;
 using Hgzn.Mes.Iot.Mqtt;
 using Hgzn.Mes.Iot.Worker;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,6 +34,7 @@ builder.Services.AddScoped<ISqlSugarClient, SqlSugarClient>(context =>
         .Get<DbConnOptions>() ?? throw new Exception("sqlsugar config not found!");
     return new SqlSugarClient(SqlSugarContext.Build(setting));
 });
+
 builder.Services.AddSingleton<MqttMessageHandler>();
 builder.Services.AddSingleton<IMqttExplorer, IotMqttExplorer>();
 builder.Services.AddSingleton<ConnManager>();
@@ -54,6 +57,7 @@ var host = builder.Build();
 
 var loggerAdapter = host.Services.GetService<ILogger<LoggerAdapter>>()!;
 LoggerAdapter.Initialize(loggerAdapter);
+
 host.Services.GetService<ConnManager>()?.Initialize(host.Services.GetService<IMqttExplorer>()!);
 
 var connectionMultiplexer = host.Services.GetService<IConnectionMultiplexer>();

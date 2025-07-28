@@ -21,6 +21,7 @@ public class EquipTcpServer : TcpServer
     private ISqlSugarClient _sqlSugarClient;
     private EquipConnect _equipConnect;
     private IMqttExplorer _mqttExplorer;
+    private ISqlSugarClient _localClient;
 
     public int? ForwardRate { get; set; }
 
@@ -28,18 +29,20 @@ public class EquipTcpServer : TcpServer
         IConnectionMultiplexer connectionMultiplexer,
         ISqlSugarClient sqlSugarClient,
         EquipConnect equipConnect,
-        IMqttExplorer mqttExplorer) : base(address, port)
+        IMqttExplorer mqttExplorer,
+        ISqlSugarClient localClinet) : base(address, port)
     {
         _connectionMultiplexer = connectionMultiplexer;
         _sqlSugarClient = sqlSugarClient;
         _equipConnect = equipConnect;
         _mqttExplorer = mqttExplorer;
         ForwardRate = equipConnect.ForwardRate;
+        _localClient = localClinet;
     }
 
     protected override TcpSession CreateSession()
     {
-        return new EquipTcpSession(this, _connectionMultiplexer, _sqlSugarClient, _equipConnect, _mqttExplorer);
+        return new EquipTcpSession(this, _connectionMultiplexer, _localClient, _equipConnect, _mqttExplorer);
     }
 
     protected override void OnConnected(TcpSession session)

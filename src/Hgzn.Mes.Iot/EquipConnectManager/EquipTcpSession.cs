@@ -80,9 +80,7 @@ public class EquipTcpSession : TcpSession
                     // 本地解析资产编号和异常解析
                     // 这里要记录到数据采集器的数据库,而不是服务器的数据库
                     // 创建新的SqlSugarClient实例用于本地数据记录
-                    SqlSugarClient localDbClient = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
-
-                    LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, localDbClient, _connectionMultiplexer, _mqttExplorer);
+                    LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
                     await dispatch.Handle(buffer);
                 }
 

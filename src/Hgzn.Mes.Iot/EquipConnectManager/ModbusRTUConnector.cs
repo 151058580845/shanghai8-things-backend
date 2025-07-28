@@ -97,33 +97,39 @@ public class ModbusRTUConnector : EquipConnectorBase
             throw new ArgumentNullException(nameof(connInfo));
 
         // 反序列化为ModbusRtuConnInfo类型
-        _connInfo = JsonSerializer.Deserialize<ModbusRtuConnInfo>(
-            connInfo.ConnString, Options.CustomJsonSerializerOptions)
-            ?? throw new ArgumentNullException("conn");
+        try
+        {
+            _connInfo = JsonSerializer.Deserialize<ModbusRtuConnInfo>(
+                connInfo.ConnString, Options.CustomJsonSerializerOptions)
+                ?? throw new ArgumentNullException("conn");
+        }
+        catch (Exception e) { }
 
         try
         {
             // 将int类型的校验位和停止位转换为枚举类型
             Parity parity = _connInfo.Parity switch
             {
-                0 => Parity.None,
-                1 => Parity.Odd,
-                2 => Parity.Even,
+                "None" => Parity.None,
+                "Odd" => Parity.Odd,
+                "Even" => Parity.Even,
+                "Mark" => Parity.Mark,
+                "Space" => Parity.Space,
                 _ => Parity.None
             };
 
             StopBits stopBits = _connInfo.StopBits switch
             {
-                1 => StopBits.One,
-                2 => StopBits.Two,
-                3 => StopBits.OnePointFive,
+                "One" => StopBits.One,
+                "Two" => StopBits.Two,
+                "OnePointFive" => StopBits.OnePointFive,
                 _ => StopBits.One
             };
 
             // 创建并配置串口对象
             _serialPort = new SerialPort(
-                _connInfo.PortName,      // 串口号
-                _connInfo.BaudRate,      // 波特率
+                "COM" + _connInfo.PortName,      // 串口号
+                int.Parse(_connInfo.BaudRate),      // 波特率
                 parity,                 // 校验位
                 _connInfo.DataBits,     // 数据位
                 stopBits);             // 停止位
@@ -147,7 +153,7 @@ public class ModbusRTUConnector : EquipConnectorBase
             await UpdateStateAsync(ConnStateType.On);
             await UpdateOperationAsync(ConnStateType.On);
 
-            LoggerAdapter.LogInformation($"Modbus RTU连接已建立，串口:{_connInfo.PortName} 从站ID:{_connInfo.SlaveId}");
+            LoggerAdapter.LogInformation($"Modbus RTU连接已建立，串口:{"COM" + _connInfo.PortName} 从站ID:{_connInfo.slaveAddress}");
             return true;
         }
         catch (Exception ex)
@@ -198,7 +204,7 @@ public class ModbusRTUConnector : EquipConnectorBase
             throw new InvalidOperationException("Modbus RTU未连接");
 
         return await _modbusMaster.ReadHoldingRegistersAsync(
-            _connInfo.SlaveId,      // 使用配置中的从站地址
+            _connInfo.slaveAddress,      // 使用配置中的从站地址
             startAddress,
             numberOfPoints);
     }
@@ -212,7 +218,7 @@ public class ModbusRTUConnector : EquipConnectorBase
             throw new InvalidOperationException("Modbus RTU未连接");
 
         return await _modbusMaster.ReadInputRegistersAsync(
-            _connInfo.SlaveId,
+            _connInfo.slaveAddress,
             startAddress,
             numberOfPoints);
     }
@@ -233,7 +239,7 @@ public class ModbusRTUConnector : EquipConnectorBase
     /// </summary>
     public async Task WriteSingleRegisterAsync(ushort registerAddress, ushort value)
     {
-        await WriteSingleRegisterAsync(_connInfo.SlaveId, registerAddress, value);
+        await WriteSingleRegisterAsync(_connInfo.slaveAddress, registerAddress, value);
     }
 
     /// <summary>
@@ -252,7 +258,7 @@ public class ModbusRTUConnector : EquipConnectorBase
     /// </summary>
     public async Task WriteMultipleRegistersAsync(ushort startAddress, ushort[] values)
     {
-        await WriteMultipleRegistersAsync(_connInfo.SlaveId, startAddress, values);
+        await WriteMultipleRegistersAsync(_connInfo.slaveAddress, startAddress, values);
     }
 
     /// <summary>
@@ -264,7 +270,7 @@ public class ModbusRTUConnector : EquipConnectorBase
             throw new InvalidOperationException("Modbus RTU未连接");
 
         return await _modbusMaster.ReadCoilsAsync(
-            _connInfo.SlaveId,
+            _connInfo.slaveAddress,
             startAddress,
             numberOfPoints);
     }
@@ -278,7 +284,7 @@ public class ModbusRTUConnector : EquipConnectorBase
             throw new InvalidOperationException("Modbus RTU未连接");
 
         await _modbusMaster.WriteSingleCoilAsync(
-            _connInfo.SlaveId,
+            _connInfo.slaveAddress,
             coilAddress,
             value);
     }

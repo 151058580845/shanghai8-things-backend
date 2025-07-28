@@ -77,8 +77,10 @@ namespace Hgzn.Mes.Iot.EquipManager
                             equipConnector = new UdpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType);
                             if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
                             break;
-                        // case ConnType.ModbusRtu:
-
+                        case ConnType.ModbusRtu:
+                            equipConnector = new ModbusRTUConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType);
+                            if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
+                            break;
                     }
                     break;
                 case EquipConnType.RKServer:

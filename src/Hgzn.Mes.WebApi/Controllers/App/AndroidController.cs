@@ -5,6 +5,7 @@ using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Runtime.Serialization.Json;
 
 namespace Hgzn.Mes.WebApi.Controllers.App;
 
@@ -85,19 +86,33 @@ public class AndroidController : ControllerBase
     [AllowAnonymous]
     public async Task<ResponseWrapper<int>> PostAppStoreAsync(List<EquipLedgerHistoryCreateDto> list)
     {
-        var tasks = list.Select(async item =>
+        int equipList = 0;
+        try
         {
-            var ledgers = await _equipLedgerService.GetListByAssetNumberAsync(item.AssetNumber);
-            foreach (var el in ledgers)
+            var tasks = list.Select(async item =>
             {
-                item.EquipCode = el.EquipCode;
-                item.EquipId = el.Id;
-            }
-        });
-        await Task.WhenAll(tasks);
-        var result = (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
-        var dictionary = list.Where(t => t.RoomId != null).ToDictionary(t => t.AssetNumber, s => s.RoomId.Value);
-        var equipList = await _equipLedgerService.UpdateEquipRoomId(dictionary);
+                LoggerAdapter.LogInformation($"导入盘点设备信息:{ObjectToJson(item)}");
+                var ledgers = await _equipLedgerService.GetListByAssetNumberAsync(item.AssetNumber);
+                foreach (var el in ledgers)
+                {
+                    item.EquipCode = el.EquipCode;
+                    item.EquipId = el.Id;
+                }
+                LoggerAdapter.LogInformation($"获取到设备的code是:{item.EquipCode}");
+                LoggerAdapter.LogInformation($"获取到设备的Id是:{item.EquipId}");
+            });
+            await Task.WhenAll(tasks);
+
+            var result = (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
+            LoggerAdapter.LogInformation($"添加历史记录成功");
+            var dictionary = list.Where(t => t.RoomId != null).ToDictionary(t => t.AssetNumber, s => s.RoomId.Value);
+            equipList = await _equipLedgerService.UpdateEquipRoomId(dictionary);
+            LoggerAdapter.LogInformation($"盘点设备,更新设备房间ID成功");
+        }
+        catch (Exception ex)
+        {
+            LoggerAdapter.LogInformation($"盘点失败,原因是{ex.Message}");
+        }
         return equipList.Wrap();
     }
 
@@ -115,15 +130,41 @@ public class AndroidController : ControllerBase
     {
         var tasks = list.Select(async item =>
         {
+
+            LoggerAdapter.LogInformation($"导入找到丢失的设备信息:{ObjectToJson(item)}");
             await _equipLedgerService.SetEquipExistByAssetNumber(item.AssetNumber);
             var ledgers = await _equipLedgerService.GetListByAssetNumberAsync(item.AssetNumber);
             foreach (var el in ledgers)
             {
+                el.Id = new Guid();
                 item.EquipCode = el.EquipCode;
                 item.EquipId = el.Id;
             }
+            LoggerAdapter.LogInformation($"获取到设备的code是:{item.EquipCode}");
+            LoggerAdapter.LogInformation($"获取到设备的Id是:{item.EquipId}");
         });
         await Task.WhenAll(tasks);
-        return (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
+        LoggerAdapter.LogInformation($"修改丢失为正常状态成功");
+        ResponseWrapper<int> ret = default;
+        try
+        {
+            ret = (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
+            LoggerAdapter.LogInformation($"添加历史记录成功");
+        }
+        catch (Exception ex)
+        {
+            LoggerAdapter.LogInformation($"添加历史记录失败,原因是{ex.Message}");
+        }
+        return ret;
+    }
+
+    public static string ObjectToJson(object obj)
+    {
+        DataContractJsonSerializer serializer = new DataContractJsonSerializer(obj.GetType());
+        using (MemoryStream stream = new MemoryStream())
+        {
+            serializer.WriteObject(stream, obj);
+            return global::System.Text.Encoding.UTF8.GetString(stream.ToArray());
+        }
     }
 }

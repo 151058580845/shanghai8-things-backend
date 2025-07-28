@@ -10,6 +10,7 @@ using Hgzn.Mes.Infrastructure.Utilities;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Runtime.Serialization.Json;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -86,6 +87,16 @@ public class TestDataService : SugarCrudAppService<
             .WhereIF(!string.IsNullOrEmpty(testName), t => t.SysName == testName)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataListReadDto>>(entities);
+    }
+
+    public static string ObjectToJson(object obj)
+    {
+        DataContractJsonSerializer serializer = new DataContractJsonSerializer(obj.GetType());
+        using (MemoryStream stream = new MemoryStream())
+        {
+            serializer.WriteObject(stream, obj);
+            return global::System.Text.Encoding.UTF8.GetString(stream.ToArray());
+        }
     }
 
     /// <summary>

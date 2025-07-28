@@ -1,6 +1,7 @@
 ﻿using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Domain.ValueObjects.Message;
 using Hgzn.Mes.Domain.ValueObjects.Message.Base;
@@ -125,6 +126,7 @@ namespace Hgzn.Mes.Iot.Mqtt
             switch (info.Type)
             {
                 case CmdType.Conn:
+                    LoggerAdapter.LogInformation("收到连接请求");
                     var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, topic.ConnType!, info.ConnString!, info);
                     await SwitchEquipAsync(equip);
                     break;

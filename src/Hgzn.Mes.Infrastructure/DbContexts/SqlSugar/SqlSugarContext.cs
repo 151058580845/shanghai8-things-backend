@@ -293,8 +293,6 @@ public sealed class SqlSugarContext
     {
         if (_dbOptions.DbType == DbType.OpenGauss || _dbOptions.DbType == DbType.PostgreSQL)
         {
-
-
             var uri = _dbOptions.Url!.Split(";");
             var newDatabaseName = uri[1].Substring(uri[1].IndexOf('=') + 1);
             uri[1] = "DATABASE=postgres";

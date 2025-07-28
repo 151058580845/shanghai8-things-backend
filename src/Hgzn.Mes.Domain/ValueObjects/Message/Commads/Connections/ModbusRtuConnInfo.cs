@@ -8,7 +8,7 @@ public class ModbusRtuConnInfo : IConnInfo
     /// <summary>
     /// 波特率（Baud Rate）
     /// </summary>
-    public int BaudRate { get; set; }
+    public string BaudRate { get; set; }
 
     /// <summary>
     /// 数据位（Data Bits）
@@ -18,22 +18,22 @@ public class ModbusRtuConnInfo : IConnInfo
     /// <summary>
     /// 奇偶校验（Parity）
     /// </summary>
-    public int Parity { get; set; }
+    public string Parity { get; set; }
 
     /// <summary>
     /// 停止位（Stop Bits）
     /// </summary>
-    public int StopBits { get; set; }
+    public string StopBits { get; set; }
 
     /// <summary>
     /// 从站地址（Slave Address）
     /// </summary>
-    public byte SlaveId { get; set; }
+    public byte slaveAddress { get; set; }
 
     /// <summary>
     /// 串行端口名称（如COM1, COM2）
     /// </summary>
-    public string PortName { get; set; } = null!;
+    public int PortName { get; set; }
     
     /// <summary>
     /// 读取格式

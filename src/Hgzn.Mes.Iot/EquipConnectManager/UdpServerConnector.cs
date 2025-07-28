@@ -14,6 +14,8 @@ using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
 public class UdpServerConnector : EquipConnectorBase
 {
@@ -22,6 +24,10 @@ public class UdpServerConnector : EquipConnectorBase
     private IPEndPoint _localEndPoint = null!;
     private bool _isRunning = false;
     private EquipConnect _equipConnect = null!;
+    // 多少个转一个（从前端配置进行）
+    private int? _forwardLength = 10;
+    private int? _forwardNum = 1;
+    private ISqlSugarClient _localsqlSugarClinet;
 
     public UdpServerConnector(
         IConnectionMultiplexer connectionMultiplexer,
@@ -30,7 +36,10 @@ public class UdpServerConnector : EquipConnectorBase
         string uri, EquipConnType connType)
         : base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
     {
-        _equipConnect = sqlSugarClient.Queryable<EquipConnect>().First(x => x.Id == Guid.Parse(uri));
+        LoggerAdapter.LogInformation("连接的数据库是" + sqlSugarClient.CurrentConnectionConfig.ConnectionString);
+        _equipConnect = sqlSugarClient.Queryable<EquipConnect>()?.First(x => x.Id == Guid.Parse(uri))!;
+        _forwardNum = _equipConnect?.ForwardRate.Value;
+        _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
     }
 
     public override async Task CloseConnectionAsync()
@@ -61,6 +70,7 @@ public class UdpServerConnector : EquipConnectorBase
 
     public override async Task<bool> ConnectAsync(ConnInfo connInfo)
     {
+        LoggerAdapter.LogInformation("开始udp连接...");
         if (connInfo?.ConnString is null)
             throw new ArgumentNullException(nameof(connInfo));
 
@@ -70,11 +80,13 @@ public class UdpServerConnector : EquipConnectorBase
 
         try
         {
+            LoggerAdapter.LogInformation($"开启服务,监听的端口是{conn.Port}");
             // 创建UDP服务端
             _localEndPoint = new IPEndPoint(IPAddress.Any, conn.Port);
             _udpServer = new UdpClient(_localEndPoint);
             _isRunning = true;
 
+            LoggerAdapter.LogInformation($"开始接收数据");
             // 启动异步接收（UDP不需要Accept，直接开始接收数据）
             _ = Task.Run(() => ReceiveDataAsync());
 
@@ -101,20 +113,22 @@ public class UdpServerConnector : EquipConnectorBase
                 var result = await _udpServer.ReceiveAsync();
                 var remoteEndPoint = result.RemoteEndPoint;
                 var buffer = result.Buffer;
+                bool hasData = false;
 
                 // 在这里处理接收到的数据（示例：打印日志）
                 LoggerAdapter.LogInformation($"Received {buffer.Length} bytes from {remoteEndPoint}");
                 // 获取报文数据
                 byte[] newBuffer;
                 DateTime time;
-                ReceiveHelper.GetMessage(buffer, out time, out newBuffer);
-                // 获取部署在采集器里的数据库
-                SqlSugarClient localDbClient = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
-                LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, localDbClient, _connectionMultiplexer, _mqttExplorer);
-                await dispatch.Handle(newBuffer);
-
-                // 可以调用基类或MQTT等方法转发数据
-                // await ProcessReceivedDataAsync(buffer, remoteEndPoint);
+                hasData = ReceiveHelper.GetMessage(buffer, out time, out newBuffer);
+                if (hasData && newBuffer != null)
+                {
+                    // 获取部署在采集器里的数据库
+                    LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, _localsqlSugarClinet, _connectionMultiplexer, _mqttExplorer);
+                    await dispatch.Handle(buffer);
+                    // 调用基类或MQTT等方法转发数据
+                    await ProcessDataAsync(buffer);
+                }
             }
             catch (ObjectDisposedException)
             {
@@ -127,6 +141,22 @@ public class UdpServerConnector : EquipConnectorBase
                 await Task.Delay(1000); // 避免错误循环
             }
         }
+    }
+
+    private async Task ProcessDataAsync(byte[] buffer)
+    {
+        if (_forwardLength != null && _forwardNum != null && _forwardNum == _forwardLength)
+        {
+            var topic = IotTopicBuilder.CreateIotBuilder()
+                            .WithPrefix(TopicType.Iot)
+                            .WithDirection(MqttDirection.Up)
+                            .WithTag(MqttTag.Transmit)
+                            .WithDeviceType(EquipConnType.IotServer.ToString())
+                            .WithUri(_equipConnect.Id.ToString()).Build();
+            await _mqttExplorer.PublishAsync(topic, buffer);
+            _forwardNum = 0;
+        }
+        _forwardNum++;
     }
 
     // UDP发送方法（需指定目标地址）

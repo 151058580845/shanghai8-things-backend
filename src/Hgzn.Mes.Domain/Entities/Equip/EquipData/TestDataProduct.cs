@@ -9,11 +9,11 @@ public class TestDataProduct : UniversalEntity
     [Description("实验计划主键")]
     public Guid TestDataId { get; set; }
     [Description("名称")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
     [Description("编号")]
-    public string Code { get; set; }
+    public string? Code { get; set; }
     [Description("技术状")]
-    public string TechnicalStatus { get; set; }
+    public string? TechnicalStatus { get; set; }
 
     public static TestDataProduct[] Seeds { get; } = new TestDataProduct[]
     {
