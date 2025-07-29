@@ -22,6 +22,7 @@ using SqlSugar;
 using StackExchange.Redis;
 using System;
 using static NPOI.HSSF.Util.HSSFColor;
+using SystemIOFile = System.IO.File;
 
 namespace Hgzn.Mes.WebApi.Controllers.App;
 
@@ -67,5 +68,27 @@ public class AppController : ControllerBase
     {
         ShowSystemDetailDto read = await _appService.GetTestDetailAsync(showSystemDetailQueryDto);
         return read.Wrap();
+    }
+
+    /// <summary>
+    /// 下载大屏需要的摄像头插件
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("download/cameraplugin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
+    public async Task<IActionResult> DownloadCameraPlugin()
+    {
+        byte[] content = [];
+        string fileName = "";
+        string filePath = Path.Combine(Environment.CurrentDirectory, "Resources", "HCWebSDKPluginsUserSetup.exe");
+        if (SystemIOFile.Exists(filePath))
+        {
+            content = await SystemIOFile.ReadAllBytesAsync(filePath);
+            fileName = "HCWebSDKPluginsUserSetup.exe";
+        }
+        return File(content, "application/octet-stream", fileName);
     }
 }
