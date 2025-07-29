@@ -1,5 +1,7 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.App;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT__ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
@@ -228,7 +230,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             {
                 EquipHealthStatusRedisTree = await _redisHelper.GetTreeAsync(EquipHealthStatusRedisKey);
             }
-            catch (Exception e) { }
+            catch (Exception) { }
             Abnormals = new List<Abnormal>();
             foreach (SystemInfo si in SystemInfos)
             {
@@ -267,7 +269,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             if (ce == null)
                 return false;
             IDatabase database = _connectionMultiplexer.GetDatabase();
-            var key = string.Format(CacheKeyFormatter.EquipState, equipId, ce.Id);
+            string key = string.Format(CacheKeyFormatter.EquipState, equipId, ce.Id);
             return await database.StringGetAsync(key) == 3;
         }
 
@@ -285,81 +287,181 @@ namespace Hgzn.Mes.Application.Main.Services.App
             return runTime;
         }
 
+        #region ====== 获取展示数据的Table ======
+
         /// <summary>
-        /// 获取展示数据的Table
+        /// 根据系统信息和类型获取表格数据DTO列表
         /// </summary>
-        /// <param name="systemInfo"></param>
-        /// <returns></returns>
-        public async Task<List<TableDto>> GetTableDtos(SystemInfo systemInfo)
+        /// <param name="systemInfo">系统信息</param>
+        /// <param name="type">表格类型</param>
+        /// <returns>表格DTO列表</returns>
+        public async Task<List<Tuple<TableDto, TableDto>>> GetTableDtos(SystemInfo systemInfo)
         {
-            List<TableDto> ret = new List<TableDto>();
-            switch (systemInfo.SystemNum)
+            // 根据系统编号路由到对应的处理方法
+            List<Tuple<TableDto, TableDto>> ret = systemInfo.SystemNum switch
             {
-                case 1:
-                    XT_310_SL_2_ReceiveData data = await _sqlSugarClient.Queryable<XT_310_SL_2_ReceiveData>().OrderByDescending(x => x.CreationTime).FirstAsync();
-                    TableDto td = new TableDto()
-                    {
-                        Title = "雷达源",
-                        Header = new List<List<string>>() // 这三列必须是 name , control , power
-                        {
-                            new List<string> { "name", "物理量定义" },
-                            new List<string> { "control", "物理量" }
-                        },
-                        Data = new List<Dictionary<string, string>>()
-                        {
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "内框位置" },
-                                { "control" , data.InnerFramePosition.ToString() }
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "中框位置" },
-                                { "control" , data.MiddleFramePosition.ToString() }
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "外框位置" },
-                                { "control" , data.OuterFramePosition.ToString() }
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "内框速度" },
-                                { "control" , data.InnerFrameVelocity.ToString() }
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "中框速度" },
-                                { "control" , data.MiddleFrameVelocity.ToString() }
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "外框速度" },
-                                { "control" , data.OuterFrameVelocity.ToString() }
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "内框加速度" },
-                                { "control" , data.InnerFrameAcceleration.ToString() }
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "中框加速度" },
-                                { "control" , data.MiddleFrameAcceleration.ToString() }
-                            },
-                            new Dictionary<string, string>()
-                            {
-                                { "name", "外框加速度" },
-                                { "control" , data.OuterFrameAcceleration.ToString() }
-                            }
-                        }
-                    };
-                    ret.Add(td);
-                    return ret;
-                default:
-                    return null;
-            }
+                0 => await HandleSystem0(),
+                1 => await HandleSystem1(),
+                6 => await HandleSystem6(),
+                _ => null!
+            };
+            return ret;
         }
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem0()
+        {
+            List<Tuple<TableDto, TableDto>> tables = new List<Tuple<TableDto, TableDto>>();
+            XT__SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT__SL_1_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null) return tables;
+            TableDto table = new TableDto
+            {
+                Title = "XX类型",
+                Header = CreateStandardHeader(),
+                Data = new List<Dictionary<string, string>>
+                {
+                    CreateDataRow("XX状态", "正常")
+                }
+            };
+            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
+            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "xxx物理量");
+            Tuple<TableDto, TableDto> table1 = new Tuple<TableDto, TableDto>(table, detailTable);
+            tables.Add(table1);
+            return tables;
+        }
+
+        #region 310_微波/毫米波复合半实物仿真系统
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem1()
+        {
+            List<Tuple<TableDto, TableDto>> tables = new List<Tuple<TableDto, TableDto>>();
+            XT_310_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_310_SL_2_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null) return tables;
+
+            TableDto table = new TableDto
+            {
+                Title = "雷达源",
+                Header = CreateStandardHeader(),
+                Data = new List<Dictionary<string, string>>
+                {
+                    CreateDataRow("内框位置", "正常"),
+                    CreateDataRow("中框位置", data.MiddleFramePosition.ToString()),
+                    CreateDataRow("外框位置", data.OuterFramePosition.ToString()),
+                    CreateDataRow("内框速度", data.InnerFrameVelocity.ToString()),
+                    CreateDataRow("中框速度", data.MiddleFrameVelocity.ToString()),
+                    CreateDataRow("外框速度", data.OuterFrameVelocity.ToString()),
+                    CreateDataRow("内框加速度", data.InnerFrameAcceleration.ToString()),
+                    CreateDataRow("中框加速度", data.MiddleFrameAcceleration.ToString()),
+                    CreateDataRow("外框加速度", data.OuterFrameAcceleration.ToString())
+                }
+            };
+            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
+            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", 12, 20);
+            Tuple<TableDto, TableDto> type2 = new Tuple<TableDto, TableDto>(table, detailTable);
+            tables.Add(type2);
+            return tables;
+        }
+
+        #endregion
+
+        #region 121_三通道控制红外制导半实物仿真系统
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem6()
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_121_3(), await CreateTable_121_7()];
+            return tables;
+        }
+
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_121_3()
+        {
+            XT_121_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_3_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null) return null!;
+
+            TableDto table = new TableDto
+            {
+                Title = "红外转台",
+                Header = CreateStandardHeader(),
+                Data = new List<Dictionary<string, string>>
+                {
+                    CreateDataRow("滚动轴工作状态", data.RollingAxisOperationStatus == 0 ? "正常" : "异常"),
+                    CreateDataRow("偏航轴工作状态", data.YawAxisOperationStatus == 0 ? "正常" : "异常"),
+                    CreateDataRow("俯仰轴工作状态", data.YawAxisOperationStatus == 0 ? "正常" : "异常"),
+                    CreateDataRow("高低轴工作状态", data.ElevationAxisOperationStatus == 0 ? "正常" : "异常"),
+                    CreateDataRow("方位轴工作状态", data.AzimuthAxisOperationStatus == 0 ? "正常" : "异常")
+                }
+            };
+            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
+            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "红外转台物理量", 19, 25);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_121_7()
+        {
+            XT_121_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_7_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null) return null!;
+
+            TableDto table = new TableDto
+            {
+                Title = "红外源",
+                Header = CreateStandardHeader(),
+                Data = new List<Dictionary<string, string>>
+                {
+                    CreateDataRow("露点温度状态", data.DewPointTemperatureStatus == 1 ? "正常" : "异常"),
+                    CreateDataRow("真空度状态", data.VacuumStatus == 1 ? "正常" : "异常"),
+                    CreateDataRow("冷水机流量状态", data.ChillerFlowStatus == 1 ? "正常" : "异常"),
+                    CreateDataRow("环境箱温度状态", data.EnvironmentalChamberTemperatureStatus == 1 ? "正常" : "异常"),
+                    CreateDataRow("衬底温度状态", data.SubstrateTemperatureStatus == 1 ? "正常" : "异常"),
+                    CreateDataRow("功率电源状态", data.PowerSupplyStatus == 1 ? "正常" : "异常"),
+                    CreateDataRow("控制电源状态", data.ControlPowerStatus == 1 ? "正常" : "异常")
+                }
+            };
+            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
+            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "红外源物理量", 19, 25);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 创建标准表格表头
+        /// </summary>
+        /// <returns>表头数据</returns>
+        private List<List<string>> CreateStandardHeader()
+        {
+            return new List<List<string>>
+            {
+                new List<string> { "name", "健康信息" },
+                new List<string> { "control", "状态" }
+            };
+        }
+
+        /// <summary>
+        /// 创建表格数据行
+        /// </summary>
+        /// <param name="name">数据项名称</param>
+        /// <param name="controlValue">控制值</param>
+        /// <returns>数据行字典</returns>
+        private Dictionary<string, string> CreateDataRow(string name, string controlValue)
+        {
+            return new Dictionary<string, string>
+            {
+                { "name", name },
+                { "control", controlValue }
+            };
+        }
+
+        #endregion
 
         /// <summary>
         /// 获取图标数据
@@ -393,29 +495,16 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         foreach (XT_310_SL_4_ReceiveData item in todayData)
                         {
                             ChartDataPointDto cdp = new ChartDataPointDto();
+                            ChartDataPointDto cdp2 = new ChartDataPointDto();
                             cdp.Time = item.CreationTime.ToString("HH:mm");
                             GetVolValue(i, item, cdp);
+                            GetCurValue(i, item, cdp);
                             cdps.Add(cdp);
                         }
                         ret.Add(new ChartDataDto()
                         {
-                            Name = $"电源{i}电压",
+                            Name = $"电源{i}",
                             Data = cdps
-                        });
-
-                        // 获取采集电流
-                        List<ChartDataPointDto> cdps2 = new List<ChartDataPointDto>();
-                        foreach (XT_310_SL_4_ReceiveData item in todayData)
-                        {
-                            ChartDataPointDto cdp = new ChartDataPointDto();
-                            cdp.Time = item.CreationTime.ToString("HH:mm");
-                            GetCurValue(i, item, cdp);
-                            cdps2.Add(cdp);
-                        }
-                        ret.Add(new ChartDataDto()
-                        {
-                            Name = "电源" + i + "电流",
-                            Data = cdps2
                         });
                     }
                     return ret;
@@ -462,28 +551,28 @@ namespace Hgzn.Mes.Application.Main.Services.App
             switch (i)
             {
                 case 1:
-                    cdp.Value = item.Power1CurrentRead;
+                    cdp.Value2 = item.Power1CurrentRead;
                     break;
                 case 2:
-                    cdp.Value = item.Power2CurrentRead;
+                    cdp.Value2 = item.Power2CurrentRead;
                     break;
                 case 3:
-                    cdp.Value = item.Power3CurrentRead;
+                    cdp.Value2 = item.Power3CurrentRead;
                     break;
                 case 4:
-                    cdp.Value = item.Power4CurrentRead;
+                    cdp.Value2 = item.Power4CurrentRead;
                     break;
                 case 5:
-                    cdp.Value = item.Power5CurrentRead;
+                    cdp.Value2 = item.Power5CurrentRead;
                     break;
                 case 6:
-                    cdp.Value = item.Power6CurrentRead;
+                    cdp.Value2 = item.Power6CurrentRead;
                     break;
                 case 7:
-                    cdp.Value = item.Power7CurrentRead;
+                    cdp.Value2 = item.Power7CurrentRead;
                     break;
                 case 8:
-                    cdp.Value = item.Power8CurrentRead;
+                    cdp.Value2 = item.Power8CurrentRead;
                     break;
                 default:
                     break;

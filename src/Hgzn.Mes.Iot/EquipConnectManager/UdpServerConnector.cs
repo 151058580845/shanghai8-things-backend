@@ -110,7 +110,9 @@ public class UdpServerConnector : EquipConnectorBase
         {
             try
             {
+                LoggerAdapter.LogInformation("即将开始接收数据...");
                 var result = await _udpServer.ReceiveAsync();
+                LoggerAdapter.LogInformation("收到一组数据...");
                 var remoteEndPoint = result.RemoteEndPoint;
                 var buffer = result.Buffer;
                 bool hasData = false;

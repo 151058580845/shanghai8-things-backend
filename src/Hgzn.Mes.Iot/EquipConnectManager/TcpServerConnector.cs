@@ -50,6 +50,7 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
 
         public override async Task<bool> ConnectAsync(ConnInfo connInfo)
         {
+            LoggerAdapter.LogInformation($"开始TCP连接");
             if (connInfo?.ConnString is null) throw new ArgumentNullException("connIfo");
             SocketConnInfo conn = null;
             conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions) ?? throw new ArgumentNullException("conn");
@@ -65,12 +66,12 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
                 _server.Start();
                 await UpdateStateAsync(ConnStateType.On);
                 await UpdateOperationAsync(ConnStateType.On);
-                LoggerAdapter.LogInformation($"ip: {conn.Address}, port: {conn.Port}, server start sucessed!");
+                LoggerAdapter.LogInformation($"TCP:ip: {conn.Address}, port: {conn.Port}, server start sucessed!");
             }
             catch (Exception)
             {
                 await CloseConnectionAsync();
-                LoggerAdapter.LogInformation($"ip: {conn.Address}, port: {conn.Port}, server start failure!");
+                LoggerAdapter.LogInformation($"TCP:ip: {conn.Address}, port: {conn.Port}, server start failure!");
             }
 
             return false;

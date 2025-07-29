@@ -82,6 +82,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             byte[] physicalQuantityCount = new byte[4];
             Buffer.BlockCopy(buffer, 41, physicalQuantityCount, 0, 4);
             uint ulPhysicalQuantityCount = BitConverter.ToUInt32(physicalQuantityCount, 0);
+            ulPhysicalQuantityCount -= 1; // 减去1是因为最后一个物理量是运行时间,这个是后加的,且属性类型是uint,不好转成float一起赋值,在赋值完普通物理量后我会单独赋值
 
             // 剩余的都给物理量
             byte[] acquData = new byte[ulPhysicalQuantityCount * 4];

@@ -48,6 +48,7 @@ public class HygrographConnector : EquipConnectorBase
 
     private void ServerOnOnReceiveRealtimeData(RKServer server, RealTimeData data)
     {
+        LoggerAdapter.LogInformation($"即将推送温湿度计的数据...");
         var deviceId = data.DeviceID;
         var data1 = data.NodeList[0];
         var entity = new HygrographData()
@@ -96,21 +97,23 @@ public class HygrographConnector : EquipConnectorBase
 
     public override async Task<bool> ConnectAsync(ConnInfo connInfo)
     {
+        LoggerAdapter.LogInformation($"开始温湿度计的连接...");
         if (connInfo?.ConnString is null) throw new ArgumentNullException("connIfo");
         SocketConnInfo conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions) ?? throw new ArgumentNullException("conn");
         try
         {
+            LoggerAdapter.LogInformation($"收到需要连接的温湿度计地址{conn.Address},端口{conn.Port}");
             _server = RKServer.Initiate(conn.Address, conn.Port);
             _server.OnReceiveRealtimeData += ServerOnOnReceiveRealtimeData;
             _server.Start();
             await UpdateStateAsync(ConnStateType.On);
             await UpdateOperationAsync(ConnStateType.On);
-            LoggerAdapter.LogInformation($"ip: {conn.Address}, port: {conn.Port}, server start sucessed!");
+            LoggerAdapter.LogInformation($"RK:ip: {conn.Address}, port: {conn.Port}, server start sucessed!");
         }
         catch (Exception)
         {
             await CloseConnectionAsync();
-            LoggerAdapter.LogInformation($"ip: {conn.Address}, port: {conn.Port}, server start failure!");
+            LoggerAdapter.LogInformation($"RK:ip: {conn.Address}, port: {conn.Port}, server start failure!");
         }
 
         return false;

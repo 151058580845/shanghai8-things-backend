@@ -20,42 +20,57 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 实验人员信息
         /// </summary>
-        public List<ExperimenterDto> ExperimentersData { get; set; }
+        public List<ExperimenterDto>? ExperimentersData { get; set; }
 
         /// <summary>
         /// 图表数据
         /// </summary>
-        public List<ChartDataDto> ChartData { get; set; }
+        public List<ChartDataDto>? ChartData { get; set; }
 
         /// <summary>
         /// 异常设备列表
         /// </summary>
-        public List<AbnormalDeviceDto> AbnormalDeviceListData { get; set; }
+        public List<AbnormalDeviceDto>? AbnormalDeviceListData { get; set; }
 
         /// <summary>
         /// 当前实验任务
         /// </summary>
-        public TaskDetailDto CurrentTask { get; set; }
+        public TaskDetailDto? CurrentTask { get; set; }
 
         /// <summary>
         /// 后续实验任务
         /// </summary>
-        public TaskDetailDto FollowTask { get; set; }
+        public TaskDetailDto? FollowTask { get; set; }
 
         /// <summary>
-        /// 射频阵列运行状态
+        /// 健康信息状态1
         /// </summary>
-        public List<TableDto> Queue { get; set; }
+        public List<TableDto>? Queue { get; set; }
+
+        /// <summary>
+        /// 健康信息状态详情(物理量)
+        /// </summary>
+        public TableDto? QueueDetail { get; set; }
+
+        /// <summary>
+        /// 健康信息状态2
+        /// </summary>
+        public List<TableDto>? Queue2 { get; set; }
+
+        /// <summary>
+        /// 健康信息状态2详情(物理量)
+        /// </summary>
+        public TableDto? Queue2Detail { get; set; }
 
         /// <summary>
         /// 产品清单
         /// </summary>
-        public List<TableDto> ProductList { get; set; }
+        public List<TableDto>? ProductList { get; set; }
 
         /// <summary>
         /// 摄像头信息
         /// </summary>
-        public List<CameraDto> CameraData { get; set; }
+        public List<CameraDto>? CameraData { get; set; }
     }
 
     /// <summary>
@@ -66,12 +81,12 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 系统名称
         /// </summary>
-        public string System { get; set; }
+        public string? System { get; set; }
 
         /// <summary>
         /// 负责人
         /// </summary>
-        public string Person { get; set; }
+        public string? Person { get; set; }
     }
 
     /// <summary>
@@ -82,12 +97,17 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 时间点
         /// </summary>
-        public string Time { get; set; }
+        public string? Time { get; set; }
 
         /// <summary>
         /// 数值
         /// </summary>
-        public double Value { get; set; }
+        public double? Value { get; set; }
+
+        /// <summary>
+        /// 数值2
+        /// </summary>
+        public double? Value2 { get; set; }
     }
 
     /// <summary>
@@ -98,12 +118,12 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 图表名称
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// 数据点集合
         /// </summary>
-        public List<ChartDataPointDto> Data { get; set; }
+        public List<ChartDataPointDto>? Data { get; set; }
     }
 
     /// <summary>
@@ -114,22 +134,22 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 系统名称
         /// </summary>
-        public string System { get; set; }
+        public string? System { get; set; }
 
         /// <summary>
         /// 设备名称
         /// </summary>
-        public string Device { get; set; }
+        public string? Device { get; set; }
 
         /// <summary>
         /// 状态值（如"正常"、"异常"）
         /// </summary>
-        public string Value { get; set; }
+        public string? Value { get; set; }
 
         /// <summary>
         /// 时间（字符串格式）
         /// </summary>
-        public string Time { get; set; }
+        public string? Time { get; set; }
     }
 
     /// <summary>
@@ -140,12 +160,12 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 任务标题
         /// </summary>
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         /// <summary>
         /// 任务详情（二维数组，每项为[label, value]）
         /// </summary>
-        public List<List<string>> Details { get; set; }
+        public List<List<string>>? Details { get; set; }
     }
 
     /// <summary>
@@ -156,17 +176,17 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 表格标题
         /// </summary>
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         /// <summary>
         /// 表头（每项为[key, label]）
         /// </summary>
-        public List<List<string>> Header { get; set; }
+        public List<List<string>>? Header { get; set; }
 
         /// <summary>
         /// 数据行（每行为一个字典，key与header对应）
         /// </summary>
-        public List<Dictionary<string, string>> Data { get; set; }
+        public List<Dictionary<string, string>>? Data { get; set; }
     }
 
     /// <summary>
@@ -177,21 +197,21 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 摄像头IP地址
         /// </summary>
-        public string Ip { get; set; }
+        public string? Ip { get; set; }
 
         /// <summary>
         /// 摄像头端口
         /// </summary>
-        public string Port { get; set; }
+        public string? Port { get; set; }
 
         /// <summary>
         /// 用户名
         /// </summary>
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         /// <summary>
         /// 密码
         /// </summary>
-        public string Password { get; set; }
+        public string? Password { get; set; }
     }
 }

@@ -15,47 +15,47 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 环境数据
         /// </summary>
-        public EnvironmentData EnvironmentData { get; set; } = new EnvironmentData();
+        public EnvironmentData? EnvironmentData { get; set; } = new EnvironmentData();
 
         /// <summary>
         /// 试验系统列表数据
         /// </summary>
-        public List<SystemDeviceData> SystemDeviceList { get; set; } = new List<SystemDeviceData>();
+        public List<SystemDeviceData>? SystemDeviceList { get; set; } = new List<SystemDeviceData>();
 
         /// <summary>
         /// 在线设备状态统计（在线率）
         /// </summary>
-        public OnlineRateData OnlineRateData { get; set; } = new OnlineRateData();
+        public OnlineRateData? OnlineRateData { get; set; } = new OnlineRateData();
 
         /// <summary>
         /// 在线设备状态统计（故障率）
         /// </summary>
-        public FailureRateData FailureRateData { get; set; } = new FailureRateData();
+        public FailureRateData? FailureRateData { get; set; } = new FailureRateData();
 
         /// <summary>
         /// 设备状态统计详细数据
         /// </summary>
-        public EquipmentState EquipmentState { get; set; } = new EquipmentState();
+        public EquipmentState? EquipmentState { get; set; } = new EquipmentState();
 
         /// <summary>
         /// 试验系统利用率数据
         /// </summary>
-        public List<DeviceUtilizationData> DeviceListData { get; set; } = new List<DeviceUtilizationData>();
+        public List<DeviceUtilizationData>? DeviceListData { get; set; } = new List<DeviceUtilizationData>();
 
         /// <summary>
         /// 实验任务数据
         /// </summary>
-        public List<ExperimentData> ExperimentData { get; set; } = new List<ExperimentData>();
+        public List<ExperimentData>? ExperimentData { get; set; } = new List<ExperimentData>();
 
         /// <summary>
         /// 异常信息列表
         /// </summary>
-        public List<AbnormalDeviceData> AbnormalDeviceList { get; set; } = new List<AbnormalDeviceData>();
+        public List<AbnormalDeviceData>? AbnormalDeviceList { get; set; } = new List<AbnormalDeviceData>();
 
         /// <summary>
         /// 关键设备利用率数据
         /// </summary>
-        public List<KeyDeviceData> KeyDeviceList { get; set; } = new List<KeyDeviceData>();
+        public List<KeyDeviceData>? KeyDeviceList { get; set; } = new List<KeyDeviceData>();
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 系统名称
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 设备数量
@@ -102,12 +102,12 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 状态（实验中、维修中、空闲中等）
         /// </summary>
-        public string Status { get; set; } = string.Empty;
+        public string? Status { get; set; } = string.Empty;
 
         /// <summary>
         /// 系统所在的房间ID,用于获取MQTT推上来的温湿度数据,不展示
         /// </summary>
-        public string RoomId { get; set; }
+        public string? RoomId { get; set; }
     }
 
     /// <summary>
@@ -164,23 +164,23 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 设备编号
         /// </summary>
-        public string Code { get; set; }
+        public string? Code { get; set; }
         /// <summary>
         /// 设备名称
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
         /// <summary>
         /// 设备所在位置
         /// </summary>
-        public string Location { get; set; }
+        public string? Location { get; set; }
         /// <summary>
         /// 设备在线状态（"工作中"、"空闲中"、"离线中"）
         /// </summary>
-        public string State { get; set; }
+        public string? State { get; set; }
         /// <summary>
         /// 设备健康状态（"健康"、"较好"、"故障"）
         /// </summary>
-        public string Health { get; set; }
+        public string? Health { get; set; }
     }
 
     /// <summary>
@@ -191,11 +191,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 表头，如 ["index", "序号"]
         /// </summary>
-        public List<string[]> Headers { get; set; }
+        public List<string[]>? Headers { get; set; }
         /// <summary>
         /// 设备数据列表
         /// </summary>
-        public List<EquipmentData> Data { get; set; }
+        public List<EquipmentData>? Data { get; set; }
     }
 
     /// <summary>
@@ -272,14 +272,9 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public string System { get; set; } = string.Empty;
 
         /// <summary>
-        /// 设备名
+        /// 异常数量
         /// </summary>
-        public string Device { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 状态值（正常、异常）
-        /// </summary>
-        public string Value { get; set; } = string.Empty;
+        public int AbnormalCount { get; set; }
 
         /// <summary>
         /// 时间

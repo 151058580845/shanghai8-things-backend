@@ -89,81 +89,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
-            #region 图表展示
+            #region 图表展示 (已关联数据库)
 
             // 获取图标数据
             var chartDataPointDto = await _sysMgr.GetChartDataPointDto(_sysMgr.SystemInfos.FirstOrDefault(x => x.Name == showSystemDetailQueryDto.systemName)!);
             read.ChartData = chartDataPointDto;
-            var chartDataPointDto2 = new List<ChartDataDto>()
-            {
-                new ChartDataDto()
-                {
-                    Name = "这是某个设备",
-                    Data = new List<ChartDataPointDto>()
-                    {
-                        new ChartDataPointDto()
-                        {
-                            Time = "00:00",
-                            Value = 10,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "01:00",
-                            Value = 50,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "02:00",
-                            Value = 20,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "03:00",
-                            Value = 50,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "04:00",
-                            Value = 60,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "05:00",
-                            Value = 10,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "06:00",
-                            Value = 90,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "07:00",
-                            Value = 30,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "08:00",
-                            Value = 40,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "09:00",
-                            Value = 10,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "10:00",
-                            Value = 0,
-                        },
-                        new ChartDataPointDto()
-                        {
-                            Time = "11:00",
-                            Value = 50,
-                        },
-                    }
-                }
-            };
 
             #endregion
 
@@ -238,10 +168,25 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
-            #region 数据列表 (已关联数据库)
+            #region 数据列表以及物理量 (已关联数据库)
 
-            List<TableDto> table = await _sysMgr.GetTableDtos(_sysMgr.SystemInfos.FirstOrDefault(x => x.Name == showSystemDetailQueryDto.systemName)!);
-            read.Queue = table;
+            // Item1是展示在详情页的健康信息表格,Item2是详情页健康信息的详情(所有物理量的表格)
+            // 这里会返回两个Tuple<TableDto, TableDto>,因为详情页右边会有展示两个系统的健康信息,随便哪个写上面或写下面都行
+            List<TableDto> queue1 = new List<TableDto>();
+            List<TableDto> queue2 = new List<TableDto>();
+            List<Tuple<TableDto, TableDto>> tables = await _sysMgr.GetTableDtos(_sysMgr.SystemInfos.FirstOrDefault(x => x.Name == showSystemDetailQueryDto.systemName)!);
+            if (tables.Count > 0)
+            {
+                queue1.Add(tables[0].Item1);
+                read.Queue = queue1;
+                read.QueueDetail = tables[0].Item2;
+            }
+            if (tables.Count > 1)
+            {
+                queue2.Add(tables[1].Item1);
+                read.Queue2 = queue2;
+                read.Queue2Detail = tables[1].Item2;
+            }
 
             #endregion
 
@@ -480,7 +425,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
-            #region 异常信息列表
+            #region 异常信息列表 (已关联数据库)
 
             // 异常信息列表, 这里需求改了,就显示每个系统的名字,和异常数量
             testRead.AbnormalDeviceList = new List<AbnormalDeviceData>();
@@ -489,11 +434,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 testRead.AbnormalDeviceList.Add(new AbnormalDeviceData()
                 {
                     System = item.Name,
-                    Device = "需求改了,这里不显示东西",
-                    Value = $"异常数量:{item.AbnormalCount}",
+                    AbnormalCount = item.AbnormalCount,
                     Time = DateTime.Now.ToLocalTime().ToString(),
                 });
             }
+            testRead.AbnormalDeviceList = testRead.AbnormalDeviceList.OrderByDescending(x => x.AbnormalCount).ToList();
 
             #endregion
 

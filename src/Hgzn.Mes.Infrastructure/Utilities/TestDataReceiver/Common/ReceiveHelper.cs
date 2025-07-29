@@ -106,6 +106,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             IDatabase redisDb = connectionMultiplexer.GetDatabase();
             // 记录异常信息
             var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, equipId);
+            await redisDb.KeyDeleteAsync(key);
             foreach (string item in exception)
             {
                 await redisDb.SetAddAsync(key, item);
