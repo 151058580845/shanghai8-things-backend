@@ -30,6 +30,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private List<SystemInfo> _systemInfoList;
         private const double NumberOfSecondsPerMonth = 22 * 8 * 60 * 60;
         private IEquipLedgerService _equipLedgerService;
+        private int EquipCount = 50;
 
         public AppService(ISqlSugarClient client,
         IConnectionMultiplexer connectionMultiplexer,
@@ -96,7 +97,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
-            #region 异常设备 (已关联数据库)
+            #region 异常设备,包括计量到期设备 (已关联数据库)
 
             // 异常设备
             List<AbnormalDeviceDto> abnormalDeviceDtos = new List<AbnormalDeviceDto>();
@@ -281,11 +282,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
-            // *** 在线设备状态统计（在线率）
-            testRead.OnlineRateData = new OnlineRateData() { WorkingRateData = 50, FreeRateData = 40, OfflineRateData = 10 };
-            // *** 在线设备状态统计（故障率）
-            testRead.FailureRateData = new FailureRateData() { BreakdownData = 20, HealthData = 50, PreferablyData = 30 };
-
             #region 设备状态统计详细数据 (已关联数据库)
 
             // *** 设备状态统计详细数据
@@ -424,7 +420,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
-            #region 异常信息列表 (已关联数据库)
+            #region 异常信息列表,包括计量到期设备 (已关联数据库)
 
             // 异常信息列表, 这里需求改了,就显示每个系统的名字,和异常数量
             testRead.AbnormalDeviceList = new List<AbnormalDeviceData>();
@@ -440,6 +436,19 @@ namespace Hgzn.Mes.Application.Main.Services.App
             testRead.AbnormalDeviceList = testRead.AbnormalDeviceList.OrderByDescending(x => x.AbnormalCount).ToList();
 
             #endregion
+
+            // *** 在线设备状态统计（在线率）
+            // 获取在线设备
+            int onlineCount = connectEquips.Where(x => x.ConnectState).Count();
+            int workingRateData = (int)((double)onlineCount / (double)EquipCount * 100);
+            int offlineRateData = 100 - workingRateData;
+            testRead.OnlineRateData = new OnlineRateData() { WorkingRateData = workingRateData, FreeRateData = 0, OfflineRateData = offlineRateData };
+            // *** 在线设备状态统计（故障率）
+            int abnormalSysCount = testRead.AbnormalDeviceList.Where(x => x.AbnormalCount > 0).Count();
+            int sysCount = testRead.AbnormalDeviceList.Count();
+            int breakdownData = (int)((double)abnormalSysCount / (double)sysCount * 100);
+            int healthData = 100 - breakdownData;
+            testRead.FailureRateData = new FailureRateData() { BreakdownData = breakdownData, HealthData = healthData, PreferablyData = 0 };
 
             // 关键设备利用率数据
             testRead.KeyDeviceList = new List<KeyDeviceData>();
