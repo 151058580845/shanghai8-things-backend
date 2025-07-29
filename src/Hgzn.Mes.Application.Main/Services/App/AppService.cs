@@ -54,7 +54,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
             ShowSystemDetailDto read = new ShowSystemDetailDto();
             IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
             TestDataReadDto currentTestInSystem = current.FirstOrDefault(x => x.SysName == showSystemDetailQueryDto.systemName)!;
-            if (currentTestInSystem == null) return read;
             IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
 
 

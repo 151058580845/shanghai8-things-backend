@@ -5,9 +5,12 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.Equip.EquipMeasurementManager;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
+using MathNet.Numerics.Distributions;
 using Microsoft.EntityFrameworkCore;
 using MySqlX.XDevAPI;
 using NetCoreServer;
@@ -225,6 +228,41 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         public async Task SnapshootHomeData()
         {
+            // 获取当前时间
+            var now = DateTime.Now;
+
+            // 一次性查询即将到期和已过期的设备
+            var allMeasurements = await _sqlSugarClient.Queryable<EquipMeasurement>().ToListAsync();
+
+            // 使用内存中的过滤而不是多次查询数据库
+            var expiringSoon = allMeasurements
+                .Where(x => (x.ExpiryDate - now)?.TotalDays <= 30 && (x.ExpiryDate - now)?.TotalDays > 0)
+                .ToList();
+
+            var pastDue = allMeasurements
+                .Where(x => (x.ExpiryDate - now)?.TotalDays <= 0)
+                .ToList();
+
+            // 提取资产编号列表
+            var expiringSoonAssetNumbers = expiringSoon.Select(x => x.LocalAssetNumber).ToList();
+            var pastDueAssetNumbers = pastDue.Select(x => x.LocalAssetNumber).ToList();
+
+            // 一次性查询所有相关设备及其房间信息
+            var allEquips = await _sqlSugarClient.Queryable<EquipLedger>()
+                .Includes(x => x.Room)
+                .Where(x => expiringSoonAssetNumbers.Contains(x.AssetNumber) ||
+                            pastDueAssetNumbers.Contains(x.AssetNumber))
+                .ToListAsync();
+
+            // 在内存中分组
+            var expiringSoonEquips = allEquips
+                .Where(x => expiringSoonAssetNumbers.Contains(x.AssetNumber))
+                .ToList();
+
+            var pastDueEquips = allEquips
+                .Where(x => pastDueAssetNumbers.Contains(x.AssetNumber))
+                .ToList();
+
             // redis树
             try
             {
@@ -255,6 +293,34 @@ namespace Hgzn.Mes.Application.Main.Services.App
                                 EquipTypeNum = equipTypeNum,
                                 EquipId = equipId,
                                 AbnormalDescription = abnormal.ToList(),
+                            });
+                        }
+                    }
+                    foreach (EquipLedger item in expiringSoonEquips)
+                    {
+                        if (item.RoomId == si.RoomId)
+                        {
+                            sum += 1;
+                            Abnormals.Add(new Abnormal()
+                            {
+                                SystemInfo = si,
+                                EquipTypeNum = 0,
+                                EquipId = item.Id,
+                                AbnormalDescription = new List<string>() { $"{item.EquipName}计量即将到期" },
+                            });
+                        }
+                    }
+                    foreach (EquipLedger item in pastDueEquips)
+                    {
+                        if (item.RoomId == si.RoomId)
+                        {
+                            sum += 1;
+                            Abnormals.Add(new Abnormal()
+                            {
+                                SystemInfo = si,
+                                EquipTypeNum = 0,
+                                EquipId = item.Id,
+                                AbnormalDescription = new List<string>() { $"{item.EquipName}计量过期" },
                             });
                         }
                     }
@@ -463,8 +529,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         #endregion
 
+        #region 获取图表数据
+
         /// <summary>
-        /// 获取图标数据
+        /// 获取图表数据
         /// </summary>
         /// <param name="systemInfo"></param>
         /// <returns></returns>
@@ -577,6 +645,18 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 default:
                     break;
             }
+        }
+
+        #endregion
+
+        private bool IsExpiringSoon(EquipMeasurement em)
+        {
+            return (em.ExpiryDate - DateTime.Now.ToLocalTime())?.TotalDays <= 30 && (em.ExpiryDate - DateTime.Now.ToLocalTime())?.TotalDays > 0;
+        }
+
+        private bool IsPastDue(EquipMeasurement em)
+        {
+            return (em.ExpiryDate - DateTime.Now.ToLocalTime())?.TotalDays <= 0;
         }
     }
 }

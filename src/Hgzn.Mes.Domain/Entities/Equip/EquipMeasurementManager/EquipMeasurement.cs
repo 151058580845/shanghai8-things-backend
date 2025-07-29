@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipMeasurementManager
 {
@@ -45,21 +46,35 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipMeasurementManager
         /// </summary>
         public DateTime? ExpiryDate { get; set; }
 
-        /// <summary>
-        /// 是否即将到期（计算属性）
-        /// </summary>
-        public bool? IsExpiringSoon => (ExpiryDate - DateTime.Now.ToLocalTime())?.TotalDays <= 30;
-
-        /// <summary>
-        /// 输出格式
-        /// </summary>
-        /// <returns></returns>
-        public override string? ToString()
-        {
-            return $"{ResponsiblePerson} {LocalAssetNumber} {Model} {AssetName} {ExpiryDate:yyyy-MM-dd} 即将到期，请及时计量";
-        }
-
         public Guid? LastModifierId { get; set; }
         public DateTime? LastModificationTime { get; set; }
+
+        public static EquipMeasurement[] Seeds { get; } = new EquipMeasurement[]
+        {
+            new EquipMeasurement()
+            {
+                Id = Guid.Parse("a45cbce0-598c-4592-9b1f-04c6d21ff5db"),
+                IsMeasurementDevice = true,
+                LocalAssetNumber = "2",
+                AssetName = "虚拟设备2",
+                ExpiryDate = DateTime.Parse("2025-08-11 08:16:22.234"),
+            },
+            new EquipMeasurement()
+            {
+                Id = Guid.Parse("6f0b2951-316a-487e-8069-13875ec33b9b"),
+                IsMeasurementDevice = true,
+                LocalAssetNumber = "virtual_device",
+                AssetName = "虚拟设备",
+                ExpiryDate = DateTime.Parse("2025-07-28 08:16:22.234"),
+            },
+            new EquipMeasurement()
+            {
+                Id = Guid.Parse("a92eb918-d509-4044-af33-b1fd5c614c8c"),
+                IsMeasurementDevice = true,
+                LocalAssetNumber = "issuer-001",
+                AssetName = "rfid-issuer",
+                ExpiryDate = DateTime.Parse("2025-09-28 08:16:22.234"),
+            },
+        };
     }
 }
