@@ -91,6 +91,30 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         }
 
         /// <summary>
+        /// 将心跳记录到redis
+        /// </summary>
+        /// <param name="connectionMultiplexer"></param>
+        /// <param name="simuTestSysId"></param>
+        /// <param name="devTypeId"></param>
+        /// <param name="compId"></param>
+        /// <param name="equipId"></param>
+        /// <param name="exception"></param>
+        /// <param name="sendTime"></param>
+        /// <param name="runTime"></param>
+        /// <returns></returns>
+        public static async Task LiveRecordToRedis(IConnectionMultiplexer connectionMultiplexer, byte simuTestSysId, byte devTypeId, Guid equipId, DateTime sendTime)
+        {
+            // 记录到redis
+            IDatabase redisDb = connectionMultiplexer.GetDatabase();
+            // 记录异常信息
+            var key = string.Format(CacheKeyFormatter.EquipLive, simuTestSysId, devTypeId, equipId);
+            // 记录心跳时间（使用Unix时间戳格式）
+            long timestamp = new DateTimeOffset(sendTime).ToUnixTimeSeconds();
+            // 将时间戳存入Redis并设置30秒过期时间
+            await redisDb.StringSetAsync(key: key, value: timestamp.ToString(), expiry: TimeSpan.FromSeconds(30));
+        }
+
+        /// <summary>
         /// 将异常记录到redis
         /// </summary>
         /// <param name="connectionMultiplexer"></param>

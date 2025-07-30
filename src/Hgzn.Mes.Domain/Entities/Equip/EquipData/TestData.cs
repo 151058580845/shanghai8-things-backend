@@ -42,4 +42,5 @@ public class TestData : UniversalEntity
     public string? QncResp { get; set; }
 
     public List<TestDataProduct>? UUT { get; set; }
+
 }

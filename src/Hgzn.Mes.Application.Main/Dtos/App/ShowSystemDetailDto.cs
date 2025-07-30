@@ -63,6 +63,16 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public TableDto? Queue2Detail { get; set; }
 
         /// <summary>
+        /// 健康信息状态3
+        /// </summary>
+        public List<TableDto>? Queue3 { get; set; }
+
+        /// <summary>
+        /// 健康信息状态3详情(物理量)
+        /// </summary>
+        public TableDto? Queue3Detail { get; set; }
+
+        /// <summary>
         /// 产品清单
         /// </summary>
         public List<TableDto>? ProductList { get; set; }

@@ -130,6 +130,10 @@ public class EquipConnectService : SugarCrudAppService<
                 await Publish(connect, CmdType.Conn, ConnStateType.On, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
                 await Task.Delay(5 * 100);
                 await Publish(connect, CmdType.Conn, ConnStateType.Run, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
+                await DbContext.Updateable<EquipConnect>()
+                    .Where(ec => ec.Id == id)
+                    .SetColumns(t => new EquipConnect { State = true })
+                    .ExecuteCommandAsync();
                 break;
         }
     }

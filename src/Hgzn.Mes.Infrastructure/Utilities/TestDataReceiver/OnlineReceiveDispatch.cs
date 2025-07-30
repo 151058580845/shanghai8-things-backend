@@ -36,6 +36,9 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 // 设备类型识别编码
                 byte devTypeId = buffer[1];
 
+                // 如果我收到了某个系统的某个类型,那么我标记它在30秒内在线,我会在Redis中创建一个寿命为30秒的心跳
+                await ReceiveHelper.LiveRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, _equipId, time);
+
                 // 根据仿真试验系统与设备类型,通过工厂创建各自的解析类
                 // 以上所有系统固定占2个字节
                 OnlineReceiveFactory onlineReceiveFactory = new OnlineReceiveFactory(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);

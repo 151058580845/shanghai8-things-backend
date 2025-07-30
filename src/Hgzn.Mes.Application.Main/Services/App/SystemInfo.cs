@@ -6,6 +6,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.Equip.EquipMeasurementManager;
+using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Utilities;
@@ -47,9 +48,18 @@ namespace Hgzn.Mes.Application.Main.Services.App
         /// </summary>
         public Guid TurntableEquipId { get; set; } // 转台设备ID,因为每个系统的利用率用转台设备统计,所以我需要知道每个系统的转台设备对应的是哪一台
         /// <summary>
-        /// 关键设备名字-设备ID
+        /// 关键设备名字-设备ID,在主页展示的关键设备,每个系统的转台和雷达源,红外源是关键设备,所以我需要知道这些指定设备对应的是哪个ID
         /// </summary>
-        public List<KeyDevice> keyDevices { get; set; } // 在主页展示的关键设备,每个系统的转台和雷达源,红外源是关键设备,所以我需要知道这些指定设备对应的是哪个ID
+        public List<SDevice> keyDevices { get; set; } = new List<SDevice>();
+        /// <summary>
+        /// 活跃的设备
+        /// </summary>
+        public List<LDevice> LiveDevices { get; set; } = new List<LDevice>();
+
+        /// <summary>
+        /// 房间里所有的设备
+        /// </summary>
+        public List<EquipLedger> AllEquip { get; set; } = new List<EquipLedger>();
 
         /// <summary>
         /// 异常数量
@@ -57,7 +67,19 @@ namespace Hgzn.Mes.Application.Main.Services.App
         public int AbnormalCount { get; set; }
     }
 
-    public class KeyDevice
+    public class LDevice
+    {
+        /// <summary>
+        /// 类型编号
+        /// </summary>
+        public byte EquipTypeNum { get; set; }
+        /// <summary>
+        /// 设备ID
+        /// </summary>
+        public Guid EquipId { get; set; }
+    }
+
+    public class SDevice
     {
         /// <summary>
         /// 类型编号
@@ -81,7 +103,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         /// <summary>
         /// 异常设备的系统信息
         /// </summary>
-        public SystemInfo SystemInfo { get; set; }
+        public SystemInfo? SystemInfo { get; set; }
         /// <summary>
         /// 异常设备的类型
         /// </summary>
@@ -93,7 +115,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
         /// <summary>
         /// 异常描述
         /// </summary>
-        public List<string> AbnormalDescription { get; set; }
+        public List<string>? AbnormalDescription { get; set; }
+
+        /// <summary>
+        /// 距离到期的天数
+        /// </summary>
+        public string UntilDays { get; set; } = string.Empty;
     }
 
     public class SystemInfoManager
@@ -101,9 +128,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private readonly IConnectionMultiplexer _connectionMultiplexer;
         protected readonly ISqlSugarClient _sqlSugarClient;
         private const string EquipHealthStatusRedisKey = "equipHealthStatus";
+        private const string EquipLiveRedisKey = "equipLive";
         private readonly RedisHelper _redisHelper;
 
         public RedisTreeNode EquipHealthStatusRedisTree;
+        public RedisTreeNode EquipLiveRedisTree;
         public List<SystemInfo> SystemInfos = new List<SystemInfo>();
         // key是设备ID,value是设备异常信息
         public List<Abnormal> Abnormals = new List<Abnormal>();
@@ -123,9 +152,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("4c246470-da66-4408-b287-09fd82ffa3d4"),
                     RoomNumber = "310",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>()
+                    keyDevices = new List<SDevice>()
                     {
-                        new KeyDevice()
+                        new SDevice()
                         {
                             EquipTypeNum = 3,
                             EquipName = "虚拟设备",
@@ -140,7 +169,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("83168845-ef46-4aed-9187-de2024488230"),
                     RoomNumber = "307",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -149,7 +178,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("7412dda2-5413-43ab-9976-255df60c3e14"),
                     RoomNumber = "314",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -158,7 +187,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("09b374e8-4e7f-4146-9fe0-375edc7b9d7a"),
                     RoomNumber = "109",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -167,7 +196,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("0ac9885d-da23-4c0f-a66c-2ba467b8086c"),
                     RoomNumber = "108",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -176,7 +205,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("24be4856-d95f-4ba0-b2aa-7049fedc3e39"),
                     RoomNumber = "121",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -185,7 +214,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("916edd0e-df70-4137-806c-41817587e438"),
                     RoomNumber = "202-2",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -194,7 +223,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("7d6b322d-bf48-4963-bfe6-579560e84530"),
                     RoomNumber = "103",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -203,7 +232,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("a6ce46f1-d51f-45c8-a22e-2db3126da6cf"),
                     RoomNumber = "119",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -212,7 +241,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Parse("ddd64e08-5f2a-4578-84cb-2f90caa898e9"),
                     RoomNumber = "112",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 },
                 new SystemInfo
                 {
@@ -221,110 +250,121 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     RoomId = Guid.Empty,
                     RoomNumber = "0",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<KeyDevice>(),
+                    keyDevices = new List<SDevice>(),
                 }
             };
         }
 
         public async Task SnapshootHomeData()
         {
-            // 获取当前时间
-            var now = DateTime.Now;
-
+            DateTime now = DateTime.Now;
             // 一次性查询即将到期和已过期的设备
-            var allMeasurements = await _sqlSugarClient.Queryable<EquipMeasurement>().ToListAsync();
-
-            // 使用内存中的过滤而不是多次查询数据库
-            var expiringSoon = allMeasurements
-                .Where(x => (x.ExpiryDate - now)?.TotalDays <= 30 && (x.ExpiryDate - now)?.TotalDays > 0)
-                .ToList();
-
-            var pastDue = allMeasurements
-                .Where(x => (x.ExpiryDate - now)?.TotalDays <= 0)
-                .ToList();
-
+            List<EquipMeasurement> allMeasurements = await _sqlSugarClient.Queryable<EquipMeasurement>().ToListAsync();
+            List<EquipMeasurement> expiringSoon = allMeasurements.Where(x => (x.ExpiryDate - now)?.TotalDays <= 30 && (x.ExpiryDate - now)?.TotalDays > 0).ToList();
+            List<EquipMeasurement> pastDue = allMeasurements.Where(x => (x.ExpiryDate - now)?.TotalDays <= 0).ToList();
             // 提取资产编号列表
-            var expiringSoonAssetNumbers = expiringSoon.Select(x => x.LocalAssetNumber).ToList();
-            var pastDueAssetNumbers = pastDue.Select(x => x.LocalAssetNumber).ToList();
-
+            List<string?> expiringSoonAssetNumbers = expiringSoon.Select(x => x.LocalAssetNumber).ToList();
+            List<string?> pastDueAssetNumbers = pastDue.Select(x => x.LocalAssetNumber).ToList();
             // 一次性查询所有相关设备及其房间信息
-            var allEquips = await _sqlSugarClient.Queryable<EquipLedger>()
-                .Includes(x => x.Room)
-                .Where(x => expiringSoonAssetNumbers.Contains(x.AssetNumber) ||
-                            pastDueAssetNumbers.Contains(x.AssetNumber))
-                .ToListAsync();
+            List<EquipLedger> allEquips = await _sqlSugarClient.Queryable<EquipLedger>().Includes(x => x.Room).Where(x => expiringSoonAssetNumbers.Contains(x.AssetNumber) || pastDueAssetNumbers.Contains(x.AssetNumber)).ToListAsync();
+            List<EquipLedger> expiringSoonEquips = allEquips.Where(x => expiringSoonAssetNumbers.Contains(x.AssetNumber)).ToList();
+            List<EquipLedger> pastDueEquips = allEquips.Where(x => pastDueAssetNumbers.Contains(x.AssetNumber)).ToList();
 
-            // 在内存中分组
-            var expiringSoonEquips = allEquips
-                .Where(x => expiringSoonAssetNumbers.Contains(x.AssetNumber))
-                .ToList();
-
-            var pastDueEquips = allEquips
-                .Where(x => pastDueAssetNumbers.Contains(x.AssetNumber))
-                .ToList();
-
-            // redis树
+            // redis
             try
             {
                 EquipHealthStatusRedisTree = await _redisHelper.GetTreeAsync(EquipHealthStatusRedisKey);
+                EquipLiveRedisTree = await _redisHelper.GetTreeAsync(EquipLiveRedisKey);
             }
             catch (Exception) { }
             Abnormals = new List<Abnormal>();
             foreach (SystemInfo si in SystemInfos)
             {
                 int sum = 0;
+                // 记录异常
                 RedisTreeNode sysSets = await _redisHelper.FindTreeNodeByPathAsync(EquipHealthStatusRedisTree, $"{EquipHealthStatusRedisKey}:{si.SystemNum}");
-                if (sysSets == null) continue;
-                if (!sysSets.IsLeaf && sysSets.Children.Any())
+                if (sysSets != null)
                 {
-                    foreach (RedisTreeNode typeNode in sysSets.Children)
+                    if (!sysSets.IsLeaf && sysSets.Children.Any())
                     {
-                        List<RedisTreeNode> sets = await _redisHelper.FindTreeNodesByTypeAsync(typeNode, RedisKeyType.Set);
-                        if (!byte.TryParse(typeNode.Name, out byte equipTypeNum)) continue;
-                        foreach (RedisTreeNode set in sets)
+                        foreach (RedisTreeNode typeNode in sysSets.Children)
                         {
-                            if (!Guid.TryParse(set.Name, out Guid equipId)) continue;
-                            IEnumerable<string> abnormal = await _redisHelper.GetTreeNodeChildrenValuesAsync(set);
-                            if (abnormal == null) continue;
-                            sum += abnormal.Count();
-                            Abnormals.Add(new Abnormal()
+                            List<RedisTreeNode> sets = await _redisHelper.FindTreeNodesByTypeAsync(typeNode, RedisKeyType.Set);
+                            if (!byte.TryParse(typeNode.Name, out byte equipTypeNum)) continue;
+                            foreach (RedisTreeNode set in sets)
                             {
-                                SystemInfo = si,
-                                EquipTypeNum = equipTypeNum,
-                                EquipId = equipId,
-                                AbnormalDescription = abnormal.ToList(),
-                            });
+                                if (!Guid.TryParse(set.Name, out Guid equipId)) continue;
+                                IEnumerable<string> abnormal = await _redisHelper.GetTreeNodeChildrenValuesAsync(set);
+                                if (abnormal == null) continue;
+                                sum += abnormal.Count();
+                                Abnormals.Add(new Abnormal()
+                                {
+                                    SystemInfo = si,
+                                    EquipTypeNum = equipTypeNum,
+                                    EquipId = equipId,
+                                    AbnormalDescription = abnormal.ToList(),
+                                });
+                            }
                         }
-                    }
-                    foreach (EquipLedger item in expiringSoonEquips)
-                    {
-                        if (item.RoomId == si.RoomId)
+                        foreach (EquipLedger item in expiringSoonEquips)
                         {
-                            sum += 1;
-                            Abnormals.Add(new Abnormal()
+                            if (item.RoomId == si.RoomId)
                             {
-                                SystemInfo = si,
-                                EquipTypeNum = 0,
-                                EquipId = item.Id,
-                                AbnormalDescription = new List<string>() { $"{item.EquipName}计量即将到期" },
-                            });
+                                sum += 1;
+                                Abnormals.Add(new Abnormal()
+                                {
+                                    SystemInfo = si,
+                                    EquipTypeNum = 0,
+                                    EquipId = item.Id,
+                                    AbnormalDescription = new List<string>() { $"{item.EquipName}计量即将到期" },
+                                    UntilDays = ((int)(expiringSoon.First(x => x.LocalAssetNumber == item.AssetNumber).ExpiryDate - now)?.TotalDays!).ToString()
+                                });
+                            }
                         }
-                    }
-                    foreach (EquipLedger item in pastDueEquips)
-                    {
-                        if (item.RoomId == si.RoomId)
+                        foreach (EquipLedger item in pastDueEquips)
                         {
-                            sum += 1;
-                            Abnormals.Add(new Abnormal()
+                            if (item.RoomId == si.RoomId)
                             {
-                                SystemInfo = si,
-                                EquipTypeNum = 0,
-                                EquipId = item.Id,
-                                AbnormalDescription = new List<string>() { $"{item.EquipName}计量过期" },
-                            });
+                                sum += 1;
+                                Abnormals.Add(new Abnormal()
+                                {
+                                    SystemInfo = si,
+                                    EquipTypeNum = 0,
+                                    EquipId = item.Id,
+                                    AbnormalDescription = new List<string>() { $"{item.EquipName}计量过期" },
+                                    UntilDays = ((int)(pastDue.First(x => x.LocalAssetNumber == item.AssetNumber).ExpiryDate - now)?.TotalDays!).ToString()
+                                });
+                            }
                         }
                     }
                 }
+                // 记录心跳
+                RedisTreeNode sysLive = await _redisHelper.FindTreeNodeByPathAsync(EquipLiveRedisTree, $"{EquipLiveRedisKey}:{si.SystemNum}");
+                if (sysLive != null)
+                {
+                    if (sysLive.Children.Any())
+                    {
+                        foreach (RedisTreeNode type in sysLive.Children)
+                        {
+                            string sEquipId = await _redisHelper.GetTreeNodeValueAsync(type);
+                            Guid equipId = Guid.Empty;
+                            if (Guid.TryParse(sEquipId, out Guid gEquipId))
+                                equipId = gEquipId;
+                            byte equipTypeNum = 0;
+                            if (byte.TryParse(type.Name, out byte bEquipTypeNum))
+                                equipTypeNum = bEquipTypeNum;
+                            si.LiveDevices.Add(new LDevice()
+                            {
+                                EquipId = equipId,
+                                EquipTypeNum = equipTypeNum,
+                            });
+                        }
+                    }
+
+                }
+                // 记录所有设备
+                List<EquipLedger> allEquip = await _sqlSugarClient.Queryable<EquipLedger>().Where(x => x.RoomId == si.RoomId).ToListAsync();
+                si.AllEquip = allEquip;
                 si.AbnormalCount = sum;
             }
         }
@@ -355,6 +395,25 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         #region ====== 获取展示数据的Table ======
 
+        public TableDto CreateTable(string title, Func<List<List<string>>?> createHeader, params (string key, string value)[] rows)
+        {
+            if (rows == null || !rows.Any())
+            {
+                return new TableDto
+                {
+                    Title = title,
+                    Header = createHeader(),
+                    Data = new List<Dictionary<string, string>>()
+                };
+            }
+            return new TableDto
+            {
+                Title = title,
+                Header = createHeader(),
+                Data = rows.Select(r => CreateDataRow(r.key, r.value)).ToList()
+            };
+        }
+
         /// <summary>
         /// 根据系统信息和类型获取表格数据DTO列表
         /// </summary>
@@ -366,15 +425,15 @@ namespace Hgzn.Mes.Application.Main.Services.App
             // 根据系统编号路由到对应的处理方法
             List<Tuple<TableDto, TableDto>> ret = systemInfo.SystemNum switch
             {
-                0 => await HandleSystem0(),
-                1 => await HandleSystem1(),
-                6 => await HandleSystem6(),
+                0 => await HandleSystem0(systemInfo),
+                1 => await HandleSystem1(systemInfo),
+                6 => await HandleSystem6(systemInfo),
                 _ => null!
             };
             return ret;
         }
 
-        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem0()
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem0(SystemInfo systemInfo)
         {
             List<Tuple<TableDto, TableDto>> tables = new List<Tuple<TableDto, TableDto>>();
             XT__SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT__SL_1_ReceiveData>()
@@ -398,52 +457,64 @@ namespace Hgzn.Mes.Application.Main.Services.App
             return tables;
         }
 
-        #region 310_微波/毫米波复合半实物仿真系统
+        #region 310_微波/毫米波复合半实物仿真系统(310的4是电源,应该用移动的雷达源)
 
-        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem1()
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem1(SystemInfo systemInfo)
         {
-            List<Tuple<TableDto, TableDto>> tables = new List<Tuple<TableDto, TableDto>>();
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_310_4(systemInfo), await CreateTable_310_2(systemInfo)];
+            return tables;
+        }
+
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_310_4(SystemInfo systemInfo)
+        {
+            string typeName = "雷达源";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("内框位置", "离线"), ("运行状态", "离线"));
+            TableDto defaultDetailTableDto = CreateTable("雷达源物理量", CreateStandardHeader);
+            XT_310_SL_4_ReceiveData data = (await _sqlSugarClient.Queryable<XT_310_SL_4_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            // 检查是否有数据,以及310的4类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 4)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader, ("内框位置", "正常"), ("运行状态", "正常"));
+            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
+            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", 12, 20);
+            Tuple<TableDto, TableDto> type2 = new Tuple<TableDto, TableDto>(table, detailTable);
+            return type2;
+        }
+
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_310_2(SystemInfo systemInfo)
+        {
+            string typeName = "雷达转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("自检状态", "离线"), ("运行状态", "离线"));
+            TableDto defaultDetailTableDto = CreateTable("雷达转台物理量", CreateStandardHeader);
             XT_310_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_310_SL_2_ReceiveData>()
                 .OrderByDescending(x => x.CreationTime)
                 .Take(1)
                 .ToListAsync()).FirstOrDefault()!;
-            if (data == null) return tables;
+            // 检查是否有数据,以及310的4类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
 
-            TableDto table = new TableDto
-            {
-                Title = "雷达源",
-                Header = CreateStandardHeader(),
-                Data = new List<Dictionary<string, string>>
-                {
-                    CreateDataRow("内框位置", "正常"),
-                    CreateDataRow("中框位置", data.MiddleFramePosition.ToString()),
-                    CreateDataRow("外框位置", data.OuterFramePosition.ToString()),
-                    CreateDataRow("内框速度", data.InnerFrameVelocity.ToString()),
-                    CreateDataRow("中框速度", data.MiddleFrameVelocity.ToString()),
-                    CreateDataRow("外框速度", data.OuterFrameVelocity.ToString()),
-                    CreateDataRow("内框加速度", data.InnerFrameAcceleration.ToString()),
-                    CreateDataRow("中框加速度", data.MiddleFrameAcceleration.ToString()),
-                    CreateDataRow("外框加速度", data.OuterFrameAcceleration.ToString())
-                }
-            };
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("自检状态", data.SelfTestStatus == 0 ? "正常" : "异常"),
+                ("运行状态", data.HealthOperationStatus == 0 ? "正常" : "异常"));
             IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
             TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", 12, 20);
             Tuple<TableDto, TableDto> type2 = new Tuple<TableDto, TableDto>(table, detailTable);
-            tables.Add(type2);
-            return tables;
+            return type2;
         }
 
         #endregion
 
         #region 121_三通道控制红外制导半实物仿真系统
 
-        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem6()
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem6(SystemInfo systemInfo)
         {
-            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_121_3(), await CreateTable_121_7()];
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_121_3(systemInfo), await CreateTable_121_7(systemInfo)];
             return tables;
         }
 
-        private async Task<Tuple<TableDto, TableDto>> CreateTable_121_3()
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_121_3(SystemInfo systemInfo)
         {
             XT_121_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_3_ReceiveData>()
                 .OrderByDescending(x => x.CreationTime)
@@ -469,7 +540,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
 
-        private async Task<Tuple<TableDto, TableDto>> CreateTable_121_7()
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_121_7(SystemInfo systemInfo)
         {
             XT_121_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_7_ReceiveData>()
                 .OrderByDescending(x => x.CreationTime)

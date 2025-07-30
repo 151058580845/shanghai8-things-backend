@@ -30,7 +30,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private List<SystemInfo> _systemInfoList;
         private const double NumberOfSecondsPerMonth = 22 * 8 * 60 * 60;
         private IEquipLedgerService _equipLedgerService;
-        private int EquipCount = 50;
 
         public AppService(ISqlSugarClient client,
         IConnectionMultiplexer connectionMultiplexer,
@@ -49,7 +48,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         public async Task<ShowSystemDetailDto> GetTestDetailAsync(ShowSystemDetailQueryDto showSystemDetailQueryDto)
         {
-            await Simulation(); // 模拟数据接收
             await _sysMgr.SnapshootHomeData();
 
             ShowSystemDetailDto read = new ShowSystemDetailDto();
@@ -60,42 +58,46 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #region 人员展示 (已关联数据库)
 
-            if (currentTestInSystem != null)
+            List<ExperimenterDto> experimentersData = new List<ExperimenterDto>
             {
-                // 申请调度
-                List<string> reqManagers = currentTestInSystem.ReqManager.Split(',').ToList();
-                // 制导控制专业代表
-                List<string> gncResps = currentTestInSystem.GncResp.Split(',').ToList();
-                // 试验专业代表
-                List<string> simuResps = currentTestInSystem.SimuResp.Split(',').ToList();
-                // 试验参与人员
-                List<string> simuStaffs = currentTestInSystem.SimuStaff.Split(',').ToList();
-                List<ExperimenterDto> experimentersDatas = new List<ExperimenterDto>();
-                foreach (string item in reqManagers)
+                new ExperimenterDto
                 {
-                    experimentersDatas.Add(new ExperimenterDto() { System = "申请调度", Person = item });
+                    System = "项目办",
+                    Person = string.IsNullOrEmpty(currentTestInSystem?.ReqDep) ? "---" : currentTestInSystem.ReqDep
                 }
-                foreach (string item in gncResps)
+            };
+
+            var roles = new[]
+            {
+                new { System = "申请调度", Value = currentTestInSystem?.ReqManager },
+                new { System = "制导控制专业代表", Value = currentTestInSystem?.GncResp },
+                new { System = "仿真试验专业代表", Value = currentTestInSystem?.SimuResp },
+                new { System = "仿真试验参与人员", Value = currentTestInSystem?.SimuStaff }
+            };
+
+            foreach (var role in roles)
+            {
+                if (string.IsNullOrEmpty(role.Value))
                 {
-                    experimentersDatas.Add(new ExperimenterDto() { System = "制导控制专业代表", Person = item });
+                    experimentersData.Add(new ExperimenterDto { System = role.System, Person = "---" });
                 }
-                foreach (string item in simuResps)
+                else
                 {
-                    experimentersDatas.Add(new ExperimenterDto() { System = "试验专业代表", Person = item });
+                    string[] persons = role.Value.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string? person in persons.Any() ? persons : new[] { "---" })
+                    {
+                        experimentersData.Add(new ExperimenterDto { System = role.System, Person = person });
+                    }
                 }
-                foreach (string item in simuStaffs)
-                {
-                    experimentersDatas.Add(new ExperimenterDto() { System = "试验参与人员", Person = item });
-                }
-                read.ExperimentersData = experimentersDatas;
             }
+            read.ExperimentersData = experimentersData;
 
             #endregion
 
             #region 图表展示 (已关联数据库)
 
             // 获取图标数据
-            var chartDataPointDto = await _sysMgr.GetChartDataPointDto(_sysMgr.SystemInfos.FirstOrDefault(x => x.Name == showSystemDetailQueryDto.systemName)!);
+            List<ChartDataDto> chartDataPointDto = await _sysMgr.GetChartDataPointDto(_sysMgr.SystemInfos.FirstOrDefault(x => x.Name == showSystemDetailQueryDto.systemName)!);
             read.ChartData = chartDataPointDto;
 
             #endregion
@@ -114,7 +116,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         System = abnormal.SystemInfo.Name,
                         Device = await _equipLedgerService.GetEquipName(abnormal.EquipId),
                         Value = ad,
-                        Time = "5",
+                        Time = abnormal.UntilDays.ToString(),
                     });
                 }
             }
@@ -177,8 +179,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
             // 这里会返回两个Tuple<TableDto, TableDto>,因为详情页右边会有展示两个系统的健康信息,随便哪个写上面或写下面都行
             List<TableDto> queue1 = new List<TableDto>();
             List<TableDto> queue2 = new List<TableDto>();
+            List<TableDto> queue3 = new List<TableDto>();
             TableDto queueDetail1 = new TableDto();
             TableDto queueDetail2 = new TableDto();
+            TableDto queueDetail3 = new TableDto();
             List<Tuple<TableDto, TableDto>> tables = await _sysMgr.GetTableDtos(_sysMgr.SystemInfos.FirstOrDefault(x => x.Name == showSystemDetailQueryDto.systemName)!);
             if (tables != null && tables.Count > 0 && tables[0] != null && tables[0].Item1 != null && tables[0].Item2 != null)
             {
@@ -190,10 +194,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 queue2.Add(tables[1].Item1);
                 read.Queue2Detail = tables[1].Item2;
             }
+            if (tables != null && tables.Count > 2 && tables[2] != null && tables[2].Item1 != null && tables[2].Item2 != null)
+            {
+                queue2.Add(tables[2].Item1);
+                read.Queue2Detail = tables[2].Item2;
+            }
             read.Queue = queue1;
             read.QueueDetail = queueDetail1;
             read.Queue2 = queue2;
             read.Queue2Detail = queueDetail2;
+            read.Queue3 = queue3;
+            read.Queue3Detail = queueDetail3;
 
             #endregion
 
@@ -207,8 +218,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     Title = "产品列表",
                     Header = new List<List<string>>()
                 {
-                    new List<string> { "name", "产品名称" },
-                    new List<string> { "code", "产品编号" },
+                    new List<string> { "name", "名称" },
+                    new List<string> { "code", "编号" },
                     new List<string> { "status", "技术状态" },
                 },
                     Data = new List<Dictionary<string, string>>()
@@ -233,7 +244,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         public async Task<ShowSystemHomeDataDto> GetTestListAsync()
         {
-            await Simulation(); // 模拟数据接收
             await _sysMgr.SnapshootHomeData();
             _abnormalEquipDic = new Dictionary<string, List<string>>();
 
@@ -281,7 +291,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 list.Add(new SystemDeviceData()
                 {
                     Name = sysInfo.Name,
-                    Quantity = 10,
+                    Quantity = sysInfo.AllEquip.Count(),
                     Temperature = iTemperature,
                     Humidity = iHumidity,
                     Status = status,
@@ -301,7 +311,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             {
                 equipDatas.Add(new EquipmentData()
                 {
-                    Index = i,
+                    Index = i + 1,
                     Code = connectEquips[i].EquipLedger!.EquipCode,
                     Name = connectEquips[i].EquipLedger!.EquipName,
                     Location = connectEquips[i].EquipLedger?.Room?.Name ?? "",
@@ -358,8 +368,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 Dictionary<string, object> dic = new Dictionary<string, object>
                 {
                     { "name", item.TaskName },
-                    { "start", item.TaskStartTime },
-                    { "end", item.TaskEndTime },
+                    { "startend", $"{item.TaskStartTime} - {item.TaskEndTime}" },
+                    { "sysname", item.SysName },
                     { "person", item.SimuResp }
                 };
                 currentListDic.Add(dic);
@@ -371,8 +381,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 Dictionary<string, object> dic = new Dictionary<string, object>
                 {
                     { "name", item.TaskName },
-                    { "start", item.TaskStartTime },
-                    { "end", item.TaskEndTime },
+                    { "startend", $"{item.TaskStartTime} - {item.TaskEndTime}" },
+                    { "sysname", item.SysName },
                     { "person", item.SimuResp }
                 };
                 featureListDic.Add(dic);
@@ -384,8 +394,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 Dictionary<string, object> dic = new Dictionary<string, object>
                 {
                     { "name", item.TaskName },
-                    { "start", item.TaskStartTime },
-                    { "end", item.TaskEndTime },
+                    { "startend", $"{item.TaskStartTime} - {item.TaskEndTime}"},
+                    { "sysname", item.SysName },
                     { "person", item.SimuResp }
                 };
                 historyListDic.Add(dic);
@@ -397,8 +407,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 Headers = new List<TableHeader>()
                 {
                     new TableHeader() { Field = "name", Label = "任务名称" },
-                    new TableHeader() { Field = "start", Label = "计划开始时间" },
-                    new TableHeader() { Field = "end", Label = "计划结束时间" },
+                    new TableHeader() { Field = "startend", Label = "试验档期" },
+                    new TableHeader() { Field = "sysname", Label = "仿真系统" },
                     new TableHeader() { Field = "person", Label = "负责人" },
                 },
                 Data = currentListDic
@@ -409,8 +419,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 Headers = new List<TableHeader>()
                 {
                     new TableHeader() { Field = "name", Label = "任务名称" },
-                    new TableHeader() { Field = "start", Label = "实际开始时间" },
-                    new TableHeader() { Field = "end", Label = "实际开始时间" },
+                    new TableHeader() { Field = "startend", Label = "试验档期" },
+                    new TableHeader() { Field = "sysname", Label = "仿真系统" },
                     new TableHeader() { Field = "person", Label = "负责人" },
                 },
                 Data = featureListDic
@@ -421,8 +431,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 Headers = new List<TableHeader>()
                 {
                     new TableHeader() { Field = "name", Label = "任务名称" },
-                    new TableHeader() { Field = "start", Label = "计划开始时间" },
-                    new TableHeader() { Field = "end", Label = "计划结束时间" },
+                    new TableHeader() { Field = "startend", Label = "试验档期" },
+                    new TableHeader() { Field = "sysname", Label = "仿真系统" },
                     new TableHeader() { Field = "person", Label = "负责人" },
                 },
                 Data = historyListDic
@@ -449,8 +459,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             // *** 在线设备状态统计（在线率）
             // 获取在线设备
-            int onlineCount = connectEquips.Where(x => x.ConnectState).Count();
-            int workingRateData = (int)((double)onlineCount / (double)EquipCount * 100);
+            int onlineCount = connectEquips.Where(x => x.State).Count();
+            int workingRateData = (int)((double)onlineCount / connectEquips.Count() * 100);
             int offlineRateData = 100 - workingRateData;
             testRead.OnlineRateData = new OnlineRateData() { WorkingRateData = workingRateData, FreeRateData = 0, OfflineRateData = offlineRateData };
             // *** 在线设备状态统计（故障率）
@@ -464,7 +474,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             testRead.KeyDeviceList = new List<KeyDeviceData>();
             foreach (SystemInfo item in _systemInfoList)
             {
-                foreach (KeyDevice kd in item.keyDevices)
+                foreach (SDevice kd in item.keyDevices)
                 {
                     uint runTime = await _sysMgr.GetRunTime(item.SystemNum, kd.EquipTypeNum, kd.EquipId);
                     int utilization = (int)Math.Round((double)((double)runTime * 100 / NumberOfSecondsPerMonth), 0);
@@ -478,19 +488,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         Breakdown = 0,
                     });
                 }
-
             }
 
             return testRead;
-        }
-
-        public async Task Simulation()
-        {
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, 1, 3, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"), new List<string>() { "这个设备这也坏了", "这个设备那也坏了" }, new DateTime(2025, 3, 15, 8, 30, 0), 555);
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, 1, 3, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"), new List<string>() { "这个设备这也坏了", "这个设备那也坏了" }, new DateTime(2025, 6, 15, 8, 30, 0), 12345);
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, 1, 3, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"), new List<string>() { "这个设备这也坏了", "这个设备那也坏了" }, new DateTime(2025, 7, 16, 8, 30, 0), 20000);
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, 1, 3, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"), new List<string>() { "这个设备这也坏了", "这个设备那也坏了" }, new DateTime(2025, 7, 17, 8, 30, 0), 30000);
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, 1, 3, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1 }, Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"), new List<string>() { "这个设备这也坏了", "这个设备那也坏了" }, new DateTime(2025, 7, 17, 9, 30, 0), 300000);
         }
     }
 }

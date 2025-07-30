@@ -191,8 +191,8 @@ public class TestDataService : SugarCrudAppService<
     public async Task<IEnumerable<TestDataReadDto>> GetCurrentListByTestAsync()
     {
         List<TestData> entities = await Queryable
-            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) > DateTime.Now.ToLocalTime() &&
-                        x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) < DateTime.Now.ToLocalTime())
+            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) >= DateTime.Now.ToLocalTime() &&
+                        x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) <= DateTime.Now.ToLocalTime())
             .Includes(x => x.UUT)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
