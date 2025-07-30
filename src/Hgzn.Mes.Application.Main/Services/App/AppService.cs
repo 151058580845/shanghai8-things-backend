@@ -60,32 +60,35 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #region 人员展示 (已关联数据库)
 
-            // 申请调度
-            List<string> reqManagers = currentTestInSystem.ReqManager.Split(',').ToList();
-            // 制导控制专业代表
-            List<string> gncResps = currentTestInSystem.GncResp.Split(',').ToList();
-            // 试验专业代表
-            List<string> simuResps = currentTestInSystem.SimuResp.Split(',').ToList();
-            // 试验参与人员
-            List<string> simuStaffs = currentTestInSystem.SimuStaff.Split(',').ToList();
-            List<ExperimenterDto> experimentersDatas = new List<ExperimenterDto>();
-            foreach (string item in reqManagers)
+            if (currentTestInSystem != null)
             {
-                experimentersDatas.Add(new ExperimenterDto() { System = "申请调度", Person = item });
+                // 申请调度
+                List<string> reqManagers = currentTestInSystem.ReqManager.Split(',').ToList();
+                // 制导控制专业代表
+                List<string> gncResps = currentTestInSystem.GncResp.Split(',').ToList();
+                // 试验专业代表
+                List<string> simuResps = currentTestInSystem.SimuResp.Split(',').ToList();
+                // 试验参与人员
+                List<string> simuStaffs = currentTestInSystem.SimuStaff.Split(',').ToList();
+                List<ExperimenterDto> experimentersDatas = new List<ExperimenterDto>();
+                foreach (string item in reqManagers)
+                {
+                    experimentersDatas.Add(new ExperimenterDto() { System = "申请调度", Person = item });
+                }
+                foreach (string item in gncResps)
+                {
+                    experimentersDatas.Add(new ExperimenterDto() { System = "制导控制专业代表", Person = item });
+                }
+                foreach (string item in simuResps)
+                {
+                    experimentersDatas.Add(new ExperimenterDto() { System = "试验专业代表", Person = item });
+                }
+                foreach (string item in simuStaffs)
+                {
+                    experimentersDatas.Add(new ExperimenterDto() { System = "试验参与人员", Person = item });
+                }
+                read.ExperimentersData = experimentersDatas;
             }
-            foreach (string item in gncResps)
-            {
-                experimentersDatas.Add(new ExperimenterDto() { System = "制导控制专业代表", Person = item });
-            }
-            foreach (string item in simuResps)
-            {
-                experimentersDatas.Add(new ExperimenterDto() { System = "试验专业代表", Person = item });
-            }
-            foreach (string item in simuStaffs)
-            {
-                experimentersDatas.Add(new ExperimenterDto() { System = "试验参与人员", Person = item });
-            }
-            read.ExperimentersData = experimentersDatas;
 
             #endregion
 
@@ -174,46 +177,53 @@ namespace Hgzn.Mes.Application.Main.Services.App
             // 这里会返回两个Tuple<TableDto, TableDto>,因为详情页右边会有展示两个系统的健康信息,随便哪个写上面或写下面都行
             List<TableDto> queue1 = new List<TableDto>();
             List<TableDto> queue2 = new List<TableDto>();
+            TableDto queueDetail1 = new TableDto();
+            TableDto queueDetail2 = new TableDto();
             List<Tuple<TableDto, TableDto>> tables = await _sysMgr.GetTableDtos(_sysMgr.SystemInfos.FirstOrDefault(x => x.Name == showSystemDetailQueryDto.systemName)!);
-            if (tables.Count > 0)
+            if (tables != null && tables.Count > 0 && tables[0] != null && tables[0].Item1 != null && tables[0].Item2 != null)
             {
                 queue1.Add(tables[0].Item1);
-                read.Queue = queue1;
-                read.QueueDetail = tables[0].Item2;
+                queueDetail1 = tables[0].Item2;
             }
-            if (tables.Count > 1)
+            if (tables != null && tables.Count > 1 && tables[1] != null && tables[1].Item1 != null && tables[1].Item2 != null)
             {
                 queue2.Add(tables[1].Item1);
-                read.Queue2 = queue2;
                 read.Queue2Detail = tables[1].Item2;
             }
+            read.Queue = queue1;
+            read.QueueDetail = queueDetail1;
+            read.Queue2 = queue2;
+            read.Queue2Detail = queueDetail2;
 
             #endregion
 
             #region 产品列表 (已关联数据库)
 
             List<TableDto> productReadDto = new List<TableDto>();
-            TableDto td = new TableDto()
+            if (currentTestInSystem != null)
             {
-                Title = "产品列表",
-                Header = new List<List<string>>()
+                TableDto td = new TableDto()
+                {
+                    Title = "产品列表",
+                    Header = new List<List<string>>()
                 {
                     new List<string> { "name", "产品名称" },
                     new List<string> { "code", "产品编号" },
                     new List<string> { "status", "技术状态" },
                 },
-                Data = new List<Dictionary<string, string>>()
-            };
-            foreach (TestDataProductReadDto item in currentTestInSystem.UUT)
-            {
-                td.Data.Add(new Dictionary<string, string>()
+                    Data = new List<Dictionary<string, string>>()
+                };
+                foreach (TestDataProductReadDto item in currentTestInSystem.UUT)
+                {
+                    td.Data.Add(new Dictionary<string, string>()
                 {
                     { "name" , item.Name },
                     { "code" , item.Code },
                     { "status" , item.TechnicalStatus },
                 });
+                }
+                productReadDto.Add(td);
             }
-            productReadDto.Add(td);
             read.ProductList = productReadDto;
 
             #endregion
