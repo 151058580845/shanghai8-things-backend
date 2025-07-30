@@ -217,21 +217,24 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     Title = "产品列表",
                     Header = new List<List<string>>()
-                {
-                    new List<string> { "name", "名称" },
-                    new List<string> { "code", "编号" },
-                    new List<string> { "status", "技术状态" },
-                },
+                    {
+                        new List<string> { "name", "名称" },
+                        new List<string> { "code", "编号" },
+                        new List<string> { "status", "技术状态" },
+                    },
                     Data = new List<Dictionary<string, string>>()
                 };
-                foreach (TestDataProductReadDto item in currentTestInSystem.UUT)
+                if (currentTestInSystem?.UUT != null && currentTestInSystem.UUT.Any())
                 {
-                    td.Data.Add(new Dictionary<string, string>()
-                {
-                    { "name" , item.Name },
-                    { "code" , item.Code },
-                    { "status" , item.TechnicalStatus },
-                });
+                    foreach (TestDataProductReadDto item in currentTestInSystem.UUT)
+                    {
+                        td.Data.Add(new Dictionary<string, string>()
+                        {
+                            { "name" , item.Name! },
+                            { "code" , item.Code! },
+                            { "status" , item.TechnicalStatus! },
+                        });
+                    }
                 }
                 productReadDto.Add(td);
             }
@@ -244,6 +247,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         public async Task<ShowSystemHomeDataDto> GetTestListAsync()
         {
+            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, 1, 1, [0], Guid.Parse("fa5be587-8b9e-4a1f-ab33-a78d394fae31"), new List<string>(), DateTime.Now, 200000);
+
             await _sysMgr.SnapshootHomeData();
             _abnormalEquipDic = new Dictionary<string, List<string>>();
 
@@ -476,13 +481,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
             {
                 foreach (SDevice kd in item.keyDevices)
                 {
-                    uint runTime = await _sysMgr.GetRunTime(item.SystemNum, kd.EquipTypeNum, kd.EquipId);
+                    uint runTime = await _sysMgr.GetRunTime(item.SystemNum, kd.EquipId);
                     int utilization = (int)Math.Round((double)((double)runTime * 100 / NumberOfSecondsPerMonth), 0);
                     int idle = 100 - utilization;
 
                     testRead.KeyDeviceList.Add(new KeyDeviceData()
                     {
-                        Name = item.Name,
+                        Name = kd.EquipName,
                         Utilization = utilization,
                         Idle = idle,
                         Breakdown = 0,

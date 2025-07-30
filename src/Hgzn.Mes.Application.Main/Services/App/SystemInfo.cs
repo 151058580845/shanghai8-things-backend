@@ -129,10 +129,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
         protected readonly ISqlSugarClient _sqlSugarClient;
         private const string EquipHealthStatusRedisKey = "equipHealthStatus";
         private const string EquipLiveRedisKey = "equipLive";
+        private const string EquipRunTime = "equipRunTime";
         private readonly RedisHelper _redisHelper;
 
         public RedisTreeNode EquipHealthStatusRedisTree;
         public RedisTreeNode EquipLiveRedisTree;
+        public RedisTreeNode EquipRunTimeRedisTree;
         public List<SystemInfo> SystemInfos = new List<SystemInfo>();
         // key是设备ID,value是设备异常信息
         public List<Abnormal> Abnormals = new List<Abnormal>();
@@ -275,6 +277,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             {
                 EquipHealthStatusRedisTree = await _redisHelper.GetTreeAsync(EquipHealthStatusRedisKey);
                 EquipLiveRedisTree = await _redisHelper.GetTreeAsync(EquipLiveRedisKey);
+                EquipRunTimeRedisTree = await _redisHelper.GetTreeAsync(EquipRunTime);
             }
             catch (Exception) { }
             Abnormals = new List<Abnormal>();
@@ -365,6 +368,15 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 // 记录所有设备
                 List<EquipLedger> allEquip = await _sqlSugarClient.Queryable<EquipLedger>().Where(x => x.RoomId == si.RoomId).ToListAsync();
                 si.AllEquip = allEquip;
+                // 记录关键设备
+                List<SDevice> keyEquip = allEquip.Where(x => x.EquipLevel == EquipLevelEnum.Important).Select(x => new SDevice()
+                {
+                    EquipName = x.EquipName,
+                    EquipId = x.Id,
+                    EquipTypeNum = 0,
+                }).ToList();
+                si.keyDevices = keyEquip;
+
                 si.AbnormalCount = sum;
             }
         }
@@ -390,6 +402,23 @@ namespace Hgzn.Mes.Application.Main.Services.App
         {
             string runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, systemNum, equipTypeNum, equipId);
             uint runTime = await ReceiveHelper.GetLast30DaysRunningTimeAsync(_connectionMultiplexer, runTimeKey);
+            return runTime;
+        }
+
+        /// <summary>
+        /// 获取运行时间
+        /// </summary>
+        /// <param name="systemNum"></param>
+        /// <param name="equipTypeNum"></param>
+        /// <param name="equipId"></param>
+        /// <returns></returns>
+        public async Task<uint> GetRunTime(byte systemNum, Guid equipId)
+        {
+            RedisTreeNode sysRuntimes = await _redisHelper.FindTreeNodeByPathAsync(EquipRunTimeRedisTree, $"{EquipRunTime}:{systemNum}");
+            if (sysRuntimes == null) return 0;
+            RedisTreeNode equipNode = await _redisHelper.FindTreeNodeFirstByNameAsync(sysRuntimes, equipId.ToString());
+            if (equipNode == null) return 0;
+            uint runTime = await ReceiveHelper.GetLast30DaysRunningTimeAsync(_connectionMultiplexer, equipNode.FullPath);
             return runTime;
         }
 
@@ -719,15 +748,5 @@ namespace Hgzn.Mes.Application.Main.Services.App
         }
 
         #endregion
-
-        private bool IsExpiringSoon(EquipMeasurement em)
-        {
-            return (em.ExpiryDate - DateTime.Now.ToLocalTime())?.TotalDays <= 30 && (em.ExpiryDate - DateTime.Now.ToLocalTime())?.TotalDays > 0;
-        }
-
-        private bool IsPastDue(EquipMeasurement em)
-        {
-            return (em.ExpiryDate - DateTime.Now.ToLocalTime())?.TotalDays <= 0;
-        }
     }
 }
