@@ -1069,6 +1069,21 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "equip_rk_server"
         };
 
+        // 导出试验数据
+        public static Menu EquipTestAnalyseOutput = new()
+        {
+            Id = Guid.Parse("372A3414-DCC0-2AAB-E54D-5F26AA3CDB7F"),
+            Name = "导出试验数据",
+            Code = "EquipTestAnalyseOutput",
+            ScopeCode = "equip:testanalyse:list",
+            Type = MenuType.Menu,
+            IconUrl = "ri:bar-chart-fill",
+            Route = "/equip/test-analyse-output/index",
+            OrderNum = 1001,
+            ParentId = DataManagement.Id,
+            RouteName = "EquipTestAnalyseOutput"
+        };
+
         // 试验数据
         public static Menu EquipTestAnalyse = new()
         {
