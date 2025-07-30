@@ -1072,7 +1072,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         // 导出试验数据
         public static Menu EquipTestAnalyseOutput = new()
         {
-            Id = Guid.Parse("372A3414-DCC0-2AAB-E54D-5F26AA3CDB7F"),
+            Id = Guid.Parse("01985a48-3d94-74f2-916a-18d762337860"),
             Name = "导出试验数据",
             Code = "EquipTestAnalyseOutput",
             ScopeCode = "equip:testanalyse:list",
@@ -1960,7 +1960,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
+            Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse, EquipTestAnalyseOutput,TestData,
             OrientationManagement, EquipLedgerHistory, EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,
