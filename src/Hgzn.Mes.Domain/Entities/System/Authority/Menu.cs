@@ -1069,6 +1069,21 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "equip_rk_server"
         };
 
+        // 导出试验数据
+        public static Menu EquipTestAnalyseOutput = new()
+        {
+            Id = Guid.Parse("01985a48-3d94-74f2-916a-18d762337860"),
+            Name = "导出试验数据",
+            Code = "EquipTestAnalyseOutput",
+            ScopeCode = "equip:testanalyse:list",
+            Type = MenuType.Menu,
+            IconUrl = "ri:bar-chart-fill",
+            Route = "/equip/test-analyse-output/index",
+            OrderNum = 1001,
+            ParentId = DataManagement.Id,
+            RouteName = "EquipTestAnalyseOutput"
+        };
+
         // 试验数据
         public static Menu EquipTestAnalyse = new()
         {
@@ -1945,7 +1960,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse,TestData,
+            Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse, EquipTestAnalyseOutput,TestData,
             OrientationManagement, EquipLedgerHistory, EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,
