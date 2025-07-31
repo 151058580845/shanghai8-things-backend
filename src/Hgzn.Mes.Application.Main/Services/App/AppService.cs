@@ -29,20 +29,19 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private SystemInfoManager _sysMgr; // 系统信息管理器
         private List<SystemInfo> _systemInfoList;
         private const double NumberOfSecondsPerMonth = 22 * 8 * 60 * 60;
-        private IEquipLedgerService _equipLedgerService;
 
         public AppService(ISqlSugarClient client,
         IConnectionMultiplexer connectionMultiplexer,
         ITestDataService testDataService,
         RedisHelper redisHelper,
-        IEquipLedgerService equipLedgerService)
+        IEquipLedgerService equipLedgerService,
+        IBaseConfigService baseConfigService)
         {
             _sqlSugarClient = client;
             _connectionMultiplexer = connectionMultiplexer;
             _testDataService = testDataService;
             _redisHelper = redisHelper;
-            _equipLedgerService = equipLedgerService;
-            _sysMgr = new SystemInfoManager(connectionMultiplexer, redisHelper, client);
+            _sysMgr = new SystemInfoManager(connectionMultiplexer, redisHelper, client, equipLedgerService, baseConfigService);
             _systemInfoList = _sysMgr.SystemInfos;
         }
 
@@ -109,13 +108,25 @@ namespace Hgzn.Mes.Application.Main.Services.App
             List<Abnormal> sysAbnormals = _sysMgr.Abnormals.Where(x => x.SystemInfo.Name == showSystemDetailQueryDto.systemName).ToList();
             foreach (Abnormal abnormal in sysAbnormals)
             {
-                foreach (string ad in abnormal.AbnormalDescription)
+                if (abnormal.AbnormalDescription != null && abnormal.AbnormalDescription.Any())
+                {
+                    foreach (string ad in abnormal.AbnormalDescription)
+                    {
+                        abnormalDeviceDtos.Add(new AbnormalDeviceDto
+                        {
+                            System = abnormal.SystemInfo.Name,
+                            Device = abnormal.EquipName,
+                            Value = ad,
+                            Time = abnormal.UntilDays.ToString(),
+                        });
+                    }
+                }
+                else
                 {
                     abnormalDeviceDtos.Add(new AbnormalDeviceDto
                     {
                         System = abnormal.SystemInfo.Name,
-                        Device = await _equipLedgerService.GetEquipName(abnormal.EquipId),
-                        Value = ad,
+                        Device = abnormal.EquipName,
                         Time = abnormal.UntilDays.ToString(),
                     });
                 }
@@ -242,6 +253,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
+            #region 摄像头数据 (已关联数据库)
+
+            read.CameraData = await _sysMgr.GetCameraData();
+
+            #endregion
+
             return read;
         }
 
@@ -341,6 +358,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
+            #region 试验系统利用率数据 (已关联数据库)
+
             // 试验系统利用率数据
             // 系统利用率算法:将这个系统转台按月工作时间累加(秒) / 22*8*60*60
             testRead.DeviceListData = new List<DeviceUtilizationData>();
@@ -360,6 +379,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     Utilization = utilization,
                 });
             }
+
+            #endregion
 
             #region 实验任务数据 (已关联数据库)
 
@@ -462,6 +483,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
+            #region 在线率 和 故障率 (已关联数据库)
+
             // *** 在线设备状态统计（在线率）
             // 获取在线设备
             int onlineCount = connectEquips.Where(x => x.State).Count();
@@ -474,6 +497,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
             int breakdownData = (int)((double)abnormalSysCount / (double)sysCount * 100);
             int healthData = 100 - breakdownData;
             testRead.FailureRateData = new FailureRateData() { BreakdownData = breakdownData, HealthData = healthData, PreferablyData = 0 };
+
+            #endregion
+
+            #region 关键设备利用率 (已关联数据库)
 
             // 关键设备利用率数据
             testRead.KeyDeviceList = new List<KeyDeviceData>();
@@ -494,6 +521,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     });
                 }
             }
+
+            #endregion
 
             return testRead;
         }

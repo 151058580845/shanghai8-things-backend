@@ -286,7 +286,7 @@ public sealed class SqlSugarContext
             return null;
         }
         var code = builder.ToString();
-        LoggerAdapter.LogTrace($"[已生成种子代码<{typeof(TEntity).Name}>]:\r\n {code}\r\n");
+        _logger.LogTrace($"[已生成种子代码<{typeof(TEntity).Name}>]:\r\n {code}\r\n");
         return code;
     }
     public void InitDatabase()
@@ -312,15 +312,15 @@ public sealed class SqlSugarContext
             var data = client.Ado.SqlQuery<string>(checkDbQuery);
             if (data.Count == 0)
             {
-                LoggerAdapter.LogWarning($"Database '{newDatabaseName}' does not exist. Creating it...");
+                _logger.LogWarning($"Database '{newDatabaseName}' does not exist. Creating it...");
                 // 如果数据库不存在，创建数据库
                 string createDbQuery = $"CREATE DATABASE {newDatabaseName}";
                 client.Ado.SqlQuery<string>(createDbQuery);
-                LoggerAdapter.LogInformation($"Database '{newDatabaseName}' created.");
+                _logger.LogInformation($"Database '{newDatabaseName}' created.");
             }
             else
             {
-                LoggerAdapter.LogInformation($"Database '{newDatabaseName}' already exists.");
+                _logger.LogInformation($"Database '{newDatabaseName}' already exists.");
             }
         }
 
@@ -435,7 +435,7 @@ public sealed class SqlSugarContext
 
                     // if (c.EntityName == nameof(RoleMenu))
                     // {
-                    //     LoggerAdapter.WriteLine("asdasd");
+                    //     _logger.WriteLine("asdasd");
                     // }
                     if (name == "id")
                     {

@@ -19,15 +19,18 @@ public class AndroidController : ControllerBase
     private readonly IEquipLedgerService _equipLedgerService;
     private readonly IEquipLedgerHistoryService _equipLedgerHistoryService;
     private readonly ILocationLabelService _locationLabelService;
+    private readonly ILogger<AndroidController> _logger;
 
     public AndroidController(
         IEquipLedgerService equipLedgerService,
         IEquipLedgerHistoryService equipLedgerHistoryService,
-        ILocationLabelService locationLabelService)
+        ILocationLabelService locationLabelService,
+        ILogger<AndroidController> logger)
     {
         _equipLedgerService = equipLedgerService;
         _equipLedgerHistoryService = equipLedgerHistoryService;
         _locationLabelService = locationLabelService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -91,27 +94,27 @@ public class AndroidController : ControllerBase
         {
             var tasks = list.Select(async item =>
             {
-                LoggerAdapter.LogInformation($"导入盘点设备信息:{ObjectToJson(item)}");
+                _logger.LogInformation($"导入盘点设备信息:{ObjectToJson(item)}");
                 var ledgers = await _equipLedgerService.GetListByAssetNumberAsync(item.AssetNumber);
                 foreach (var el in ledgers)
                 {
                     item.EquipCode = el.EquipCode;
                     item.EquipId = el.Id;
                 }
-                LoggerAdapter.LogInformation($"获取到设备的code是:{item.EquipCode}");
-                LoggerAdapter.LogInformation($"获取到设备的Id是:{item.EquipId}");
+                _logger.LogInformation($"获取到设备的code是:{item.EquipCode}");
+                _logger.LogInformation($"获取到设备的Id是:{item.EquipId}");
             });
             await Task.WhenAll(tasks);
 
             var result = (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
-            LoggerAdapter.LogInformation($"添加历史记录成功");
+            _logger.LogInformation($"添加历史记录成功");
             var dictionary = list.Where(t => t.RoomId != null).ToDictionary(t => t.AssetNumber, s => s.RoomId.Value);
             equipList = await _equipLedgerService.UpdateEquipRoomId(dictionary);
-            LoggerAdapter.LogInformation($"盘点设备,更新设备房间ID成功");
+            _logger.LogInformation($"盘点设备,更新设备房间ID成功");
         }
         catch (Exception ex)
         {
-            LoggerAdapter.LogInformation($"盘点失败,原因是{ex.Message}");
+            _logger.LogInformation($"盘点失败,原因是{ex.Message}");
         }
         return equipList.Wrap();
     }
@@ -131,7 +134,7 @@ public class AndroidController : ControllerBase
         var tasks = list.Select(async item =>
         {
 
-            LoggerAdapter.LogInformation($"导入找到丢失的设备信息:{ObjectToJson(item)}");
+            _logger.LogInformation($"导入找到丢失的设备信息:{ObjectToJson(item)}");
             await _equipLedgerService.SetEquipExistByAssetNumber(item.AssetNumber);
             var ledgers = await _equipLedgerService.GetListByAssetNumberAsync(item.AssetNumber);
             foreach (var el in ledgers)
@@ -140,20 +143,20 @@ public class AndroidController : ControllerBase
                 item.EquipCode = el.EquipCode;
                 item.EquipId = el.Id;
             }
-            LoggerAdapter.LogInformation($"获取到设备的code是:{item.EquipCode}");
-            LoggerAdapter.LogInformation($"获取到设备的Id是:{item.EquipId}");
+            _logger.LogInformation($"获取到设备的code是:{item.EquipCode}");
+            _logger.LogInformation($"获取到设备的Id是:{item.EquipId}");
         });
         await Task.WhenAll(tasks);
-        LoggerAdapter.LogInformation($"修改丢失为正常状态成功");
+        _logger.LogInformation($"修改丢失为正常状态成功");
         ResponseWrapper<int> ret = default;
         try
         {
             ret = (await _equipLedgerHistoryService.CreateAsync(list)).Wrap();
-            LoggerAdapter.LogInformation($"添加历史记录成功");
+            _logger.LogInformation($"添加历史记录成功");
         }
         catch (Exception ex)
         {
-            LoggerAdapter.LogInformation($"添加历史记录失败,原因是{ex.Message}");
+            _logger.LogInformation($"添加历史记录失败,原因是{ex.Message}");
         }
         return ret;
     }

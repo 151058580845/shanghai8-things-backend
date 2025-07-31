@@ -1,9 +1,21 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.App;
+using Hgzn.Mes.Application.Main.Services.Equip;
+using Hgzn.Mes.Application.Main.Services.Equip.IService;
+using Hgzn.Mes.Application.Main.Services.System;
+using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT__ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_0_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_103_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_108_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_112_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_119_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_121_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_202_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_314_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.Equip.EquipMeasurementManager;
 using Hgzn.Mes.Domain.Entities.System.Location;
@@ -15,11 +27,13 @@ using MathNet.Numerics.Distributions;
 using Microsoft.EntityFrameworkCore;
 using MySqlX.XDevAPI;
 using NetCoreServer;
+using NPOI.SS.Formula.Functions;
 using SqlSugar;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -107,11 +121,15 @@ namespace Hgzn.Mes.Application.Main.Services.App
         /// <summary>
         /// 异常设备的类型
         /// </summary>
-        public byte EquipTypeNum { get; set; }
+        public byte? EquipTypeNum { get; set; }
         /// <summary>
         /// 异常设备的ID
         /// </summary>
-        public Guid EquipId { get; set; }
+        public Guid? EquipId { get; set; }
+        /// <summary>
+        /// 异常设备名称
+        /// </summary>
+        public string? EquipName { get; set; }
         /// <summary>
         /// 异常描述
         /// </summary>
@@ -120,7 +138,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         /// <summary>
         /// 距离到期的天数
         /// </summary>
-        public string UntilDays { get; set; } = string.Empty;
+        public string? UntilDays { get; set; } = string.Empty;
     }
 
     public class SystemInfoManager
@@ -131,6 +149,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private const string EquipLiveRedisKey = "equipLive";
         private const string EquipRunTime = "equipRunTime";
         private readonly RedisHelper _redisHelper;
+        private IEquipLedgerService _equipLedgerService;
+        private readonly IBaseConfigService _baseConfigService;
+        private IndexBasedTableGenerator _detailGenerator;
 
         public RedisTreeNode EquipHealthStatusRedisTree;
         public RedisTreeNode EquipLiveRedisTree;
@@ -139,11 +160,14 @@ namespace Hgzn.Mes.Application.Main.Services.App
         // key是设备ID,value是设备异常信息
         public List<Abnormal> Abnormals = new List<Abnormal>();
 
-        public SystemInfoManager(IConnectionMultiplexer connectionMultiplexer, RedisHelper redisHelper, ISqlSugarClient client)
+        public SystemInfoManager(IConnectionMultiplexer connectionMultiplexer, RedisHelper redisHelper, ISqlSugarClient client, IEquipLedgerService equipLedgerService, IBaseConfigService baseConfigService)
         {
             _connectionMultiplexer = connectionMultiplexer;
             _redisHelper = redisHelper;
             _sqlSugarClient = client;
+            _equipLedgerService = equipLedgerService;
+            _baseConfigService = baseConfigService;
+            _detailGenerator = new IndexBasedTableGenerator();
             // 初始化数据
             SystemInfos = new List<SystemInfo>
             {
@@ -257,20 +281,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
             };
         }
 
+        /// <summary>
+        /// 初始化主页数据
+        /// </summary>
+        /// <returns></returns>
         public async Task SnapshootHomeData()
         {
             DateTime now = DateTime.Now;
-            // 一次性查询即将到期和已过期的设备
-            List<EquipMeasurement> allMeasurements = await _sqlSugarClient.Queryable<EquipMeasurement>().ToListAsync();
-            List<EquipMeasurement> expiringSoon = allMeasurements.Where(x => (x.ExpiryDate - now)?.TotalDays <= 30 && (x.ExpiryDate - now)?.TotalDays > 0).ToList();
-            List<EquipMeasurement> pastDue = allMeasurements.Where(x => (x.ExpiryDate - now)?.TotalDays <= 0).ToList();
-            // 提取资产编号列表
-            List<string?> expiringSoonAssetNumbers = expiringSoon.Select(x => x.LocalAssetNumber).ToList();
-            List<string?> pastDueAssetNumbers = pastDue.Select(x => x.LocalAssetNumber).ToList();
             // 一次性查询所有相关设备及其房间信息
-            List<EquipLedger> allEquips = await _sqlSugarClient.Queryable<EquipLedger>().Includes(x => x.Room).Where(x => expiringSoonAssetNumbers.Contains(x.AssetNumber) || pastDueAssetNumbers.Contains(x.AssetNumber)).ToListAsync();
-            List<EquipLedger> expiringSoonEquips = allEquips.Where(x => expiringSoonAssetNumbers.Contains(x.AssetNumber)).ToList();
-            List<EquipLedger> pastDueEquips = allEquips.Where(x => pastDueAssetNumbers.Contains(x.AssetNumber)).ToList();
+            List<EquipLedger> allEquips = await _sqlSugarClient.Queryable<EquipLedger>().Includes(x => x.Room).Where(x => x.IsMeasurementDevice == null).ToListAsync();
+            List<EquipLedger> expiringSoonEquips = allEquips.Where(x => x.ValidityDate != null && (x.ValidityDate - now)?.TotalDays <= 30 && (x.ValidityDate - now)?.TotalDays > 0).ToList();
+            List<EquipLedger> pastDueEquips = allEquips.Where(x => x.ValidityDate != null && (x.ValidityDate - now)?.TotalDays <= 0).ToList();
 
             // redis
             try
@@ -286,59 +307,59 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 int sum = 0;
                 // 记录异常
                 RedisTreeNode sysSets = await _redisHelper.FindTreeNodeByPathAsync(EquipHealthStatusRedisTree, $"{EquipHealthStatusRedisKey}:{si.SystemNum}");
-                if (sysSets != null)
+                if (sysSets != null && !sysSets.IsLeaf && sysSets.Children.Any())
                 {
-                    if (!sysSets.IsLeaf && sysSets.Children.Any())
+                    foreach (RedisTreeNode typeNode in sysSets.Children)
                     {
-                        foreach (RedisTreeNode typeNode in sysSets.Children)
+                        List<RedisTreeNode> sets = await _redisHelper.FindTreeNodesByTypeAsync(typeNode, RedisKeyType.Set);
+                        if (!byte.TryParse(typeNode.Name, out byte equipTypeNum)) continue;
+                        foreach (RedisTreeNode set in sets)
                         {
-                            List<RedisTreeNode> sets = await _redisHelper.FindTreeNodesByTypeAsync(typeNode, RedisKeyType.Set);
-                            if (!byte.TryParse(typeNode.Name, out byte equipTypeNum)) continue;
-                            foreach (RedisTreeNode set in sets)
+                            if (!Guid.TryParse(set.Name, out Guid equipId)) continue;
+                            IEnumerable<string> abnormal = await _redisHelper.GetTreeNodeChildrenValuesAsync(set);
+                            if (abnormal == null) continue;
+                            sum += abnormal.Count();
+                            string equipName = await _equipLedgerService.GetEquipName(equipId);
+                            Abnormals.Add(new Abnormal()
                             {
-                                if (!Guid.TryParse(set.Name, out Guid equipId)) continue;
-                                IEnumerable<string> abnormal = await _redisHelper.GetTreeNodeChildrenValuesAsync(set);
-                                if (abnormal == null) continue;
-                                sum += abnormal.Count();
-                                Abnormals.Add(new Abnormal()
-                                {
-                                    SystemInfo = si,
-                                    EquipTypeNum = equipTypeNum,
-                                    EquipId = equipId,
-                                    AbnormalDescription = abnormal.ToList(),
-                                });
-                            }
+                                SystemInfo = si,
+                                EquipTypeNum = equipTypeNum,
+                                EquipId = equipId,
+                                EquipName = equipName,
+                                AbnormalDescription = abnormal.ToList(),
+                            });
                         }
-                        foreach (EquipLedger item in expiringSoonEquips)
+                    }
+                }
+                foreach (EquipLedger item in expiringSoonEquips)
+                {
+                    if (item.RoomId == si.RoomId)
+                    {
+                        sum += 1;
+                        Abnormals.Add(new Abnormal()
                         {
-                            if (item.RoomId == si.RoomId)
-                            {
-                                sum += 1;
-                                Abnormals.Add(new Abnormal()
-                                {
-                                    SystemInfo = si,
-                                    EquipTypeNum = 0,
-                                    EquipId = item.Id,
-                                    AbnormalDescription = new List<string>() { $"{item.EquipName}计量即将到期" },
-                                    UntilDays = ((int)(expiringSoon.First(x => x.LocalAssetNumber == item.AssetNumber).ExpiryDate - now)?.TotalDays!).ToString()
-                                });
-                            }
-                        }
-                        foreach (EquipLedger item in pastDueEquips)
+                            SystemInfo = si,
+                            EquipTypeNum = 0,
+                            EquipId = item.Id,
+                            EquipName = item.EquipName,
+                            UntilDays = (item.ValidityDate.Value.Day - now.Day).ToString()
+                        });
+                    }
+                }
+                foreach (EquipLedger item in pastDueEquips)
+                {
+                    if (item.RoomId == si.RoomId)
+                    {
+                        sum += 1;
+                        Abnormals.Add(new Abnormal()
                         {
-                            if (item.RoomId == si.RoomId)
-                            {
-                                sum += 1;
-                                Abnormals.Add(new Abnormal()
-                                {
-                                    SystemInfo = si,
-                                    EquipTypeNum = 0,
-                                    EquipId = item.Id,
-                                    AbnormalDescription = new List<string>() { $"{item.EquipName}计量过期" },
-                                    UntilDays = ((int)(pastDue.First(x => x.LocalAssetNumber == item.AssetNumber).ExpiryDate - now)?.TotalDays!).ToString()
-                                });
-                            }
-                        }
+                            SystemInfo = si,
+                            EquipTypeNum = 0,
+                            EquipId = item.Id,
+                            EquipName = item.EquipName,
+                            AbnormalDescription = new List<string>() { $"{item.EquipName}计量过期" },
+                            UntilDays = (item.ValidityDate.Value.Day - now.Day).ToString()
+                        });
                     }
                 }
                 // 记录心跳
@@ -422,7 +443,36 @@ namespace Hgzn.Mes.Application.Main.Services.App
             return runTime;
         }
 
+        public async Task<List<CameraDto>> GetCameraData()
+        {
+            List<CameraDto> cameraData = new List<CameraDto>();
+            string? url = await _baseConfigService.GetValueByKeyAsync("camera_ip");
+            if (url == null) return cameraData;
+
+            string? userName = await _baseConfigService.GetValueByKeyAsync("camera_user");
+            string? password = await _baseConfigService.GetValueByKeyAsync("camera_password");
+
+            List<string> ips = url.Split(',').ToList();
+            foreach (string ip in ips)
+            {
+                if (string.IsNullOrEmpty(ip)) continue;
+                List<string> info = ip.Split(':').ToList();
+                cameraData.Add(new CameraDto()
+                {
+                    Ip = info[0],
+                    Port = info[1],
+                    UserName = userName,
+                    Password = password
+                });
+            }
+            return cameraData;
+        }
+
         #region ====== 获取展示数据的Table ======
+
+        #region 通用
+
+        #endregion
 
         public TableDto CreateTable(string title, Func<List<List<string>>?> createHeader, params (string key, string value)[] rows)
         {
@@ -454,146 +504,685 @@ namespace Hgzn.Mes.Application.Main.Services.App
             // 根据系统编号路由到对应的处理方法
             List<Tuple<TableDto, TableDto>> ret = systemInfo.SystemNum switch
             {
-                0 => await HandleSystem0(systemInfo),
                 1 => await HandleSystem1(systemInfo),
+                2 => await HandleSystem2(systemInfo),
+                3 => await HandleSystem3(systemInfo),
+                4 => await HandleSystem4(systemInfo),
+                5 => await HandleSystem5(systemInfo),
                 6 => await HandleSystem6(systemInfo),
+                7 => await HandleSystem7(systemInfo),
+                8 => await HandleSystem8(systemInfo),
+                9 => await HandleSystem9(systemInfo),
+                10 => await HandleSystem10(systemInfo),
                 _ => null!
             };
             return ret;
         }
 
-        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem0(SystemInfo systemInfo)
-        {
-            List<Tuple<TableDto, TableDto>> tables = new List<Tuple<TableDto, TableDto>>();
-            XT__SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT__SL_1_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
-            if (data == null) return tables;
-            TableDto table = new TableDto
-            {
-                Title = "XX类型",
-                Header = CreateStandardHeader(),
-                Data = new List<Dictionary<string, string>>
-                {
-                    CreateDataRow("XX状态", "正常")
-                }
-            };
-            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
-            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "xxx物理量");
-            Tuple<TableDto, TableDto> table1 = new Tuple<TableDto, TableDto>(table, detailTable);
-            tables.Add(table1);
-            return tables;
-        }
-
-        #region 310_微波/毫米波复合半实物仿真系统(310的4是电源,应该用移动的雷达源)
+        #region 310_微波/毫米波复合半实物仿真系统 雷达转台,雷达源,固定电源
 
         private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem1(SystemInfo systemInfo)
         {
-            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_310_4(systemInfo), await CreateTable_310_2(systemInfo)];
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_310_6(systemInfo), await CreateTable_310_2(systemInfo)];
             return tables;
         }
 
-        private async Task<Tuple<TableDto, TableDto>> CreateTable_310_4(SystemInfo systemInfo)
+        // 雷达源
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_310_6(SystemInfo systemInfo)
         {
+            int indexStart = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "MainCtrlDrfm1NetStatus");
+            int indexEnd = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "IfOutputPower");
+
             string typeName = "雷达源";
-            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("内框位置", "离线"), ("运行状态", "离线"));
-            TableDto defaultDetailTableDto = CreateTable("雷达源物理量", CreateStandardHeader);
-            XT_310_SL_4_ReceiveData data = (await _sqlSugarClient.Queryable<XT_310_SL_4_ReceiveData>()
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("状态类型", "离线"), ("自检状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_0_SL_6_ReceiveData>("雷达源物理量", indexStart, indexEnd);
+            XT_0_SL_6_ReceiveData data = (await _sqlSugarClient.Queryable<XT_0_SL_6_ReceiveData>()
+                .Where(x => x.SimuTestSysld == 1) // 雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统
                 .OrderByDescending(x => x.CreationTime)
                 .Take(1)
                 .ToListAsync()).FirstOrDefault()!;
-            // 检查是否有数据,以及310的4类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
-            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 4)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
-            TableDto table = CreateTable(typeName, CreateStandardHeader, ("内框位置", "正常"), ("运行状态", "正常"));
-            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
-            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", 12, 20);
-            Tuple<TableDto, TableDto> type2 = new Tuple<TableDto, TableDto>(table, detailTable);
-            return type2;
+            // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 6)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
         }
 
+        // 雷达转台
         private async Task<Tuple<TableDto, TableDto>> CreateTable_310_2(SystemInfo systemInfo)
         {
-            string typeName = "雷达转台";
-            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("自检状态", "离线"), ("运行状态", "离线"));
-            TableDto defaultDetailTableDto = CreateTable("雷达转台物理量", CreateStandardHeader);
+            int indexStart = GetPropertyIndex(typeof(XT_310_SL_2_ReceiveData), "InnerFramePosition");
+            int indexEnd = GetPropertyIndex(typeof(XT_310_SL_2_ReceiveData), "OuterFrameAcceleration");
+            string typeName = "转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("自检状态", "离线"),
+                ("运行状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_310_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
             XT_310_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_310_SL_2_ReceiveData>()
                 .OrderByDescending(x => x.CreationTime)
                 .Take(1)
                 .ToListAsync()).FirstOrDefault()!;
-            // 检查是否有数据,以及310的4类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
-
             TableDto table = CreateTable(typeName, CreateStandardHeader,
-                ("自检状态", data.SelfTestStatus == 0 ? "正常" : "异常"),
-                ("运行状态", data.HealthOperationStatus == 0 ? "正常" : "异常"));
-            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
-            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", 12, 20);
-            Tuple<TableDto, TableDto> type2 = new Tuple<TableDto, TableDto>(table, detailTable);
-            return type2;
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)),
+                ("运行状态", GetStatus(() => data.HealthOperationStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "转台物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
         }
 
         #endregion
 
-        #region 121_三通道控制红外制导半实物仿真系统
+        #region 307_微波寻的半实物仿真系统 阵列馈电,雷达转台,雷达源,固定电源
 
-        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem6(SystemInfo systemInfo)
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem2(SystemInfo systemInfo)
         {
-            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_121_3(systemInfo), await CreateTable_121_7(systemInfo)];
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_307_1(systemInfo), await CreateTable_307_6(systemInfo), await CreateTable_307_2(systemInfo)];
             return tables;
         }
 
-        private async Task<Tuple<TableDto, TableDto>> CreateTable_121_3(SystemInfo systemInfo)
+        // 阵列馈电
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_307_1(SystemInfo systemInfo)
         {
-            XT_121_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_3_ReceiveData>()
+            int indexStart = GetPropertyIndex(typeof(XT_307_SL_1_ReceiveData), "Channel1ParserDevice12V");
+            int indexEnd = GetPropertyIndex(typeof(XT_307_SL_1_ReceiveData), "Zone6HorizontalCoarseControlFanControl12V");
+            string typeName = "阵列馈电";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("自检状态", "离线"),
+                ("电源电压状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_307_SL_1_ReceiveData>("阵列馈电物理量", indexStart, indexEnd);
+            XT_307_SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT_307_SL_1_ReceiveData>()
                 .OrderByDescending(x => x.CreationTime)
                 .Take(1)
                 .ToListAsync()).FirstOrDefault()!;
-            if (data == null) return null!;
-
-            TableDto table = new TableDto
-            {
-                Title = "红外转台",
-                Header = CreateStandardHeader(),
-                Data = new List<Dictionary<string, string>>
-                {
-                    CreateDataRow("滚动轴工作状态", data.RollingAxisOperationStatus == 0 ? "正常" : "异常"),
-                    CreateDataRow("偏航轴工作状态", data.YawAxisOperationStatus == 0 ? "正常" : "异常"),
-                    CreateDataRow("俯仰轴工作状态", data.YawAxisOperationStatus == 0 ? "正常" : "异常"),
-                    CreateDataRow("高低轴工作状态", data.ElevationAxisOperationStatus == 0 ? "正常" : "异常"),
-                    CreateDataRow("方位轴工作状态", data.AzimuthAxisOperationStatus == 0 ? "正常" : "异常")
-                }
-            };
-            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
-            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "红外转台物理量", 19, 25);
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 1)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StateType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTest == 0)),
+                ("电源电压状态", GetStatus(() => data.SupplyVoltageState == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "阵列馈电物理量", indexStart, indexEnd);
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
 
+        // 雷达转台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_307_2(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_307_SL_2_ReceiveData), "InnerFramePosition");
+            int indexEnd = GetPropertyIndex(typeof(XT_307_SL_2_ReceiveData), "OuterFrameAcceleration");
+            string typeName = "转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("自检状态", "离线"),
+                ("运行状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_307_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
+            XT_307_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_307_SL_2_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)),
+                ("运行状态", GetStatus(() => data.HealthOperationStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "转台物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        // 雷达源
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_307_6(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "MainCtrlDrfm1NetStatus");
+            int indexEnd = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "IfOutputPower");
+            string typeName = "雷达源";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("状态类型", "离线"), ("自检状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_0_SL_6_ReceiveData>("雷达源物理量", indexStart, indexEnd);
+            XT_0_SL_6_ReceiveData data = (await _sqlSugarClient.Queryable<XT_0_SL_6_ReceiveData>()
+                .Where(x => x.SimuTestSysld == 2) // 雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 6)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        #region 314_射频/光学制导半实物仿真系统,实际机器位置在213 阵列馈电,雷达转台+红外转台(合成一个),雷达源,固定电源
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem3(SystemInfo systemInfo)
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_314_1(systemInfo), await CreateTable_314_3(systemInfo), await CreateTable_314_6(systemInfo)];
+            return tables;
+        }
+
+        // 阵列馈电
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_314_1(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_314_SL_1_ReceiveData), "Channel1ParserDevice12V");
+            int indexEnd = GetPropertyIndex(typeof(XT_314_SL_1_ReceiveData), "Zone6HorizontalCoarseControlFanControl12V");
+            string typeName = "阵列馈电";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("自检状态", "离线"),
+                ("电源电压状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_314_SL_1_ReceiveData>("阵列馈电物理量", indexStart, indexEnd);
+            XT_314_SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT_314_SL_1_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 1)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StateType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTest == 0)),
+                ("电源电压状态", GetStatus(() => data.SupplyVoltageState == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "阵列馈电物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        // 转台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_314_3(SystemInfo systemInfo)
+        {
+            int indexStart1 = GetPropertyIndex(typeof(XT_314_SL_2_ReceiveData), "InnerFramePosition");
+            int indexEnd1 = GetPropertyIndex(typeof(XT_314_SL_2_ReceiveData), "OuterFrameAcceleration");
+            int indexStart2 = GetPropertyIndex(typeof(XT_314_SL_3_ReceiveData), "RotationAxisCommand");
+            int indexEnd2 = GetPropertyIndex(typeof(XT_314_SL_3_ReceiveData), "Period");
+
+            string typeName = "转台";
+            TableDto defaultTable1 = CreateTable(typeName, CreateStandardHeader,
+                ("雷达转台状态类型", "离线"),
+                ("自检状态", "离线"),
+                ("运行状态", "离线"));
+            TableDto defaultTable2 = CreateTable(typeName, CreateStandardHeader,
+                ("红外转台状态类型", "离线"),
+                ("消旋工作状态", "离线"),
+                ("短臂工作状态", "离线"),
+                ("长臂工作状态", "离线"));
+            TableDto defaultTableRet = Combine("转台", defaultTable1, defaultTable2);
+            TableDto defaultDetailTable1 = _detailGenerator.GenerateTableFromInstance<XT_314_SL_2_ReceiveData>("雷达转台物理量", indexStart1, indexEnd1);
+            TableDto defaultDetailTable2 = _detailGenerator.GenerateTableFromInstance<XT_314_SL_2_ReceiveData>("红外转台物理量", indexStart2, indexEnd2);
+            TableDto defaultDetailTableRet = Combine("物理量", defaultDetailTable1, defaultDetailTable2);
+            XT_314_SL_2_ReceiveData data1 = (await _sqlSugarClient.Queryable<XT_314_SL_2_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            XT_314_SL_3_ReceiveData data2 = (await _sqlSugarClient.Queryable<XT_314_SL_3_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if ((data2 == null && data1 == null) || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTableRet, defaultDetailTableRet);
+            TableDto table1 = defaultTable1;
+            TableDto table2 = defaultTable2;
+            TableDto detailTable1 = defaultDetailTable1;
+            TableDto detailTable2 = defaultDetailTable2;
+            if (data1 != null)
+            {
+                table1 = CreateTable(typeName, CreateStandardHeader,
+                    ("状态类型", GetStatus(() => data1.StatusType == 1)),
+                    ("自检状态", GetStatus(() => data1.SelfTestStatus == 0)),
+                    ("运行状态", GetStatus(() => data1.HealthOperationStatus == 0)));
+                detailTable1 = _detailGenerator.GenerateTableFromInstance(data1, "雷达转台物理量", indexStart1, indexEnd1);
+            }
+            if (data2 != null)
+            {
+                table2 = CreateTable(typeName, CreateStandardHeader,
+                    ("红外转台状态类型", GetStatus(() => data2.StatusType == 1)),
+                    ("消旋工作状态", GetStatus(() => data2.RacemizationAxisOperationStatus == 0)),
+                    ("短臂工作状态", GetStatus(() => data2.ShortArmAxisOperationStatus == 0)),
+                    ("长臂工作状态", GetStatus(() => data2.LongArmAxisOperationStatus == 0)));
+                detailTable2 = _detailGenerator.GenerateTableFromInstance(data2, "红外转台物理量", indexStart2, indexEnd2);
+            }
+            TableDto tableRet = Combine("转台", table1!, table2!);
+            TableDto detailTableRet = Combine("转台物理量", detailTable1!, detailTable2!);
+            return new Tuple<TableDto, TableDto>(tableRet, detailTableRet);
+        }
+
+        // 雷达源
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_314_6(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "MainCtrlDrfm1NetStatus");
+            int indexEnd = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "IfOutputPower");
+            string typeName = "雷达源";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("状态类型", "离线"), ("自检状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_0_SL_6_ReceiveData>("雷达源物理量", indexStart, indexEnd);
+            XT_0_SL_6_ReceiveData data = (await _sqlSugarClient.Queryable<XT_0_SL_6_ReceiveData>()
+                .Where(x => x.SimuTestSysld == 3) // 雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 6)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        #region 109_紧缩场射频光学半实物仿真系统 红外转台,红外源,固定电源
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem4(SystemInfo systemInfo)
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_109_7(systemInfo), await CreateTable_109_3(systemInfo)];
+            return tables;
+        }
+
+        // 红外源(通用)
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_109_7(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_109_SL_7_ReceiveData), "Vacuum");
+            int indexEnd = GetPropertyIndex(typeof(XT_109_SL_7_ReceiveData), "CoolantFlow");
+            string typeName = "红外源";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("露点温度状态", "离线"),
+                ("真空度状态", "离线"),
+                ("冷水机流量状态", "离线"),
+                ("环境箱温度状态", "离线"),
+                ("衬底温度状态", "离线"),
+                ("功率电源状态", "离线"),
+                ("控制电源状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_109_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
+            XT_109_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_109_SL_7_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("露点温度状态", GetStatus(() => data.DewPointTemperatureStatus == 1)),
+                ("真空度状态", GetStatus(() => data.VacuumStatus == 1)),
+                ("冷水机流量状态", GetStatus(() => data.ChillerFlowStatus == 1)),
+                ("环境箱温度状态", GetStatus(() => data.EnvironmentalChamberTemperatureStatus == 1)),
+                ("衬底温度状态", GetStatus(() => data.SubstrateTemperatureStatus == 1)),
+                ("功率电源状态", GetStatus(() => data.PowerSupplyStatus == 1)),
+                ("控制电源状态", GetStatus(() => data.ControlPowerStatus == 1)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外源物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        // 红外转台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_109_3(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_109_SL_3_ReceiveData), "ThreeAxisRollGiven");
+            int indexEnd = GetPropertyIndex(typeof(XT_109_SL_3_ReceiveData), "OilTemperature");
+            string typeName = "转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("滚转轴工作状态", "离线"),
+                ("俯仰轴工作状态", "离线"),
+                ("偏航轴工作状态", "离线"),
+                ("高低轴工作状态", "离线"),
+                ("方位轴工作状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_109_SL_3_ReceiveData>("转台物理量", indexStart, indexEnd);
+            XT_109_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_109_SL_3_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("滚转轴工作状态", GetStatus(() => data.RollingAxisOperationStatus == 0)),
+                ("俯仰轴工作状态", GetStatus(() => data.PitchAxisOperationStatus == 0)),
+                ("偏航轴工作状态", GetStatus(() => data.YawAxisOperationStatus == 0)),
+                ("高低轴工作状态", GetStatus(() => data.ElevationAxisOperationStatus == 0)),
+                ("方位轴工作状态", GetStatus(() => data.AzimuthAxisOperationStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "转台物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        #region 108_光学复合半实物仿真系统 红外转台,红外源,固定电源
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem5(SystemInfo systemInfo)
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_108_7(systemInfo), await CreateTable_108_3(systemInfo)];
+            return tables;
+        }
+
+        // 红外源(通用)
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_108_7(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_108_SL_7_ReceiveData), "Vacuum");
+            int indexEnd = GetPropertyIndex(typeof(XT_108_SL_7_ReceiveData), "CoolantFlow");
+            string typeName = "红外源";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("露点温度状态", "离线"),
+                ("真空度状态", "离线"),
+                ("冷水机流量状态", "离线"),
+                ("环境箱温度状态", "离线"),
+                ("衬底温度状态", "离线"),
+                ("功率电源状态", "离线"),
+                ("控制电源状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_108_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
+            XT_108_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_108_SL_7_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("露点温度状态", GetStatus(() => data.DewPointTemperatureStatus == 1)),
+                ("真空度状态", GetStatus(() => data.VacuumStatus == 1)),
+                ("冷水机流量状态", GetStatus(() => data.ChillerFlowStatus == 1)),
+                ("环境箱温度状态", GetStatus(() => data.EnvironmentalChamberTemperatureStatus == 1)),
+                ("衬底温度状态", GetStatus(() => data.SubstrateTemperatureStatus == 1)),
+                ("功率电源状态", GetStatus(() => data.PowerSupplyStatus == 1)),
+                ("控制电源状态", GetStatus(() => data.ControlPowerStatus == 1)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外源物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        // 红外转台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_108_3(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_108_SL_3_ReceiveData), "ThreeAxisRollGiven");
+            int indexEnd = GetPropertyIndex(typeof(XT_108_SL_3_ReceiveData), "TwoAxisPitchFeedback");
+            string typeName = "转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("工作状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_108_SL_3_ReceiveData>("转台物理量", indexStart, indexEnd);
+            XT_108_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_108_SL_3_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("工作状态", GetStatus(() => data.OperationStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "转台物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        #region 121_三通道控制红外制导半实物仿真系统 红外转台,红外源,固定电源
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem6(SystemInfo systemInfo)
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_121_7(systemInfo), await CreateTable_121_3(systemInfo)];
+            return tables;
+        }
+
+        // 红外源(通用)
         private async Task<Tuple<TableDto, TableDto>> CreateTable_121_7(SystemInfo systemInfo)
         {
+            int indexStart = GetPropertyIndex(typeof(XT_121_SL_7_ReceiveData), "Vacuum");
+            int indexEnd = GetPropertyIndex(typeof(XT_121_SL_7_ReceiveData), "CoolantFlow");
+            string typeName = "红外源";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("露点温度状态", "离线"),
+                ("真空度状态", "离线"),
+                ("冷水机流量状态", "离线"),
+                ("环境箱温度状态", "离线"),
+                ("衬底温度状态", "离线"),
+                ("功率电源状态", "离线"),
+                ("控制电源状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_121_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
             XT_121_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_7_ReceiveData>()
                 .OrderByDescending(x => x.CreationTime)
                 .Take(1)
                 .ToListAsync()).FirstOrDefault()!;
-            if (data == null) return null!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("露点温度状态", GetStatus(() => data.DewPointTemperatureStatus == 1)),
+                ("真空度状态", GetStatus(() => data.VacuumStatus == 1)),
+                ("冷水机流量状态", GetStatus(() => data.ChillerFlowStatus == 1)),
+                ("环境箱温度状态", GetStatus(() => data.EnvironmentalChamberTemperatureStatus == 1)),
+                ("衬底温度状态", GetStatus(() => data.SubstrateTemperatureStatus == 1)),
+                ("功率电源状态", GetStatus(() => data.PowerSupplyStatus == 1)),
+                ("控制电源状态", GetStatus(() => data.ControlPowerStatus == 1)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外源物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
 
-            TableDto table = new TableDto
-            {
-                Title = "红外源",
-                Header = CreateStandardHeader(),
-                Data = new List<Dictionary<string, string>>
-                {
-                    CreateDataRow("露点温度状态", data.DewPointTemperatureStatus == 1 ? "正常" : "异常"),
-                    CreateDataRow("真空度状态", data.VacuumStatus == 1 ? "正常" : "异常"),
-                    CreateDataRow("冷水机流量状态", data.ChillerFlowStatus == 1 ? "正常" : "异常"),
-                    CreateDataRow("环境箱温度状态", data.EnvironmentalChamberTemperatureStatus == 1 ? "正常" : "异常"),
-                    CreateDataRow("衬底温度状态", data.SubstrateTemperatureStatus == 1 ? "正常" : "异常"),
-                    CreateDataRow("功率电源状态", data.PowerSupplyStatus == 1 ? "正常" : "异常"),
-                    CreateDataRow("控制电源状态", data.ControlPowerStatus == 1 ? "正常" : "异常")
-                }
-            };
-            IndexBasedTableGenerator detailGenerator = new IndexBasedTableGenerator();
-            TableDto detailTable = detailGenerator.GenerateTableFromInstance(data, "红外源物理量", 19, 25);
+        // 红外转台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_121_3(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_121_SL_3_ReceiveData), "ThreeAxisRollGiven");
+            int indexEnd = GetPropertyIndex(typeof(XT_121_SL_3_ReceiveData), "Period");
+            string typeName = "红外转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("滚动轴工作状态", "离线"),
+                ("偏航轴工作状态", "离线"),
+                ("俯仰轴工作状态", "离线"),
+                ("高低轴工作状态", "离线"),
+                ("方位轴工作状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_121_SL_3_ReceiveData>("红外转台物理量", indexStart, indexEnd);
+            XT_121_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_3_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("滚动轴工作状态", GetStatus(() => data.RollingAxisOperationStatus == 0)),
+                ("偏航轴工作状态", GetStatus(() => data.YawAxisOperationStatus == 0)),
+                ("俯仰轴工作状态", GetStatus(() => data.PitchAxisOperationStatus == 0)),
+                ("高低轴工作状态", GetStatus(() => data.ElevationAxisOperationStatus == 0)),
+                ("方位轴工作状态", GetStatus(() => data.AzimuthAxisOperationStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外转台物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        #region 202_低温环境红外制导控制半实物仿真系统 红外转台,红外源,固定电源
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem7(SystemInfo systemInfo)
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_202_7(systemInfo), await CreateTable_202_3(systemInfo)];
+            return tables;
+        }
+
+        // 红外源(通用)
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_202_7(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_202_SL_7_ReceiveData), "Vacuum");
+            int indexEnd = GetPropertyIndex(typeof(XT_202_SL_7_ReceiveData), "CoolantFlow");
+            string typeName = "红外源";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("露点温度状态", "离线"),
+                ("真空度状态", "离线"),
+                ("冷水机流量状态", "离线"),
+                ("环境箱温度状态", "离线"),
+                ("衬底温度状态", "离线"),
+                ("功率电源状态", "离线"),
+                ("控制电源状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_202_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
+            XT_202_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_202_SL_7_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("露点温度状态", GetStatus(() => data.DewPointTemperatureStatus == 1)),
+                ("真空度状态", GetStatus(() => data.VacuumStatus == 1)),
+                ("冷水机流量状态", GetStatus(() => data.ChillerFlowStatus == 1)),
+                ("环境箱温度状态", GetStatus(() => data.EnvironmentalChamberTemperatureStatus == 1)),
+                ("衬底温度状态", GetStatus(() => data.SubstrateTemperatureStatus == 1)),
+                ("功率电源状态", GetStatus(() => data.PowerSupplyStatus == 1)),
+                ("控制电源状态", GetStatus(() => data.ControlPowerStatus == 1)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外源物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        // 红外转台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_202_3(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_202_SL_3_ReceiveData), "ThreeAxisRollGiven");
+            int indexEnd = GetPropertyIndex(typeof(XT_202_SL_3_ReceiveData), "WorkingDuration");
+            string typeName = "转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("三轴转台滚动轴状态", "离线"),
+                ("三轴转台偏航轴状态", "离线"),
+                ("三轴转台俯仰轴状态", "离线"),
+                ("两轴转台高低轴状态", "离线"),
+                ("两轴转台方位轴状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_202_SL_3_ReceiveData>("转台物理量", indexStart, indexEnd);
+            XT_202_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_202_SL_3_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("三轴转台滚动轴状态", GetStatus(() => data.RollAxisFaultCode == 0)),
+                ("三轴转台偏航轴状态", GetStatus(() => data.YawAxisFaultCode == 0)),
+                ("三轴转台俯仰轴状态", GetStatus(() => data.PitchAxisFaultCode == 0)),
+                ("两轴转台高低轴状态", GetStatus(() => data.ElevationAxisFaultCode == 0)),
+                ("两轴转台方位轴状态", GetStatus(() => data.AzimuthAxisFaultCode == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "转台物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        #region 103_机械式制导控制半实物仿真系统 雷达转台,雷达源,固定电源
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem8(SystemInfo systemInfo)
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_103_6(systemInfo), await CreateTable_103_2(systemInfo)];
+            return tables;
+        }
+
+        // 雷达转台 (通用)
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_103_2(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_103_SL_2_ReceiveData), "InnerFramePosition");
+            int indexEnd = GetPropertyIndex(typeof(XT_103_SL_2_ReceiveData), "OuterFrameAcceleration");
+            string typeName = "转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("自检状态", "离线"),
+                ("运行状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_103_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
+            XT_103_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_103_SL_2_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)),
+                ("运行状态", GetStatus(() => data.HealthOperationStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "转台物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        // 雷达源
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_103_6(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "MainCtrlDrfm1NetStatus");
+            int indexEnd = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "IfOutputPower");
+            string typeName = "雷达源";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("状态类型", "离线"), ("自检状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_0_SL_6_ReceiveData>("雷达源物理量", indexStart, indexEnd);
+            XT_0_SL_6_ReceiveData data = (await _sqlSugarClient.Queryable<XT_0_SL_6_ReceiveData>()
+                .Where(x => x.SimuTestSysld == 8) // 雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 6)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        #region 112_独立回路半实物仿真系统 雷达转台,固定电源
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem9(SystemInfo systemInfo)
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_112_2(systemInfo)];
+            return tables;
+        }
+
+        // 雷达转台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_112_2(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_112_SL_2_ReceiveData), "InnerFramePosition");
+            int indexEnd = GetPropertyIndex(typeof(XT_112_SL_2_ReceiveData), "OuterFrameAcceleration");
+            string typeName = "转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("滚动轴工作状态", "离线"),
+                ("俯仰轴工作状态", "离线"),
+                ("偏航轴工作状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_112_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
+            XT_112_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_112_SL_2_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("滚动轴工作状态", GetStatus(() => data.RollingAxisOperationStatus == 0)),
+                ("俯仰轴工作状态", GetStatus(() => data.PitchAxisOperationStatus == 0)),
+                ("偏航轴工作状态", GetStatus(() => data.YawAxisOperationStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "转台物理量", indexStart, indexEnd);
+            return new Tuple<TableDto, TableDto>(table, detailTable);
+        }
+
+        #endregion
+
+        #region 119_独立回路/可见光制导半实物仿真系统 雷达转台,固定电源
+
+        private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem10(SystemInfo systemInfo)
+        {
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_119_2(systemInfo)];
+            return tables;
+        }
+
+        // 雷达转台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_119_2(SystemInfo systemInfo)
+        {
+            int indexStart = GetPropertyIndex(typeof(XT_119_SL_2_ReceiveData), "InnerFramePosition");
+            int indexEnd = GetPropertyIndex(typeof(XT_119_SL_2_ReceiveData), "OuterFrameAcceleration");
+            string typeName = "转台";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("自检状态", "离线"),
+                ("运行状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_119_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
+            XT_119_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_119_SL_2_ReceiveData>()
+                .OrderByDescending(x => x.CreationTime)
+                .Take(1)
+                .ToListAsync()).FirstOrDefault()!;
+            // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            TableDto table = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)),
+                ("运行状态", GetStatus(() => data.HealthOperationStatus == 0)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "转台物理量", indexStart, indexEnd);
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
 
@@ -627,9 +1216,56 @@ namespace Hgzn.Mes.Application.Main.Services.App
             };
         }
 
+        /// <summary>
+        /// 获取属性在类中的索引,我会先用这个函数获取一遍,然后将值硬编码到代码中,因为类结构通常不变,不需要每次都用反射获取
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        private int GetPropertyIndex(Type type, string propertyName)
+        {
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            for (int i = 0; i < properties.Length; i++)
+            {
+                if (properties[i].Name == propertyName)
+                {
+                    return i;
+                }
+            }
+            return -1; // 未找到
+        }
+
+        private string GetStatus(Func<bool> where)
+        {
+            return where() ? "正常" : "异常";
+        }
+
+        private TableDto Combine(string title, TableDto table1, TableDto table2)
+        {
+            TableDto ret = new TableDto();
+            ret.Title = title;
+            ret.Header = CreateStandardHeader();
+            ret.Data = new List<Dictionary<string, string>>();
+            if (table1 != null && table1.Data.Any())
+            {
+                foreach (Dictionary<string, string> item in table1.Data)
+                {
+                    ret.Data.Add(item);
+                }
+            }
+            if (table2 != null && table2.Data.Any())
+            {
+                foreach (Dictionary<string, string> item in table2.Data)
+                {
+                    ret.Data.Add(item);
+                }
+            }
+            return ret;
+        }
+
         #endregion
 
-        #region 获取图表数据
+        #region ====== 获取图表数据 ======
 
         /// <summary>
         /// 获取图表数据

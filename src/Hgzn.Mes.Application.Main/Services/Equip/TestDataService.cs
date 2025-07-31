@@ -11,6 +11,8 @@ using Hgzn.Mes.Infrastructure.Utilities;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Runtime.Serialization.Json;
+using Hgzn.Mes.Application.Main.Services.System.IService;
+using Hgzn.Mes.Application.Main.Services.System;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -22,9 +24,11 @@ public class TestDataService : SugarCrudAppService<
 {
 
     private readonly HttpClient _httpClient;
-    public TestDataService(HttpClient httpClient)
+    private readonly IBaseConfigService _baseConfigService;
+    public TestDataService(HttpClient httpClient, IBaseConfigService baseConfigService)
     {
         _httpClient = httpClient;
+        _baseConfigService = baseConfigService;
     }
 
     public override async Task<IEnumerable<TestDataReadDto>> GetListAsync(TestDataQueryDto? queryDto = null)
@@ -104,10 +108,12 @@ public class TestDataService : SugarCrudAppService<
     /// </summary>
     /// <param name="url"></param>
     /// <returns></returns>
-    public async Task<int> GetDataFromThirdPartyAsync(string url)
+    public async Task<int> GetDataFromThirdPartyAsync()
     {
         try
         {
+            var url = await _baseConfigService.GetValueByKeyAsync("import_plan_url");
+
             // 发送 GET 请求
             var response = await _httpClient.GetAsync(url);
 
@@ -163,20 +169,18 @@ public class TestDataService : SugarCrudAppService<
         {
             // 处理 HTTP 请求异常
             LoggerAdapter.LogError($"HTTP 请求失败: {ex.Message}");
-            throw;
         }
         catch (JsonException ex)
         {
             // 处理 JSON 反序列化异常
             LoggerAdapter.LogError($"JSON 反序列化失败: {ex.Message}");
-            throw;
         }
         catch (Exception ex)
         {
             // 处理其他异常
             LoggerAdapter.LogError($"发生错误: {ex.Message}");
-            throw;
         }
+        return 0;
     }
 
     public async Task<IEnumerable<TestDataReadDto>> GetHistoryListByTestAsync()

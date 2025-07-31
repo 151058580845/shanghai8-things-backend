@@ -26,8 +26,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
         public TableDto GenerateTableFromInstance<T>(
             T instance,
             string title,
-            int startIndex = 0,
-            int? endIndex = null) where T : class
+            int startIndex,
+            int endIndex) where T : class
         {
             if (instance == null)
             {
@@ -40,9 +40,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 .Where(p => p.CanRead)
                 .OrderBy(p => p.MetadataToken)
                 .ToList();
-
-            // 设置默认结束索引
-            endIndex ??= properties.Count - 1;
 
             // 验证索引范围
             if (startIndex < 0 || startIndex >= properties.Count)
@@ -71,6 +68,61 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 var property = properties[i];
                 var displayName = GetPropertyDisplayName(property);
                 var value = property.GetValue(instance)?.ToString() ?? string.Empty;
+
+                tableDto.Data.Add(CreateDataRow(displayName, value));
+            }
+
+            return tableDto;
+        }
+
+        /// <summary>
+        /// 从实体实例生成表格数据
+        /// </summary>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="instance">实体实例</param>
+        /// <param name="title">表格标题</param>
+        /// <param name="startIndex">起始属性索引(从0开始)</param>
+        /// <param name="endIndex">结束属性索引(包含)</param>
+        /// <returns>TableDto对象</returns>
+        public TableDto GenerateTableFromInstance<T>(
+            string title,
+            int startIndex,
+            int endIndex) where T : class
+        {
+            // 获取所有公共属性并按声明顺序排序
+            var properties = typeof(T)
+                .GetProperties()
+                .Where(p => p.CanRead)
+                .OrderBy(p => p.MetadataToken)
+                .ToList();
+
+            // 验证索引范围
+            if (startIndex < 0 || startIndex >= properties.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startIndex),
+                    $"起始索引{startIndex}超出有效范围(0-{properties.Count - 1})");
+            }
+
+            if (endIndex < startIndex || endIndex >= properties.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(endIndex),
+                    $"结束索引{endIndex}无效，必须大于等于{startIndex}且小于{properties.Count}");
+            }
+
+            // 创建表格DTO
+            var tableDto = new TableDto
+            {
+                Title = title,
+                Header = CreateStandardHeader(),
+                Data = new List<Dictionary<string, string>>()
+            };
+
+            // 处理选定范围内的属性
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                var property = properties[i];
+                var displayName = GetPropertyDisplayName(property);
+                var value = "---";
 
                 tableDto.Data.Add(CreateDataRow(displayName, value));
             }

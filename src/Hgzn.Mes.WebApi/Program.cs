@@ -15,7 +15,7 @@ using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Hgzn.Mes.Infrastructure.Utilities.Filter;
 using Hgzn.Mes.WebApi;
 using Hgzn.Mes.WebApi.Utilities;
-
+using Hgzn.Mes.WebApi.Worker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Localization;
@@ -256,6 +256,9 @@ builder.Services.AddMediatR(config =>
     config.RegisterServicesFromAssemblies(Assembly.Load("Hgzn.Mes." + nameof(Hgzn.Mes.Application) + ".Main")));
 
 builder.Services.AddHttpClient(); // 注册 IHttpClientFactory
+
+builder.Services.AddHostedService<TestDataImport>();
+
 var app = builder.Build();
 
 // global Logger

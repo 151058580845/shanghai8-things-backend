@@ -16,12 +16,10 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip;
 public class TestDataController : ControllerBase
 {
     private readonly ITestDataService _testDataService;
-    private readonly IBaseConfigService _baseConfigService;
 
-    public TestDataController(ITestDataService testDataService, IBaseConfigService baseConfigService)
+    public TestDataController(ITestDataService testDataService)
     {
         _testDataService = testDataService;
-        _baseConfigService = baseConfigService;
     }
 
     [HttpPost]
@@ -80,8 +78,7 @@ public class TestDataController : ControllerBase
     [Authorize(Policy = $"equip:testdata:{ScopeMethodType.Add}")]
     public async Task<ResponseWrapper<int>> CreateAsync()
     {
-        var url = await _baseConfigService.GetValueByKeyAsync("import_plan_url");
-        return (await _testDataService.GetDataFromThirdPartyAsync(url)).Wrap();
+        return (await _testDataService.GetDataFromThirdPartyAsync()).Wrap();
     }
 
 

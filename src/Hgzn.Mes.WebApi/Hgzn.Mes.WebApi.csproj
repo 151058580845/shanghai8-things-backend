@@ -39,6 +39,11 @@
     <None Remove="attachs\08e8bafc-1a6d-4ce8-a921-e95fae5ac56b-1750674376281.png" />
     <None Remove="attachs\08e8bafc-1a6d-4ce8-a921-e95fae5ac56b-1750674358446.png" />
     <None Remove="attachs\08e8bafc-1a6d-4ce8-a921-e95fae5ac56b-1750674020749.png" />
+    <None Remove="Resources\HCWebSDKPluginsUserSetup.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\HCWebSDKPluginsUserSetup.exe" />
   </ItemGroup>
 
   <PropertyGroup>

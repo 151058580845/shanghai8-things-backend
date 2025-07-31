@@ -35,5 +35,5 @@ public interface ITestDataService : ICrudAppService<
     /// </summary>
     /// <param name="url"></param>
     /// <returns></returns>
-    Task<int> GetDataFromThirdPartyAsync(string url);
+    Task<int> GetDataFromThirdPartyAsync();
 }

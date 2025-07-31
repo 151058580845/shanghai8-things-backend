@@ -43,7 +43,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Config
 
         [Description("排序")]
         public int OrderNum { get; set; }
-        
+
         #region static
 
         public static BaseConfig ImportUrl = new BaseConfig()
@@ -64,8 +64,35 @@ namespace Hgzn.Mes.Domain.Entities.System.Config
             Remark = ""
         };
 
+        public static BaseConfig CameraIp = new BaseConfig()
+        {
+            Id = Guid.Parse("f34153e0-2a1b-41f9-8686-16ce11392fff"),
+            ConfigName = "摄像头地址",
+            ConfigKey = "camera_ip",
+            ConfigValue = "192.168.1.52:8000,",
+            Remark = "英文逗号分割"
+        };
+
+        public static BaseConfig CameraUser = new BaseConfig()
+        {
+            Id = Guid.Parse("63529562-431a-4005-af04-47fc70c2b846"),
+            ConfigName = "摄像头用户名",
+            ConfigKey = "camera_user",
+            ConfigValue = "admin",
+            Remark = ""
+        };
+
+        public static BaseConfig CameraPassword = new BaseConfig()
+        {
+            Id = Guid.Parse("dccb1a8f-d084-44fc-9541-74baf06fe3a1"),
+            ConfigName = "摄像头密码",
+            ConfigKey = "camera_password",
+            ConfigValue = "Juyee4321",
+            Remark = ""
+        };
+
         #endregion
 
-        public static BaseConfig[] Seeds { get; } = [ImportUrl, DefaultPassword];
+        public static BaseConfig[] Seeds { get; } = [ImportUrl, DefaultPassword, CameraIp, CameraUser, CameraPassword];
     }
 }
