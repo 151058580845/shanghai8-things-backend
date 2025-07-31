@@ -115,7 +115,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public double? Value { get; set; }
 
         /// <summary>
-        /// 
+        /// 数值2
         /// </summary>
         public double? Value2 { get; set; }
     }

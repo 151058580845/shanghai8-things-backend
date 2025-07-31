@@ -12,7 +12,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_314_ReceiveDat
     /// <summary>
     /// 314_固定电源
     /// </summary>
-    public class XT_314_SL_4_ReceiveData : UniversalEntity, IAudited
+    public class XT_314_SL_4_ReceiveData : UniversalEntity, IAudited, IPowerSupplyData
     {
         public Guid? CreatorId { get; set; }
         public DateTime CreationTime { get; set; }

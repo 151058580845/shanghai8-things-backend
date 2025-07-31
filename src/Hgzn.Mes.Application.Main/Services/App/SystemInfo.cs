@@ -4,6 +4,7 @@ using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT__ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_0_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_103_ReceiveDatas;
@@ -1279,127 +1280,118 @@ namespace Hgzn.Mes.Application.Main.Services.App
             List<ChartDataDto> ret = new List<ChartDataDto>();
             switch (systemInfo.SystemNum)
             {
+                case 0:
+                    return await GetChartData_0(ret);
                 case 1:
-                    // 获取今天的日期（时间部分为 00:00:00）
-                    DateTime today = DateTime.Today;
-                    // 查询今天的所有数据，并按 CreationTime 降序排列
-                    List<XT_310_SL_4_ReceiveData> todayData = await _sqlSugarClient
-                        .Queryable<XT_310_SL_4_ReceiveData>()
-                        .Where(x => x.CreationTime >= today && x.CreationTime < today.AddDays(1)) // 今天 00:00:00 ~ 23:59:59
-                        .OrderBy(x => x.CreationTime)
-                        .ToListAsync();
-                    XT_310_SL_4_ReceiveData data = todayData.LastOrDefault()!;
-                    if (data == null) return ret;
-                    for (int i = 1; i < data.PowerSupplyCount + 1; i++)
-                    {
-                        // 获取采集电压
-                        List<ChartDataPointDto> cdps = new List<ChartDataPointDto>();
-                        foreach (XT_310_SL_4_ReceiveData item in todayData)
-                        {
-                            ChartDataPointDto cdp = new ChartDataPointDto();
-                            ChartDataPointDto cdp2 = new ChartDataPointDto();
-                            cdp.Time = item.CreationTime.ToString("HH:mm");
-                            GetVolValue(i, item, cdp);
-                            GetCurValue(i, item, cdp);
-                            cdps.Add(cdp);
-                        }
-                        ret.Add(new ChartDataDto()
-                        {
-                            Name = $"电源{i}",
-                            Data = cdps
-                        });
-                    }
-                    return ret;
+                    return await GetChartDataAsync<XT_310_SL_4_ReceiveData>(systemInfo);
+                case 2:
+                    return await GetChartDataAsync<XT_307_SL_4_ReceiveData>(systemInfo);
+                case 3:
+                    return await GetChartDataAsync<XT_314_SL_4_ReceiveData>(systemInfo);
+                case 4:
+                    return await GetChartDataAsync<XT_109_SL_4_ReceiveData>(systemInfo);
+                case 5:
+                    return await GetChartDataAsync<XT_108_SL_4_ReceiveData>(systemInfo);
+                case 6:
+                    return await GetChartDataAsync<XT_121_SL_4_ReceiveData>(systemInfo);
+                case 7:
+                    return await GetChartDataAsync<XT_202_SL_4_ReceiveData>(systemInfo);
+                case 8:
+                    return await GetChartDataAsync<XT_103_SL_4_ReceiveData>(systemInfo);
+                case 9:
+                    return await GetChartDataAsync<XT_112_SL_4_ReceiveData>(systemInfo);
+                case 10:
+                    return await GetChartDataAsync<XT_119_SL_4_ReceiveData>(systemInfo);
                 default:
                     return await Task.FromResult(ret);
             }
         }
 
-        private static void GetVolValue(int i, dynamic item, ChartDataPointDto cdp)
+        private async Task<List<ChartDataDto>> GetChartData_0(List<ChartDataDto> ret)
         {
-            switch (i)
+            // 获取今天的日期（时间部分为 00:00:00）
+            DateTime today = DateTime.Today;
+            // 查询今天的所有数据，并按 CreationTime 降序排列
+            List<XT_0_SL_5_ReceiveData> todayData = await _sqlSugarClient
+                .Queryable<XT_0_SL_5_ReceiveData>()
+                .Where(x => x.CreationTime >= today && x.CreationTime < today.AddDays(1)) // 今天 00:00:00 ~ 23:59:59
+                .OrderBy(x => x.CreationTime)
+                .ToListAsync();
+            // 获取采集电压
+            List<ChartDataPointDto> cdps = new List<ChartDataPointDto>();
+            foreach (XT_0_SL_5_ReceiveData item in todayData)
             {
-                case 1:
-                    cdp.Value = item.Power1VoltageRead;
-                    break;
-                case 2:
-                    cdp.Value = item.Power2VoltageRead;
-                    break;
-                case 3:
-                    cdp.Value = item.Power3VoltageRead;
-                    break;
-                case 4:
-                    cdp.Value = item.Power4VoltageRead;
-                    break;
-                case 5:
-                    cdp.Value = item.Power5VoltageRead;
-                    break;
-                case 6:
-                    cdp.Value = item.Power6VoltageRead;
-                    break;
-                case 7:
-                    cdp.Value = item.Power7VoltageRead;
-                    break;
-                case 8:
-                    cdp.Value = item.Power8VoltageRead;
-                    break;
-                default:
-                    break;
+                ChartDataPointDto cdp = new ChartDataPointDto();
+                cdp.Time = item.CreationTime.ToString("HH:mm");
+                cdp.Value = item.PowerVoltageRead;
+                cdp.Value2 = item.PowerCurrentRead;
+                cdps.Add(cdp);
             }
+            ret.Add(new ChartDataDto()
+            {
+                Name = $"电源{i}",
+                Data = cdps
+            });
+            return ret;
         }
 
-        private static void GetCurValue(int i, dynamic item, ChartDataPointDto cdp)
+
+        public async Task<List<ChartDataDto>> GetChartDataAsync<T>(SystemInfo systemInfo) where T : class, IPowerSupplyData
         {
-            switch (i)
-            {
-                case 1:
-                    cdp.Value2 = item.Power1CurrentRead;
-                    break;
-                case 2:
-                    cdp.Value2 = item.Power2CurrentRead;
-                    break;
-                case 3:
-                    cdp.Value2 = item.Power3CurrentRead;
-                    break;
-                case 4:
-                    cdp.Value2 = item.Power4CurrentRead;
-                    break;
-                case 5:
-                    cdp.Value2 = item.Power5CurrentRead;
-                    break;
-                case 6:
-                    cdp.Value2 = item.Power6CurrentRead;
-                    break;
-                case 7:
-                    cdp.Value2 = item.Power7CurrentRead;
-                    break;
-                case 8:
-                    cdp.Value2 = item.Power8CurrentRead;
-                    break;
-                default:
-                    break;
-            }
+            var ret = new List<ChartDataDto>();
+
+            DateTime today = DateTime.Today;
+
+            // 查询今天的所有数据
+            var todayData = await _sqlSugarClient.Queryable<T>()
+                .Where(x => x.CreationTime >= today && x.CreationTime < today.AddDays(1))
+                .OrderBy(x => x.CreationTime)
+                .ToListAsync();
+
+            var latestData = todayData.LastOrDefault();
+            if (latestData == null) return ret;
+
+            return GenerateChartData(todayData, latestData);
         }
 
-        //public async List<ChartDataDto> GetChartData(SystemInfo systemInfo)
-        //{
-        //    // 根据系统编号路由到对应的处理方法
-        //    List<Tuple<TableDto, TableDto>> ret = systemInfo.SystemNum switch
-        //    {
-        //        1 => await GetChartDataSystem1(systemInfo),
-        //        2 => await GetChartDataSystem2(systemInfo),
-        //        3 => await GetChartDataSystem3(systemInfo),
-        //        4 => await GetChartDataSystem4(systemInfo),
-        //        5 => await GetChartDataSystem5(systemInfo),
-        //        6 => await GetChartDataSystem6(systemInfo),
-        //        7 => await GetChartDataSystem7(systemInfo),
-        //        8 => await GetChartDataSystem8(systemInfo),
-        //        9 => await GetChartDataSystem9(systemInfo),
-        //        10 => await GetChartDataSystem10(systemInfo),
-        //        _ => null!
-        //    };
-        //    return ret;
-        //}
+        private List<ChartDataDto> GenerateChartData<T>(List<T> dataList, T latestData) where T : IPowerSupplyData
+        {
+            var result = new List<ChartDataDto>();
+
+            for (int i = 1; i <= latestData.PowerSupplyCount; i++)
+            {
+                var cdps = dataList.Select(item => new ChartDataPointDto
+                {
+                    Time = item.CreationTime.ToString("HH:mm"),
+                    Value = GetPowerValue(item, i, isVoltage: true),
+                    Value2 = GetPowerValue(item, i, isVoltage: false)
+                }).ToList();
+
+                result.Add(new ChartDataDto
+                {
+                    Name = $"电源{i}",
+                    Data = cdps
+                });
+            }
+
+            return result;
+        }
+
+        private float GetPowerValue<T>(T item, int powerIndex, bool isVoltage) where T : IPowerSupplyData
+        {
+            return powerIndex switch
+            {
+                1 => isVoltage ? item.Power1VoltageRead : item.Power1CurrentRead,
+                2 => isVoltage ? item.Power2VoltageRead : item.Power2CurrentRead,
+                3 => isVoltage ? item.Power3VoltageRead : item.Power3CurrentRead,
+                4 => isVoltage ? item.Power4VoltageRead : item.Power4CurrentRead,
+                5 => isVoltage ? item.Power5VoltageRead : item.Power5CurrentRead,
+                6 => isVoltage ? item.Power6VoltageRead : item.Power6CurrentRead,
+                7 => isVoltage ? item.Power7VoltageRead : item.Power7CurrentRead,
+                8 => isVoltage ? item.Power8VoltageRead : item.Power8CurrentRead,
+                _ => 0f
+            };
+        }
         #endregion
     }
 }
