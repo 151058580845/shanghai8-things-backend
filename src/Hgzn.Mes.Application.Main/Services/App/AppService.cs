@@ -207,8 +207,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
             if (tables != null && tables.Count > 2 && tables[2] != null && tables[2].Item1 != null && tables[2].Item2 != null)
             {
-                queue2.Add(tables[2].Item1);
-                read.Queue2Detail = tables[2].Item2;
+                queue3.Add(tables[2].Item1);
+                read.Queue3Detail = tables[2].Item2;
             }
             read.Queue = queue1;
             read.QueueDetail = queueDetail1;

@@ -470,28 +470,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         #region ====== 获取展示数据的Table ======
 
-        #region 通用
 
-        #endregion
-
-        public TableDto CreateTable(string title, Func<List<List<string>>?> createHeader, params (string key, string value)[] rows)
-        {
-            if (rows == null || !rows.Any())
-            {
-                return new TableDto
-                {
-                    Title = title,
-                    Header = createHeader(),
-                    Data = new List<Dictionary<string, string>>()
-                };
-            }
-            return new TableDto
-            {
-                Title = title,
-                Header = createHeader(),
-                Data = rows.Select(r => CreateDataRow(r.key, r.value)).ToList()
-            };
-        }
 
         /// <summary>
         /// 根据系统信息和类型获取表格数据DTO列表
@@ -1263,6 +1242,25 @@ namespace Hgzn.Mes.Application.Main.Services.App
             return ret;
         }
 
+        private TableDto CreateTable(string title, Func<List<List<string>>?> createHeader, params (string key, string value)[] rows)
+        {
+            if (rows == null || !rows.Any())
+            {
+                return new TableDto
+                {
+                    Title = title,
+                    Header = createHeader(),
+                    Data = new List<Dictionary<string, string>>()
+                };
+            }
+            return new TableDto
+            {
+                Title = title,
+                Header = createHeader(),
+                Data = rows.Select(r => CreateDataRow(r.key, r.value)).ToList()
+            };
+        }
+
         #endregion
 
         #region ====== 获取图表数据 ======
@@ -1317,7 +1315,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
         }
 
-        private static void GetVolValue(int i, XT_310_SL_4_ReceiveData item, ChartDataPointDto cdp)
+        private static void GetVolValue(int i, dynamic item, ChartDataPointDto cdp)
         {
             switch (i)
             {
@@ -1350,7 +1348,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
         }
 
-        private static void GetCurValue(int i, XT_310_SL_4_ReceiveData item, ChartDataPointDto cdp)
+        private static void GetCurValue(int i, dynamic item, ChartDataPointDto cdp)
         {
             switch (i)
             {
@@ -1383,6 +1381,25 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
         }
 
+        //public async List<ChartDataDto> GetChartData(SystemInfo systemInfo)
+        //{
+        //    // 根据系统编号路由到对应的处理方法
+        //    List<Tuple<TableDto, TableDto>> ret = systemInfo.SystemNum switch
+        //    {
+        //        1 => await GetChartDataSystem1(systemInfo),
+        //        2 => await GetChartDataSystem2(systemInfo),
+        //        3 => await GetChartDataSystem3(systemInfo),
+        //        4 => await GetChartDataSystem4(systemInfo),
+        //        5 => await GetChartDataSystem5(systemInfo),
+        //        6 => await GetChartDataSystem6(systemInfo),
+        //        7 => await GetChartDataSystem7(systemInfo),
+        //        8 => await GetChartDataSystem8(systemInfo),
+        //        9 => await GetChartDataSystem9(systemInfo),
+        //        10 => await GetChartDataSystem10(systemInfo),
+        //        _ => null!
+        //    };
+        //    return ret;
+        //}
         #endregion
     }
 }
