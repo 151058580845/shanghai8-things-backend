@@ -1329,7 +1329,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
             ret.Add(new ChartDataDto()
             {
-                Name = $"电源{i}",
+                Name = $"电源1",
                 Data = cdps
             });
             return ret;
