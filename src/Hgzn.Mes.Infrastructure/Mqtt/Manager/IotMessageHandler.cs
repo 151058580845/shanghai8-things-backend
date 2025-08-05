@@ -130,6 +130,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     await HandleRfidMsgAsync(uri, rfid);
                     break;
                 case EquipConnType.IotServer:
+                    _logger.LogDebug($"AG - ================= 我看看有没有给这个主题发送数据的 =================");
                     // 根据连接ID查询设备ID
                     EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
                     Guid equipId = con.EquipId;
@@ -145,7 +146,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                         return;
                     }
                     // 处理RKServer数据逻辑,这个数据本来是打算从后台内存中读取的,现在修改为根据MQTT推送的消息,在前端获取,所以现在随便传个数字过去就行,在前端改
-                    // await HandleRkServerDataAsync(uri, rkData);
+                    // 更新:理论上可以,实际上不行,因为前端会刷新界面,前端刷新界面的时候可能MQTT还没有推送,所以会显示默认数据
+                    await HandleRkServerDataAsync(uri, rkData);
                     break;
             }
 
@@ -160,6 +162,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         private async Task HandleTransmitAsync(IotTopic topic, byte[] msg)
         {
+            _logger.LogDebug($"AG - webApi收到转发数据");
             var uri = Guid.Parse(topic.ConnUri!);
             var connType = topic.ConnType;
             if (connType == EquipConnType.IotServer)

@@ -22,10 +22,10 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         {
             byte[] newBuffer;
             DateTime time;
-            if (ReceiveHelper.GetMessage(msg, out time, out newBuffer))
+            uint bufferLength;
+            if (ReceiveHelper.GetMessage(msg, out bufferLength, out time, out newBuffer))
             {
-                string data = Encoding.UTF8.GetString(newBuffer);
-                LoggerAdapter.LogTrace(data);
+                LoggerAdapter.LogDebug($"AG - WebApi收到转发数据内容: {BitConverter.ToString(msg, 0, (int)bufferLength).Replace("-", " ")}");
 
                 // 使用 eventData.Data 作为 buffer
                 byte[] buffer = newBuffer;

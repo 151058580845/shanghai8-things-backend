@@ -50,7 +50,6 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
 
         public override async Task<bool> ConnectAsync(ConnInfo connInfo)
         {
-            LoggerAdapter.LogInformation($"开始TCP连接");
             if (connInfo?.ConnString is null) throw new ArgumentNullException("connIfo");
             SocketConnInfo conn = null;
             conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions) ?? throw new ArgumentNullException("conn");

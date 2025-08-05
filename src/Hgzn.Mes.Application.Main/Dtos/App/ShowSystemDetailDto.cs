@@ -157,6 +157,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public string? Value { get; set; }
 
         /// <summary>
+        /// 设备资产号
+        /// </summary>
+        public string? EquipAssetNumber { get; set; }
+
+        /// <summary>
         /// 时间（字符串格式）
         /// </summary>
         public string? Time { get; set; }

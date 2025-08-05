@@ -36,7 +36,6 @@ public class UdpServerConnector : EquipConnectorBase
         string uri, EquipConnType connType)
         : base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
     {
-        LoggerAdapter.LogInformation("连接的数据库是" + sqlSugarClient.CurrentConnectionConfig.ConnectionString);
         _equipConnect = sqlSugarClient.Queryable<EquipConnect>()?.First(x => x.Id == Guid.Parse(uri))!;
         _forwardNum = _equipConnect?.ForwardRate.Value;
         _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
@@ -70,7 +69,6 @@ public class UdpServerConnector : EquipConnectorBase
 
     public override async Task<bool> ConnectAsync(ConnInfo connInfo)
     {
-        LoggerAdapter.LogInformation("开始udp连接...");
         if (connInfo?.ConnString is null)
             throw new ArgumentNullException(nameof(connInfo));
 
@@ -80,13 +78,11 @@ public class UdpServerConnector : EquipConnectorBase
 
         try
         {
-            LoggerAdapter.LogInformation($"开启服务,监听的端口是{conn.Port}");
             // 创建UDP服务端
             _localEndPoint = new IPEndPoint(IPAddress.Any, conn.Port);
             _udpServer = new UdpClient(_localEndPoint);
             _isRunning = true;
 
-            LoggerAdapter.LogInformation($"开始接收数据");
             // 启动异步接收（UDP不需要Accept，直接开始接收数据）
             _ = Task.Run(() => ReceiveDataAsync());
 
@@ -110,21 +106,20 @@ public class UdpServerConnector : EquipConnectorBase
         {
             try
             {
-                LoggerAdapter.LogInformation("即将开始接收数据...");
                 var result = await _udpServer.ReceiveAsync();
-                LoggerAdapter.LogInformation("收到一组数据...");
                 var remoteEndPoint = result.RemoteEndPoint;
                 var buffer = result.Buffer;
                 bool hasData = false;
-
+                LoggerAdapter.LogDebug($"AG - 收到Udp数据,数据来自{remoteEndPoint}");
                 // 在这里处理接收到的数据（示例：打印日志）
-                LoggerAdapter.LogInformation($"Received {buffer.Length} bytes from {remoteEndPoint}");
                 // 获取报文数据
                 byte[] newBuffer;
                 DateTime time;
-                hasData = ReceiveHelper.GetMessage(buffer, out time, out newBuffer);
+                uint bufferLength;
+                hasData = ReceiveHelper.GetMessage(buffer, out bufferLength, out time, out newBuffer);
                 if (hasData && newBuffer != null)
                 {
+                    LoggerAdapter.LogDebug($"AG - Udp数据内容: {BitConverter.ToString(buffer, 0, (int)bufferLength).Replace("-", " ")}");
                     // 获取部署在采集器里的数据库
                     LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, _localsqlSugarClinet, _connectionMultiplexer, _mqttExplorer);
                     await dispatch.Handle(buffer);

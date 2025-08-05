@@ -351,6 +351,8 @@ public class EquipLedgerService : SugarCrudAppService<
             if (!columnIndices.ContainsKey(column))
                 throw new InvalidDataException($"Excel 文件中缺少必要的列：{column}");
         }
+        // 在检查必要列的代码部分之后，添加对"出厂日期"列的可选处理
+        bool hasManufactureDateColumn = columnIndices.ContainsKey("出厂日期");
 
         // 获取当前日期
         DateTime currentDate = DateTime.Now.ToLocalTime();
@@ -376,6 +378,12 @@ public class EquipLedgerService : SugarCrudAppService<
             string? modelStr = dataRow.GetCell(columnIndices["型号"])?.ToString()?.Trim();
             // 资产名称
             string? assetNameStr = dataRow.GetCell(columnIndices["资产名称"])?.ToString()?.Trim();
+            // 出厂日期
+            string? manufactureDateStr = null;
+            if (hasManufactureDateColumn)
+            {
+                manufactureDateStr = dataRow.GetCell(columnIndices["出厂日期"])?.ToString()?.Trim();
+            }
 
             bool isExist = false;
             foreach (EquipLedger item in oldEquipMeasurements)
@@ -394,6 +402,7 @@ public class EquipLedgerService : SugarCrudAppService<
                         Model = modelStr,
                         EquipName = assetNameStr,
                         IsMeasurementDevice = isMeasurementDevice,
+                        PurchaseDate = manufactureDateStr != null ? DateTime.Parse(manufactureDateStr) : item.PurchaseDate
                     }).ExecuteCommand();
                     isExist = true;
                 }
@@ -404,6 +413,12 @@ public class EquipLedgerService : SugarCrudAppService<
                 DateTime? dt = null;
                 if (!string.IsNullOrEmpty(expiryDateStr))
                     dt = DateTime.Parse(expiryDateStr);
+                // 在创建新记录的代码块中，添加出厂日期的设置
+                DateTime? manufactureDate = null;
+                if (hasManufactureDateColumn && !string.IsNullOrEmpty(manufactureDateStr))
+                {
+                    manufactureDate = DateTime.Parse(manufactureDateStr);
+                }
                 EquipLedgerCreateDto input = new EquipLedgerCreateDto()
                 {
                     EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ"),
@@ -416,6 +431,7 @@ public class EquipLedgerService : SugarCrudAppService<
                     IsMeasurementDevice = isMeasurementDevice,
                     DeviceStatus = DeviceStatus.Normal.ToString(),
                     DeviceLevel = EquipLevelEnum.Basic.ToString(),
+                    PurchaseDate = manufactureDate,
                 };
                 try
                 {

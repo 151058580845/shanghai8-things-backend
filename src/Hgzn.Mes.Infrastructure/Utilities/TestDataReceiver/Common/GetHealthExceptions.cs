@@ -43,8 +43,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             for (int i = 1; i < axis.Count + 1; i++)
             {
                 var statusFlags = (XT_112_SL_2_OperationStatusEnum)ulDevHealthState[i];
-                if (statusFlags == XT_112_SL_2_OperationStatusEnum.NormalStatus)
-                    return exceptions;
+                if (statusFlags == XT_112_SL_2_OperationStatusEnum.NormalStatus) continue;
                 exceptions.AddRange(Enum.GetValues(typeof(XT_112_SL_2_OperationStatusEnum))
                 .Cast<XT_112_SL_2_OperationStatusEnum>()
                 .Where(flag => flag != XT_112_SL_2_OperationStatusEnum.NormalStatus)
@@ -108,8 +107,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             for (int i = 1; i < axis.Count + 1; i++)
             {
                 var statusFlags = (XT_121_SL_3_OperationStatusEnum)ulDevHealthState[i];
-                if (statusFlags == XT_121_SL_3_OperationStatusEnum.NormalStatus)
-                    return exceptions;
+                if (statusFlags == XT_121_SL_3_OperationStatusEnum.NormalStatus) continue;
                 exceptions.AddRange(Enum.GetValues(typeof(XT_121_SL_3_OperationStatusEnum))
                 .Cast<XT_121_SL_3_OperationStatusEnum>()
                 .Where(flag => flag != XT_121_SL_3_OperationStatusEnum.NormalStatus)
@@ -125,12 +123,12 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         /// <param name="ulDevHealthState"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public static List<string> GetXT_109_SL_3CommonHealthExceptionName(byte[] ulDevHealthState)
+        public static List<string> GetXT_109_SL_3CommonHealthExceptionName(short[] ulDevHealthState)
         {
             List<string> exceptions = new List<string>();
             if (ulDevHealthState[0] == 0) General_StatusType.DeviceHealthNotAcquired.GetDescription();
             List<string> axis = new List<string>() { "滚转轴", "俯仰轴", "偏航轴", "高低轴", "方位轴" };
-            for (int i = 1; i < axis.Count + 1; i++)
+            for (int i = 0; i < axis.Count; i++)
             {
                 var statusFlags = (XT_109_SL_3_OperationStatusEnum)ulDevHealthState[i];
                 if (statusFlags == XT_109_SL_3_OperationStatusEnum.NormalStatus)
@@ -139,7 +137,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
                 .Cast<XT_109_SL_3_OperationStatusEnum>()
                 .Where(flag => flag != XT_109_SL_3_OperationStatusEnum.NormalStatus)
                 .Where(flag => statusFlags.HasFlag(flag))
-                .Select(flag => axis[i - 1] + flag.GetDescription()));
+                .Select(flag => axis[i] + flag.GetDescription()));
             }
             return exceptions;
         }
@@ -158,8 +156,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             for (int i = 1; i < axis.Count + 1; i++)
             {
                 var statusFlags = (XT_314_SL_3_OperationStatusEnum)ulDevHealthState[i];
-                if (statusFlags == XT_314_SL_3_OperationStatusEnum.NormalStatus)
-                    return exceptions;
+                if (statusFlags == XT_314_SL_3_OperationStatusEnum.NormalStatus) continue;
                 exceptions.AddRange(Enum.GetValues(typeof(XT_314_SL_3_OperationStatusEnum))
                 .Cast<XT_314_SL_3_OperationStatusEnum>()
                 .Where(flag => flag != XT_314_SL_3_OperationStatusEnum.NormalStatus)

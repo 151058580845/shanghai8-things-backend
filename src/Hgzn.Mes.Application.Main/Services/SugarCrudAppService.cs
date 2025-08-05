@@ -25,7 +25,6 @@ public abstract class SugarCrudAppService<TEntity, TKey, TReadDto> : BaseService
     {
         get
         {
-            LoggerAdapter.LogInformation($"DbContext Exist:{(DbContext != null).ToString()}");
             return DbContext!.Queryable<TEntity>();
         }
     }

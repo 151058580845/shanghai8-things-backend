@@ -186,8 +186,9 @@ public class TestDataService : SugarCrudAppService<
     public async Task<IEnumerable<TestDataReadDto>> GetHistoryListByTestAsync()
     {
         List<TestData> entities = await Queryable
-            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) < DateTime.Now.ToLocalTime())
+            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) < DateTime.Now.ToLocalTime() && DateTime.Parse(x.TaskEndTime) >= DateTime.Now.ToLocalTime().AddDays(-30))
             .Includes(x => x.UUT)
+            .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }
@@ -198,6 +199,7 @@ public class TestDataService : SugarCrudAppService<
             .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) >= DateTime.Now.ToLocalTime() &&
                         x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) <= DateTime.Now.ToLocalTime())
             .Includes(x => x.UUT)
+            .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }
@@ -207,6 +209,7 @@ public class TestDataService : SugarCrudAppService<
         List<TestData> entities = await Queryable
             .Where(x => x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) > DateTime.Now.ToLocalTime())
             .Includes(x => x.UUT)
+            .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }

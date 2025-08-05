@@ -72,9 +72,9 @@ namespace Hgzn.Mes.Iot.EquipManager
                     // Mqtt会让所有IOT都进行连接,不是该ip的就会连接失败,重新更新UI,所以只能让指定IP的IOT进行连接
                     JsonNode jn = JsonSerializer.Deserialize<JsonNode>(connectStr);
                     JsonNode? ip = jn["address"];
-                    LoggerAdapter.LogInformation($"解析连接字符串中的地址是:{ip}");
+                    LoggerAdapter.LogDebug($"AG - 解析连接字符串中的地址是:{ip}");
                     string localIp = _configuration.GetValue<string>("LocalIpAddress");
-                    LoggerAdapter.LogInformation($"本机配置的IP地址是:{localIp}");
+                    LoggerAdapter.LogDebug($"AG - 本机配置的IP地址是:{localIp}");
                     if (localIp != null && ip != null && ip.ToString() == localIp)
                     {
                         switch (connectInfo.ConnType)
@@ -102,9 +102,9 @@ namespace Hgzn.Mes.Iot.EquipManager
                     // Mqtt会让所有IOT都进行连接,不是该ip的就会连接失败,重新更新UI,所以只能让指定IP的IOT进行连接
                     JsonNode rkjn = JsonSerializer.Deserialize<JsonNode>(connectStr);
                     JsonNode? rkip = rkjn["address"];
-                    LoggerAdapter.LogInformation($"解析连接字符串中的地址是:{rkip}");
+                    LoggerAdapter.LogDebug($"解析连接字符串中的地址是:{rkip}");
                     string rklocalIp = _configuration.GetValue<string>("LocalIpAddress");
-                    LoggerAdapter.LogInformation($"本机配置的IP地址是:{rklocalIp}或127.0.0.1");
+                    LoggerAdapter.LogDebug($"本机配置的IP地址是:{rklocalIp}或127.0.0.1");
                     if (rkip.ToString() == "127.0.0.1" || (rklocalIp != null && rkip != null && rkip.ToString() == rklocalIp))
                     {
                         equipConnector = new HygrographConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
@@ -125,9 +125,9 @@ namespace Hgzn.Mes.Iot.EquipManager
             }
 
             if (equipConnector == null)
-                LoggerAdapter.LogInformation($"创建连接器失败!");
+                LoggerAdapter.LogDebug($"创建连接器失败!");
             else
-                LoggerAdapter.LogInformation($"创建连接器成功!");
+                LoggerAdapter.LogDebug($"创建连接器成功!");
             return equipConnector!;
         }
 
@@ -139,136 +139,6 @@ namespace Hgzn.Mes.Iot.EquipManager
             }
 
             return null;
-        }
-
-        public string GetSpecificLocalIPAddresses()
-        {
-            var ipAddresses = new List<string>();
-            try
-            {
-
-                var host = Dns.GetHostEntry(Dns.GetHostName());
-
-                foreach (var ip in host.AddressList)
-                {
-                    if (ip.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        string ipString = ip.ToString();
-                        // 筛选以10.125.157开头的IP地址
-                        if (ipString.StartsWith("10.125.157"))
-                        {
-                            ipAddresses.Add(ipString);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                LoggerAdapter.LogInformation($"方法1异常:{e.Message}");
-            }
-
-            return ipAddresses.FirstOrDefault();
-        }
-
-        public string GetLinuxSpecificIPs()
-        {
-            var ipAddresses = new List<string>();
-
-            try
-            {
-                // 执行hostname -I命令获取所有IP地址
-                var process = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = "/bin/bash",
-                        Arguments = "-c \"hostname -I\"",
-                        RedirectStandardOutput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                    }
-                };
-
-                process.Start();
-                string output = process.StandardOutput.ReadToEnd().Trim();
-                process.WaitForExit();
-
-                // 筛选10.125.157开头的IP
-                ipAddresses = output.Split(' ')
-                                  .Where(ip => ip.StartsWith("10.125.157"))
-                                  .ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"方法2获取IP地址失败: {ex.Message}");
-            }
-
-            return ipAddresses.FirstOrDefault();
-        }
-
-        public string GetLinuxSpecificIPsFromIpCommand()
-        {
-            var ips = new List<string>();
-
-            try
-            {
-                var process = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = "/bin/bash",
-                        Arguments = "-c \"ip -o -4 addr show | awk '{print $4}' | cut -d'/' -f1 | grep '^10\\.125\\.157'\"",
-                        RedirectStandardOutput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                    }
-                };
-
-                process.Start();
-                string output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
-
-                ips = output.Split('\n')
-                         .Where(ip => !string.IsNullOrEmpty(ip))
-                         .ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"方法3获取IP地址失败: {ex.Message}");
-            }
-
-            return ips.FirstOrDefault();
-        }
-
-
-        public static string GetSpecificIPsFromNetworkConfig()
-        {
-            var ips = new List<string>();
-
-            try
-            {
-                // 读取网络配置文件（路径可能因发行版而异）
-                string[] configFiles = {
-            "/etc/network/interfaces",
-            "/etc/sysconfig/network-scripts/ifcfg-*",
-            "/etc/netplan/*.yaml"
-        };
-
-                foreach (var file in configFiles.Where(File.Exists))
-                {
-                    string content = File.ReadAllText(file);
-                    // 简单正则匹配IP地址（实际应用中需要更复杂的解析）
-                    var matches = System.Text.RegularExpressions.Regex.Matches(
-                        content, @"10\.125\.157\.\d{1,3}");
-                    ips.AddRange(matches.Select(m => m.Value));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"方法4读取网络配置失败: {ex.Message}");
-            }
-
-            return ips.Distinct().ToList().FirstOrDefault();
         }
     }
 }

@@ -1,29 +1,35 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDatas;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using Newtonsoft.Json;
+using NPOI.SS.Formula.Functions;
 using SqlSugar;
 using StackExchange.Redis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
+namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL_3
 {
-    public class GeneralOnlineReceive<T> : BaseReceive, IOnlineReceive where T : class, new()
+    public class XT_109_SL_3_OnlineReceive : BaseReceive, IOnlineReceive
     {
-        private Func<byte[], List<string>> _getHealthException;
+        private Func<short[], List<string>> _getHealthException;
         private const int _WORKSTYLEANALYSISLENGTH = 10;
-        private const int _STATETYPEANALYSISLENGTH = 9;
+        private const int _STATETYPEANALYSISLENGTH = 11;
         private int _workStyleLength;
         private int _stateTypeLength;
-
-        public GeneralOnlineReceive(
+        public XT_109_SL_3_OnlineReceive(
             Guid equipId,
             ISqlSugarClient client,
             IConnectionMultiplexer connectionMultiplexer,
             IMqttExplorer mqttExplorer,
-            Func<byte[], List<string>> getHealthException, int workStyleLength, int stateTypeLength) : base(equipId, client, connectionMultiplexer, mqttExplorer)
+            Func<short[], List<string>> getHealthException, int workStyleLength, int stateTypeLength) : base(equipId, client, connectionMultiplexer, mqttExplorer)
         {
             this._getHealthException = getHealthException;
             this._workStyleLength = workStyleLength;
@@ -51,13 +57,15 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             // 工作模式信息
             byte[] workStyle = new byte[_WORKSTYLEANALYSISLENGTH];
             Buffer.BlockCopy(buffer, 22, workStyle, 0, _WORKSTYLEANALYSISLENGTH);
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 工作模式信息:{string.Join(", ", workStyle.Select(b => (int)b))}");
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 工作模式信息:{string.Join(", ", workStyle.Select(x => (int)x))}");
 
             // *** 健康状态信息
             // 状态类型
-            byte[] stateType = new byte[_STATETYPEANALYSISLENGTH];
-            Buffer.BlockCopy(buffer, 22 + _WORKSTYLEANALYSISLENGTH, stateType, 0, _STATETYPEANALYSISLENGTH);
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 健康状态信息:{string.Join(", ", stateType.Select(b => (int)b))}");
+            byte statusType = buffer[22 + _WORKSTYLEANALYSISLENGTH];
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 状态类型(是否获取到健康状态):{statusType}");
+            short[] healthStatus = new short[5];
+            Buffer.BlockCopy(buffer, 22 + _WORKSTYLEANALYSISLENGTH + 1, healthStatus, 0, 10);
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 健康状态信息:{string.Join(", ", healthStatus.Select(x => (int)x))}");
 
             // *** 物理量
             // 剩余的都给物理量
@@ -76,12 +84,12 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
                 Buffer.BlockCopy(buffer, startPosition, runTime, 0, 4);
                 ulRunTime = BitConverter.ToUInt32(runTime, 0);
             }
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 运行时间:{ulRunTime}");
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 运行时长:{ulRunTime}");
 
             // *** 构建entity
-            T entity = new T();
+            XT_109_SL_3_ReceiveData entity = new XT_109_SL_3_ReceiveData();
             // 使用反射将后面指定数量个物理量数据进行填充
-            PropertyInfo[] properties = typeof(T).GetProperties();
+            PropertyInfo[] properties = typeof(XT_109_SL_3_ReceiveData).GetProperties();
             properties[0].SetValue(entity, _equipId);
             properties[1].SetValue(entity, sendTime);
             properties[2].SetValue(entity, simuTestSysId);
@@ -95,9 +103,10 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             }
 
             // 填充健康状态信息
-            for (int i = 0; i < _stateTypeLength; i++)
+            properties[5 + _workStyleLength].SetValue(entity, statusType);
+            for (int i = 0; i < healthStatus.Length; i++)
             {
-                properties[5 + _workStyleLength + i].SetValue(entity, stateType[i]);
+                properties[6 + _workStyleLength + i].SetValue(entity, healthStatus[i]);
             }
 
             // 填充物理量数量
@@ -115,11 +124,11 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             properties[6 + _workStyleLength + _stateTypeLength + floatData.Length].SetValue(entity, ulRunTime);
 
             // *** 处理异常信息
-            List<string> exception = _getHealthException(stateType);
+            List<string> exception = _getHealthException(healthStatus);
             LoggerAdapter.LogDebug($"AG - 远程解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
 
             // 将试验数据记录数据库
-            T receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            XT_109_SL_3_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
             // 将试验数据的数据部分推送到mqtt给前端进行展示(暂时不进行数据展示)
             // await TestDataPublishToMQTT(receive);
             // 将异常和运行时长记录到redis

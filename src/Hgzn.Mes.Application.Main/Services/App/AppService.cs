@@ -114,10 +114,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     {
                         abnormalDeviceDtos.Add(new AbnormalDeviceDto
                         {
-                            System = abnormal.SystemInfo.Name,
+                            System = abnormal.SystemInfo?.Name,
                             Device = abnormal.EquipName,
                             Value = ad,
-                            Time = abnormal.UntilDays.ToString(),
+                            EquipAssetNumber = abnormal.EquipAssetNumber,
+                            Time = abnormal.UntilDays?.ToString(),
                         });
                     }
                 }
@@ -125,9 +126,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     abnormalDeviceDtos.Add(new AbnormalDeviceDto
                     {
-                        System = abnormal.SystemInfo.Name,
+                        System = abnormal.SystemInfo?.Name,
                         Device = abnormal.EquipName,
-                        Time = abnormal.UntilDays.ToString(),
+                        EquipAssetNumber = abnormal.EquipAssetNumber,
+                        Time = abnormal.UntilDays?.ToString(),
                     });
                 }
             }
@@ -203,12 +205,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
             if (tables != null && tables.Count > 1 && tables[1] != null && tables[1].Item1 != null && tables[1].Item2 != null)
             {
                 queue2.Add(tables[1].Item1);
-                read.Queue2Detail = tables[1].Item2;
+                queueDetail2 = tables[1].Item2;
             }
             if (tables != null && tables.Count > 2 && tables[2] != null && tables[2].Item1 != null && tables[2].Item2 != null)
             {
                 queue3.Add(tables[2].Item1);
-                read.Queue3Detail = tables[2].Item2;
+                queueDetail3 = tables[2].Item2;
             }
             read.Queue = queue1;
             read.QueueDetail = queueDetail1;
@@ -222,19 +224,19 @@ namespace Hgzn.Mes.Application.Main.Services.App
             #region 产品列表 (已关联数据库)
 
             List<TableDto> productReadDto = new List<TableDto>();
-            if (currentTestInSystem != null)
+            TableDto td = new TableDto()
             {
-                TableDto td = new TableDto()
-                {
-                    Title = "产品列表",
-                    Header = new List<List<string>>()
+                Title = "产品列表",
+                Header = new List<List<string>>()
                     {
                         new List<string> { "name", "名称" },
                         new List<string> { "code", "编号" },
                         new List<string> { "status", "技术状态" },
                     },
-                    Data = new List<Dictionary<string, string>>()
-                };
+                Data = new List<Dictionary<string, string>>()
+            };
+            if (currentTestInSystem != null)
+            {
                 if (currentTestInSystem?.UUT != null && currentTestInSystem.UUT.Any())
                 {
                     foreach (TestDataProductReadDto item in currentTestInSystem.UUT)
@@ -247,8 +249,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         });
                     }
                 }
-                productReadDto.Add(td);
             }
+            productReadDto.Add(td);
             read.ProductList = productReadDto;
 
             #endregion
@@ -264,8 +266,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         public async Task<ShowSystemHomeDataDto> GetTestListAsync()
         {
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, 1, 1, [0], Guid.Parse("fa5be587-8b9e-4a1f-ab33-a78d394fae31"), new List<string>(), DateTime.Now, 200000);
-
             await _sysMgr.SnapshootHomeData();
             _abnormalEquipDic = new Dictionary<string, List<string>>();
 

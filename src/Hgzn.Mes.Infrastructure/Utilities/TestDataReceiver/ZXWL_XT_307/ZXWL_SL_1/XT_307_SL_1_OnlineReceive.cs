@@ -41,30 +41,33 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
         public async Task<Guid> Handle(byte[] msg, DateTime sendTime)
         {
             string data = Encoding.UTF8.GetString(msg);
-            LoggerAdapter.LogTrace(data);
 
             // 使用 eventData.Data 作为 buffer
             byte[] buffer = msg;
 
             // 仿真试验系统识别编码
             byte simuTestSysId = buffer[0];
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 仿真试验系统识别编码:{simuTestSysId}");
 
             // 设备类型识别编码
             byte devTypeId = buffer[1];
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 设备类型识别编码:{devTypeId}");
 
             // 本机识别编码
             byte[] compId = new byte[20];
             Buffer.BlockCopy(buffer, 2, compId, 0, 20);
             string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 本机识别编码:{compNumber}");
 
             // 工作模式信息
             byte[] workStyle = new byte[10];
             Buffer.BlockCopy(buffer, 22, workStyle, 0, 10);
-
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 工作模式信息:{string.Join(", ", workStyle.Select(b => (int)b))}");
 
             // *** 健康状态信息
             // 状态类型
             byte stateType = buffer[32];
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 健康状态信息:{stateType}");
 
             // 自检状态1个uint,表中是4位的ulong,在C#中,直接用uint代替
 
@@ -83,6 +86,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             Buffer.BlockCopy(buffer, 41, physicalQuantityCount, 0, 4);
             uint ulPhysicalQuantityCount = BitConverter.ToUInt32(physicalQuantityCount, 0);
             ulPhysicalQuantityCount -= 1; // 减去1是因为最后一个物理量是运行时间,这个是后加的,且属性类型是uint,不好转成float一起赋值,在赋值完普通物理量后我会单独赋值
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 物理量数量(不包含运行时长):{ulPhysicalQuantityCount}");
 
             // 剩余的都给物理量
             byte[] acquData = new byte[ulPhysicalQuantityCount * 4];
@@ -99,6 +103,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
                 Buffer.BlockCopy(buffer, startPosition, runTime, 0, 4);
                 ulRunTime = BitConverter.ToUInt32(runTime, 0);
             }
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 运行时间:{ulRunTime}");
 
             // 将 byte[] 转换为 float[] , 每个 float 占用 4 字节
             int floatCount = acquData.Length / 4;
@@ -154,31 +159,33 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
                     // 获取电源电压异常
                     exception = GetSupplyVoltageExceptionName(ulSupplyVoltageState);
             }
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
 
             // 将试验数据记录数据库
             XT_307_SL_1_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
             // 将试验数据的数据部分推送到mqtt给前端进行展示
-            await TestDataPublishToMQTT(receive);
-            // 将异常记录到redis
+            // await TestDataPublishToMQTT(receive);
+            // 将异常和运行时长记录到redis
             await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
-            // 新建通知
-            EquipNotice equipNotice = new EquipNotice()
-            {
-                EquipId = _equipId,
-                SendTime = sendTime,
-                NoticeType = EquipNoticeType.Alarm,
-                Title = "Receive Alarm",
-                Content = JsonConvert.SerializeObject(exception),
-                Description = "",
-                SimuTestSysId = simuTestSysId,
-            };
-            // 将异常发布到mqtt
-            await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
-            // 将异常记录到数据库
-            await ReceiveHelper.RecordExceptionToDB(_sqlSugarClient, equipNotice);
-            // 输出到日志
-            OutputToLog(entity);
 
+            if (exception.Count > 0)
+            {
+                // 新建通知
+                EquipNotice equipNotice = new EquipNotice()
+                {
+                    EquipId = _equipId,
+                    SendTime = sendTime,
+                    NoticeType = EquipNoticeType.Alarm,
+                    Title = "Receive Alarm",
+                    Content = JsonConvert.SerializeObject(exception),
+                    Description = "",
+                    SimuTestSysId = simuTestSysId,
+                };
+                // 将异常发布到mqtt,发布后会由webapi将异常记录到数据库
+                await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
+            }
+
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 完毕");
             return _equipId;
         }
 
@@ -196,25 +203,6 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             .Build();
             // 推送ar的Data用于展示
             await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(ar.data)));
-        }
-
-        private static void OutputToLog(XT_307_SL_1_ReceiveData entity)
-        {
-            return;
-            // 输出到日志
-            PropertyInfo[] receiveDataProperties = typeof(XT_307_SL_1_ReceiveData).GetProperties();
-            string output = "";
-            foreach (PropertyInfo item in receiveDataProperties)
-            {
-                string description = item.GetCustomAttribute<DescriptionAttribute>()?.Description;
-                if (description == null)
-                    description = "null";
-                string value = item.GetValue(entity, null)?.ToString();
-                if (value == null)
-                    value = "null";
-                output += description + ":" + value + "\r\n";
-            }
-            LoggerAdapter.LogTrace(output);
         }
     }
 }

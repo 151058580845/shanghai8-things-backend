@@ -43,7 +43,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\HCWebSDKPluginsUserSetup.exe" />
+    <EmbeddedResource Include="Resources\HCWebSDKPluginsUserSetup.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <PropertyGroup>

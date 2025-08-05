@@ -555,7 +555,7 @@ public sealed class SqlSugarContext
     {
         if (_dbOptions.EnabledSqlLog)
         {
-            _logger.LogDebug($"sql excuting: {UtilMethods.GetSqlString(DbType.SqlServer, sql, pars)}");
+            _logger.LogTrace($"sql excuting: {UtilMethods.GetSqlString(DbType.SqlServer, sql, pars)}");
         }
     }
 
@@ -568,7 +568,7 @@ public sealed class SqlSugarContext
     {
         if (_dbOptions.EnabledSqlLog)
         {
-            _logger.LogDebug($"excuted take {DbContext.Ado.SqlExecutionTime.TotalMilliseconds}ms");
+            _logger.LogTrace($"excuted take {DbContext.Ado.SqlExecutionTime.TotalMilliseconds}ms");
         }
     }
 

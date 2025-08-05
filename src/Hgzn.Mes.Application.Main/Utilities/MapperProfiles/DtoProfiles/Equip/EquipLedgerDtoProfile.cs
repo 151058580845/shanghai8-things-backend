@@ -23,6 +23,9 @@ public class EquipLedgerDtoProfile : Profile
         CreateMap<EquipLedgerCreateDto, EquipLedger>()
             .ForMember(d => d.EquipLevel, opt => opt.MapFrom(x => ConvertStringToDeviceLevel(x.DeviceLevel!)))
             .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceStatus!)));
+        CreateMap<EquipLedgerUpdateDto, EquipLedger>()
+            .ForMember(d => d.EquipLevel, opt => opt.MapFrom(x => ConvertStringToDeviceLevel(x.DeviceLevel!)))
+            .ForMember(d => d.DeviceStatus, opt => opt.MapFrom(x => ConvertStringToDeviceStatus(x.DeviceStatus!)));
 
         CreateMap<LocationLabel, LocationLabelReadDto>();
         CreateMap<LocationLabelUpdateDto, LocationLabel>();

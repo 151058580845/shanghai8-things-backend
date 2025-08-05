@@ -47,7 +47,7 @@ public class EquipTcpServer : TcpServer
 
     protected override void OnConnected(TcpSession session)
     {
-        LoggerAdapter.LogInformation($"Tcpclient连接:{session.Id}");
+        LoggerAdapter.LogInformation($"Tcpclient connected Id:{session.Id}");
         _tcpSessions.Add(session);
         base.OnConnected(session);
         var ip = session.Socket.RemoteEndPoint as IPEndPoint;
@@ -57,7 +57,7 @@ public class EquipTcpServer : TcpServer
 
     protected override void OnDisconnected(TcpSession session)
     {
-        LoggerAdapter.LogInformation($"Tcpclient断开:{session.Id}");
+        LoggerAdapter.LogInformation($"Tcpclient disconnected Id:{session.Id}");
         var sessionId = session.Id;
         _tcpSessions.Remove(session);
         base.OnDisconnected(session);

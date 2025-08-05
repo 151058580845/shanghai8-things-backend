@@ -35,7 +35,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
 
             // 获取所有公共属性并按声明顺序排序
-            var properties = typeof(T)
+            List<PropertyInfo> properties = typeof(T)
                 .GetProperties()
                 .Where(p => p.CanRead)
                 .OrderBy(p => p.MetadataToken)
@@ -55,7 +55,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
 
             // 创建表格DTO
-            var tableDto = new TableDto
+            TableDto tableDto = new TableDto
             {
                 Title = title,
                 Header = CreateStandardHeader(),
@@ -65,9 +65,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
             // 处理选定范围内的属性
             for (int i = startIndex; i <= endIndex; i++)
             {
-                var property = properties[i];
-                var displayName = GetPropertyDisplayName(property);
-                var value = property.GetValue(instance)?.ToString() ?? string.Empty;
+                PropertyInfo property = properties[i];
+                string displayName = GetPropertyDisplayName(property);
+                string value = property.GetValue(instance)?.ToString() ?? string.Empty;
 
                 tableDto.Data.Add(CreateDataRow(displayName, value));
             }
@@ -84,13 +84,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
         /// <param name="startIndex">起始属性索引(从0开始)</param>
         /// <param name="endIndex">结束属性索引(包含)</param>
         /// <returns>TableDto对象</returns>
-        public TableDto GenerateTableFromInstance<T>(
-            string title,
-            int startIndex,
-            int endIndex) where T : class
+        public TableDto GenerateTableFromInstance<T>(string title, int startIndex, int endIndex) where T : class
         {
             // 获取所有公共属性并按声明顺序排序
-            var properties = typeof(T)
+            List<PropertyInfo> properties = typeof(T)
                 .GetProperties()
                 .Where(p => p.CanRead)
                 .OrderBy(p => p.MetadataToken)
@@ -110,7 +107,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
 
             // 创建表格DTO
-            var tableDto = new TableDto
+            TableDto tableDto = new TableDto
             {
                 Title = title,
                 Header = CreateStandardHeader(),
@@ -120,15 +117,53 @@ namespace Hgzn.Mes.Application.Main.Services.App
             // 处理选定范围内的属性
             for (int i = startIndex; i <= endIndex; i++)
             {
-                var property = properties[i];
-                var displayName = GetPropertyDisplayName(property);
-                var value = "---";
+                PropertyInfo property = properties[i];
+                string displayName = GetPropertyDisplayName(property);
+                string value = "---";
 
                 tableDto.Data.Add(CreateDataRow(displayName, value));
             }
 
             return tableDto;
         }
+
+        //private TableDto GetTurntableTable<T>(T instance, string title)
+        //{
+        //    // 获取所有公共属性并按声明顺序排序
+        //    List<PropertyInfo> properties = typeof(T)
+        //        .GetProperties()
+        //        .Where(p => p.CanRead)
+        //        .OrderBy(p => p.MetadataToken)
+        //        .ToList();
+
+        //    TableDto ret = new TableDto();
+        //    ret.Title = "转台物理量";
+        //    ret.Header = new List<List<string>>()
+        //    {
+        //        new() { "name", "物理量定义" },
+        //        new() { "value1", "给定值" },
+        //        new() { "value2", "反馈值" },
+        //        new() { "exception", "工作状态" },
+        //    };
+        //    ret.Data = new List<Dictionary<string, string>>();
+        //    List<string> axles = new List<string>() { "滚动轴", "偏航轴", "俯仰轴", "方位轴", "高低轴" };
+        //    foreach (PropertyInfo? item in properties)
+        //    {
+        //        foreach (string axle in axles)
+        //        {
+        //            string propertyName = GetPropertyDisplayName(item);
+        //            if (propertyName != null && propertyName.Contains(axle))
+        //            {
+        //                ret.Data.Add(new Dictionary<string, string>()
+        //                {
+        //                    { "name", axle},
+        //                    { "value1",}
+        //                });
+        //            }
+        //        }
+        //    }
+        //    return ret;
+        //}
 
         /// <summary>
         /// 获取属性显示名称(优先使用Description特性)
@@ -144,10 +179,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private List<List<string>> CreateStandardHeader()
         {
             return new List<List<string>>
-        {
-            new() { "name", "物理量定义" },
-            new() { "control", "物理量" }
-        };
+            {
+                new() { "name", "物理量定义" },
+                new() { "control", "物理量" }
+            };
         }
 
         /// <summary>
@@ -156,10 +191,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private Dictionary<string, string> CreateDataRow(string name, string controlValue)
         {
             return new Dictionary<string, string>
-        {
-            { "name", name },
-            { "control", controlValue }
-        };
+            {
+                { "name", name },
+                { "control", controlValue }
+            };
         }
     }
 }

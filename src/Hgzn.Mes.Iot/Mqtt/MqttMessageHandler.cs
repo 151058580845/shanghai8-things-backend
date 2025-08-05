@@ -126,7 +126,6 @@ namespace Hgzn.Mes.Iot.Mqtt
             switch (info.Type)
             {
                 case CmdType.Conn:
-                    _logger.LogInformation("收到连接请求");
                     var equip = _manager.GetEquip(uri) ?? _manager.AddEquip(uri, topic.ConnType!, info.ConnString!, info);
                     if (equip == null) break;
                     await SwitchEquipAsync(equip);

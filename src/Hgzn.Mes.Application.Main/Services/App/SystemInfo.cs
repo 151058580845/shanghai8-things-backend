@@ -1,4 +1,5 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.App;
+using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System;
@@ -126,7 +127,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         /// <summary>
         /// 异常设备的ID
         /// </summary>
-        public Guid? EquipId { get; set; }
+        public string? EquipAssetNumber { get; set; }
         /// <summary>
         /// 异常设备名称
         /// </summary>
@@ -270,15 +271,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
                     keyDevices = new List<SDevice>(),
                 },
-                new SystemInfo
-                {
-                    SystemNum = 0,
-                    Name = "移动设备",
-                    RoomId = Guid.Empty,
-                    RoomNumber = "0",
-                    TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
-                    keyDevices = new List<SDevice>(),
-                }
             };
         }
 
@@ -320,13 +312,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
                             IEnumerable<string> abnormal = await _redisHelper.GetTreeNodeChildrenValuesAsync(set);
                             if (abnormal == null) continue;
                             sum += abnormal.Count();
-                            string equipName = await _equipLedgerService.GetEquipName(equipId);
+                            EquipLedgerReadDto equip = (await _equipLedgerService.GetAsync(equipId))!;
                             Abnormals.Add(new Abnormal()
                             {
                                 SystemInfo = si,
                                 EquipTypeNum = equipTypeNum,
-                                EquipId = equipId,
-                                EquipName = equipName,
+                                EquipAssetNumber = equip != null ? equip.AssetNumber : "",
+                                EquipName = equip != null ? equip.EquipName : "",
                                 AbnormalDescription = abnormal.ToList(),
                             });
                         }
@@ -334,32 +326,32 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 }
                 foreach (EquipLedger item in expiringSoonEquips)
                 {
-                    if (item.RoomId == si.RoomId)
+                    if (item != null && item.RoomId == si.RoomId)
                     {
                         sum += 1;
                         Abnormals.Add(new Abnormal()
                         {
                             SystemInfo = si,
                             EquipTypeNum = 0,
-                            EquipId = item.Id,
+                            EquipAssetNumber = item.AssetNumber,
                             EquipName = item.EquipName,
-                            UntilDays = (item.ValidityDate.Value.Day - now.Day).ToString()
+                            UntilDays = item.ValidityDate != null ? (item.ValidityDate.Value.Day - now.Day).ToString() : ""
                         });
                     }
                 }
                 foreach (EquipLedger item in pastDueEquips)
                 {
-                    if (item.RoomId == si.RoomId)
+                    if (item != null && item.RoomId == si.RoomId)
                     {
                         sum += 1;
                         Abnormals.Add(new Abnormal()
                         {
                             SystemInfo = si,
                             EquipTypeNum = 0,
-                            EquipId = item.Id,
+                            EquipAssetNumber = item.AssetNumber,
                             EquipName = item.EquipName,
                             AbnormalDescription = new List<string>() { $"{item.EquipName}计量过期" },
-                            UntilDays = (item.ValidityDate.Value.Day - now.Day).ToString()
+                            UntilDays = item.ValidityDate != null ? (item.ValidityDate.Value.Day - now.Day).ToString() : ""
                         });
                     }
                 }
@@ -1167,6 +1159,19 @@ namespace Hgzn.Mes.Application.Main.Services.App
         }
 
         #endregion
+
+        private TableDto GetTurntableTable()
+        {
+            TableDto ret = new TableDto();
+            ret.Title = "转台物理量";
+            ret.Header = new List<List<string>>()
+            {
+                new() { "name", "物理量定义" },
+                new() { "value1", "给定值" },
+                new() { "value2", "反馈值" },
+                new() { "exception", "工作状态" },
+            };
+        }
 
         /// <summary>
         /// 创建标准表格表头

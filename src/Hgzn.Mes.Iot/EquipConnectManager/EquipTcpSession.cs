@@ -58,35 +58,43 @@ public class EquipTcpSession : TcpSession
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            if (_dataQueue.TryDequeue(out var buffer))
+            try
             {
-                byte[] newBuffer;
-                DateTime time;
-                _hasData = ReceiveHelper.GetMessage(buffer, out time, out newBuffer);
-                if (_hasData && newBuffer != null)
+                if (_dataQueue.TryDequeue(out var buffer))
                 {
-                    if (_forwardLength != null && _forwardNum == _forwardLength)
+                    byte[] newBuffer;
+                    DateTime time;
+                    uint bufferLength;
+                    _hasData = ReceiveHelper.GetMessage(buffer, out bufferLength, out time, out newBuffer);
+                    if (_hasData && newBuffer != null)
                     {
-                        var topic = IotTopicBuilder.CreateIotBuilder()
-                                        .WithPrefix(TopicType.Iot)
-                                        .WithDirection(MqttDirection.Up)
-                                        .WithTag(MqttTag.Transmit)
-                                        .WithDeviceType(EquipConnType.IotServer.ToString())
-                                        .WithUri(_equipConnect.Id.ToString()).Build();
-                        await _mqttExplorer.PublishAsync(topic, buffer);
-                        _forwardNum = 0;
+                        LoggerAdapter.LogDebug($"AG - Tcp数据内容: {BitConverter.ToString(buffer, 0, (int)bufferLength).Replace("-", " ")}");
+                        if (_forwardLength != null && _forwardNum == _forwardLength)
+                        {
+                            var topic = IotTopicBuilder.CreateIotBuilder()
+                                            .WithPrefix(TopicType.Iot)
+                                            .WithDirection(MqttDirection.Up)
+                                            .WithTag(MqttTag.Transmit)
+                                            .WithDeviceType(EquipConnType.IotServer.ToString())
+                                            .WithUri(_equipConnect.Id.ToString()).Build();
+                            await _mqttExplorer.PublishAsync(topic, buffer);
+                            _forwardNum = 0;
+                        }
+                        _forwardNum++;
+                        // 本地解析资产编号和异常解析
+                        // 这里要记录到数据采集器的数据库,而不是服务器的数据库
+                        // 创建新的SqlSugarClient实例用于本地数据记录
+                        LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
+                        await dispatch.Handle(buffer);
                     }
-                    _forwardNum++;
-                    // 本地解析资产编号和异常解析
-                    // 这里要记录到数据采集器的数据库,而不是服务器的数据库
-                    // 创建新的SqlSugarClient实例用于本地数据记录
-                    LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
-                    await dispatch.Handle(buffer);
+
                 }
-
             }
-
-            _hasData = false;
+            catch (Exception e) { LoggerAdapter.LogError(e.Message); }
+            finally
+            {
+                _hasData = false;
+            }
             return;
         }
     }
@@ -98,15 +106,16 @@ public class EquipTcpSession : TcpSession
         Ip = ipEndPoint.ToString();
         Mac = ipEndPoint.Address.ToString();
         base.OnConnected();
-        LoggerAdapter.LogTrace($"tcpclient {Ip} connected");
+        LoggerAdapter.LogDebug($"AG - tcp 客户端 {Ip} 连接");
     }
 
     protected override async void OnReceived(byte[] buffer, long offset, long size)
     {
-        LoggerAdapter.LogTrace($"buffer received {buffer} , size:{size} ");
+        LoggerAdapter.LogDebug($"AG - 收到Tcp数据...");
         _dataQueue.Enqueue(buffer);
         if (!_hasData)
         {
+            LoggerAdapter.LogDebug($"AG - 开始解析Tcp数据...");
             _hasData = true;
             var cancellationTokenSource = new CancellationTokenSource();
             var token = cancellationTokenSource.Token;

@@ -240,6 +240,11 @@ public class EquipLedgerUpdateDto : UpdateDto
     public string? DeviceStatus { get; set; }
 
     /// <summary>
+    /// 设备重要度(重要,一般,普通)
+    /// </summary>
+    public string? DeviceLevel { get; set; }
+
+    /// <summary>
     /// 有效期时间
     /// </summary>
     public DateTime? ValidityDate { get; set; }
@@ -258,6 +263,9 @@ public class EquipLedgerUpdateDto : UpdateDto
 
     [Description("设备责任人")]
     public string? ResponsibleUserName { get; set; }
+
+    [Description("是否计量设备")]
+    public bool? IsMeasurementDevice { get; set; }
 }
 
 public class EquipLedgerAppUpdateDto : UpdateDto
@@ -376,7 +384,7 @@ public class EquipLedgerQueryDto : PaginatedTimeQueryDto
     /// </summary>
     public string? Query { get; set; }
 
-    public int? BindingTagCount {  get; set; }
+    public int? BindingTagCount { get; set; }
 
     public bool? NoRfidDevice { get; set; }
 

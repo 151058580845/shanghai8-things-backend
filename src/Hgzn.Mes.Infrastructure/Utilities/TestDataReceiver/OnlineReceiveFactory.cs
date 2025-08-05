@@ -12,6 +12,7 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_314_ReceiveDatas;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6;
+using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL_3;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL_1;
 using SqlSugar;
@@ -90,7 +91,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 
                 // 109 紧缩场射频光学半实物仿真系统
                 case 4 when devTypeId == 3:
-                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_109_SL_3_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_109_SL_3CommonHealthExceptionName, 3, 6));
+                    return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new XT_109_SL_3_OnlineReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_109_SL_3CommonHealthExceptionName, 3, 6));
                 case 4 when devTypeId == 4:
                     return (IOnlineReceive)GetOrCreateOnlineReceive(simuTestSysId, devTypeId, () => new GeneralOnlineReceive<XT_109_SL_4_ReceiveData>(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
                 case 4 when devTypeId == 7:

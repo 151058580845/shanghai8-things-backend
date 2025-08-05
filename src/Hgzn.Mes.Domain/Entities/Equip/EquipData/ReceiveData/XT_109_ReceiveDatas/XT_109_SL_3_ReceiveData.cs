@@ -73,7 +73,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDat
         // 两轴转台控制参数
         [Description("两轴转台方位轴给定")]
         public float TwoAxisAzimuthGiven { get; set; }
-        [Description("两轴转台俯仰轴给定")]
+        [Description("两轴转台高低轴给定")]
         public float TwoAxisPitchGiven { get; set; }
 
         // 三轴转台反馈参数
@@ -87,7 +87,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDat
         // 两轴转台反馈参数
         [Description("两轴转台方位轴反馈")]
         public float TwoAxisAzimuthFeedback1 { get; set; }
-        [Description("两轴转台俯仰轴反馈")]
+        [Description("两轴转台高低轴反馈")]
         public float TwoAxisPitchFeedback { get; set; }
 
         // 液压系统参数
