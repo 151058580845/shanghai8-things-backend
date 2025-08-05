@@ -37,23 +37,23 @@ namespace Hgzn.Mes.WebApi.Worker
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            //延迟启动等待数据库初始化
-            await Task.Delay(3000, stoppingToken);
-            var interval = _configuration.GetValue<int>("ReConnInterval");
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                EquipConnect[] connections = await _sqlClient.Queryable<EquipConnect>()
-                    .Includes(ec => ec.EquipLedger, el => el!.EquipType)
-                    .Where(ec => ec.State && ec.ConnectStr != null)
-                    .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RKType.Id ||
-                    ec.EquipLedger!.EquipType!.Id == EquipType.IotType.Id)
-                    .Where(ec => !ec.SoftDeleted)
-                    .ToArrayAsync();
-
-                foreach (EquipConnect? connection in connections)
+                //延迟启动等待数据库初始化
+                await Task.Delay(3000, stoppingToken);
+                var interval = _configuration.GetValue<int>("ReConnInterval");
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    try
+                    LoggerAdapter.LogDebug($"AG - 检测是否有设备需要连接...");
+                    EquipConnect[] connections = await _sqlClient.Queryable<EquipConnect>()
+                        .Where(ec => ec.State && ec.ConnectStr != null)
+                        .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RKType.Id ||
+                        ec.EquipLedger!.EquipType!.Id == EquipType.IotType.Id)
+                        .Where(ec => !ec.SoftDeleted)
+                        .ToArrayAsync();
+                    foreach (EquipConnect? connection in connections)
                     {
+                        LoggerAdapter.LogDebug($"AG - 准备连接:{connection.Id}");
                         string key = string.Format(CacheKeyFormatter.EquipState, connection.EquipId, connection.Id);
                         if (_redis.StringGet(key) != 3)
                         {
@@ -63,14 +63,14 @@ namespace Hgzn.Mes.WebApi.Worker
                                 await Task.Delay(500, stoppingToken);
                             }
                         }
-                    }
-                    catch
-                    {
-                        _logger.LogError($"start connection[{connection!.Name}](connId:{connection.Id}) failed!");
-                    }
 
+                    }
+                    await Task.Delay(1000 * interval, stoppingToken);
                 }
-                await Task.Delay(1000 * interval, stoppingToken);
+            }
+            catch (Exception e)
+            {
+                LoggerAdapter.LogError(e.Message);
             }
         }
     }

@@ -1160,19 +1160,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         #endregion
 
-        private TableDto GetTurntableTable()
-        {
-            TableDto ret = new TableDto();
-            ret.Title = "转台物理量";
-            ret.Header = new List<List<string>>()
-            {
-                new() { "name", "物理量定义" },
-                new() { "value1", "给定值" },
-                new() { "value2", "反馈值" },
-                new() { "exception", "工作状态" },
-            };
-        }
-
         /// <summary>
         /// 创建标准表格表头
         /// </summary>
