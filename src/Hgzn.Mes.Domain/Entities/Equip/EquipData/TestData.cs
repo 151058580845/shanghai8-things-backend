@@ -43,6 +43,7 @@ public class TestData : UniversalEntity
 
     public List<TestDataProduct>? UUT { get; set; }
 
+#if DEBUG
     public static TestData[] Seeds { get; } = new TestData[]
     {
         new TestData()
@@ -172,4 +173,5 @@ public class TestData : UniversalEntity
             QncResp = "种子制导控制专业代表6"
         },
     };
+#endif
 }
