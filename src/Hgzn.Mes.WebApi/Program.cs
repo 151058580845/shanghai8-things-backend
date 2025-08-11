@@ -2,6 +2,8 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
 using Hgzn.Mes.Application.Main.Auth;
+using Hgzn.Mes.Application.Main.Services.Camera;
+using Hgzn.Mes.Application.Main.Services.Camera.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Location;
@@ -56,6 +58,8 @@ builder.Host.UseSerilog((context, logger) =>
 
 builder.Services.AddLogging();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
+builder.Services.AddSingleton<ICameraService, CameraService>();
+builder.Services.AddSingleton<IStreamService, StreamService>();
 builder.Services.AddControllers().AddJsonOptions(config =>
 {
     config.JsonSerializerOptions.DefaultIgnoreCondition = Options.CustomJsonSerializerOptions.DefaultIgnoreCondition;
