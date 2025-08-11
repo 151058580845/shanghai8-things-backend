@@ -142,6 +142,7 @@ public class AndroidController : ControllerBase
                 el.Id = new Guid();
                 item.EquipCode = el.EquipCode;
                 item.EquipId = el.Id;
+                item.RoomId = el.RoomId;
             }
             _logger.LogInformation($"获取到设备的code是:{item.EquipCode}");
             _logger.LogInformation($"获取到设备的Id是:{item.EquipId}");
