@@ -1,8 +1,8 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared;
-using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
 
@@ -26,9 +26,20 @@ public class EquipNoticeService : SugarCrudAppService<
     public override async Task<PaginatedList<EquipNoticeReadDto>> GetPaginatedListAsync(EquipNoticeQueryDto queryDto)
     {
         var entities = await Queryable
-            .WhereIF(!queryDto.EquipId.IsNullableGuidEmpty(),t=>t.EquipId == queryDto.EquipId!.Value)
-            .WhereIF(!string.IsNullOrEmpty(queryDto.Title), t=>t.Title!.Contains(queryDto.Title!))
+            .WhereIF(!queryDto.EquipId.IsNullableGuidEmpty(), t => t.EquipId == queryDto.EquipId!.Value)
+            .WhereIF(!string.IsNullOrEmpty(queryDto.Title), t => t.Title!.Contains(queryDto.Title!)).OrderByDescending(t => t.SendTime)
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
-        return Mapper.Map<PaginatedList<EquipNoticeReadDto>>(entities);
+        var result = Mapper.Map<PaginatedList<EquipNoticeReadDto>>(entities);
+
+        var ids = result.Items.Select(t => t.EquipId).Distinct();
+        var equips = DbContext.Queryable<EquipLedger>().Where(t => ids.Contains(t.Id)).LeftJoin<Room>((ledger, room) => ledger.RoomId == room.Id).Select((ledger, room) => new { Id = ledger.Id, Name = ledger.EquipName, Code = ledger.AssetNumber, RoomName = room.Name }).ToList();
+        foreach (var r in result.Items)
+        {
+            var equip = equips.FirstOrDefault(t => t.Id == r.EquipId);
+            r.EquipName = equip?.Name;
+            r.EquipCode = equip?.Code;
+            r.RoomName = equip?.RoomName;
+        }
+        return result;
     }
 }

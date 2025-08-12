@@ -14,9 +14,9 @@ public class EquipNoticeReadDto : ReadDto
     [Description("设备主键")]
     public Guid EquipId { get; set; }
     [Description("设备主键")]
-    public Guid EquipName { get; set; }
+    public string? EquipName { get; set; }
     [Description("设备主键")]
-    public Guid EquipCode { get; set; }
+    public string? EquipCode { get; set; }
     [Description("通知时间")]
     public DateTime SendTime { get; set; }
     
@@ -31,6 +31,8 @@ public class EquipNoticeReadDto : ReadDto
     
     [Description("通知描述")]
     public string? Description { get; set; }
+
+    public string? RoomName { get; set; }
 }
 
 public class EquipNoticeCreateDto : CreateDto
