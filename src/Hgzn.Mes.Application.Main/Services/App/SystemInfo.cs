@@ -454,6 +454,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     Ip = info[0],
                     Port = info[1],
+                    RtspPort = info.Count >= 3 ? info[2] : "554",
                     UserName = userName,
                     Password = password
                 });

@@ -220,6 +220,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public string? Port { get; set; }
 
         /// <summary>
+        /// RTSP端口
+        /// </summary>
+        public string? RtspPort { get; set; }
+
+        /// <summary>
         /// 用户名
         /// </summary>
         public string? UserName { get; set; }

@@ -1,27 +1,8 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.App;
-using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.App.IService;
-using Hgzn.Mes.Application.Main.Services.Equip;
-using Hgzn.Mes.Application.Main.Services.Equip.IService;
-using Hgzn.Mes.Application.Main.Services.System.IService;
-using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
-using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Shared;
-using Hgzn.Mes.Domain.Shared.Enums;
-using Hgzn.Mes.Domain.Shared.Extensions;
-using Hgzn.Mes.Infrastructure.Utilities;
-using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using Hgzn.Mes.WebApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NPOI.HPSF;
-using NPOI.HSSF.Util;
-using NPOI.SS.Formula.Functions;
-using SkiaSharp;
-using SqlSugar;
-using StackExchange.Redis;
-using System;
-using static NPOI.HSSF.Util.HSSFColor;
 using SystemIOFile = System.IO.File;
 
 namespace Hgzn.Mes.WebApi.Controllers.App;
@@ -89,6 +70,7 @@ public class AppController : ControllerBase
             content = await SystemIOFile.ReadAllBytesAsync(filePath);
             fileName = "HCWebSDKPluginsUserSetup.exe";
         }
-        return File(content, "application/octet-stream", fileName);
+        Response.Headers.ContentDisposition = $"inline; filename={fileName}";
+        return File(content, "application/octet-stream");
     }
 }

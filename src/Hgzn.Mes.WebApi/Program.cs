@@ -2,8 +2,6 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
 using Hgzn.Mes.Application.Main.Auth;
-using Hgzn.Mes.Application.Main.Services.Camera;
-using Hgzn.Mes.Application.Main.Services.Camera.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Location;
