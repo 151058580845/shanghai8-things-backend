@@ -6,17 +6,6 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-USER root
-
-# Alpine 使用 apk 包管理器，安装 ffmpeg
-RUN apk update && \
-    apk add --no-cache ffmpeg
-
-# 验证安装
-RUN ffmpeg -version
-
-USER app
-
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src

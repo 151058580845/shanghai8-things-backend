@@ -58,8 +58,6 @@ builder.Host.UseSerilog((context, logger) =>
 
 builder.Services.AddLogging();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-builder.Services.AddSingleton<ICameraService, CameraService>();
-builder.Services.AddSingleton<IStreamService, StreamService>();
 builder.Services.AddControllers().AddJsonOptions(config =>
 {
     config.JsonSerializerOptions.DefaultIgnoreCondition = Options.CustomJsonSerializerOptions.DefaultIgnoreCondition;
