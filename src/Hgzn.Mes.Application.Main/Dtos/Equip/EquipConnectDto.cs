@@ -25,6 +25,11 @@ public class EquipConnectReadDto : ReadDto
     public Guid EquipId { get; set; }
 
     /// <summary>
+    /// 设备资产编号
+    /// </summary>
+    public string? AssetNumber { get; set; }
+
+    /// <summary>
     /// 设备名称
     /// </summary>
     public string? EquipName { get; set; }

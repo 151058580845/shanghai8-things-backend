@@ -13,6 +13,7 @@ namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.Equip
                 .ForMember(dest => dest.EquipName, opts => opts.MapFrom(src => src.EquipLedger!.EquipName))
                 .ForMember(dest => dest.EquipCode, opts => opts.MapFrom(src => src.EquipLedger!.EquipCode))
                 .ForMember(dest => dest.TypeName, opts => opts.MapFrom(src => src.EquipLedger!.EquipType == null ? null : src.EquipLedger!.EquipType!.TypeName))
+                .ForMember(dest => dest.AssetNumber, opts => opts.MapFrom(src => src.EquipLedger!.AssetNumber))
                 .AfterMap((src, dest) =>
                 {
                     // 判断是否为 RFID 设备，并填充状态

@@ -3,23 +3,17 @@ using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Utilities;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
-using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
-using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.ValueObjects.Message.Commads.Connections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Infrastructure.Utilities;
 using SqlSugar;
 using StackExchange.Redis;
-using System;
 using System.Text;
 using System.Text.Json;
 using Hgzn.Mes.Application.Main.Dtos.Base;
-using System.Security.Policy;
-using NPOI.SS.Formula.Functions;
-using MySqlX.XDevAPI.Common;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -63,8 +57,8 @@ public class EquipConnectService : SugarCrudAppService<
 
         var equips = await DbContext.Queryable<EquipConnect>()
             .Includes(eq => eq.EquipLedger)
-            .WhereIF(!queryDto.EquipName.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipName.Contains(queryDto.EquipName!))
-            .WhereIF(!queryDto.EquipCode.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipCode.Contains(queryDto.EquipCode!))
+            .WhereIF(!queryDto.EquipName.IsNullOrEmpty(), eq => !string.IsNullOrEmpty(eq.Name) && eq.Name.Contains(queryDto.EquipName!))
+            .WhereIF(!queryDto.EquipCode.IsNullOrEmpty(), eq => !string.IsNullOrEmpty(eq.EquipLedger!.AssetNumber) && eq.EquipLedger!.AssetNumber.Contains(queryDto.EquipCode!))
             .WhereIF(queryDto.State != null, eq => eq.State == queryDto.State)
             .WhereIF(protocolEnumNum != null && protocolEnumNum != 0, eq => eq.ProtocolEnum == (ConnType)protocolEnumNum!)
             .OrderBy(t => t.OrderNum)
