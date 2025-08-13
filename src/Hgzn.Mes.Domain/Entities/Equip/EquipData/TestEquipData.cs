@@ -18,6 +18,6 @@ public class TestEquipData : UniversalEntity
     public byte DevTypeld { get; set; }
 
     [Description("本机识别编码")]
-    public byte[] Compld { get; set; }
+    public string Compld { get; set; }
     
 }

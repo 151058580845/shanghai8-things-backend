@@ -48,12 +48,13 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                     ReceiveHelper.ReceiveTestSystem.Enqueue(systemAndDeviceType);
                     byte[] compId = new byte[20];
                     Buffer.BlockCopy(buffer, 2, compId, 0, 20);
+                    string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
                     await _sqlSugarClient.Insertable(new TestEquipData()
                     {
                         TestEquip = systemAndDeviceType,
                         SimuTestSysld = simuTestSysId,
                         DevTypeld = devTypeId,
-                        Compld = compId,
+                        Compld = compNumber,
                     }).ExecuteCommandAsync();
                 }
                 
