@@ -1892,11 +1892,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = EquipmentResourceManagementApplication.Id
         };
 
-        // Rfid跟踪历史
+        // 手持枪历史
         public static Menu EquipLedgerHistory = new()
         {
             Id = Guid.Parse("B46B7ECC-E9B9-4AE4-5B67-6902BBCE1B8B"),
-            Name = "Rfid跟踪历史",
+            Name = "手持枪历史",
             Code = "equipLedgerHistory",
             ScopeCode = "equip:equipledgerhistory:list",
             Type = MenuType.Menu,
@@ -1905,6 +1905,21 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             OrderNum = 1000,
             ParentId = OrientationManagement.Id,
             RouteName = "EquipLedgerHistory"
+        };
+
+        // rfid跟踪历史
+        public static Menu EquipLocationRecord = new()
+        {
+            Id = Guid.Parse("0198A132-F20A-73D9-8251-F6FFDB834650"),
+            Name = "Rfid跟踪历史",
+            Code = "equipLocationRecord",
+            ScopeCode = "equip:equipLocationRecord:list",
+            Type = MenuType.Menu,
+            IconUrl = "fa-solid:history",
+            Route = "/equip/locationRecord/index",
+            OrderNum = 1000,
+            ParentId = OrientationManagement.Id,
+            RouteName = "EquipLocationRecord"
         };
 
         // 设备定位
@@ -1961,7 +1976,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
             Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse, EquipTestAnalyseOutput,TestData,
-            OrientationManagement, EquipLedgerHistory, EquipOrientation, EquipVisualization,
+            OrientationManagement, EquipLedgerHistory, EquipLocationRecord, EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,
             //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,
