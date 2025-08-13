@@ -37,9 +37,8 @@ public class RfidReaderConnector : EquipConnectorBase
 
     public override async Task StartAsync(Guid uri)
     {
-        StartReadingTag(_client);
-        await UpdateStateAsync(ConnStateType.Run);
-
+        if (StartReadingTag(_client))
+            await UpdateStateAsync(ConnStateType.Run);
     }
 
     /// <summary>
@@ -62,15 +61,16 @@ public class RfidReaderConnector : EquipConnectorBase
         switch (connInfo.ConnType)
         {
             case ConnType.Socket:
-                var conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions)
-                ?? throw new ArgumentNullException("conn");
+                var conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString,
+                               Options.CustomJsonSerializerOptions)
+                           ?? throw new ArgumentNullException("conn");
                 if (_client.OpenTcp(conn.Address + ":" + conn.Port, 5000, out var status) &&
                     status == eConnectionAttemptEventStatusType.OK)
                 {
                     _client.OnEncapedTagEpcLog = TagEpcLogEncapedHandler;
                     _client.OnTcpDisconnected = TcpDisconnectedHandler;
                     LoggerAdapter.LogInformation(
-                            $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> connect success!");
+                        $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> connect success!");
                     // 获得读写器信息
                     var readerInfo = new MsgAppGetReaderInfo();
                     _client.SendSynMsg(readerInfo);
@@ -86,9 +86,11 @@ public class RfidReaderConnector : EquipConnectorBase
                         LoggerAdapter.LogWarning(
                             $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> ger reader info error.");
                     }
+
                     ConnState = true;
                     return true;
                 }
+
                 break;
             default:
                 return false;
@@ -110,7 +112,7 @@ public class RfidReaderConnector : EquipConnectorBase
         await UpdateStateAsync(ConnStateType.Stop);
     }
 
-    private void StartReadingTag(GClient client)
+    private bool StartReadingTag(GClient client)
     {
         // 停止指令，空闲态
         StopReadingTag(client);
@@ -132,12 +134,16 @@ public class RfidReaderConnector : EquipConnectorBase
         {
             LoggerAdapter.LogWarning(
                 $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> inventory epc error.");
+            return false;
         }
-        else LoggerAdapter.LogInformation(
+
+        LoggerAdapter.LogInformation(
             $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> inventory epc success!");
+
+        return true;
     }
 
-    private void StopReadingTag(GClient client)
+    private bool StopReadingTag(GClient client)
     {
         // 停止指令，空闲态
         var msgBaseStop = new MsgBaseStop();
@@ -146,14 +152,19 @@ public class RfidReaderConnector : EquipConnectorBase
         {
             LoggerAdapter.LogWarning(
                 $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> epc stop error.");
+            return false;
         }
-        else LoggerAdapter.LogInformation(
+
+        LoggerAdapter.LogInformation(
             $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> stop epc success!");
+
+        return true;
     }
 
     private async void TagEpcLogEncapedHandler(EncapedLogBaseEpcInfo msg)
     {
-        LoggerAdapter.LogTrace($"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> epc flag on!");
+        LoggerAdapter.LogTrace(
+            $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> epc flag on!");
         var tidExist = _cacheTids.Contains(msg.logBaseEpcInfo.Tid);
         var timeout = (DateTime.Now.ToLocalTime() - _timeLast).TotalSeconds - _pushInterval > 0;
         if (!tidExist)
@@ -165,10 +176,12 @@ public class RfidReaderConnector : EquipConnectorBase
         {
             return;
         }
+
         if (timeout)
         {
             _cacheTids.Clear();
         }
+
         _timeLast = DateTime.Now.ToLocalTime();
         var data = new RfidMsg
         {
@@ -185,12 +198,14 @@ public class RfidReaderConnector : EquipConnectorBase
             .WithUri(_uri!)
             .WithDeviceType(_connType.ToString()!)
             .Build(), Encoding.UTF8.GetBytes(plain));
-        LoggerAdapter.LogTrace($"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> tid:{msg.logBaseEpcInfo.Tid} flag updated!");
+        LoggerAdapter.LogTrace(
+            $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> tid:{msg.logBaseEpcInfo.Tid} flag updated!");
     }
 
     protected async void TcpDisconnectedHandler(string readerName)
     {
-        LoggerAdapter.LogWarning($"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> serilnum: {_serialNum}, reader: {readerName} disconnected!");
+        LoggerAdapter.LogWarning(
+            $"connection[{_equipConnect!.Name}](connId:{_equipConnect.Id})<{_equipConnect.EquipId}> serilnum: {_serialNum}, reader: {readerName} disconnected!");
         _client.OnTcpDisconnected -= TcpDisconnectedHandler;
         await CloseConnOnlyAsync();
     }

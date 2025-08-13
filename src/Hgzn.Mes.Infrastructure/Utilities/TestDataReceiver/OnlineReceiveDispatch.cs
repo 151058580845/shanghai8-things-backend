@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 
 namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
 {
@@ -39,6 +40,23 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 // 如果我收到了某个系统的某个类型,那么我标记它在30秒内在线,我会在Redis中创建一个寿命为30秒的心跳
                 await ReceiveHelper.LiveRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, _equipId, time);
 
+                //增加试验设备记录，后期根据这个获取对应系统的对应设备的数据
+                byte[] systemAndDeviceType = new byte[22];
+                Buffer.BlockCopy(buffer, 0, systemAndDeviceType, 0, 22);
+                if (!ReceiveHelper.ReceiveTestSystem.Contains(systemAndDeviceType))
+                {
+                    ReceiveHelper.ReceiveTestSystem.Enqueue(systemAndDeviceType);
+                    byte[] compId = new byte[20];
+                    Buffer.BlockCopy(buffer, 2, compId, 0, 20);
+                    await _sqlSugarClient.Insertable(new TestEquipData()
+                    {
+                        TestEquip = systemAndDeviceType,
+                        SimuTestSysld = simuTestSysId,
+                        DevTypeld = devTypeId,
+                        Compld = compId,
+                    }).ExecuteCommandAsync();
+                }
+                
                 // 根据仿真试验系统与设备类型,通过工厂创建各自的解析类
                 // 以上所有系统固定占2个字节
                 OnlineReceiveFactory onlineReceiveFactory = new OnlineReceiveFactory(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);

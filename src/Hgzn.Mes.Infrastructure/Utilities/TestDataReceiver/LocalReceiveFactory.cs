@@ -36,8 +36,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
         private IReceive GetOrCreateLocalReceive(byte simuTestSysId, byte devTypeId, Func<IReceive> newReveive)
         {
             string key = GetKey(LocalOrOnline.Local, simuTestSysId, devTypeId);
-            if (Receives.ContainsKey(key))
-                return Receives[key];
+            if (Receives.TryGetValue(key, out var localReceive))
+                return localReceive;
             IReceive receive = newReveive();
             Receives.Add(key, receive);
             return receive;

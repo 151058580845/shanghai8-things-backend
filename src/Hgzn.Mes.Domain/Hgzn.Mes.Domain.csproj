@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
     <PackageReference Include="NetCoreServer" Version="8.0.7" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.172" />
   </ItemGroup>
 
   <ItemGroup>

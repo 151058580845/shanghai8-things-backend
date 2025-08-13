@@ -10,6 +10,7 @@ using NPOI.SS.Formula.Functions;
 using SqlSugar;
 using StackExchange.Redis;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -21,6 +22,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
 {
     public static class ReceiveHelper
     {
+        public static  readonly ConcurrentQueue<byte[]> ReceiveTestSystem = new();
+        
         public static DbConnOptions LOCALDBCONFIG = new DbConnOptions
         {
             DbType = DbType.OpenGauss,
