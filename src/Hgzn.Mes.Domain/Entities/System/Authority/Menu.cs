@@ -1409,6 +1409,22 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             ParentId = Root.Id
         };
 
+        // 设备状态监控应用展示数据
+        public static Menu ShowSystemTemp = new()
+        {
+            Id = Guid.Parse("0198A357-165E-7500-8A2A-13A92E862662"),
+            Name = "设备状态监控应用_展示数据",
+            Code = "ShowSystemTemp",
+            Type = MenuType.Menu,
+            Route = "/show-system-temp/index",
+            IconUrl = "ep:location",
+            IsLink = false,
+            IsShow = false,
+            OrderNum = 13,
+            ParentId = Root.Id,
+            RouteName = "ShowSystemTemp"
+        };
+
         // 设备状态监控应用
         public static Menu ShowSystem1 = new()
         {
@@ -1985,7 +2001,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Quality, QualityItem, QualityInput, QualityProcess, QualityOutput,
             //Schedule, ScheduleTeam, SchedulePlan, ScheduleHoliday, ScheduleCalendar,
             Location,Building,Floor,Room,
-            ShowSystem1, //ShowSystem,ShowSystem2,
+            ShowSystem1, ShowSystemTemp, //ShowSystem,ShowSystem2,
             Basic,// Supplier,Unit,Customer,
             LocationLabel,
             APIRoot, APIQuery, APIList, APIAdd, APIRemove, APIEdit, APISystem, APIEquip, APIBasic,
