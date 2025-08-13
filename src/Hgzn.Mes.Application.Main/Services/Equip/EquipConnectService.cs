@@ -47,14 +47,29 @@ public class EquipConnectService : SugarCrudAppService<
     public override async Task<PaginatedList<EquipConnectReadDto>> GetPaginatedListAsync(EquipConnectQueryDto queryDto)
     {
         var database = _connectionMultiplexer.GetDatabase();
+        int? protocolEnumNum = queryDto.ProtocolEnum switch
+        {
+            "ModbusRtu" => 1,
+            "ModbusAscii" => 2,
+            "ModbusTcp" => 3,
+            "ModbusUdp" => 4,
+            "Http" => 5,
+            "Socket" => 6,
+            "SerialPort" => 7,
+            "TcpServer" => 8,
+            "UdpServer" => 9,
+            _ => null
+        };
 
         var equips = await DbContext.Queryable<EquipConnect>()
             .Includes(eq => eq.EquipLedger)
             .WhereIF(!queryDto.EquipName.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipName.Contains(queryDto.EquipName!))
             .WhereIF(!queryDto.EquipCode.IsNullOrEmpty(), eq => eq.EquipLedger!.EquipCode.Contains(queryDto.EquipCode!))
+            .WhereIF(queryDto.State != null, eq => eq.State == queryDto.State)
+            .WhereIF(protocolEnumNum != null && protocolEnumNum != 0, eq => eq.ProtocolEnum == (ConnType)protocolEnumNum!)
             .OrderBy(t => t.OrderNum)
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
-
+        
         // 从redis里查出来赋值给ReadDto
         foreach (var item in equips.Items)
         {
