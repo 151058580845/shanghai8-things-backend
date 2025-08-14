@@ -31,6 +31,7 @@ namespace Hgzn.Mes.Iot.Worker
             _manager = manager;
             _configuration = configuration;
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             //延迟启动等待数据库初始化
@@ -42,19 +43,18 @@ namespace Hgzn.Mes.Iot.Worker
                     .Includes(ec => ec.EquipLedger, el => el!.EquipType)
                     .Where(ec => ec.State && ec.ConnectStr != null)
                     .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RfidReaderType.Id ||
-                    ec.EquipLedger!.EquipType!.Id == EquipType.RfidIssuerType.Id ||
-                    ec.EquipLedger!.EquipType!.Id == EquipType.RKType.Id ||
-                    ec.EquipLedger!.EquipType!.Id == EquipType.IotType.Id)
+                                 ec.EquipLedger!.EquipType!.Id == EquipType.RKType.Id ||
+                                 ec.EquipLedger!.EquipType!.Id == EquipType.IotType.Id)
                     .Where(ec => !ec.SoftDeleted)
                     .ToArrayAsync();
-
+                //ec.EquipLedger!.EquipType!.Id == EquipType.RfidIssuerType.Id ||   取消了发卡器的自动连接
                 //关闭多余的连接
                 var targetIds = connections.Select(c => c.Id);
                 try
                 {
                     var closeTasks = _manager.Connections
-                    .Where(c => !targetIds.Contains(c.Key))
-                    .Select(c => _manager.GetEquip(c.Key)!.CloseConnectionAsync());
+                        .Where(c => !targetIds.Contains(c.Key))
+                        .Select(c => _manager.GetEquip(c.Key)!.CloseConnectionAsync());
                     await Task.WhenAll(closeTasks);
                 }
                 catch
@@ -77,14 +77,15 @@ namespace Hgzn.Mes.Iot.Worker
                         if (connection?.EquipLedger?.EquipType?.ProtocolEnum == "CardIssuer")
                             equipConnectType = EquipConnType.CardIssuer;
                         var equip = _manager.GetEquip(connection.Id) ??
-                            _manager.AddEquip(connection.Id, equipConnectType,
-                            connection.ConnectStr!, connInfo);
+                                    _manager.AddEquip(connection.Id, equipConnectType,
+                                        connection.ConnectStr!, connInfo);
                         if (!equip.ConnState)
                         {
                             //await equip!.CloseConnectionAsync();
                             bool connetRet = await equip!.ConnectAsync(connInfo);
                             await equip!.StartAsync(connection.Id);
-                            _logger.LogInformation($"start connection[{connection!.Name}](connId:{connection.Id}) succeed!");
+                            _logger.LogInformation(
+                                $"start connection[{connection!.Name}](connId:{connection.Id}) succeed!");
                         }
                         else
                         {
@@ -97,7 +98,6 @@ namespace Hgzn.Mes.Iot.Worker
                     {
                         _logger.LogError($"start connection[{connection!.Name}](connId:{connection.Id}) failed!");
                     }
-
                 }
 
                 await Task.Delay(1000 * interval, stoppingToken);

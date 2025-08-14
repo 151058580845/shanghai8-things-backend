@@ -34,7 +34,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             SqlSugarContext context,
             IConnectionMultiplexer connectionMultiplexer,
             IConfiguration configuration
-            )
+        )
         {
             _logger = logger;
             _client = context.DbContext;
@@ -127,6 +127,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                         _logger.LogWarning("unexpected device msg");
                         return;
                     }
+
                     await HandleRfidMsgAsync(uri, rfid);
                     break;
                 case EquipConnType.IotServer:
@@ -134,7 +135,8 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     // 根据连接ID查询设备ID
                     EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
                     Guid equipId = con.EquipId;
-                    OnlineReceiveDispatch dispatch = new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
+                    OnlineReceiveDispatch dispatch =
+                        new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
                     await dispatch.Handle(msg);
                     break;
                 case EquipConnType.RKServer:
@@ -145,19 +147,21 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                         _logger.LogWarning("unexpected RKServer device msg");
                         return;
                     }
+
                     // 处理RKServer数据逻辑,这个数据本来是打算从后台内存中读取的,现在修改为根据MQTT推送的消息,在前端获取,所以现在随便传个数字过去就行,在前端改
                     // 更新:理论上可以,实际上不行,因为前端会刷新界面,前端刷新界面的时候可能MQTT还没有推送,所以会显示默认数据
                     await HandleRkServerDataAsync(uri, rkData);
                     break;
             }
-
         }
 
         private async Task HandleRkServerDataAsync(Guid uri, HygrographData rkData)
         {
             // 将推送过来的消息解析到静态内存中保存
-            if (rkData.RoomId != null && rkData.RoomId != Guid.Empty && rkData.Temperature != null && rkData.Humidness != null)
-                RKData.RoomId_TemperatureAndHumidness[rkData.RoomId.Value] = new Tuple<float, float>(rkData.Temperature.Value, rkData.Humidness.Value);
+            if (rkData.RoomId != null && rkData.RoomId != Guid.Empty && rkData.Temperature != null &&
+                rkData.Humidness != null)
+                RKData.RoomId_TemperatureAndHumidness[rkData.RoomId.Value] =
+                    new Tuple<float, float>(rkData.Temperature.Value, rkData.Humidness.Value);
         }
 
         private async Task HandleTransmitAsync(IotTopic topic, byte[] msg)
@@ -170,10 +174,10 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 // 根据连接ID查询设备ID
                 EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
                 Guid equipId = con.EquipId;
-                OnlineReceiveDispatch dispatch = new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
+                OnlineReceiveDispatch dispatch =
+                    new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
                 await dispatch.Handle(msg);
             }
-
         }
 
         private async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
@@ -187,11 +191,13 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 _logger.LogTrace("new label found");
                 return;
             }
+
             if (label.EquipLedgerId is null)
             {
                 _logger.LogInformation("label not binding to equip");
                 return;
             }
+
             // 读写器所在房间
             var rfidReader = (await _client.Queryable<EquipConnect>()
                 .Includes(ec => ec.EquipLedger, el => el!.Room)
@@ -209,11 +215,27 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 _logger.LogError("rfid device not bind to room");
                 return;
             }
+
             // 查找标签所在设备
             var equip = await _client.Queryable<EquipLedger>()
                 .Where(x => x!.Id == label!.EquipLedgerId)
                 .Includes(eq => eq.Room)
                 .FirstAsync();
+
+            #region 判定设备之前所在位置，如果是当前房间，就不处理,留存时间为1天
+
+            // 记录到redis
+            IDatabase redisDb = _connectionMultiplexer.GetDatabase();
+            var key = string.Format(CacheKeyFormatter.EquipRoom, equip.Id);
+            var value = redisDb.StringGet(key: key);
+            if (value == rfidReader.RoomId.ToString())
+            {
+                return;
+            }
+            // 将时间戳存入Redis并设置1天过期时间
+            await redisDb.StringSetAsync(key: key, value: rfidReader.RoomId.ToString(), expiry: TimeSpan.FromDays(1));
+            #endregion
+
 
             var time = DateTime.Now.ToLocalTime();
             var record = new EquipLocationRecord
@@ -235,7 +257,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             if (false && equip?.RoomId is not null && equip.RoomId == rfidReader.RoomId)
             {
                 if ((equip.LastMoveTime is null ||
-                (time - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
+                     (time - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
                 {
                     equip.RoomId = null;
                     roomName = null;
@@ -243,7 +265,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     equip.LastMoveTime = time;
                 }
             }
-            else//未绑定设备绑定至新房间
+            else //未绑定设备绑定至新房间
             {
                 if (rfidReader.RoomId != null)
                 {
@@ -256,17 +278,18 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     _logger.LogInformation("roomID 为空");
                 }
             }
+
             if (rfidReader.RoomId != null)
             {
                 record.RoomId = equip?.RoomId;
                 record.RoomName = roomName;
                 await _mqttExplorer.PublishAsync(UserTopicBuilder
-                .CreateUserBuilder()
-                .WithPrefix(TopicType.App)
-                .WithDirection(MqttDirection.Up)
-                .WithTag(MqttTag.Notice)
-                .WithUri(label!.EquipLedgerId.ToString()!)
-                .Build(), Encoding.UTF8.GetBytes(roomName ?? ""));
+                    .CreateUserBuilder()
+                    .WithPrefix(TopicType.App)
+                    .WithDirection(MqttDirection.Up)
+                    .WithTag(MqttTag.Notice)
+                    .WithUri(label!.EquipLedgerId.ToString()!)
+                    .Build(), Encoding.UTF8.GetBytes(roomName ?? ""));
                 await _client.Updateable(equip).ExecuteCommandAsync();
                 await _client.Insertable(record).ExecuteCommandAsync();
             }

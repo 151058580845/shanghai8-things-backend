@@ -28,5 +28,8 @@
 
         // 用于指示数据采集最后一次的数据
         public const string EquipDataPointStatus = "equipDataPointStatus:{0}:{1}:{2}:status";
+        
+        //设备当前所在位置
+        public const string EquipRoom = "equipRoom:{0}";
     }
 }

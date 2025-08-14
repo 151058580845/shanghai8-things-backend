@@ -60,6 +60,11 @@ namespace Hgzn.Mes.Iot.EquipManager
             return false;
         }
 
+        public override Task StartAsync(Guid uri)
+        {
+            return base.StartAsync(uri);
+        }
+
         private async void TagEpcLogEncapedHandler(EncapedLogBaseEpcInfo msg)
         {
             LoggerAdapter.LogTrace("epc on");

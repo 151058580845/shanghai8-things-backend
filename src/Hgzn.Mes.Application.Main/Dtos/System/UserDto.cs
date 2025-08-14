@@ -117,6 +117,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.System
     {
         public string Username { get; set; } = null!;
         public string Password { get; set; } = null!;
+        public int Expires { get; set; } = 1;
         public CaptchaAnswerDto? Captcha { get; set; }
     }
 

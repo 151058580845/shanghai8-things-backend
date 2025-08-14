@@ -42,7 +42,7 @@ builder.Services.AddSingleton<ConnManager>();
 builder.Services.AddSerilog(logger);
 
 builder.Services.AddHostedService<MqttWorker>();
-// builder.Services.AddHostedService<ConnWorker>();
+builder.Services.AddHostedService<ConnWorker>();
 
 // Add dbContext pool
 //builder.Services.AddPooledDbContextFactory<PatientDbContext>(options =>

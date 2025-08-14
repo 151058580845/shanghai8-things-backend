@@ -23,7 +23,6 @@ using Hgzn.Mes.Domain.Utilities;
 using Hgzn.Mes.Infrastructure.Hub;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
@@ -31,8 +30,8 @@ using SqlSugar;
 namespace Hgzn.Mes.Application.Main.Services.System
 {
     public class UserService : SugarCrudAppService<
-        User, Guid,
-        UserReadDto, UserQueryDto, UserCreateDto, UserUpdateDto>,
+            User, Guid,
+            UserReadDto, UserQueryDto, UserCreateDto, UserUpdateDto>,
         IUserService
     {
         public UserService(
@@ -50,7 +49,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             _baseConfigService = baseConfigService;
         }
 
-        private  ILoginLogService  _loginLogService;
+        private ILoginLogService _loginLogService;
         private readonly IUserDomainService _userDomainService;
         private readonly ILogger<UserService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -58,8 +57,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<UserReadDto?> RegisterAsync(UserRegisterDto registerDto)
         {
-            var targetRoleIds = (registerDto.RoleIds is null || !registerDto.RoleIds.Any()) ?
-                [Role.MemberRole.Id] : registerDto.RoleIds;
+            var targetRoleIds = (registerDto.RoleIds is null || !registerDto.RoleIds.Any())
+                ? [Role.MemberRole.Id]
+                : registerDto.RoleIds;
             var roles = await DbContext.Queryable<Role>()
                 .Where(r => targetRoleIds.Contains(r.Id))
                 .ToListAsync();
@@ -79,15 +79,16 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public override async Task<UserReadDto?> CreateAsync(UserCreateDto createDto)
         {
-            var targetRoleIds = (createDto.RoleIds is null || !createDto.RoleIds.Any()) ?
-                [Role.MemberRole.Id] : createDto.RoleIds;
+            var targetRoleIds = (createDto.RoleIds is null || !createDto.RoleIds.Any())
+                ? [Role.MemberRole.Id]
+                : createDto.RoleIds;
             var roles = await DbContext.Queryable<Role>()
                 .Where(r => targetRoleIds.Contains(r.Id))
                 .ToListAsync();
-            if(roles is null || roles.Count == 0)
+            if (roles is null || roles.Count == 0)
                 throw new BadRequestException("the choosing role not exist");
             if (await DbContext.Queryable<User>()
-                .AnyAsync(u => u.Username == createDto.Username))
+                    .AnyAsync(u => u.Username == createDto.Username))
                 throw new BadRequestException("username exist");
             var user = Mapper.Map<User>(createDto);
             var password = await _baseConfigService
@@ -120,7 +121,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 throw new NotAcceptableException("user not found or password error");
             }
 
-            if(user.Roles.Count == 0)
+            if (user.Roles.Count == 0)
             {
                 throw new NotAcceptableException("user must has at least one role");
             }
@@ -128,7 +129,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var roleIds = string.Join(",", user.Roles.Select(r => r.Id));
             var minLevel = user.Roles.Min(r => r.Level);
             var token = JwtTokenUtil.GenerateJwtToken(SettingUtil.Jwt.Issuer, SettingUtil.Jwt.Audience,
-                            SettingUtil.Jwt.ExpireMin,
+                            credential.Expires == -1
+                                ? SettingUtil.Jwt.ExpireMin
+                                : TimeSpan.FromDays(credential.Expires),
                             new Claim(ClaimType.UserId, user.Id.ToString()),
                             new Claim(ClaimType.UserName, user.Username),
                             new Claim(ClaimType.RoleId, roleIds),
@@ -146,15 +149,16 @@ namespace Hgzn.Mes.Application.Main.Services.System
             var httpContext = _httpContextAccessor.HttpContext;
             var ipAddress = httpContext?.Connection.RemoteIpAddress?.ToString();
             var loginUser = _loginLogService.GetInfoByHttpContext(httpContext);
-            
-            await _loginLogService.CreateAsync(new LoginLogCreateDto() { 
-                Browser= loginUser.Browser,
+
+            await _loginLogService.CreateAsync(new LoginLogCreateDto()
+            {
+                Browser = loginUser.Browser,
                 Os = loginUser.Os,
                 CreationTime = DateTime.Now.ToLocalTime(),
-                LoginIp= ipAddress,
-                LoginLocation= loginUser.LoginLocation,
-                LoginUser= user.Username,
-                LogMsg= user.Id.ToString()
+                LoginIp = ipAddress,
+                LoginLocation = loginUser.LoginLocation,
+                LoginUser = user.Username,
+                LogMsg = user.Id.ToString()
             });
 
             await _userDomainService.CacheTokenAsync(user.Id, token);
@@ -183,9 +187,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
             try
             {
                 var user = await DbContext.Queryable<User>()
-                    .Includes(u => u.Roles)
-                    .FirstAsync(u => u.Id == uid) ??
-                    throw new NotFoundException("uesr not found!");
+                               .Includes(u => u.Roles)
+                               .FirstAsync(u => u.Id == uid) ??
+                           throw new NotFoundException("uesr not found!");
                 var entity = Mapper.Map(dto, user);
                 count += await DbContext.Updateable(entity).ExecuteCommandAsync();
 
@@ -193,10 +197,11 @@ namespace Hgzn.Mes.Application.Main.Services.System
                     !user.Roles.Select(r => r.Id).SequenceEqual(dto.RoleIds))
                 {
                     if (!await DbContext.Queryable<Role>()
-                        .AnyAsync(r => dto.RoleIds!.Contains(r.Id)))
+                            .AnyAsync(r => dto.RoleIds!.Contains(r.Id)))
                     {
                         throw new BadRequestException("one or more role not exist!");
                     }
+
                     var relation = dto.RoleIds.Select(rid =>
                         new UserRole { UserId = uid, RoleId = rid }).ToList();
 
@@ -208,6 +213,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                         .Includes(u => u.Roles)
                         .FirstAsync();
                 }
+
                 await DbContext.Ado.CommitTranAsync();
                 return Mapper.Map<UserReadDto>(entity);
             }
@@ -234,13 +240,13 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Includes(u => u.Roles, r => r.Menus)
                 .FirstAsync();
             var userDto = Mapper.Map<UserScopeReadDto>(user);
-            
+
             if (user.Roles.Any(r => r.Id == Role.DevRole.Id))
             {
                 userDto.ScopeCodes = (await DbContext.Queryable<Menu>()
                     .Where(t => t.Type == MenuType.Component)
                     .Select(t => t.ScopeCode)
-                    .ToListAsync()).Where(t=>t != null)!;
+                    .ToListAsync()).Where(t => t != null)!;
             }
             else
             {
@@ -248,9 +254,10 @@ namespace Hgzn.Mes.Application.Main.Services.System
                     .SelectMany(r => r.Menus ?? Enumerable.Empty<Menu>())
                     .Where(t => t.Type == MenuType.Component)
                     .Select(t => t.ScopeCode)
-                    .ToListAsync()).Where(t=>t != null)!;;
+                    .ToListAsync()).Where(t => t != null)!;
+                ;
             }
-            
+
             return userDto;
         }
 
@@ -258,7 +265,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
         {
             var users = await Queryable
                 .WhereIF(!string.IsNullOrEmpty(query?.Phone), u => u.Phone == null || u.Phone.Contains(query!.Phone!))
-                .WhereIF(!string.IsNullOrEmpty(query?.UserName) , u => u.Username.Contains(query!.UserName!))
+                .WhereIF(!string.IsNullOrEmpty(query?.UserName), u => u.Username.Contains(query!.UserName!))
                 .WhereIF(query?.DeptId != null, u => u.DeptId == query!.DeptId)
                 .WhereIF(query?.State != null, u => u.State == query!.State)
                 .Includes(u => u.Roles)
@@ -269,7 +276,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public async Task<UserReadDto?> ChangeRoleAsync(Guid userId, IEnumerable<Guid> roleIds)
         {
             var user = (await Queryable.FirstAsync(u => u.Id == userId)) ??
-                throw new NotFoundException("user not found");  
+                       throw new NotFoundException("user not found");
             user.Roles = roleIds.Select(id => new Role { Id = id }).ToList();
             var count = await DbContext.Updateable(user).ExecuteCommandAsync();
             return count == 0 ? null : Mapper.Map<UserReadDto>(user);
@@ -302,7 +309,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
             }
 
             var user = await Queryable.FirstAsync(u => u.Username == passwordDto.Username) ??
-                    throw new NotFoundException("user not found");
+                       throw new NotFoundException("user not found");
             var bytes = Convert.FromBase64String(passwordDto.OldPassword);
             if (!user.Verify(bytes))
             {
@@ -316,8 +323,8 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public async Task<int> ResetPasswordAsync(Guid userId)
         {
             var user = await Queryable.FirstAsync(u => u.Id == userId) ??
-                    throw new NotFoundException("user not found");
-           string defaultPsd = await _baseConfigService
+                       throw new NotFoundException("user not found");
+            string defaultPsd = await _baseConfigService
                 .GetValueByKeyAsync(BaseConfig.DefaultPassword.ConfigKey) ?? "12345678";
             var hash = CryptoUtil.Sha256(defaultPsd);
             _userDomainService.WithSalt(ref user, hash);
@@ -326,8 +333,10 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<IEnumerable<UserReadDto>> GetUserListByRoleId(Guid roleId)
         {
-           var list = await Queryable.Where(t=>SqlFunc.Subqueryable<UserRole>().Where(m=>m.RoleId == roleId && m.UserId == t.Id).Any()).ToListAsync();
-           return Mapper.Map<IEnumerable<UserReadDto>>(list);
+            var list = await Queryable.Where(t =>
+                    SqlFunc.Subqueryable<UserRole>().Where(m => m.RoleId == roleId && m.UserId == t.Id).Any())
+                .ToListAsync();
+            return Mapper.Map<IEnumerable<UserReadDto>>(list);
         }
 
         public override async Task<PaginatedList<UserReadDto>> GetPaginatedListAsync(UserQueryDto query)
@@ -336,7 +345,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 .Where(u => u.Phone != null && (string.IsNullOrEmpty(query.Phone) || u.Phone.Contains(query.Phone)))
                 .Where(u => string.IsNullOrEmpty(query.UserName) || u.Username.Contains(query.UserName))
                 .Where(u => query.DeptId == null || u.DeptId == query.DeptId)
-                .Where(u =>query.State == null || u.State == query.State)
+                .Where(u => query.State == null || u.State == query.State)
                 .Includes(u => u.Roles)
                 .ToPaginatedListAsync(query.PageIndex, query.PageSize);
             return Mapper.Map<PaginatedList<UserReadDto>>(users);
@@ -350,9 +359,9 @@ namespace Hgzn.Mes.Application.Main.Services.System
         public async Task<IEnumerable<UserReadDto>> GetListByRoleIdAsync(Guid roleId)
         {
             var userids = await DbContext.Queryable<UserRole>()
-           .Where(t => t.RoleId == roleId)
-           .Select(a => a.UserId)
-           .ToListAsync();
+                .Where(t => t.RoleId == roleId)
+                .Select(a => a.UserId)
+                .ToListAsync();
 
             var users = await DbContext.Queryable<User>()
                 .Where(t => userids.Contains(t.Id))
@@ -361,14 +370,16 @@ namespace Hgzn.Mes.Application.Main.Services.System
             return Mapper.Map<IEnumerable<UserReadDto>>(users);
         }
 
-        public async Task<bool?> ChangeIconAsync(Guid userId,IFormFile file)
+        public async Task<bool?> ChangeIconAsync(Guid userId, IFormFile file)
         {
             var directoryPath = Path.Combine(Environment.CurrentDirectory, "attachs");
             if (!Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            var fullPath = Path.Combine(directoryPath, $"{userId}-{DateTimeOffset.Now.ToUnixTimeMilliseconds()}-{file.FileName}");
+
+            var fullPath = Path.Combine(directoryPath,
+                $"{userId}-{DateTimeOffset.Now.ToUnixTimeMilliseconds()}-{file.FileName}");
             if (!File.Exists(fullPath))
             {
                 using var reader = file.OpenReadStream();
@@ -377,6 +388,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
                 writer.Close();
                 reader.Close();
             }
+
             return true;
         }
     }

@@ -25,6 +25,7 @@ namespace Hgzn.Mes.Iot.EquipManager
             _sqlSugarClient = sugarClient;
             _equipConnect = sugarClient.Queryable<EquipConnect>().First(x => x.Id == Guid.Parse(_uri));
         }
+
         protected readonly IConnectionMultiplexer _connectionMultiplexer;
         protected readonly IMqttExplorer _mqttExplorer;
         protected readonly ISqlSugarClient _sqlSugarClient;
@@ -50,12 +51,12 @@ namespace Hgzn.Mes.Iot.EquipManager
             var key = string.Format(CacheKeyFormatter.EquipState, _equipConnect!.EquipId, _uri);
             await database.StringSetAsync(key, (int)stateType);
             await _mqttExplorer.PublishAsync(UserTopicBuilder
-            .CreateUserBuilder()
-            .WithPrefix(TopicType.App)
-            .WithDirection(MqttDirection.Up)
-            .WithTag(MqttTag.State)
-            .WithUri(_uri!)
-            .Build(), BitConverter.GetBytes((int)stateType));
+                .CreateUserBuilder()
+                .WithPrefix(TopicType.App)
+                .WithDirection(MqttDirection.Up)
+                .WithTag(MqttTag.State)
+                .WithUri(_uri!)
+                .Build(), BitConverter.GetBytes((int)stateType));
         }
 
         public async Task UpdateOperationAsync(ConnStateType stateType)
@@ -74,6 +75,7 @@ namespace Hgzn.Mes.Iot.EquipManager
                 default:
                     break;
             }
+
             // 记录到redis服务器
             var database = _connectionMultiplexer.GetDatabase();
             var key = string.Format(CacheKeyFormatter.EquipOperationStatus, _uri);
