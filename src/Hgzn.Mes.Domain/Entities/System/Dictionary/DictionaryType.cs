@@ -1935,6 +1935,67 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
 
         #endregion
 
+        #region 仿真系统设备类型
+        public static DictionaryType TestSystemEquipType
+        {
+            get => new DictionaryType
+            {
+                Id = Guid.Parse("0198BAF3-18B6-708C-A137-6ECFA44D675B"), // 固定的 Guid 值
+                DictName = "试验系统设备类型",
+                DictType = "TestSystemEquipmentType",
+                OrderNum = 17,
+                Remark = "试验系统设备类型",
+                SoftDeleted = false,
+                State = true
+            };
+        }
+
+        public static DictionaryInfo[] TestSystemEquipTypes
+        {
+            get
+            {
+                List<DictionaryInfo> list = [];
+                List<string> uuids = [
+                    "0198BAF5-714E-74DB-87A0-1377153FF501",
+                    "0198BAF5-714E-74DB-87A0-14D5158C6B2C",
+                    "0198BAF5-714E-74DB-87A0-1AC465F620D3",
+                    "0198BAF5-714E-74DB-87A0-1E1C595FA8A1",
+                    "0198BAF5-714E-74DB-87A0-2376E536FC94",
+                    "0198BAF5-714E-74DB-87A0-267D5153DA68",
+                    "0198BAF5-714E-74DB-87A0-2B48A6A2BB15",
+                    "0198BAF5-714E-74DB-87A0-2F45D13B109A"
+                ];
+                List<string> names = [
+                    "阵列馈电",
+                    "雷达转台",
+                    "红外转台",
+                    "固定电源",
+                    "移动电源",
+                    "雷达源",
+                    "红外源",
+                    "标准源"
+                ];
+                for (var i = 0; i < uuids.Count; i++)
+                {
+                    list.Add(new DictionaryInfo
+                    {
+                        Id = Guid.Parse(uuids[i]), // 固定的 Guid 值
+                        DictLabel = names[i],
+                        DictValue = i.ToString(),
+                        ParentId = TestSystemEquipType.Id,
+                        OrderNum = i + 1,
+                        Remark = names[i],
+                        SoftDeleted = false,
+                        State = true,
+                        CreationTime = DateTime.Now.ToLocalTime(),
+                        ListClass = "info"
+                    });
+                }
+                return [.. list];
+            }
+        }
+        #endregion
+
         public static DictionaryType[] Seeds { get; } =
         {
             EquipMaintenanceType,
@@ -1959,7 +2020,8 @@ namespace Hgzn.Mes.Domain.Entities.System.Dictionary
             testSystem,
             FormTypes,
             EquipProtocol,
-            CollectionWorkingDay
+            CollectionWorkingDay,
+            TestSystemEquipType
         };
     }
 }
