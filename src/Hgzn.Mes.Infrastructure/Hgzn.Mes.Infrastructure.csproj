@@ -9,13 +9,14 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.2.0" />
+    <PackageReference Include="Hangfire" Version="1.8.21" />
+    <PackageReference Include="Hangfire.SQLite" Version="1.4.2" />
     <PackageReference Include="IPTools.China" Version="1.6.0" />
     <PackageReference Include="IPTools.Core" Version="1.6.0" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="CaseExtensions" Version="1.1.0" />
     <PackageReference Include="Ericc.EntityFrameworkCore.OpenGauss" Version="2.0.0" />
-    <PackageReference Include="Hangfire" Version="1.8.17" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.12" />

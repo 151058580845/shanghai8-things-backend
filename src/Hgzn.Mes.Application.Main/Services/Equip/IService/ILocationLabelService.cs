@@ -21,5 +21,11 @@ namespace Hgzn.Mes.Application.Main.Services.Equip.IService
         Task<int> BindingLabelsAsync(BindingLabelDto dto);
 
         Task<IEnumerable<LocationLabelReadDto>> QueryByDeviceTypes(IEnumerable<Guid>? typeIds);
+
+        /// <summary>
+        /// 获取所有绑定过资产编号的数据
+        /// </summary>
+        /// <returns></returns>
+        Task<PaginatedList<EquipLedgerSearchReadDto>> GetEquipBindLabelAsync(int pageIndex = 1, int pageSize = 100);
     }
 }

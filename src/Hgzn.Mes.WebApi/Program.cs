@@ -31,6 +31,8 @@ using StackExchange.Redis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
+using Hangfire;
+using Hangfire.SQLite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -187,7 +189,19 @@ builder.Services.AddSignalR(options =>
 });
 
 //注册hangfire
-// builder.Services.AddHangfireServer();
+builder.Services.AddHangfire(configuration =>
+{
+    configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSQLiteStorage("Data Source=hangfire.db;")
+        .UseSerilogLogProvider();
+});
+builder.Services.AddHangfireServer(options =>
+{
+    options.Queues = ["default"];
+    options.WorkerCount = 1;
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -295,10 +309,9 @@ if (app.Environment.IsDevelopment())
     await sqlSugarContext!.GetSeedsCodeFromDatabaseAsync();
 }
 app.Services.GetService<IMqttExplorer>()?.StartAsync();
-
 app.UseExceptionHandler(builder =>
     builder.Run(async context =>
         await ExceptionLocalizerExtension.LocalizeException(context, app.Services.GetService<IStringLocalizer<Exception>>()!)));
 //启动hangfire展示界面
-// app.UseHangfireDashboard();
+app.UseHangfireDashboard();
 app.Run();

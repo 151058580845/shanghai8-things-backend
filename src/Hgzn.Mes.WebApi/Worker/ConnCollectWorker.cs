@@ -35,7 +35,7 @@ namespace Hgzn.Mes.WebApi.Worker
             _redis = connectionMultiplexer.GetDatabase();
         }
 
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {

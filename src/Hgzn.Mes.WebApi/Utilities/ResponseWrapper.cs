@@ -1,7 +1,4 @@
-﻿using Hgzn.Mes.Domain.Shared;
-using System.Data.SqlTypes;
-using Hgzn.Mes.Application.Main.Dtos.System;
-
+﻿
 namespace Hgzn.Mes.WebApi.Utilities
 {
     public class ResponseWrapper<TRead>
@@ -33,7 +30,7 @@ namespace Hgzn.Mes.WebApi.Utilities
             };
 
         public static ResponseWrapper<TNull?> WrapNull<TNull>(string? info = null,
-            int status = StatusCodes.Status200OK) where TNull : INullable =>
+            int status = StatusCodes.Status200OK)  =>
             new()
             {
                 Info = info,

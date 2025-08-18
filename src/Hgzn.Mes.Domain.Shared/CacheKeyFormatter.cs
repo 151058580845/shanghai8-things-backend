@@ -31,5 +31,8 @@
         
         //设备当前所在位置
         public const string EquipRoom = "equipRoom:{0}";
+        
+        //设备当前报警任务主键
+        public const string EquipAlarmJob = "equipAlarmJob:{0}";
     }
 }

@@ -47,4 +47,6 @@ public interface IEquipLedgerService : ICrudAppService<
     /// <param name="equipId"></param>
     /// <returns></returns>
     Task<string> GetEquipName(Guid equipId);
+
+    Task<IEnumerable<EquipLedgerSearchReadDto>> GetEquipExportRfid();
 }

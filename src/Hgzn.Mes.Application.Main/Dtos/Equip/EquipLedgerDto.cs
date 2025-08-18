@@ -38,6 +38,11 @@ public class EquipLedgerReadDto : ReadDto
     public string? ResponsibleUserName { get; set; }
 
     [Description("备注")] public string? Remark { get; set; }
+    /// <summary>
+    /// 设备类型为读写器时触发，楼层关键节点
+    /// </summary>
+    [Description("是否是关卡")]
+    public bool? IsCustoms { get; set; } = false;
 
     /// <summary>
     /// 是否在移动中
@@ -68,6 +73,11 @@ public class EquipLedgerReadDto : ReadDto
     /// 是否计量设备
     /// </summary>
     public bool? IsMeasurementDevice { get; set; }
+    /// <summary>
+    /// 1为手动在设备中修改，2为读写器获取，3为通过url从rfid系统中获取
+    /// </summary>
+    [Description("房间标签来源")] //若是rfidReader则不可为null
+    public int? RoomIdSourceType { get; set; } = 1;
 }
 
 public class EquipResponsibleUserReadDto : ReadDto
@@ -116,7 +126,6 @@ public class EquipLocationLabelReadDto : ReadDto
     [Description("设备责任人")] public Guid? ResponsibleUserId { get; set; }
 
     [Description("设备责任人")] public string? ResponsibleUserName { get; set; }
-
 }
 
 
@@ -131,6 +140,11 @@ public class EquipLedgerCreateDto : CreateDto
     /// 设备名称
     /// </summary>
     public string EquipName { get; set; } = null!;
+    /// <summary>
+    /// 设备类型为读写器时触发，楼层关键节点
+    /// </summary>
+    [Description("是否是关卡")]
+    public bool? IsCustoms { get; set; } = false;
 
     /// <summary>
     /// 设备类型ID
@@ -193,6 +207,11 @@ public class EquipLedgerCreateDto : CreateDto
     /// 是否计量设备
     /// </summary>
     public bool? IsMeasurementDevice { get; set; }
+    /// <summary>
+    /// 1为手动在设备中修改，2为读写器获取，3为通过url从rfid系统中获取
+    /// </summary>
+    [Description("房间标签来源")] //若是rfidReader则不可为null
+    public int? RoomIdSourceType { get; set; } = 1;
 }
 
 public class EquipLedgerUpdateDto : UpdateDto
@@ -206,6 +225,11 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// 设备名称
     /// </summary>
     public string EquipName { get; set; } = null!;
+    /// <summary>
+    /// 设备类型为读写器时触发，楼层关键节点
+    /// </summary>
+    [Description("是否是关卡")]
+    public bool? IsCustoms { get; set; } = false;
 
     /// <summary>
     /// 设备类型ID
@@ -266,6 +290,11 @@ public class EquipLedgerUpdateDto : UpdateDto
 
     [Description("是否计量设备")]
     public bool? IsMeasurementDevice { get; set; }
+    /// <summary>
+    /// 1为手动在设备中修改，2为读写器获取，3为通过url从rfid系统中获取
+    /// </summary>
+    [Description("房间标签来源")] //若是rfidReader则不可为null
+    public int? RoomIdSourceType { get; set; } = 1;
 }
 
 public class EquipLedgerAppUpdateDto : UpdateDto
@@ -324,6 +353,11 @@ public class EquipLedgerAppUpdateDto : UpdateDto
     /// 有效期时间
     /// </summary>
     public DateTime? ValidityDate { get; set; }
+    /// <summary>
+    /// 设备类型为读写器时触发，楼层关键节点
+    /// </summary>
+    [Description("是否是关卡")]
+    public bool? IsCustoms { get; set; } = false;
 
     /// <summary>
     /// 设备资源集（需要做文档管理功能）
@@ -340,6 +374,11 @@ public class EquipLedgerAppUpdateDto : UpdateDto
     /// 备注
     /// </summary>
     public string? Remarks { get; set; }
+    /// <summary>
+    /// 1为手动在设备中修改，2为读写器获取，3为手持枪获取，4为通过url从rfid系统中获取
+    /// </summary>
+    [Description("房间标签来源")] //若是rfidReader则不可为null
+    public int? RoomIdSourceType { get; set; } = 1;
 }
 
 public class EquipLedgerQueryDto : PaginatedTimeQueryDto

@@ -44,6 +44,12 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     [Description("安装地点")]//若是rfidReader则不可为null
     public Guid? RoomId { get; set; }
 
+    /// <summary>
+    /// 1为手动在设备中修改，2为读写器获取，3为通过url从rfid系统中获取,4从excel导入
+    /// </summary>
+    [Description("房间标签来源")] //若是rfidReader则不可为null
+    public int? RoomIdSourceType { get; set; } = 1;
+
     // [Navigate(NavigateType.OneToOne,nameof(RoomId))]
     public Room? Room { get; set; }
 
@@ -61,6 +67,12 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     /// 最后移动时间
     /// </summary>
     public DateTime? LastMoveTime { get; set; }
+
+    /// <summary>
+    /// 设备类型为读写器时触发，楼层关键节点
+    /// </summary>
+    [Description("是否是关卡")]
+    public bool? IsCustoms { get; set; } = false;
 
     [Description("设备状态(正常/丢失/使用中)")]
     public DeviceStatus? DeviceStatus { get; set; }

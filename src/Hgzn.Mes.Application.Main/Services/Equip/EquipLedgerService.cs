@@ -9,9 +9,7 @@ using Hgzn.Mes.Domain.Shared.Extensions;
 using Hgzn.Mes.Domain.Shared.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities;
 using StackExchange.Redis;
-
 using System.Text.Json.Serialization;
-
 using System.Text.Json;
 using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Entities.Equip;
@@ -34,7 +32,6 @@ public class EquipLedgerService : SugarCrudAppService<
         EquipLedgerCreateDto, EquipLedgerUpdateDto>,
     IEquipLedgerService
 {
-
     private readonly HttpClient _httpClient;
     private readonly ICodeRuleService _codeRuleService;
 
@@ -134,7 +131,8 @@ public class EquipLedgerService : SugarCrudAppService<
                 m => m.EquipName.Contains(query.Query!) || m.Model!.Contains(query.Query!))
             .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
             .WhereIF(query.NoRfidDevice == true, m => m.TypeId == null ||
-                (m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id))
+                                                      (m.TypeId != EquipType.RfidIssuerType.Id &&
+                                                       m.TypeId != EquipType.RfidReaderType.Id))
             .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
             .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
             .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
@@ -143,14 +141,15 @@ public class EquipLedgerService : SugarCrudAppService<
         if (query.BindingTagCount is not null)
         {
             queryable = queryable.Includes(eq => eq.Labels);
-            queryable = query.BindingTagCount == -1 ?
-                queryable.Where(eq => SqlFunc.Subqueryable<LocationLabel>()
-                        .Where(l => l.EquipLedgerId == eq.Id)
-                        .Count() > 0) :
-                queryable.Where(eq => SqlFunc.Subqueryable<LocationLabel>()
-                        .Where(l => l.EquipLedgerId == eq.Id)
-                        .Count() == 0);
+            queryable = query.BindingTagCount == -1
+                ? queryable.Where(eq => SqlFunc.Subqueryable<LocationLabel>()
+                    .Where(l => l.EquipLedgerId == eq.Id)
+                    .Count() > 0)
+                : queryable.Where(eq => SqlFunc.Subqueryable<LocationLabel>()
+                    .Where(l => l.EquipLedgerId == eq.Id)
+                    .Count() == 0);
         }
+
         var entities = await queryable
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
@@ -162,21 +161,23 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto? query = null)
     {
-        var queryable = query is null ? Queryable :
-            Queryable
-            .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipCode.Contains(query.EquipCode!))
-            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.AssetNumber == query.AssetNumber)
-            .WhereIF(!string.IsNullOrEmpty(query.Query),
-                m => m.EquipName.Contains(query.Query!) ||
-                m.Model!.Contains(query.Query!))
-            .WhereIF(query.ResponsibleUserId is not null, m => m.ResponsibleUserId.Equals(query.ResponsibleUserId))
-            .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
-            .WhereIF(query.NoRfidDevice == true, m => m.TypeId == null ||
-                (m.TypeId != EquipType.RfidIssuerType.Id && m.TypeId != EquipType.RfidReaderType.Id))
-            .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
-            .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
-            .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
-            .WhereIF(query.State != null, m => m.State == query.State);
+        var queryable = query is null
+            ? Queryable
+            : Queryable
+                .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipCode.Contains(query.EquipCode!))
+                .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.AssetNumber == query.AssetNumber)
+                .WhereIF(!string.IsNullOrEmpty(query.Query),
+                    m => m.EquipName.Contains(query.Query!) ||
+                         m.Model!.Contains(query.Query!))
+                .WhereIF(query.ResponsibleUserId is not null, m => m.ResponsibleUserId.Equals(query.ResponsibleUserId))
+                .WhereIF(!query.TypeId.IsNullableGuidEmpty(), m => m.TypeId.Equals(query.TypeId))
+                .WhereIF(query.NoRfidDevice == true, m => m.TypeId == null ||
+                                                          (m.TypeId != EquipType.RfidIssuerType.Id &&
+                                                           m.TypeId != EquipType.RfidReaderType.Id))
+                .WhereIF(!query.RoomId.IsNullableGuidEmpty(), m => m.RoomId.Equals(query.RoomId))
+                .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
+                .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
+                .WhereIF(query.State != null, m => m.State == query.State);
 
         var entities = await queryable
             .Includes(t => t.Room)
@@ -224,7 +225,6 @@ public class EquipLedgerService : SugarCrudAppService<
             var changeCount = 0;
             if (result != null && result.Any())
             {
-
                 foreach (var item in result)
                 {
                     var info = Mapper.Map<EquipLedger>(item);
@@ -259,8 +259,8 @@ public class EquipLedgerService : SugarCrudAppService<
         var entities = await DbContext.Queryable<EquipLedger>()
             .Includes(e => e.Room)
             .Where(e => e.IsMovable &&
-            (e.RoomId == null || (int)e.Room!.Purpose >= (int)RoomPurpose.Hallway) &&
-            DateTime.Now.ToLocalTime().AddMinutes(-30) >= e.LastMoveTime).ToArrayAsync();
+                        (e.RoomId == null || (int)e.Room!.Purpose >= (int)RoomPurpose.Hallway) &&
+                        DateTime.Now.ToLocalTime().AddMinutes(-30) >= e.LastMoveTime).ToArrayAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
@@ -268,7 +268,9 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         // var protocol = Enum.Parse<EquipConnType>(type, true);
         var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(protocolEnum), m => m.EquipType!.ProtocolEnum == protocolEnum && (!m.EquipName.Contains("测试") || !m.EquipCode.Contains("测试")))
+            .WhereIF(!string.IsNullOrEmpty(protocolEnum),
+                m => m.EquipType!.ProtocolEnum == protocolEnum &&
+                     (!m.EquipName.Contains("测试") || !m.EquipCode.Contains("测试")))
             .Includes(t => t.Room)
             .Includes(t => t.EquipType)
             .OrderByDescending(m => m.OrderNum)
@@ -297,6 +299,7 @@ public class EquipLedgerService : SugarCrudAppService<
         {
             Directory.CreateDirectory(directoryPath);
         }
+
         var fullPath = Path.Combine(directoryPath, $"{DateTimeOffset.Now.ToUnixTimeMilliseconds()}计量.xlsx");
         if (!File.Exists(fullPath))
         {
@@ -307,6 +310,7 @@ public class EquipLedgerService : SugarCrudAppService<
             reader.Close();
             await CheckExpiringMeasurementDevices(fullPath);
         }
+
         return true;
     }
 
@@ -351,94 +355,180 @@ public class EquipLedgerService : SugarCrudAppService<
             if (!columnIndices.ContainsKey(column))
                 throw new InvalidDataException($"Excel 文件中缺少必要的列：{column}");
         }
+
         // 在检查必要列的代码部分之后，添加对"出厂日期"列的可选处理
         bool hasManufactureDateColumn = columnIndices.ContainsKey("出厂日期");
 
+        // 在检查必要列的代码部分之后，添加对"Rfid系统导出位置"列的可选处理
+        bool hasRoomLocation = columnIndices.ContainsKey("Rfid定位");
         // 获取当前日期
         DateTime currentDate = DateTime.Now.ToLocalTime();
 
         EquipLedger[] oldEquipMeasurements = await DbContext.Queryable<EquipLedger>().ToArrayAsync();
-
-        // 遍历每一行（从第 2 行开始）
-        for (int row = 1; row <= sheet.LastRowNum; row++)
+        try
         {
-            IRow dataRow = sheet.GetRow(row);
-            if (dataRow == null)
-                continue; // 跳过空行
+            await DbContext.Ado.BeginTranAsync();
 
-            // 检查是否是计量设备仪器
-            bool? isMeasurementDevice = dataRow.GetCell(columnIndices["是否计量设备仪器"])?.ToString()?.Trim() == "是" ? true : false;
-            // 检查有效期
-            string? expiryDateStr = dataRow.GetCell(columnIndices["有效期"])?.ToString()?.Trim();
-            // 责任人
-            string? responsiblePersonStr = dataRow.GetCell(columnIndices["责任人"])?.ToString()?.Trim();
-            // 本地化资产编号
-            string? localAssetNumberStr = dataRow.GetCell(columnIndices["本地化资产编号"])?.ToString()?.Trim();
-            // 型号
-            string? modelStr = dataRow.GetCell(columnIndices["型号"])?.ToString()?.Trim();
-            // 资产名称
-            string? assetNameStr = dataRow.GetCell(columnIndices["资产名称"])?.ToString()?.Trim();
-            // 出厂日期
-            string? manufactureDateStr = null;
-            if (hasManufactureDateColumn)
+            // 遍历每一行（从第 2 行开始）
+            for (int row = 1; row <= sheet.LastRowNum; row++)
             {
-                manufactureDateStr = dataRow.GetCell(columnIndices["出厂日期"])?.ToString()?.Trim();
-            }
+                IRow dataRow = sheet.GetRow(row);
+                if (dataRow == null)
+                    continue; // 跳过空行
 
-            bool isExist = false;
-            foreach (EquipLedger item in oldEquipMeasurements)
-            {
-                if (item.AssetNumber == localAssetNumberStr && item.IsMeasurementDevice == isMeasurementDevice &&
-                    !string.IsNullOrEmpty(expiryDateStr) && item.ValidityDate.ToString() != expiryDateStr)
+                // 检查是否是计量设备仪器
+                bool? isMeasurementDevice =
+                    dataRow.GetCell(columnIndices["是否计量设备仪器"])?.ToString()?.Trim() == "是" ? true : false;
+                // 检查有效期
+                string? expiryDateStr = dataRow.GetCell(columnIndices["有效期"])?.ToString()?.Trim();
+                // 责任人
+                string? responsiblePersonStr = dataRow.GetCell(columnIndices["责任人"])?.ToString()?.Trim();
+                // 本地化资产编号
+                string? localAssetNumberStr = dataRow.GetCell(columnIndices["本地化资产编号"])?.ToString()?.Trim();
+                // 型号
+                string? modelStr = dataRow.GetCell(columnIndices["型号"])?.ToString()?.Trim();
+                // 资产名称
+                string? assetNameStr = dataRow.GetCell(columnIndices["资产名称"])?.ToString()?.Trim();
+                // 出厂日期
+                string? manufactureDateStr = null;
+                if (hasManufactureDateColumn)
                 {
-                    Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))?.Id;
-                    // 进入此判断说明有效期不一致,需要更新
-                    DbContext.Updateable(item).SetColumns(it => new EquipLedger()
+                    manufactureDateStr = dataRow.GetCell(columnIndices["出厂日期"])?.ToString()?.Trim();
+                }
+
+                // Rfid定位
+                string? roomStr = null;
+                if (hasRoomLocation)
+                {
+                    roomStr = dataRow.GetCell(columnIndices["Rfid定位"])?.ToString()?.Trim();
+                }
+
+                bool isExist = false;
+                var entity = oldEquipMeasurements.FirstOrDefault(t => t.AssetNumber == localAssetNumberStr);
+                if (entity == null)
+                {
+                    Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))
+                        ?.Id;
+                    DateTime.TryParse(expiryDateStr, out var dt);
+                    DateTime.TryParse(manufactureDateStr, out var PurchaseDate);
+                    EquipLedger input = new EquipLedger()
                     {
-                        ValidityDate = DateTime.Parse(expiryDateStr),
+                        EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ"),
+                        ValidityDate = dt,
                         ResponsibleUserId = userId,
                         ResponsibleUserName = responsiblePersonStr,
                         AssetNumber = localAssetNumberStr,
                         Model = modelStr,
-                        EquipName = assetNameStr,
+                        EquipName = assetNameStr ?? "未知设备",
                         IsMeasurementDevice = isMeasurementDevice,
-                        PurchaseDate = manufactureDateStr != null ? DateTime.Parse(manufactureDateStr) : item.PurchaseDate
-                    }).ExecuteCommand();
-                    isExist = true;
+                        DeviceStatus = DeviceStatus.Normal,
+                        EquipLevel = EquipLevelEnum.Basic,
+                        PurchaseDate = PurchaseDate
+                    };
+                    if (Guid.TryParse(roomStr, out var roomGuid))
+                    {
+                        input.RoomId = roomGuid;
+                        input.RoomIdSourceType = 4;
+                    }
+                    await DbContext.Insertable(input).ExecuteCommandAsync();
                 }
+                else
+                {
+                    Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))
+                        ?.Id;
+                    // 进入此判断说明有效期不一致,需要更新
+                    entity.ResponsibleUserId = userId;
+                    entity.ResponsibleUserId = userId;
+                    entity.ResponsibleUserName = responsiblePersonStr;
+                    entity.AssetNumber = localAssetNumberStr;
+                    entity.Model = modelStr;
+                    if (!string.IsNullOrEmpty(assetNameStr))
+                    {
+                        entity.EquipName = assetNameStr;
+                    }
+
+                    entity.IsMeasurementDevice = isMeasurementDevice;
+                    if (Guid.TryParse(roomStr, out var roomGuid))
+                    {
+                        entity.RoomId = roomGuid;
+                        entity.RoomIdSourceType = 4;
+                    }
+
+                    if (DateTime.TryParse(expiryDateStr, out var time))
+                    {
+                        entity.ValidityDate = time;
+                    }
+
+                    if (DateTime.TryParse(manufactureDateStr, out var manufactureDate))
+                    {
+                        entity.PurchaseDate = manufactureDate;
+                    }
+
+                    await DbContext.Updateable(entity).ExecuteCommandAsync();
+                }
+
+                // foreach (EquipLedger item in oldEquipMeasurements)
+                // {
+                //     if (item.AssetNumber == localAssetNumberStr && item.IsMeasurementDevice == isMeasurementDevice &&
+                //         !string.IsNullOrEmpty(expiryDateStr) && item.ValidityDate.ToString() != expiryDateStr)
+                //     {
+                //         Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))?.Id;
+                //         // 进入此判断说明有效期不一致,需要更新
+                //         DbContext.Updateable(item).SetColumns(it => new EquipLedger()
+                //         {
+                //             ValidityDate = DateTime.Parse(expiryDateStr),
+                //             ResponsibleUserId = userId,
+                //             ResponsibleUserName = responsiblePersonStr,
+                //             AssetNumber = localAssetNumberStr,
+                //             Model = modelStr,
+                //             EquipName = assetNameStr,
+                //             IsMeasurementDevice = isMeasurementDevice,
+                //             PurchaseDate = manufactureDateStr != null ? DateTime.Parse(manufactureDateStr) : item.PurchaseDate
+                //         }).ExecuteCommand();
+                //         isExist = true;
+                //     }
+                // }
+                // if (!isExist)
+                // {
+                //     Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))?.Id;
+                //     DateTime? dt = null;
+                //     if (!string.IsNullOrEmpty(expiryDateStr))
+                //         dt = DateTime.Parse(expiryDateStr);
+                //     // 在创建新记录的代码块中，添加出厂日期的设置
+                //     DateTime? manufactureDate = null;
+                //     if (hasManufactureDateColumn && !string.IsNullOrEmpty(manufactureDateStr))
+                //     {
+                //         manufactureDate = DateTime.Parse(manufactureDateStr);
+                //     }
+                //     EquipLedgerCreateDto input = new EquipLedgerCreateDto()
+                //     {
+                //         EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ"),
+                //         ValidityDate = dt,
+                //         ResponsibleUserId = userId,
+                //         ResponsibleUserName = responsiblePersonStr,
+                //         AssetNumber = localAssetNumberStr,
+                //         Model = modelStr,
+                //         EquipName = assetNameStr,
+                //         IsMeasurementDevice = isMeasurementDevice,
+                //         DeviceStatus = DeviceStatus.Normal.ToString(),
+                //         DeviceLevel = EquipLevelEnum.Basic.ToString(),
+                //         PurchaseDate = manufactureDate,
+                //     };
+                //     try
+                //     {
+                //         await CreateAsync(input);
+                //     }
+                //     catch (Exception e) { }
+                // }
             }
-            if (!isExist)
-            {
-                Guid? userId = (await DbContext.Queryable<User>().FirstAsync(x => x.Name == responsiblePersonStr))?.Id;
-                DateTime? dt = null;
-                if (!string.IsNullOrEmpty(expiryDateStr))
-                    dt = DateTime.Parse(expiryDateStr);
-                // 在创建新记录的代码块中，添加出厂日期的设置
-                DateTime? manufactureDate = null;
-                if (hasManufactureDateColumn && !string.IsNullOrEmpty(manufactureDateStr))
-                {
-                    manufactureDate = DateTime.Parse(manufactureDateStr);
-                }
-                EquipLedgerCreateDto input = new EquipLedgerCreateDto()
-                {
-                    EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ"),
-                    ValidityDate = dt,
-                    ResponsibleUserId = userId,
-                    ResponsibleUserName = responsiblePersonStr,
-                    AssetNumber = localAssetNumberStr,
-                    Model = modelStr,
-                    EquipName = assetNameStr,
-                    IsMeasurementDevice = isMeasurementDevice,
-                    DeviceStatus = DeviceStatus.Normal.ToString(),
-                    DeviceLevel = EquipLevelEnum.Basic.ToString(),
-                    PurchaseDate = manufactureDate,
-                };
-                try
-                {
-                    await CreateAsync(input);
-                }
-                catch (Exception e) { }
-            }
+
+            await DbContext.Ado.CommitTranAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            await DbContext.Ado.RollbackTranAsync();
+            throw;
         }
     }
 
@@ -454,8 +544,30 @@ public class EquipLedgerService : SugarCrudAppService<
         {
             equipName = await Queryable.Where(x => x.Id == equipId).Select(x => x.EquipName).FirstAsync();
         }
-        catch (Exception) { }
+        catch (Exception)
+        {
+        }
+
         return equipName;
+    }
+
+    /// <summary>
+    /// 返回所有设备的导出数据
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IEnumerable<EquipLedgerSearchReadDto>> GetEquipExportRfid()
+    {
+        var entities = await DbContext.Queryable<EquipLedger>()
+            .Select(e => new EquipLedgerSearchReadDto
+            {
+                Id = e.Id,
+                EquipCode = e.EquipCode,
+                EquipName = e.EquipName,
+                RoomId = e.RoomId,
+                AssetNumber = e.AssetNumber,
+                ResponsibleUserId = e.ResponsibleUserId
+            }).ToListAsync();
+        return entities;
     }
 
     /// <summary>
@@ -474,7 +586,6 @@ public class EquipLedgerService : SugarCrudAppService<
         await DbContext.Updateable(abnormalEntities)
             .UpdateColumns(x => new { x.DeviceStatus })
             .ExecuteCommandAsync();
-
         return true;
     }
 

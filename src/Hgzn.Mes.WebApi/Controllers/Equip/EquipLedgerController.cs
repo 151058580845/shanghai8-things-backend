@@ -304,5 +304,17 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         public async Task<ResponseWrapper<IEnumerable<LocationLabelReadDto>>> QueryByDeviceType(IEnumerable<Guid>? typeIds = null) =>
             (await _locationLabelService.QueryByDeviceTypes(typeIds)).Wrap();
 
+        
+        /// <summary>
+        ///     获取所有rfid系统中设备的位置
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("equip/export/rfid")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
+        public async Task<ResponseWrapper<IEnumerable<EquipLedgerSearchReadDto>>> GetEquipExportRfid() =>
+            (await _equipLedgerService.GetEquipExportRfid()).Wrap();
     }
 }

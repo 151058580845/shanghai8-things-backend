@@ -7,30 +7,34 @@ using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Exceptions;
 using Hgzn.Mes.Infrastructure.Utilities;
+using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip
 {
     public class LocationLabelService :
         SugarCrudAppService<LocationLabel, Guid,
-        LocationLabelReadDto, LocationLabelQueryDto,
-        LocationLabelCreateDto, LocationLabelUpdateDto>,
+            LocationLabelReadDto, LocationLabelQueryDto,
+            LocationLabelCreateDto, LocationLabelUpdateDto>,
         ILocationLabelService
     {
-        public override async Task<IEnumerable<LocationLabelReadDto>> GetListAsync(LocationLabelQueryDto? queryDto = null)
+        public override async Task<IEnumerable<LocationLabelReadDto>> GetListAsync(
+            LocationLabelQueryDto? queryDto = null)
         {
-            var query = queryDto is null ? Queryable : Queryable
-                .Where(ll => ll.Type == queryDto.LabelType)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
-                .Includes(ll => ll.EquipLedger)
-                .Includes(ll => ll.Room)
-                .WhereIF(queryDto?.FilterEquipType == true,
-                    ll => ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
-                    ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber),
-                    ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query),
-                    ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!) ||
-                    ll.EquipLedger!.Model!.Contains(queryDto!.Query!));
+            var query = queryDto is null
+                ? Queryable
+                : Queryable
+                    .Where(ll => ll.Type == queryDto.LabelType)
+                    .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
+                    .Includes(ll => ll.EquipLedger)
+                    .Includes(ll => ll.Room)
+                    .WhereIF(queryDto?.FilterEquipType == true,
+                        ll => ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
+                              ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id)
+                    .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber),
+                        ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
+                    .WhereIF(!string.IsNullOrEmpty(queryDto?.Query),
+                        ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!) ||
+                              ll.EquipLedger!.Model!.Contains(queryDto!.Query!));
 
             var entities = await query
                 .OrderByDescending(m => m.CreationTime)
@@ -41,11 +45,11 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public async Task<IEnumerable<LocationLabelReadDto>> QueryByDeviceTypes(IEnumerable<Guid>? typeIds)
         {
             var targets = (typeIds ??
-                await DbContext.Queryable<EquipType>()
-                .Where(et => et.Id != EquipType.RfidIssuerType.Id &&
-                    et.Id != EquipType.RfidReaderType.Id)
-                .Select(et => et.Id)
-                .ToArrayAsync()).ToList();
+                           await DbContext.Queryable<EquipType>()
+                               .Where(et => et.Id != EquipType.RfidIssuerType.Id &&
+                                            et.Id != EquipType.RfidReaderType.Id)
+                               .Select(et => et.Id)
+                               .ToArrayAsync()).ToList();
             var entities = await Queryable
                 .Includes(ll => ll.EquipLedger)
                 .WhereIF(targets is not null && targets.Count != 0,
@@ -54,7 +58,27 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             return Mapper.Map<IEnumerable<LocationLabelReadDto>>(entities);
         }
 
-        public override async Task<PaginatedList<LocationLabelReadDto>> GetPaginatedListAsync(LocationLabelQueryDto queryDto)
+        public async Task<PaginatedList<EquipLedgerSearchReadDto>> GetEquipBindLabelAsync(int pageIndex = 1, int pageSize = 100)
+        {
+           var dtos =  await DbContext.Queryable<EquipLedger>().Includes(eq => eq.Labels)
+                .Where(eq => SqlFunc.Subqueryable<LocationLabel>()
+                    .Where(l => l.EquipLedgerId == eq.Id)
+                    .Count() > 0)
+                .Select(ll => new EquipLedgerSearchReadDto
+                {
+                    AssetNumber = ll.AssetNumber,
+                    EquipName = ll.EquipName,
+                    Model = ll.Model,
+                    ResponsibleUserId = ll.ResponsibleUserId,
+                    ResponsibleUserName = ll.ResponsibleUserName
+                })
+                .Distinct()
+                .ToPaginatedListAsync(pageIndex, pageSize);
+            return dtos;
+        }
+
+        public override async Task<PaginatedList<LocationLabelReadDto>> GetPaginatedListAsync(
+            LocationLabelQueryDto queryDto)
         {
             var entities = await Queryable
                 .Where(ll => ll.Type == queryDto.LabelType)
@@ -63,13 +87,13 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .Includes(ll => ll.Room)
                 .WhereIF(queryDto?.FilterEquipType == true,
                     ll => ll.EquipLedger!.TypeId == null ||
-                    (ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
-                    ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id))
+                          (ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
+                           ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id))
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber),
                     ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
                 .WhereIF(!string.IsNullOrEmpty(queryDto?.Query),
                     ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!) ||
-                    ll.EquipLedger!.Model!.Contains(queryDto!.Query!))
+                          ll.EquipLedger!.Model!.Contains(queryDto!.Query!))
                 .OrderByDescending(m => m.CreationTime)
                 .ToPaginatedListAsync(queryDto!.PageIndex, queryDto.PageSize);
             return Mapper.Map<PaginatedList<LocationLabelReadDto>>(entities);
@@ -82,6 +106,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 .ExecuteCommandAsync();
             return count;
         }
+
         public async Task<PaginatedList<EquipLocationLabelReadDto>> GetEquipLabelAsync(int pageIndex, int pageSize)
         {
             var dtos = await DbContext.Queryable<LocationLabel>()
@@ -125,17 +150,17 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public async Task<PaginatedList<RoomLocationLabelReadDto>> GetRoomLabelAsync(int pageIndex, int pageSize)
         {
             var dtos = await DbContext.Queryable<LocationLabel>()
-               .Where(ll => ll.Type == LabelType.Room)
-               .Includes(ll => ll.Room)
-               .OrderByDescending(ll => ll.LastModificationTime)
-               .Select(ll => new RoomLocationLabelReadDto
-               {
-                   RoomId = ll.RoomId,
-                   RoomName = ll.Room.Name,
-                   RoomCode = ll.Room.Code,
-                   Tid = ll.TagId
-               })
-               .ToPaginatedListAsync(pageIndex, pageSize);
+                .Where(ll => ll.Type == LabelType.Room)
+                .Includes(ll => ll.Room)
+                .OrderByDescending(ll => ll.LastModificationTime)
+                .Select(ll => new RoomLocationLabelReadDto
+                {
+                    RoomId = ll.RoomId,
+                    RoomName = ll.Room.Name,
+                    RoomCode = ll.Room.Code,
+                    Tid = ll.TagId
+                })
+                .ToPaginatedListAsync(pageIndex, pageSize);
             return dtos;
         }
 
@@ -145,6 +170,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             {
                 throw new NotAcceptableException("tag existes");
             }
+
             var entities = dto.Tids.Select(bl => new LocationLabel
             {
                 Type = dto.LabelType,

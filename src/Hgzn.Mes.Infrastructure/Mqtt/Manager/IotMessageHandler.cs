@@ -24,6 +24,8 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Hangfire;
+using Hgzn.Mes.Domain.Entities.Equip.Rfid;
 
 namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 {
@@ -208,6 +210,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     RfidName = ec.EquipLedger.EquipName,
                     ec.EquipLedger!.RoomId,
                     RoomName = ec.EquipLedger!.Room!.Name,
+                    IsCustoms = ec.EquipLedger!.IsCustoms
                 })
                 .FirstAsync());
             if (rfidReader is null)
@@ -235,9 +238,102 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             // 将时间戳存入Redis并设置1天过期时间
             await redisDb.StringSetAsync(key: key, value: rfidReader.RoomId.ToString(), expiry: TimeSpan.FromDays(1));
             #endregion
+            
+            // #region 判定设备之前所在位置，如果是当前房间，就不处理,留存时间为1天
+            //
+            // //当前记录
+            // var nowEquipRfidTime = new EquipRfidTime()
+            // {
+            //     EquipId = equip.Id,
+            //     RoomId = label.RoomId ?? Guid.Empty,
+            //     CreateTime = DateTime.Now
+            // };
+            //
+            // // 记录到redis
+            // IDatabase redisDb = _connectionMultiplexer.GetDatabase();
+            // var key = string.Format(CacheKeyFormatter.EquipRoom, equip.Id);
+            // var value = await redisDb.StringGetAsync(key: key); // 建议使用异步方法
+            //
+            // Queue<EquipRfidTime> equipList;
+            // if (value.HasValue)
+            // {
+            //     try
+            //     {
+            //         // 尝试反序列化
+            //         equipList = JsonSerializer.Deserialize<Queue<EquipRfidTime>>(value) ?? new Queue<EquipRfidTime>();
+            //     }
+            //     catch (JsonException ex)
+            //     {
+            //         _logger.LogError(ex, "Failed to deserialize EquipRfidTime from Redis");
+            //         // 如果反序列化失败，初始化一个新的队列
+            //         equipList = new Queue<EquipRfidTime>();
+            //     }
+            // }
+            // else
+            // {
+            //     equipList = new Queue<EquipRfidTime>();
+            // }
+            //
+            // // 如果队列不为空且和最新的房间ID一样，就取消处理
+            // if (equipList.Count > 0 && equipList.Last().RoomId == nowEquipRfidTime.RoomId)
+            // {
+            //     return;
+            // }
+            // var recentRecords = equipList.Where(x => (DateTime.Now - x.CreateTime) < TimeSpan.FromMinutes(3)).ToList();
+            // // 如果超过5条记录，删除最旧的一条
+            // if (equipList.Count >= 5)
+            // {
+            //     equipList.Dequeue();
+            // }
+            //
+            // equipList.Enqueue(nowEquipRfidTime);
+            //
+            // // 将数据存入Redis并设置1天过期时间
+            // await redisDb.StringSetAsync(
+            //     key: key,
+            //     value: JsonSerializer.Serialize(equipList),
+            //     expiry: TimeSpan.FromDays(1)
+            // );
+            // //如果房间就两个，就返回
+            // if (recentRecords.Count <= 2)
+            // {
+            //     return;
+            // }
+            // #endregion
 
 
-            var time = DateTime.Now.ToLocalTime();
+            
+            
+            #region 判断是否是关卡读写器,超过5分钟报警
+
+            var jobKey = string.Format(CacheKeyFormatter.EquipAlarmJob, equip.Id);
+            //获取到对应设备的JobId
+            var job = redisDb.StringGet(key: key);
+            if (job.HasValue && BackgroundJob.Delete(jobKey))
+            {
+                if (rfidReader.IsCustoms != null && rfidReader.IsCustoms.Value)
+                {
+                    // 处理关卡读写器逻辑
+                    // 这里可以添加关卡读写器的处理逻辑
+                    _logger.LogInformation($"被关卡读写器读取: {rfidReader.RfidName}");
+                    // 添加定时任务
+                    var jobId = BackgroundJob.Schedule(() => SentAlarmAsync(new EquipNotice
+                    {
+                        Id = Guid.NewGuid(),
+                        EquipId = equip.Id,
+                        SendTime = DateTime.Now,
+                        Title = "关卡读写器读取",
+                        Content = $"设备 {equip.EquipName} 在关卡读写器 {rfidReader.RfidName} 被读取",
+                        Description = $"设备 {equip.EquipName} 在关卡读写器 {rfidReader.RfidName} 被读取",
+                        NoticeType = EquipNoticeType.Alarm
+                    }), TimeSpan.FromMinutes(2));
+                    await redisDb.StringSetAsync(key: jobKey, value: jobId, expiry: TimeSpan.FromMinutes(10));
+                }
+            }
+
+            #endregion
+
+            var time = DateTime.Now;
             var record = new EquipLocationRecord
             {
                 DateTime = time,
@@ -270,6 +366,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 if (rfidReader.RoomId != null)
                 {
                     equip!.RoomId = rfidReader.RoomId;
+                    equip.RoomIdSourceType = 2;
                     roomName = rfidReader.RoomName;
                     equip.LastMoveTime = time;
                 }
@@ -313,6 +410,21 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         {
             EquipNotice? notice = JsonSerializer.Deserialize<EquipNotice>(msg);
             await _client.Insertable(notice).ExecuteCommandAsync();
+        }
+
+        private async Task SentAlarmAsync(EquipNotice notice)
+        {
+            await _client.Insertable(notice).ExecuteCommandAsync();
+            // 发送报警消息到MQTT
+            var alarmTopic = UserTopicBuilder
+                .CreateUserBuilder()
+                .WithPrefix(TopicType.App)
+                .WithDirection(MqttDirection.Up)
+                .WithTag(MqttTag.Alarm)
+                .WithUri(notice.EquipId.ToString()!)
+                .Build();
+            var msg = JsonSerializer.Serialize(notice, Options.CustomJsonSerializerOptions);
+            await _mqttExplorer.PublishAsync(alarmTopic, Encoding.UTF8.GetBytes(msg));
         }
     }
 }

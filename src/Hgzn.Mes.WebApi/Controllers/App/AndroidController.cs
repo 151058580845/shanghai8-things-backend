@@ -50,7 +50,21 @@ public class AndroidController : ControllerBase
         var list = await _locationLabelService.GetEquipLabelAsync(pageIndex, pageSize);
         return list.Wrap();
     }
-
+    
+    /// <summary>
+    ///     获取所有绑定过资产编号的数据
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("label/equip-all")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [AllowAnonymous]
+    public async Task<ResponseWrapper<PaginatedList<EquipLedgerSearchReadDto>>> GetEquipAllAsync(int pageIndex = 1, int pageSize = 100)
+    {
+        var list = await _locationLabelService.GetEquipBindLabelAsync(pageIndex, pageSize);
+        return list.Wrap();
+    }
     /// <summary>
     ///     手持端获取房间rfid绑定关系
     /// </summary>
