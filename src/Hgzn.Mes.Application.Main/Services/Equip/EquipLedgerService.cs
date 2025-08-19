@@ -125,7 +125,7 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         var queryable = Queryable
             .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipCode.Contains(query.EquipCode!))
-            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.AssetNumber!.Equals(query.AssetNumber))
+            .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.AssetNumber!.Contains(query.AssetNumber))
             .WhereIF(query.ResponsibleUserId is not null, m => m.ResponsibleUserId.Equals(query.ResponsibleUserId))
             .WhereIF(!string.IsNullOrEmpty(query.Query),
                 m => m.EquipName.Contains(query.Query!) || m.Model!.Contains(query.Query!))

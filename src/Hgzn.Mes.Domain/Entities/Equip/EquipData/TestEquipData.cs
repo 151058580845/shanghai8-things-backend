@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using Hgzn.Mes.Domain.Entities.Base;
-using SqlSugar;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
 
