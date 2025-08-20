@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Hgzn.Mes.Domain.Attributes;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 
@@ -9,13 +10,16 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_202_ReceiveDat
 /// </summary>
 public class XT_202_SL_3_ReceiveData : UniversalEntity, IAudited
 {
+    [TableNotShow]
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
 
     [Description("仿真试验系统识别编码")]
+    [TableNotShow]
     public byte SimuTestSysld { get; set; }
 
     [Description("设备类型识别编码")]
+    [TableNotShow]
     public byte DevTypeld { get; set; }
 
     [Description("本机识别编码")]
@@ -24,12 +28,15 @@ public class XT_202_SL_3_ReceiveData : UniversalEntity, IAudited
     #region 工作模式信息 3个
 
     [Description("本地还是远程")]
+    [TableNotShow]
     public byte LocalOrRemote { get; set; }
 
     [Description("工作模式")]
+    [TableNotShow]
     public byte WorkPattern { get; set; }
 
     [Description("预留")]
+    [TableNotShow]
     public byte Reserved { get; set; }
 
     #endregion
@@ -37,21 +44,27 @@ public class XT_202_SL_3_ReceiveData : UniversalEntity, IAudited
     #region 健康状态信息 6个
 
     [Description("状态类型")]
+    [TableNotShow]
     public byte StatusType { get; set; }
 
     [Description("三轴转台滚动轴故障号")]
+    [TableNotShow]
     public byte RollAxisFaultCode { get; set; }
 
     [Description("三轴转台偏航轴故障号")]
+    [TableNotShow]
     public byte YawAxisFaultCode { get; set; }
 
     [Description("三轴转台俯仰轴故障号")]
+    [TableNotShow]
     public byte PitchAxisFaultCode { get; set; }
 
     [Description("两轴转台高低轴故障号")]
+    [TableNotShow]
     public byte ElevationAxisFaultCode { get; set; }
 
     [Description("两轴转台方位轴故障号")]
+    [TableNotShow]
     public byte AzimuthAxisFaultCode { get; set; }
 
     #endregion
@@ -60,6 +73,7 @@ public class XT_202_SL_3_ReceiveData : UniversalEntity, IAudited
 
     // 物理量参数数量
     [Description("物理量参数数量")]
+    [TableNotShow]
     public uint PhysicalQuantityCount { get; set; }
 
     // 三轴转台控制参数
@@ -97,10 +111,14 @@ public class XT_202_SL_3_ReceiveData : UniversalEntity, IAudited
     #endregion
 
     [Description("运行时间")]
+    [TableNotShow]
     public uint? RunTime { get; set; }
 
+    [TableNotShow]
     public Guid? LastModifierId { get; set; }
+    [TableNotShow]
     public DateTime? LastModificationTime { get; set; }
+    [TableNotShow]
     public int CreatorLevel { get; set; } = 0;
 
 #if DEBUG

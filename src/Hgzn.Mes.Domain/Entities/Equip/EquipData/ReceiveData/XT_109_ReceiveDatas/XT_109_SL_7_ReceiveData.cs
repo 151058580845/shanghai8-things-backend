@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Hgzn.Mes.Domain.Attributes;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 
@@ -9,13 +10,16 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_109_ReceiveDat
 /// </summary>
 public class XT_109_SL_7_ReceiveData : UniversalEntity, IAudited
 {
+    [TableNotShow]
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
 
     [Description("仿真试验系统识别编码")]
+    [TableNotShow]
     public byte SimuTestSysld { get; set; }
 
     [Description("设备类型识别编码")]
+    [TableNotShow]
     public byte DevTypeld { get; set; }
 
     [Description("本机识别编码")]
@@ -24,9 +28,11 @@ public class XT_109_SL_7_ReceiveData : UniversalEntity, IAudited
     #region 工作模式信息 2个
 
     [Description("开启/关闭")]
+    [TableNotShow]
     public byte OpenOrClose { get; set; }
 
     [Description("预留")]
+    [TableNotShow]
     public byte Reserved { get; set; }
 
     #endregion
@@ -34,27 +40,35 @@ public class XT_109_SL_7_ReceiveData : UniversalEntity, IAudited
     #region 健康状态信息
 
     [Description("状态类型")]
+    [TableNotShow]
     public byte StatusType { get; set; }
 
     [Description("露点温度状态")]
+    [TableNotShow]
     public byte DewPointTemperatureStatus { get; set; }
 
     [Description("真空度状态")]
+    [TableNotShow]
     public byte VacuumStatus { get; set; }
 
     [Description("冷水机流量状态")]
+    [TableNotShow]
     public byte ChillerFlowStatus { get; set; }
 
     [Description("环境箱温度状态")]
+    [TableNotShow]
     public byte EnvironmentalChamberTemperatureStatus { get; set; }
 
     [Description("衬底温度状态")]
+    [TableNotShow]
     public byte SubstrateTemperatureStatus { get; set; }
 
     [Description("功率电源状态")]
+    [TableNotShow]
     public byte PowerSupplyStatus { get; set; }
 
     [Description("控制电源状态")]
+    [TableNotShow]
     public byte ControlPowerStatus { get; set; }
 
     #endregion
@@ -62,6 +76,7 @@ public class XT_109_SL_7_ReceiveData : UniversalEntity, IAudited
     #region 物理量
 
     [Description("物理量参数数量")]
+    [TableNotShow]
     public uint PhysicalQuantityCount { get; set; }
 
     [Description("真空度")]
@@ -109,10 +124,14 @@ public class XT_109_SL_7_ReceiveData : UniversalEntity, IAudited
     #endregion
 
     [Description("运行时间")]
+    [TableNotShow]
     public uint? RunTime { get; set; }
 
+    [TableNotShow]
     public Guid? LastModifierId { get; set; }
+    [TableNotShow]
     public DateTime? LastModificationTime { get; set; }
+    [TableNotShow]
     public int CreatorLevel { get; set; } = 0;
 
 #if DEBUG

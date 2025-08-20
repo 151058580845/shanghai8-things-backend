@@ -1,11 +1,12 @@
-﻿using Hgzn.Mes.Domain.Entities.Base.Audited;
-using Hgzn.Mes.Domain.Entities.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Hgzn.Mes.Domain.Attributes;
+using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base.Audited;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDatas
 {
@@ -14,13 +15,16 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDat
     /// </summary>
     public class XT_310_SL_4_ReceiveData : UniversalEntity, IAudited, IPowerSupplyData
     {
+        [TableNotShow]
         public Guid? CreatorId { get; set; }
         public DateTime CreationTime { get; set; }
 
         [Description("仿真试验系统识别编码")]
+        [TableNotShow]
         public byte SimuTestSysld { get; set; }
 
         [Description("设备类型识别编码")]
+        [TableNotShow]
         public byte DevTypeld { get; set; }
 
         [Description("本机识别编码")]
@@ -29,21 +33,27 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDat
         #region 工作模式信息
 
         [Description("本地还是远程")]
+        [TableNotShow]
         public byte LocalOrRemote { get; set; }
 
         [Description("电源数量")]
+        [TableNotShow]
         public byte PowerSupplyCount { get; set; }
 
         [Description("电源类型1")]
+        [TableNotShow]
         public byte PowerSupplyType1 { get; set; }
 
         [Description("电源类型2")]
+        [TableNotShow]
         public byte PowerSupplyType2 { get; set; }
 
         [Description("是否上电")]
+        [TableNotShow]
         public byte IsPoweredOn { get; set; }
 
         [Description("预留")]
+        [TableNotShow]
         public byte Reserved { get; set; }
 
         #endregion
@@ -51,9 +61,11 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDat
         #region 健康状态信息
 
         [Description("状态类型")]
+        [TableNotShow]
         public byte StatusType { get; set; }
 
         [Description("工作状态")]
+        [TableNotShow]
         public byte OperationStatus { get; set; }
 
         #endregion
@@ -61,6 +73,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDat
         #region 物理量
 
         [Description("物理量参数数量")]
+        [TableNotShow]
         public uint PhysicalParameterCount { get; set; }
 
         [Description("电源1电压设置值")]
@@ -162,10 +175,14 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_310_ReceiveDat
         #endregion
 
         [Description("运行时间")]
+        [TableNotShow]
         public uint? RunTime { get; set; }
 
+        [TableNotShow]
         public Guid? LastModifierId { get; set; }
+        [TableNotShow]
         public DateTime? LastModificationTime { get; set; }
+        [TableNotShow]
         public int CreatorLevel { get; set; } = 0;
 
         public static XT_310_SL_4_ReceiveData[] Seeds { get; } = new XT_310_SL_4_ReceiveData[]

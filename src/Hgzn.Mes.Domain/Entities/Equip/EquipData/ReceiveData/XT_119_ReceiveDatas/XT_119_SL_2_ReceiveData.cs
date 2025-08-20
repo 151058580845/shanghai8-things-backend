@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Hgzn.Mes.Domain.Attributes;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 
@@ -9,13 +10,16 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_119_ReceiveDat
     /// </summary>
     public class XT_119_SL_2_ReceiveData : UniversalEntity, IAudited
     {
+        [TableNotShow]
         public Guid? CreatorId { get; set; }
         public DateTime CreationTime { get; set; }
 
         [Description("仿真试验系统识别编码")]
+        [TableNotShow]
         public byte SimuTestSysld { get; set; }
 
         [Description("设备类型识别编码")]
+        [TableNotShow]
         public byte DevTypeld { get; set; }
 
         [Description("本机识别编码")]
@@ -24,12 +28,15 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_119_ReceiveDat
         #region 工作模式信息 3个
 
         [Description("运行状态")]
+        [TableNotShow]
         public byte OperationStatus { get; set; }
 
         [Description("是否接入弹道状态")]
+        [TableNotShow]
         public byte IsTrajectoryConnected { get; set; }
 
         [Description("预留")]
+        [TableNotShow]
         public byte Reserved { get; set; }
 
         #endregion
@@ -37,12 +44,15 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_119_ReceiveDat
         #region 健康状态信息 3个
 
         [Description("状态类型")]
+        [TableNotShow]
         public byte StatusType { get; set; }
 
         [Description("自检状态")]
+        [TableNotShow]
         public byte SelfTestStatus { get; set; }
 
         [Description("运行状态")]
+        [TableNotShow]
         public byte HealthOperationStatus { get; set; }
 
         #endregion
@@ -50,6 +60,7 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_119_ReceiveDat
         #region 物理量
 
         [Description("物理量参数数量")]
+        [TableNotShow]
         public uint PhysicalQuantityCount { get; set; }
 
         [Description("内框位置")]
@@ -82,10 +93,14 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_119_ReceiveDat
         #endregion
 
         [Description("运行时间")]
+        [TableNotShow]
         public uint? RunTime { get; set; }
 
+        [TableNotShow]
         public Guid? LastModifierId { get; set; }
+        [TableNotShow]
         public DateTime? LastModificationTime { get; set; }
+        [TableNotShow]
         public int CreatorLevel { get; set; } = 0;
 
 #if DEBUG

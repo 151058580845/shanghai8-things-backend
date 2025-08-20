@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using Hgzn.Mes.Domain.Attributes;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
 
@@ -11,13 +12,16 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDat
 [Description("接收的数据")]
 public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
 {
+    [TableNotShow]
     public Guid? CreatorId { get; set; }
     public DateTime CreationTime { get; set; }
 
     [Description("仿真试验系统识别编码")]
+    [TableNotShow]
     public byte SimuTestSysld { get; set; }
 
     [Description("设备类型识别编码")]
+    [TableNotShow]
     public byte DevTypeld { get; set; }
 
     [Description("本机识别编码")]
@@ -26,33 +30,43 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
     #region 工作模式信息 10个
 
     [Description("微波/毫米波")]
+    [TableNotShow]
     public byte MicroWare { get; set; }
 
     [Description("通道接入")]
+    [TableNotShow]
     public byte Channel { get; set; }
 
     [Description("模式是否有效")]
+    [TableNotShow]
     public byte ModelValid { get; set; }
 
     [Description("阵面末端极化方式")]
+    [TableNotShow]
     public byte ArrayEndPolarizationMode { get; set; }
 
     [Description("阵面末端功率模式")]
+    [TableNotShow]
     public byte ArrayEndPowerMode { get; set; }
 
     [Description("阵列通道复用")]
+    [TableNotShow]
     public byte ArrayChannelMultiplexing { get; set; }
 
     [Description("通道极化方式1")]
+    [TableNotShow]
     public byte ChannelPolarizationMode1 { get; set; }
 
     [Description("通道极化方式2")]
+    [TableNotShow]
     public byte ChannelPolarizationMode2 { get; set; }
 
     [Description("通道功率模式")]
+    [TableNotShow]
     public byte ChannelPowerMode { get; set; }
 
     [Description("预留")]
+    [TableNotShow]
     public byte Reserved { get; set; }
 
     #endregion 工作模式信息
@@ -60,12 +74,15 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
     #region 健康状态信息 3个
 
     [Description("状态类型")]
+    [TableNotShow]
     public byte StateType { get; set; }
 
     [Description("自检状态")]
+    [TableNotShow]
     public uint SelfTest { get; set; }
 
     [Description("电源电压状态")]
+    [TableNotShow]
     public uint SupplyVoltageState { get; set; }
 
     #endregion 健康状态信息
@@ -75,6 +92,7 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
     #region 物理量数量
 
     [Description("物理量数量")]
+    [TableNotShow]
     public uint PhysicalQuantityCount { get; set; }
 
     #endregion
@@ -1902,9 +1920,13 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
     #endregion
 
     [Description("运行时间")]
+    [TableNotShow]
     public uint? RunTime { get; set; }
+    [TableNotShow]
     public Guid? LastModifierId { get; set; }
+    [TableNotShow]
     public DateTime? LastModificationTime { get; set; }
+    [TableNotShow]
     public int CreatorLevel { get; set; } = 0;
 
 #if DEBUG
