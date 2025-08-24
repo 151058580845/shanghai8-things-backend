@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Hgzn.Mes.Domain.Attributes;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Base.Audited;
@@ -10,11 +11,13 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDat
 /// 307_阵列馈电
 /// </summary>
 [Description("接收的数据")]
-public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
+public class XT_307_SL_1_ReceiveData : UniversalEntity
 {
-    [TableNotShow]
-    public Guid? CreatorId { get; set; }
-    public DateTime CreationTime { get; set; }
+    public XT_307_SL_1_ReceiveData()
+    {
+        
+    }
+    public string CreationTime { get; set; }
 
     [Description("仿真试验系统识别编码")]
     [TableNotShow]
@@ -1922,207 +1925,4 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
     [Description("运行时间")]
     [TableNotShow]
     public uint? RunTime { get; set; }
-    [TableNotShow]
-    public Guid? LastModifierId { get; set; }
-    [TableNotShow]
-    public DateTime? LastModificationTime { get; set; }
-    [TableNotShow]
-    public int CreatorLevel { get; set; } = 0;
-
-#if DEBUG
-    public static XT_307_SL_1_ReceiveData[] Seeds
-    {
-        get
-        {
-            List<XT_307_SL_1_ReceiveData> list = [];
-            List<string> uuids = [
-                "0198BFBC-2382-762B-8C99-AD1E7FFC047B",
-                "0198BFBC-2382-762B-8C99-B316283CF7B7",
-                "0198BFBC-2382-762B-8C99-B641B482AF27",
-                "0198BFBC-2382-762B-8C99-B8EE325C8EAC",
-                "0198BFBC-2382-762B-8C99-BDF08284F050",
-                "0198BFBC-2382-762B-8C99-C1757578755F",
-                "0198BFBC-2382-762B-8C99-C45F7FD09501",
-                "0198BFBC-2382-762B-8C99-C9A015AB7406",
-                "0198BFBC-2382-762B-8C99-CDDC14CF275A",
-                "0198BFBC-2382-762B-8C99-D26CC8F98D08",
-                "0198BFBC-2382-762B-8C99-D6C0AB71FA2A",
-                "0198BFBC-2382-762B-8C99-D986267A162D",
-                "0198BFBC-2382-762B-8C99-DCD1C9E91CEA",
-                "0198BFBC-2382-762B-8C99-E115176A5BF4",
-                "0198BFBC-2382-762B-8C99-E5DC6A8CC042",
-                "0198BFBC-2382-762B-8C99-E8C822AC5DB4",
-                "0198BFBC-2382-762B-8C99-ED203932858B",
-                "0198BFBC-2382-762B-8C99-F13916C88A89",
-                "0198BFBC-2382-762B-8C99-F4EBC7BAAE9A",
-                "0198BFBC-2382-762B-8C99-F893F27DF255",
-                "0198BFBC-2382-762B-8C99-FC310E176296",
-                "0198BFBC-2382-762B-8C9A-03499F013EDA",
-                "0198BFBC-2382-762B-8C9A-068644E74446",
-                "0198BFBC-2382-762B-8C9A-0AB327526FEE",
-                "0198BFBC-2382-762B-8C9A-0F6910A2320A",
-                "0198BFBC-2382-762B-8C9A-1104B2C3BC7A",
-                "0198BFBC-2382-762B-8C9A-144A5B602297",
-                "0198BFBC-2382-762B-8C9A-1826B6C55706",
-                "0198BFBC-2382-762B-8C9A-1DAC067921FE",
-                "0198BFBC-2382-762B-8C9A-233BB40FD271",
-                "0198BFBC-2382-762B-8C9A-24EF36CE907D",
-                "0198BFBC-2382-762B-8C9A-2886110DDDD7",
-                "0198BFBC-2382-762B-8C9A-2D51A4CE4D07",
-                "0198BFBC-2383-7058-8BB1-ACBFEFFBA2C1",
-                "0198BFBC-2383-7058-8BB1-B356C1977905",
-                "0198BFBC-2383-7058-8BB1-B72E9F540C7C",
-                "0198BFBC-2383-7058-8BB1-BBF8C91A276D",
-                "0198BFBC-2383-7058-8BB1-BC5761EEEADE",
-                "0198BFBC-2383-7058-8BB1-C2060E57821E",
-                "0198BFBC-2383-7058-8BB1-C61F1E7861F6",
-                "0198BFBC-2383-7058-8BB1-C8929556434A",
-                "0198BFBC-2383-7058-8BB1-CD7E5CEB0410",
-                "0198BFBC-2383-7058-8BB1-D2348890D991",
-                "0198BFBC-2383-7058-8BB1-D5DD5EEFB527",
-                "0198BFBC-2383-7058-8BB1-DBBCA29CB2A7",
-                "0198BFBC-2383-7058-8BB1-DC59CE2B4B12",
-                "0198BFBC-2383-7058-8BB1-E0BA6859329A",
-                "0198BFBC-2383-7058-8BB1-E6024D445BE5",
-                "0198BFBC-2383-7058-8BB1-E9D24E67FBB9",
-                "0198BFBC-2383-7058-8BB1-EDB572144A34",
-                "0198BFBC-2383-7058-8BB1-F0180841F9F7",
-                "0198BFBC-2383-7058-8BB1-F7B97BA7F964",
-                "0198BFBC-2383-7058-8BB1-F9B70FE5EC18",
-                "0198BFBC-2383-7058-8BB1-FEB236CBDC27",
-                "0198BFBC-2383-7058-8BB2-03F34DF9E1C2",
-                "0198BFBC-2383-7058-8BB2-049BDAB7E610",
-                "0198BFBC-2383-7058-8BB2-0B0889C48E18",
-                "0198BFBC-2383-7058-8BB2-0F11F6561DEB",
-                "0198BFBC-2383-7058-8BB2-10A30D318950",
-                "0198BFBC-2383-7058-8BB2-16BC5C41EF02",
-                "0198BFBC-2383-7058-8BB2-1B471198CE5A",
-                "0198BFBC-2383-7058-8BB2-1D983040011E",
-                "0198BFBC-2383-7058-8BB2-2091633B0D7F",
-                "0198BFBC-2383-7058-8BB2-244A9E60DC72",
-                "0198BFBC-2383-7058-8BB2-29D33ECEF404",
-                "0198BFBC-2383-7058-8BB2-2C0695BDEF82",
-                "0198BFBC-2383-7058-8BB2-3148FA36F817",
-                "0198BFBC-2383-7058-8BB2-342EFA3EDCFC",
-                "0198BFBC-2383-7058-8BB2-38D7CE5DBE98",
-                "0198BFBC-2383-7058-8BB2-3E36566002DE",
-                "0198BFBC-2383-7058-8BB2-404334898304",
-                "0198BFBC-2383-7058-8BB2-45953BA29AE3",
-                "0198BFBC-2383-7058-8BB2-487ED59A36DC",
-                "0198BFBC-2383-7058-8BB2-4EDD14987C10",
-                "0198BFBC-2383-7058-8BB2-506163C37764",
-                "0198BFBC-2383-7058-8BB2-56B3E9476FAA",
-                "0198BFBC-2383-7058-8BB2-582FDCDBD908",
-                "0198BFBC-2383-7058-8BB2-5D6ADED9B03F",
-                "0198BFBC-2383-7058-8BB2-6023560DB433",
-                "0198BFBC-2383-7058-8BB2-66D46A4FA9AE",
-                "0198BFBC-2383-7058-8BB2-6BA0233B4DCD",
-                "0198BFBC-2383-7058-8BB2-6E7DEABA62ED",
-                "0198BFBC-2383-7058-8BB2-72FC04AAC627",
-                "0198BFBC-2383-7058-8BB2-7535BFAC0DA9",
-                "0198BFBC-2383-7058-8BB2-7AACE3F85E9B",
-                "0198BFBC-2383-7058-8BB2-7FF25A4CFC45",
-                "0198BFBC-2383-7058-8BB2-80992183A6F9",
-                "0198BFBC-2383-7058-8BB2-86DBF455A0D0",
-                "0198BFBC-2383-7058-8BB2-8832E34FBEDB",
-                "0198BFBC-2383-7058-8BB2-8ECA07BDDAFF",
-                "0198BFBC-2383-7058-8BB2-93FDA1B3B54F",
-                "0198BFBC-2383-7058-8BB2-9515777931DE",
-                "0198BFBC-2383-7058-8BB2-984A550B5FE8",
-                "0198BFBC-2383-7058-8BB2-9DA01030AC32",
-                "0198BFBC-2383-7058-8BB2-A158EC114609",
-                "0198BFBC-2383-7058-8BB2-A42AC6ED09C3",
-                "0198BFBC-2383-7058-8BB2-A968296A4794",
-                "0198BFBC-2383-7058-8BB2-ACF62F2AE834",
-                "0198BFBC-2383-7058-8BB2-B0C0AA02EFBC",
-                "0198BFBC-2383-7058-8BB2-B5C0B018CE86"
-            ];
-            List<string> equipUuids = [
-                "0198BBB27F42727EB6F4A1AAA67A828B",
-                "0198BBB27F42727EB6F4A68D9702EFE6",
-                "0198BBB27F42727EB6F4AB3FBC007942",
-                "0198BBB27F42727EB6F4ACE6DF594ABC",
-                "0198BBB27F42727EB6F4B382B5DAB7E5",
-                "0198BBB27F42727EB6F4B5169125885C",
-                "0198BBB27F42727EB6F4BB0D2FB237AE",
-                "0198BBB27F42727EB6F4BC1D86A9055D",
-                "0198BBB27F42727EB6F4C3CF4DB5D446",
-                "0198BBB27F42727EB6F4C7C00A3A738E"
-            ];
-            var rand = new Random();
-            var now = DateTime.Now;
-            int a = 0;
-            List<Attribute> attributes = [];
-            Type? type = null;
-            Dictionary<PropertyInfo, int> properties = [];
-            foreach (var uuid in uuids)
-            {
-                var b = Activator.CreateInstance<XT_307_SL_1_ReceiveData>();
-                type ??= b.GetType();
-                if (!properties.Any())
-                {
-                    var tempProperties = type.GetProperties();
-                    foreach (var property in tempProperties)
-                    {
-                        var attrs = property.GetCustomAttributes();
-                        foreach (var attr in attrs)
-                        {
-                            if (attr is DescriptionAttribute descattr)
-                            {
-                                if (descattr.Description.Contains("-5V"))
-                                {
-                                    properties.Add(property, -5);
-                                    break;
-                                }
-                                else if (descattr.Description.Contains("-12V"))
-                                {
-                                    properties.Add(property, -12);
-                                    break;
-                                }
-                                else if (descattr.Description.Contains("5V"))
-                                {
-                                    properties.Add(property, 5);
-                                    break;
-                                }
-                                else if (descattr.Description.Contains("12V"))
-                                {
-                                    properties.Add(property, 12);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                b.Id = Guid.Parse(uuid);
-                b.SimuTestSysld = 2;
-                b.DevTypeld = 1;
-                b.Compld = equipUuids[rand.Next(equipUuids.Count - 1)];
-                b.MicroWare = 1;
-                b.Channel = 1;
-                b.ModelValid = 1;
-                b.ArrayEndPolarizationMode = 1;
-                b.ArrayEndPowerMode = 1;
-                b.ArrayChannelMultiplexing = 1;
-                b.ChannelPolarizationMode1 = 1;
-                b.ChannelPolarizationMode2 = 1;
-                b.ChannelPowerMode = 1;
-                b.Reserved = 1;
-                b.StateType = 1;
-                b.SelfTest = 1;
-                b.SupplyVoltageState = 1;
-                b.PhysicalQuantityCount = 462;
-                b.RunTime = (uint?)new DateTimeOffset(now.AddSeconds(a)).ToUnixTimeSeconds();
-                b.CreationTime = now.AddSeconds(a);
-                foreach (var dic in properties)
-                {
-                    dic.Key.SetValue(b, dic.Value);
-                }
-                list.Add(b);
-                a++;
-            }
-            return [.. list];
-        }
-    }
-#endif
 }

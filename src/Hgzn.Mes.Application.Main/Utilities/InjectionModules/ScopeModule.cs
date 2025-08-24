@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Hgzn.Mes.Domain.Services;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Utilities.CurrentUser;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +31,10 @@ public class ScopeModule:Module
                 return new SqlSugarContext(logger, setting, client, accessor);
             })
             .PropertiesAutowired()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType<SplitTableService>()
+            .AsSelf()
             .InstancePerLifetimeScope();
         #endregion
 

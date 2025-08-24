@@ -9,7 +9,6 @@ namespace Hgzn.Mes.Domain.Shared.Extensions
         {
             return (!type.IsClass || type == typeof(string)) && !type.IsInterface;
         }
-
         public static string GetServiceTypeScopeDefine(this Type type)
         {
             if(type.FullName == null || !type.FullName.Contains("Services"))

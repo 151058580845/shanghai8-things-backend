@@ -271,7 +271,7 @@ builder.Services.AddMediatR(config =>
 
 builder.Services.AddHttpClient(); // 注册 IHttpClientFactory
 
-builder.Services.AddHostedService<TestDataImport>();
+// builder.Services.AddHostedService<TestDataImport>();
 //builder.Services.AddHostedService<ConnCollectWorker>();
 
 var app = builder.Build();
@@ -306,7 +306,7 @@ var sqlSugarContext = app.Services.GetService<SqlSugarContext>();
 sqlSugarContext?.InitDatabase();
 if (app.Environment.IsDevelopment())
 {
-    await sqlSugarContext!.GetSeedsCodeFromDatabaseAsync();
+    // await sqlSugarContext!.GetSeedsCodeFromDatabaseAsync();
 }
 app.Services.GetService<IMqttExplorer>()?.StartAsync();
 app.UseExceptionHandler(builder =>

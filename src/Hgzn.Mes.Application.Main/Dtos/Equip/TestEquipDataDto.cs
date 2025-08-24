@@ -4,8 +4,9 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 
 public class TestEquipDataQueryDto : PaginatedQueryDto
 {
-    public int SystemId { get; set; }
-    public int EquipTypeId { get; set; }
+    public byte SystemId { get; set; }
+    public byte EquipTypeId { get; set; }
+    
     public List<string>? AssetNumbers { get; set; }
     public DateTime? StartDateTime { get; set; }
     public DateTime? EndDateTime { get; set; }
