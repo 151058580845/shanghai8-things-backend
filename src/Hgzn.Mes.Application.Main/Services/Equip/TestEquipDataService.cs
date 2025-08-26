@@ -66,7 +66,7 @@ public class TestEquipDataService
                 Label = property.Name == "CreationTime"
                     ? "数据获取时间"
                     : (property.GetCustomAttribute<DescriptionAttribute>()?.Description ?? property.Name),
-                Prop = property.Name,
+                Prop = property.Name,   
                 Hide = property.Name == "Id" ? true : false,
                 Width =  property.Name is "CreationTime" or "Compld"?200:150
             });

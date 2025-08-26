@@ -1,4 +1,5 @@
-﻿using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_0_ReceiveDatas;
+﻿using Hgzn.Mes.Domain.Entities.Equip.EquipData;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_0_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Shared;
@@ -37,6 +38,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
             byte[] compId = new byte[20];
             Buffer.BlockCopy(buffer, 2, compId, 0, 20);
             string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
+            // 最新需求,记录数据库的时候去掉引号保存
+            compNumber = compNumber.Trim('"');
             LoggerAdapter.LogDebug($"AG - 远程解析 - 本机识别编码:{compNumber}");
 
             // 工作模式信息
@@ -114,7 +117,16 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
             List<string> exception = GetXT_0_SL_6HealthExceptionName(healthInfo);
             LoggerAdapter.LogDebug($"AG - 远程解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
             // 将试验数据记录数据库
-            XT_0_SL_6_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            Receive receive = new Receive()
+            {
+                SimuTestSysld = simuTestSysId,
+                DevTypeld = devTypeId,
+                Compld = compNumber,
+                CreateTime = sendTime,
+                Content = entity,
+            };
+            _sqlSugarClient.Insertable(new List<Receive>() { receive }).SplitTable().ExecuteCommand();
+            LoggerAdapter.LogDebug($"AG - 远程解析 - 写入数据库完成");
             // 将试验数据的数据部分推送到mqtt给前端进行展示(暂时不进行数据展示)
             // await TestDataPublishToMQTT(receive);
             // 将异常和运行时长记录到redis

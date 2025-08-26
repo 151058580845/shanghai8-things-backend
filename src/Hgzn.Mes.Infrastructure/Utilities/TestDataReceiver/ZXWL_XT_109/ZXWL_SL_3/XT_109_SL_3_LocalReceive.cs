@@ -49,6 +49,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL
             byte[] compId = new byte[20];
             Buffer.BlockCopy(buffer, 2, compId, 0, 20);
             string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
+            // 最新需求,记录数据库的时候去掉引号保存
+            compNumber = compNumber.Trim('"');
             LoggerAdapter.LogDebug($"AG - 本地解析 - 本机识别编码:{compNumber}");
 
             // 工作模式信息
