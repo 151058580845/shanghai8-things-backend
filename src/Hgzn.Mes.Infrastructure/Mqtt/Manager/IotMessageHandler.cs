@@ -133,7 +133,6 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     await HandleRfidMsgAsync(uri, rfid);
                     break;
                 case EquipConnType.IotServer:
-                    _logger.LogDebug($"AG - ================= 我看看有没有给这个主题发送数据的 =================");
                     // 根据连接ID查询设备ID
                     EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
                     Guid equipId = con.EquipId;
@@ -168,7 +167,6 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         private async Task HandleTransmitAsync(IotTopic topic, byte[] msg)
         {
-            _logger.LogDebug($"AG - webApi收到转发数据");
             var uri = Guid.Parse(topic.ConnUri!);
             var connType = topic.ConnType;
             if (connType == EquipConnType.IotServer)
@@ -182,7 +180,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             }
         }
 
-        private async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
+        public async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
         {
             //var targetId = Guid.Parse(msg.Userdata ?? throw new ArgumentNullException("userdata not exist"));
             var label = await _client.Queryable<LocationLabel>()
@@ -238,7 +236,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             // 将时间戳存入Redis并设置1天过期时间
             await redisDb.StringSetAsync(key: key, value: rfidReader.RoomId.ToString(), expiry: TimeSpan.FromDays(1));
             #endregion
-            
+
             // #region 判定设备之前所在位置，如果是当前房间，就不处理,留存时间为1天
             //
             // //当前记录
@@ -302,20 +300,19 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             // #endregion
 
 
-            
-            
+
+
             #region 判断是否是关卡读写器,超过5分钟报警
 
             var jobKey = string.Format(CacheKeyFormatter.EquipAlarmJob, equip.Id);
             //获取到对应设备的JobId
-            var job = redisDb.StringGet(key: key);
-            if (job.HasValue && BackgroundJob.Delete(jobKey))
+            var job = redisDb.StringGet(key: jobKey);
+            if ((job.HasValue && BackgroundJob.Delete(jobKey)) || !job.HasValue)
             {
                 if (rfidReader.IsCustoms != null && rfidReader.IsCustoms.Value)
                 {
                     // 处理关卡读写器逻辑
                     // 这里可以添加关卡读写器的处理逻辑
-                    _logger.LogInformation($"被关卡读写器读取: {rfidReader.RfidName}");
                     // 添加定时任务
                     var jobId = BackgroundJob.Schedule(() => SentAlarmAsync(new EquipNotice
                     {
@@ -326,11 +323,10 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                         Content = $"设备 {equip.EquipName} 在关卡读写器 {rfidReader.RfidName} 被读取",
                         Description = $"设备 {equip.EquipName} 在关卡读写器 {rfidReader.RfidName} 被读取",
                         NoticeType = EquipNoticeType.Alarm
-                    }), TimeSpan.FromMinutes(2));
+                    }, MsgType.Error), TimeSpan.FromMinutes(2));
                     await redisDb.StringSetAsync(key: jobKey, value: jobId, expiry: TimeSpan.FromMinutes(10));
                 }
             }
-
             #endregion
 
             var time = DateTime.Now;
@@ -412,7 +408,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             await _client.Insertable(notice).ExecuteCommandAsync();
         }
 
-        private async Task SentAlarmAsync(EquipNotice notice)
+        public async Task SentAlarmAsync(EquipNotice notice, MsgType msgType = MsgType.Error)
         {
             await _client.Insertable(notice).ExecuteCommandAsync();
             // 发送报警消息到MQTT
@@ -423,8 +419,37 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 .WithTag(MqttTag.Alarm)
                 .WithUri(notice.EquipId.ToString()!)
                 .Build();
-            var msg = JsonSerializer.Serialize(notice, Options.CustomJsonSerializerOptions);
+            SentMsg sentMsg = new SentMsg(notice.Content, msgType);
+            var msg = JsonSerializer.Serialize(sentMsg, Options.CustomJsonSerializerOptions);
             await _mqttExplorer.PublishAsync(alarmTopic, Encoding.UTF8.GetBytes(msg));
+        }
+
+    }
+
+    public enum MsgType
+    {
+        Info = 0,
+        Success = 1,
+        Warning = 2,
+        Error = 3,
+    }
+
+
+    public class SentMsg
+    {
+        public string? Content { get; set; }
+        public string? MsgType { get; set; }
+
+        public SentMsg(string? content, MsgType? msgType)
+        {
+            Content = content;
+            MsgType = msgType switch
+            {
+                Manager.MsgType.Info => "info",
+                Manager.MsgType.Warning => "warning",
+                Manager.MsgType.Success => "success",
+                Manager.MsgType.Error => "error"
+            };
         }
     }
 }

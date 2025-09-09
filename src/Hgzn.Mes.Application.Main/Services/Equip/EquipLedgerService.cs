@@ -23,6 +23,8 @@ using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using System.Collections;
+using Hgzn.Mes.Infrastructure.Mqtt.Manager;
+using System.Reflection.Metadata;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -34,11 +36,14 @@ public class EquipLedgerService : SugarCrudAppService<
 {
     private readonly HttpClient _httpClient;
     private readonly ICodeRuleService _codeRuleService;
+    private readonly IotMessageHandler _handler;
 
-    public EquipLedgerService(HttpClient httpClient, ICodeRuleService codeRuleService)
+    public EquipLedgerService(HttpClient httpClient, ICodeRuleService codeRuleService, IotMessageHandler handler, IMqttExplorer mqttExplorer)
     {
         _httpClient = httpClient;
         _codeRuleService = codeRuleService;
+        _handler = handler;
+        _handler.Initialize(mqttExplorer);
     }
 
     public async Task<EquipLedger> GetEquipByIpAsync(string ipAddress)

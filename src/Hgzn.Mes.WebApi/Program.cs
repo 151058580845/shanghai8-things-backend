@@ -33,6 +33,8 @@ using System.Reflection;
 using System.Security.Claims;
 using Hangfire;
 using Hangfire.SQLite;
+using Hgzn.Mes.Infrastructure.Utilities;
+using Hgzn.Mes.Application.Main.Jobs.RecurringTask;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -202,6 +204,9 @@ builder.Services.AddHangfireServer(options =>
     options.Queues = ["default"];
     options.WorkerCount = 1;
 });
+// 在 builder.Services.AddHangfireServer() 之后添加：
+builder.Services.AddScoped<HangfireHelper>();
+builder.Services.AddScoped<DeleteRFIDStaleDataEveryDayJob>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -314,4 +319,14 @@ app.UseExceptionHandler(builder =>
         await ExceptionLocalizerExtension.LocalizeException(context, app.Services.GetService<IStringLocalizer<Exception>>()!)));
 //启动hangfire展示界面
 app.UseHangfireDashboard();
+
+// 开启循环任务前,请务必先结束其他循环任务 - AG
+HangfireHelper hangfireHelper = app.Services.GetService<HangfireHelper>()!;
+List<RecurringJobInfo> jobs = hangfireHelper.GetAllRecurringJobs();
+foreach (var job in jobs)
+{
+    hangfireHelper.RemoveRecurringJob(job.Id);
+}
+hangfireHelper.AddDailyJob<DeleteRFIDStaleDataEveryDayJob>("DeleteRFIDStaleDataEveryDayJob", x => x.Execute());
+
 app.Run();
