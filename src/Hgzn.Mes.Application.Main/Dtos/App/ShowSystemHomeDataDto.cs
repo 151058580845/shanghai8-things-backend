@@ -348,6 +348,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public Dictionary<string, List<DateTimeRange>>? Times { get; set; }
 
         /// <summary>
+        /// 每月时间的系统总工作天数
+        /// </summary>
+        public Dictionary<NaturalMonth, int>? TimePerMonth { get; set; }
+
+        /// <summary>
         /// 当前自然月所有系统总工作天数(可能用于显示于大屏主页的"月试验天数")
         /// </summary>
         public int? CurrentMonthTotalSystemTestDays { get; set; }
@@ -364,6 +369,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 时间范围 (key 是型号名, Value是时间段集合),按型号名分类汇总,后续可能需要根据具体的时间画图表
         /// </summary>
         public Dictionary<string, List<DateTimeRange>>? Times { get; set; }
+
+        /// <summary>
+        /// 每月时间的型号总工作天数
+        /// </summary>
+        public Dictionary<NaturalMonth, int>? TimePerMonth { get; set; }
 
         /// <summary>
         /// 当前自然月所有型号总工作天数(可能用于显示于大屏主页的"月试验天数")
