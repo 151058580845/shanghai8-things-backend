@@ -34,73 +34,83 @@ namespace Hgzn.Mes.Iot.Worker
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            //延迟启动等待数据库初始化
-            await Task.Delay(1000, stoppingToken);
-            var interval = _configuration.GetValue<int>("ReConnInterval");
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                var connections = await _sqlClient.Queryable<EquipConnect>()
-                    .Includes(ec => ec.EquipLedger, el => el!.EquipType)
-                    .Where(ec => ec.State && ec.ConnectStr != null)
-                    .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RfidReaderType.Id ||
-                                 ec.EquipLedger!.EquipType!.Id == EquipType.RKType.Id ||
-                                 ec.EquipLedger!.EquipType!.Id == EquipType.IotType.Id)
-                    .Where(ec => !ec.SoftDeleted)
-                    .ToArrayAsync();
-                //ec.EquipLedger!.EquipType!.Id == EquipType.RfidIssuerType.Id ||   取消了发卡器的自动连接
-                //关闭多余的连接
-                var targetIds = connections.Select(c => c.Id);
-                try
-                {
-                    var closeTasks = _manager.Connections
-                        .Where(c => !targetIds.Contains(c.Key))
-                        .Select(c => _manager.GetEquip(c.Key)!.CloseConnectionAsync());
-                    await Task.WhenAll(closeTasks);
-                }
-                catch
-                {
-                    _logger.LogWarning("close excessive connections failed!");
-                }
 
-                foreach (var connection in connections)
+
+                //延迟启动等待数据库初始化
+                await Task.Delay(1000, stoppingToken);
+                var interval = _configuration.GetValue<int>("ReConnInterval");
+                while (!stoppingToken.IsCancellationRequested)
                 {
+                    var connections = await _sqlClient.Queryable<EquipConnect>()
+                        .Includes(ec => ec.EquipLedger, el => el!.EquipType)
+                        .Where(ec => ec.State && ec.ConnectStr != null)
+                        .Where(ec => ec.EquipLedger!.EquipType!.Id == EquipType.RfidReaderType.Id ||
+                                     ec.EquipLedger!.EquipType!.Id == EquipType.RKType.Id ||
+                                     ec.EquipLedger!.EquipType!.Id == EquipType.IotType.Id)
+                        .Where(ec => !ec.SoftDeleted)
+                        .ToArrayAsync();
+
+                    //ec.EquipLedger!.EquipType!.Id == EquipType.RfidIssuerType.Id ||   取消了发卡器的自动连接
+                    //关闭多余的连接
+                    var targetIds = connections.Select(c => c.Id);
                     try
                     {
-                        var connInfo = new ConnInfo
-                        {
-                            ConnType = connection.ProtocolEnum,
-                            ConnString = connection.ConnectStr,
-                            Type = CmdType.Conn,
-                            StateType = ConnStateType.On,
-                        };
-                        EquipConnType equipConnectType = EquipConnType.RfidReader;
-                        if (connection?.EquipLedger?.EquipType?.ProtocolEnum == "CardIssuer")
-                            equipConnectType = EquipConnType.CardIssuer;
-                        var equip = _manager.GetEquip(connection.Id) ??
-                                    _manager.AddEquip(connection.Id, equipConnectType,
-                                        connection.ConnectStr!, connInfo);
-                        if (!equip.ConnState)
-                        {
-                            //await equip!.CloseConnectionAsync();
-                            bool connetRet = await equip!.ConnectAsync(connInfo);
-                            await equip!.StartAsync(connection.Id);
-                            _logger.LogInformation(
-                                $"start connection[{connection!.Name}](connId:{connection.Id}) succeed!");
-                        }
-                        else
-                        {
-                            _logger.LogInformation($"connection[{connection!.Name}](connId:{connection.Id}) is exist");
-                        }
-
-                        await Task.Delay(500, stoppingToken);
+                        var closeTasks = _manager.Connections
+                            .Where(c => !targetIds.Contains(c.Key))
+                            .Select(c => _manager.GetEquip(c.Key)!.CloseConnectionAsync());
+                        await Task.WhenAll(closeTasks);
                     }
                     catch
                     {
-                        _logger.LogError($"start connection[{connection!.Name}](connId:{connection.Id}) failed!");
+                        _logger.LogWarning("close excessive connections failed!");
                     }
-                }
 
-                await Task.Delay(1000 * interval, stoppingToken);
+                    foreach (var connection in connections)
+                    {
+                        try
+                        {
+                            var connInfo = new ConnInfo
+                            {
+                                ConnType = connection.ProtocolEnum,
+                                ConnString = connection.ConnectStr,
+                                Type = CmdType.Conn,
+                                StateType = ConnStateType.On,
+                            };
+                            EquipConnType equipConnectType = EquipConnType.RfidReader;
+                            if (connection?.EquipLedger?.EquipType?.ProtocolEnum == "CardIssuer")
+                                equipConnectType = EquipConnType.CardIssuer;
+                            var equip = _manager.GetEquip(connection.Id) ??
+                                        _manager.AddEquip(connection.Id, equipConnectType,
+                                            connection.ConnectStr!, connInfo);
+                            if (!equip.ConnState)
+                            {
+                                //await equip!.CloseConnectionAsync();
+                                bool connetRet = await equip!.ConnectAsync(connInfo);
+                                await equip!.StartAsync(connection.Id);
+                                _logger.LogInformation(
+                                    $"start connection[{connection!.Name}](connId:{connection.Id}) succeed!");
+                            }
+                            else
+                            {
+                                _logger.LogInformation($"connection[{connection!.Name}](connId:{connection.Id}) is exist");
+                            }
+
+                            await Task.Delay(500, stoppingToken);
+                        }
+                        catch
+                        {
+                            _logger.LogError($"start connection[{connection!.Name}](connId:{connection.Id}) failed!");
+                        }
+                    }
+
+                    await Task.Delay(1000 * interval, stoppingToken);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"connWork Error:{e.Message}");
             }
         }
     }

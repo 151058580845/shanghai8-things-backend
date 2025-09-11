@@ -105,6 +105,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public string? Status { get; set; } = string.Empty;
 
         /// <summary>
+        /// 型号名
+        /// </summary>
+        public string? TypeName { get; set; }
+
+        /// <summary>
         /// 系统所在的房间ID,用于获取MQTT推上来的温湿度数据,不展示
         /// </summary>
         public string? RoomId { get; set; }
@@ -327,5 +332,184 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 响应数据
         /// </summary>
         public ShowSystemHomeDataDto Data { get; set; } = new ShowSystemHomeDataDto();
+    }
+
+    public class DateTimeRange
+    {
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+    }
+
+    public class SystemTestTimes : ReadDto
+    {
+        /// <summary>
+        /// 时间范围 (key 是系统名, Value是时间段集合),按系统名分类汇总,后续可能需要根据具体的时间画图表
+        /// </summary>
+        public Dictionary<string, List<DateTimeRange>>? Times { get; set; }
+
+        /// <summary>
+        /// 当前自然月所有系统总工作天数(可能用于显示于大屏主页的"月试验天数")
+        /// </summary>
+        public int? CurrentMonthTotalSystemTestDays { get; set; }
+
+        /// <summary>
+        /// 当前自然年所有系统总工作天数(可能用于显示于大屏主页的"年试验天数")
+        /// </summary>
+        public int? CurrentYearTotalSystemTestDays { get; set; }
+    }
+
+    public class TypeTestTimes : ReadDto
+    {
+        /// <summary>
+        /// 时间范围 (key 是型号名, Value是时间段集合),按型号名分类汇总,后续可能需要根据具体的时间画图表
+        /// </summary>
+        public Dictionary<string, List<DateTimeRange>>? Times { get; set; }
+
+        /// <summary>
+        /// 当前自然月所有型号总工作天数(可能用于显示于大屏主页的"月试验天数")
+        /// </summary>
+        public int? CurrentMonthTotalTypeTestDays { get; set; }
+
+        /// <summary>
+        /// 当前自然年所有型号总工作天数(可能用于显示于大屏主页的"年试验天数")
+        /// </summary>
+        public int? CurrentYearTotalTypeTestDays { get; set; }
+    }
+
+
+
+    public class CostBreakdown
+    {
+        /// <summary>
+        /// 自然月
+        /// </summary>
+        public NaturalMonth NaturalMonth { get; set; }
+
+        /// <summary>
+        /// 场地成本
+        /// </summary>
+        public double? VenueCost { get; set; }
+
+        /// <summary>
+        /// 人工成本
+        /// </summary>
+        public double? LaborCost { get; set; }
+
+        /// <summary>
+        /// 设备成本
+        /// </summary>
+        public double? EquipmentCost { get; set; }
+
+        /// <summary>
+        /// 维修成本
+        /// </summary>
+        public double? MaintenanceCost { get; set; }
+
+        /// <summary>
+        /// 其他成本
+        /// </summary>
+        public double? OtherCost { get; set; }
+    }
+
+    public class SystemTestCost : ReadDto
+    {
+        /// <summary>
+        /// 成本明细(key是系统名称,value是该系统的成本明细)
+        /// </summary>
+        public Dictionary<string, List<CostBreakdown>>? Costs { get; set; }
+
+        /// <summary>
+        /// 当前自然月所有系统总成本(可能用于显示于大屏主页的"月试验成本")
+        /// </summary>
+        public int? CurrentMonthTotalSystemTestCost { get; set; }
+
+        /// <summary>
+        /// 当前自然年所有系统总成本(可能用于显示于大屏主页的"年试验成本")
+        /// </summary>
+        public int? CurrentYearTotalSystemTestCost { get; set; }
+    }
+
+    public class TypeTestCost : ReadDto
+    {
+        /// <summary>
+        /// 成本明细(key是型号名,value是该型号的成本明细)
+        /// </summary>
+        public Dictionary<string, List<CostBreakdown>>? Costs { get; set; }
+
+        /// <summary>
+        /// 当前自然月所有型号总成本(可能用于显示于大屏主页的"月试验成本")
+        /// </summary>
+        public int? CurrentMonthTotalTypeTestCost { get; set; }
+
+        /// <summary>
+        /// 当前自然年所有型号总成本(可能用于显示于大屏主页的"年试验成本")
+        /// </summary>
+        public int? CurrentYearTotalTypeTestCost { get; set; }
+    }
+
+    /// <summary>
+    /// 自然月枚举
+    /// </summary>
+    public enum NaturalMonth
+    {
+        /// <summary>
+        /// 一月
+        /// </summary>
+        January = 1,
+
+        /// <summary>
+        /// 二月
+        /// </summary>
+        February = 2,
+
+        /// <summary>
+        /// 三月
+        /// </summary>
+        March = 3,
+
+        /// <summary>
+        /// 四月
+        /// </summary>
+        April = 4,
+
+        /// <summary>
+        /// 五月
+        /// </summary>
+        May = 5,
+
+        /// <summary>
+        /// 六月
+        /// </summary>
+        June = 6,
+
+        /// <summary>
+        /// 七月
+        /// </summary>
+        July = 7,
+
+        /// <summary>
+        /// 八月
+        /// </summary>
+        August = 8,
+
+        /// <summary>
+        /// 九月
+        /// </summary>
+        September = 9,
+
+        /// <summary>
+        /// 十月
+        /// </summary>
+        October = 10,
+
+        /// <summary>
+        /// 十一月
+        /// </summary>
+        November = 11,
+
+        /// <summary>
+        /// 十二月
+        /// </summary>
+        December = 12
     }
 }

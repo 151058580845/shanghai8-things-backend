@@ -56,8 +56,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
             ShowSystemDetailDto read = new ShowSystemDetailDto();
             IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
             TestDataReadDto currentTestInSystem = current.FirstOrDefault(x => x.SysName == showSystemDetailQueryDto.systemName)!;
-            _logger.LogInformation($"currentTestInSystem是否被过滤到:{currentTestInSystem == null}");
-            _logger.LogInformation($"currentTestInSystem用于比对的系统名是:{showSystemDetailQueryDto.systemName}");
             IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
 
 
@@ -84,12 +82,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
             {
                 if (string.IsNullOrEmpty(role.Value))
                 {
-                    _logger.LogInformation($"进入了string.IsNullOrEmpty(role.Value)判断, role.Value:{role.Value}");
                     experimentersData.Add(new ExperimenterDto { System = role.System, Person = "---" });
                 }
                 else
                 {
-                    _logger.LogInformation($"进入了else判断, role.Value:{role.Value}");
                     string[] persons = role.Value.Split(',', StringSplitOptions.RemoveEmptyEntries);
                     foreach (string? person in persons.Any() ? persons : new[] { "---" })
                     {
