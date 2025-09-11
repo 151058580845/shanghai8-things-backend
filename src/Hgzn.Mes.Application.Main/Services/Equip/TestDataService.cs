@@ -51,6 +51,7 @@ public class TestDataService : SugarCrudAppService<
             .WhereIF(!string.IsNullOrEmpty(queryDto.simuStaffCodes), t => t.simuStaffCodes.Contains(queryDto.simuStaffCodes))
             .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
             .Includes(x => x.UUT)
+            .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
     }
@@ -75,6 +76,7 @@ public class TestDataService : SugarCrudAppService<
               .WhereIF(!string.IsNullOrEmpty(queryDto.simuStaffCodes), t => t.simuStaffCodes.Contains(queryDto.simuStaffCodes))
               .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
               .Includes(x => x.UUT)
+              .OrderByDescending(x => x.TaskStartTime)
               .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
         return Mapper.Map<PaginatedList<TestDataReadDto>>(entities);
     }

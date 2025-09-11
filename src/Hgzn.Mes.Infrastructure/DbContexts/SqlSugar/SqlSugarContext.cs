@@ -557,8 +557,8 @@ public sealed class SqlSugarContext
                 .SplitTable()
                 .ExecuteCommand();
         }
-        
-        
+
+
     }
 
     //测试自动分页，获取数据
