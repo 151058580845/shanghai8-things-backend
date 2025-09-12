@@ -187,8 +187,9 @@ public class TestDataService : SugarCrudAppService<
 
     public async Task<IEnumerable<TestDataReadDto>> GetHistoryListByTestAsync()
     {
+        DateTime firstDayOfYear = new DateTime(DateTime.Now.Year, 1, 1);
         List<TestData> entities = await Queryable
-            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) < DateTime.Now.ToLocalTime() && DateTime.Parse(x.TaskEndTime) >= DateTime.Now.ToLocalTime().AddDays(-30))
+            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) < DateTime.Now.ToLocalTime() && DateTime.Parse(x.TaskEndTime) >= firstDayOfYear)
             .Includes(x => x.UUT)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();

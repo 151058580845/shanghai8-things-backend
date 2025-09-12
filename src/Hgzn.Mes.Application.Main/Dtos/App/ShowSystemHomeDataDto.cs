@@ -85,6 +85,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public string? Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// 系统名简写
+        /// </summary>
+        public string? SystemAbbreviationName { get; set; }
+
+        /// <summary>
         /// 设备数量
         /// </summary>
         public int Quantity { get; set; }

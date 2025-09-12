@@ -273,6 +273,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
             await _sysMgr.SnapshootHomeData();
             _abnormalEquipDic = new Dictionary<string, List<string>>();
 
+            IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
+            IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
+            IEnumerable<TestDataReadDto> history = await _testDataService.GetHistoryListByTestAsync();
+
             ShowSystemHomeDataDto testRead = new ShowSystemHomeDataDto();
             List<EquipConnect> connectEquips = _sqlSugarClient.Queryable<EquipConnect>()
                 .Includes(el => el.EquipLedger)
@@ -314,14 +318,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
                             _abnormalEquipDic[item.Name] = abnormalInfos.ToList();
                     }
                 }
+                string typeName = current.FirstOrDefault(x => x.SysName == sysInfo.Name)?.ProjectName!;
                 list.Add(new SystemDeviceData()
                 {
                     Name = sysInfo.Name,
+                    SystemAbbreviationName = sysInfo.SystemAbbreviationName,
                     Quantity = sysInfo.AllEquip.Count(),
                     Temperature = iTemperature,
                     Humidity = iHumidity,
                     Status = status,
                     RoomId = sysInfo.RoomId.ToString(),
+                    TypeName = typeName,
                 });
             }
             testRead.SystemDeviceList = list;
@@ -388,9 +395,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #region 实验任务数据 (已关联数据库)
 
-            IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
-            IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
-            IEnumerable<TestDataReadDto> history = await _testDataService.GetHistoryListByTestAsync();
             // 当前试验任务数据组织
             List<Dictionary<string, object>> currentListDic = new List<Dictionary<string, object>>();
             foreach (TestDataReadDto item in current)

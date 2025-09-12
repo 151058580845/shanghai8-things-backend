@@ -131,15 +131,17 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL
             LoggerAdapter.LogDebug($"AG - 远程解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
 
             // 将试验数据记录数据库
-            Receive receive = new Receive()
-            {
-                SimuTestSysld = simuTestSysId,
-                DevTypeld = devTypeId,
-                Compld = compNumber,
-                CreateTime = sendTime,
-                Content = entity,
-            };
-            _sqlSugarClient.Insertable(new List<Receive>() { receive }).SplitTable().ExecuteCommand();
+            XT_109_SL_3_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
+            // 分表不在远程解析时记录
+            //Receive receive = new Receive()
+            //{
+            //    SimuTestSysld = simuTestSysId,
+            //    DevTypeld = devTypeId,
+            //    Compld = compNumber,
+            //    CreateTime = sendTime,
+            //    Content = entity,
+            //};
+            //_sqlSugarClient.Insertable(new List<Receive>() { receive }).SplitTable().ExecuteCommand();
             LoggerAdapter.LogDebug($"AG - 远程解析 - 写入数据库完成");
             // 将试验数据的数据部分推送到mqtt给前端进行展示(暂时不进行数据展示)
             // await TestDataPublishToMQTT(receive);
