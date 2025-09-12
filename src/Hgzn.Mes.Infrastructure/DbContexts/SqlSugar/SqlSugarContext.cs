@@ -438,7 +438,7 @@ public sealed class SqlSugarContext
                     c.IfTable<Floor>()
                         .OneToMany(t => t.Rooms, nameof(Room.ParentId), nameof(Floor.Id));
                     c.IfTable<TestData>()
-                        .OneToMany(t => t.UUT, nameof(TestDataProduct.TestDataId), nameof(TestData.Id));
+                        .OneToMany(t => t.UUT, nameof(TestDataProduct.TestDataId), nameof(TestData.TestDataId));
                     c.IfTable<EquipDataPoint>()
                         .OneToOne(t => t.EquipReceiveData, nameof(EquipDataPoint.EquipReceiveDataId))
                         .OneToOne(t => t.Connection, nameof(EquipDataPoint.ConnectionId));

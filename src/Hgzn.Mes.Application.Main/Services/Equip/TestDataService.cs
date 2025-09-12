@@ -204,7 +204,8 @@ public class TestDataService : SugarCrudAppService<
             .Includes(x => x.UUT)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
-        return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
+        IEnumerable<TestDataReadDto> ret = Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
+        return ret;
     }
 
     public async Task<IEnumerable<TestDataReadDto>> GetFeatureListByTestAsync()

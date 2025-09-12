@@ -55,7 +55,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             ShowSystemDetailDto read = new ShowSystemDetailDto();
             IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
-            TestDataReadDto currentTestInSystem = current.FirstOrDefault(x => x.SysName == showSystemDetailQueryDto.systemName)!;
+            TestDataReadDto currentTestInSystem = current.FirstOrDefault(x => showSystemDetailQueryDto.systemName != null &&
+                                                                         x.SysName.Trim() == showSystemDetailQueryDto.systemName.Trim())!;
             IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
 
 
@@ -157,7 +158,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 currentTestTaskEndTime = currentTestInSystem.TaskEndTime;
             }
             // 在本系统中的后续试验计划
-            TestDataReadDto featureTestInSystem = feature.FirstOrDefault(x => x.SysName == showSystemDetailQueryDto.systemName)!;
+            TestDataReadDto featureTestInSystem = feature.FirstOrDefault(x => showSystemDetailQueryDto.systemName != null &&
+                                                                         x.SysName.Trim() == showSystemDetailQueryDto.systemName.Trim())!;
             string featureTestName = "无";
             int leftUntilToday = 0;
             if (featureTestInSystem != null)
@@ -272,7 +274,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
         {
             await _sysMgr.SnapshootHomeData();
             _abnormalEquipDic = new Dictionary<string, List<string>>();
-
             IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
             IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
             IEnumerable<TestDataReadDto> history = await _testDataService.GetHistoryListByTestAsync();
@@ -318,7 +319,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
                             _abnormalEquipDic[item.Name] = abnormalInfos.ToList();
                     }
                 }
-                string typeName = current.FirstOrDefault(x => x.SysName == sysInfo.Name)?.ProjectName!;
+                // 型号名称
+                string typeName = "空闲";
+                string ttypeName = current.FirstOrDefault(x => x.SysName.Trim() == sysInfo.Name.Trim())?.ProjectName!;
+                if (!string.IsNullOrEmpty(ttypeName))
+                    typeName = ttypeName;
+
                 list.Add(new SystemDeviceData()
                 {
                     Name = sysInfo.Name,

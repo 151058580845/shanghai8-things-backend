@@ -49,7 +49,7 @@ public class TestData : UniversalEntity
         new TestData()
         {
             Id = Guid.Parse("1279ef0b-0274-4bf0-bd88-ac72d653af37"),
-            TestDataId = "368ed946-c938-40f1-af15-b9e4171ed6a4",
+            TestDataId = "1234",
             SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称1",
             TaskName = "种子试验名称1",
@@ -70,7 +70,7 @@ public class TestData : UniversalEntity
         new TestData()
         {
             Id = Guid.Parse("fabbcc05-4987-4d67-9be7-6bacc8b3f6ac"),
-            TestDataId = "dc29d70c-1d83-4458-871e-f21837392c16",
+            TestDataId = "2345",
             SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称2",
             TaskName = "种子试验名称2",
@@ -91,7 +91,7 @@ public class TestData : UniversalEntity
         new TestData()
         {
             Id = Guid.Parse("b6d79d9f-f519-41cb-b167-35382b5a65cc"),
-            TestDataId = "3e226e28-f6c2-4706-a7ee-01156099709f",
+            TestDataId = "3456",
             SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称3",
             TaskName = "种子试验名称3",
@@ -112,7 +112,7 @@ public class TestData : UniversalEntity
         new TestData()
         {
             Id = Guid.Parse("b5bf8812-f02d-4381-944d-f5f70b17ca3a"),
-            TestDataId = "409451de-67cc-4073-a5cd-d9759371aa5e",
+            TestDataId = "4567",
             SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称4",
             TaskName = "种子试验名称4",
@@ -133,7 +133,7 @@ public class TestData : UniversalEntity
         new TestData()
         {
             Id = Guid.Parse("3fbcfd6f-e603-4837-99aa-a00074ba9d87"),
-            TestDataId = "9f504e3b-d084-4f0b-bec4-bee51724c52b",
+            TestDataId = "5678",
             SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称5",
             TaskName = "种子试验名称5",
@@ -154,7 +154,7 @@ public class TestData : UniversalEntity
         new TestData()
         {
             Id = Guid.Parse("8aa9329d-6b85-46a7-adc4-c9f920ef412e"),
-            TestDataId = "4c29cb28-ab4e-4ebf-a329-eb70e473907b",
+            TestDataId = "6789",
             SysName = "微波/毫米波复合半实物仿真系统",
             ProjectName = "型号项目名称6",
             TaskName = "种子试验名称6",

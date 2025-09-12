@@ -6,7 +6,7 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip;
 public class TestDataProductReadDto : ReadDto
 {
     [Description("实验计划主键")]
-    public Guid TestDataId { get; set; }
+    public string? TestDataId { get; set; }
     [Description("名称")]
     public string? Name { get; set; }
     [Description("编号")]
@@ -18,7 +18,7 @@ public class TestDataProductReadDto : ReadDto
 public class TestDataProductCreateDto : CreateDto
 {
     [Description("实验计划主键")]
-    public Guid TestDataId { get; set; }
+    public string? TestDataId { get; set; }
     [Description("名称")]
     public string? Name { get; set; }
     [Description("编号")]
@@ -30,7 +30,7 @@ public class TestDataProductCreateDto : CreateDto
 public class TestDataProductUpdateDto : UpdateDto
 {
     [Description("实验计划主键")]
-    public Guid TestDataId { get; set; }
+    public string? TestDataId { get; set; }
     [Description("名称")]
     public string? Name { get; set; }
     [Description("编号")]
@@ -42,5 +42,5 @@ public class TestDataProductUpdateDto : UpdateDto
 public class TestDataProductQueryDto : PaginatedQueryDto
 {
     [Description("实验计划主键")]
-    public Guid? TestDataId { get; set; }
+    public string? TestDataId { get; set; }
 }
