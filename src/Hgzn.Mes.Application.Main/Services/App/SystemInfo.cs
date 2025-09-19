@@ -173,6 +173,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             _connectionMultiplexer = connectionMultiplexer;
             _redisHelper = redisHelper;
             _sqlSugarClient = client;
+            _equipLedgerService = equipLedgerService;
             _baseConfigService = baseConfigService;
             _detailGenerator = new IndexBasedTableGenerator();
             // 初始化数据

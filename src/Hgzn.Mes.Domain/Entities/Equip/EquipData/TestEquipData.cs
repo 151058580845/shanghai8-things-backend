@@ -10,7 +10,7 @@ public class TestEquipData : UniversalEntity
 {
     [Description("仿真试验系统识别编码,设备类型识别编码,本机识别编码")]
     public byte[] TestEquip { get; set; } = null!;
-
+    
     [Description("仿真试验系统识别编码")]
     public byte SimuTestSysld { get; set; }
 
