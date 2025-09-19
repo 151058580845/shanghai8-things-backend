@@ -36,12 +36,6 @@ public class EquipLedgerReadDto : ReadDto
 
     [Description("设备责任人")]
     public string? ResponsibleUserName { get; set; }
-    [Description("设备责任人")]
-    public Guid? ResponsibleUserId { get; set; }
-
-    [Description("备注")] public string? Remark { get; set; }
-    [Description("设备责任人")]
-    public string? ResponsibleUserName { get; set; }
 
     [Description("备注")] public string? Remark { get; set; }
     /// <summary>
