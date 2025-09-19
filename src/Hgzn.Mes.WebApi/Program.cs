@@ -335,9 +335,9 @@ foreach (var job in jobs)
     hangfireHelper.RemoveRecurringJob(job.Id);
 }
 // 每天凌晨0点30分执行设备运行时长数据持久化任务（先保存数据）
-hangfireHelper.AddDailyJob<SaveEquipRuntimeToDbJob>("SaveEquipRuntimeToDbJob", x => x.Execute(), hour: 0, minute: 30);
+hangfireHelper.AddDailyJob<SaveEquipRuntimeToDbJob>("SaveEquipRuntimeToDbJob", x => x.ExecuteAsync(), hour: 0, minute: 30);
 
 // 每天凌晨1点执行数据清理任务（在数据持久化后再清理）
-hangfireHelper.AddDailyJob<DeleteRFIDStaleDataEveryDayJob>("DeleteRFIDStaleDataEveryDayJob", x => x.Execute(), hour: 1, minute: 0);
+hangfireHelper.AddDailyJob<DeleteRFIDStaleDataEveryDayJob>("DeleteRFIDStaleDataEveryDayJob", x => x.ExecuteAsync(), hour: 1, minute: 0);
 
 app.Run();
