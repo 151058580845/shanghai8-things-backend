@@ -14,6 +14,7 @@ using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using SqlSugar;
 using StackExchange.Redis;
+using Hgzn.Mes.Application.Main.Services.App;
 
 namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 {
@@ -51,6 +52,11 @@ namespace Hgzn.Mes.Application.Main.Utilities.InjectionModules
 
             builder.RegisterType<ActionContextAccessor>()
                 .As<IActionContextAccessor>()
+                .SingleInstance();
+
+            // 注册SystemInfoManager
+            builder.RegisterType<SystemInfoManager>()
+                .AsSelf()
                 .SingleInstance();
         }
     }

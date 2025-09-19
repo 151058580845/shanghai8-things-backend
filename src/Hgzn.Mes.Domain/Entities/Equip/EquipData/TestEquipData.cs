@@ -10,7 +10,7 @@ public class TestEquipData : UniversalEntity
 {
     [Description("仿真试验系统识别编码,设备类型识别编码,本机识别编码")]
     public byte[] TestEquip { get; set; } = null!;
-    
+
     [Description("仿真试验系统识别编码")]
     public byte SimuTestSysld { get; set; }
 
@@ -72,6 +72,23 @@ public class TestEquipData : UniversalEntity
         9 => "ddd64e08-5f2a-4578-84cb-2f90caa898e9",
         10 => "a6ce46f1-d51f-45c8-a22e-2db3126da6cf",
         _ => ""
+    };
+
+    /// <summary>
+    /// 等价房间,因为8院有些系统跨了两个房间,所以某些房间是等价的关系,通用计量设备等信息 TODO - AG
+    /// </summary>
+    public static Dictionary<string, List<string>> EquivalentRoom { get; set; } = new Dictionary<string, List<string>>()
+    {
+        { "4c246470-da66-4408-b287-09fd82ffa3d4",new List<string>{ "4c246470-da66-4408-b287-09fd82ffa3d4" } },
+        { "83168845-ef46-4aed-9187-de2024488230",new List<string>{ "83168845-ef46-4aed-9187-de2024488230" } },
+        { "7412dda2-5413-43ab-9976-255df60c3e14",new List<string>{ "7412dda2-5413-43ab-9976-255df60c3e14" } },
+        { "09b374e8-4e7f-4146-9fe0-375edc7b9d7a",new List<string>{ "09b374e8-4e7f-4146-9fe0-375edc7b9d7a" } },
+        { "0ac9885d-da23-4c0f-a66c-2ba467b8086c",new List<string>{ "0ac9885d-da23-4c0f-a66c-2ba467b8086c" } },
+        { "24be4856-d95f-4ba0-b2aa-7049fedc3e39",new List<string>{ "24be4856-d95f-4ba0-b2aa-7049fedc3e39" } },
+        { "00860af7-1e65-4085-ab2f-7af2396fd13d",new List<string>{ "00860af7-1e65-4085-ab2f-7af2396fd13d" } },
+        { "7d6b322d-bf48-4963-bfe6-579560e84530",new List<string>{ "7d6b322d-bf48-4963-bfe6-579560e84530" } },
+        { "ddd64e08-5f2a-4578-84cb-2f90caa898e9",new List<string>{ "ddd64e08-5f2a-4578-84cb-2f90caa898e9" } },
+        { "a6ce46f1-d51f-45c8-a22e-2db3126da6cf",new List<string>{ "a6ce46f1-d51f-45c8-a22e-2db3126da6cf" } },
     };
 
     /// <summary>

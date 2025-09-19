@@ -35,6 +35,9 @@ using Hangfire;
 using Hangfire.SQLite;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Application.Main.Jobs.RecurringTask;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Hgzn.Mes.WebApi.Utilities.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +67,9 @@ builder.Services.AddControllers().AddJsonOptions(config =>
 {
     config.JsonSerializerOptions.DefaultIgnoreCondition = Options.CustomJsonSerializerOptions.DefaultIgnoreCondition;
     config.JsonSerializerOptions.PropertyNameCaseInsensitive = Options.CustomJsonSerializerOptions.PropertyNameCaseInsensitive;
+    config.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    config.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+    config.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
 });
 builder.Services.AddControllers(options =>
 {
@@ -207,6 +213,7 @@ builder.Services.AddHangfireServer(options =>
 // 在 builder.Services.AddHangfireServer() 之后添加：
 builder.Services.AddScoped<HangfireHelper>();
 builder.Services.AddScoped<DeleteRFIDStaleDataEveryDayJob>();
+builder.Services.AddScoped<SaveEquipRuntimeToDbJob>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -327,6 +334,10 @@ foreach (var job in jobs)
 {
     hangfireHelper.RemoveRecurringJob(job.Id);
 }
-hangfireHelper.AddDailyJob<DeleteRFIDStaleDataEveryDayJob>("DeleteRFIDStaleDataEveryDayJob", x => x.Execute());
+// 每天凌晨0点30分执行设备运行时长数据持久化任务（先保存数据）
+hangfireHelper.AddDailyJob<SaveEquipRuntimeToDbJob>("SaveEquipRuntimeToDbJob", x => x.Execute(), hour: 0, minute: 30);
+
+// 每天凌晨1点执行数据清理任务（在数据持久化后再清理）
+hangfireHelper.AddDailyJob<DeleteRFIDStaleDataEveryDayJob>("DeleteRFIDStaleDataEveryDayJob", x => x.Execute(), hour: 1, minute: 0);
 
 app.Run();

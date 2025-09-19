@@ -56,6 +56,26 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 关键设备利用率数据
         /// </summary>
         public List<KeyDeviceData>? KeyDeviceList { get; set; } = new List<KeyDeviceData>();
+
+        /// <summary>
+        /// 按系统统计的试验时间
+        /// </summary>
+        public SystemTestTimes SystemTestTimes { get; set; } = new SystemTestTimes();
+
+        /// <summary>
+        /// 按型号统计的试验时间
+        /// </summary>
+        public TypeTestTimes TypeTestTimes { get; set; } = new TypeTestTimes();
+
+        /// <summary>
+        /// 按系统统计的试验成本
+        /// </summary>
+        public SystemTestCost SystemTestCost { get; set; } = new SystemTestCost();
+
+        /// <summary>
+        /// 按型号统计的试验成本
+        /// </summary>
+        public TypeTestCost TypeTestCost { get; set; } = new TypeTestCost();
     }
 
     /// <summary>

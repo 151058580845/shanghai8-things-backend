@@ -51,6 +51,10 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         private readonly IConnectionMultiplexer _connectionMultiplexer;
         private readonly int _pos_interval;
         private const int countIndex = 60;
+        
+        // 温湿度数据限流：记录每个房间的最后保存时间
+        private static readonly ConcurrentDictionary<Guid, DateTime> _lastSaveTime = new();
+        private static readonly TimeSpan _saveInterval = TimeSpan.FromSeconds(10); // 10秒间隔
 
         public void Initialize(IMqttExplorer mqttExplorer)
         {
@@ -158,11 +162,67 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         private async Task HandleRkServerDataAsync(Guid uri, HygrographData rkData)
         {
-            // 将推送过来的消息解析到静态内存中保存
+            // 将推送过来的消息解析到静态内存中保存（保持原有逻辑）
             if (rkData.RoomId != null && rkData.RoomId != Guid.Empty && rkData.Temperature != null &&
                 rkData.Humidness != null)
+            {
                 RKData.RoomId_TemperatureAndHumidness[rkData.RoomId.Value] =
                     new Tuple<float, float>(rkData.Temperature.Value, rkData.Humidness.Value);
+
+                // 10秒限流存储到数据库
+                await SaveTemperatureHumidityWithThrottling(rkData);
+            }
+        }
+
+        /// <summary>
+        /// 温湿度数据限流存储（每10秒保存一次）
+        /// </summary>
+        private async Task SaveTemperatureHumidityWithThrottling(HygrographData rkData)
+        {
+            if (rkData.RoomId == null || rkData.RoomId == Guid.Empty) return;
+
+            var roomId = rkData.RoomId.Value;
+            var currentTime = DateTime.Now;
+
+            // 检查是否需要保存（距离上次保存超过10秒）
+            if (_lastSaveTime.TryGetValue(roomId, out var lastTime))
+            {
+                if (currentTime - lastTime < _saveInterval)
+                {
+                    // 未到保存时间，跳过
+                    return;
+                }
+            }
+
+            // 更新最后保存时间
+            _lastSaveTime[roomId] = currentTime;
+
+            try
+            {
+                // 创建温湿度记录
+                var record = new TemperatureHumidityRecord
+                {
+                    Id = Guid.NewGuid(),
+                    EquipCode = rkData.EquipCode,
+                    EquipId = rkData.EquipId,
+                    IpAddress = rkData.IpAddress,
+                    RoomId = rkData.RoomId,
+                    RoomName = rkData.RoomName,
+                    Temperature = rkData.Temperature,
+                    Humidness = rkData.Humidness,
+                    RecordTime = currentTime,
+                    CreationTime = currentTime
+                };
+
+                // 保存到数据库
+                await _client.Insertable(record).ExecuteCommandAsync();
+                
+                _logger.LogInformation($"温湿度数据已保存到数据库 - 房间ID: {roomId}, 温度: {rkData.Temperature}°C, 湿度: {rkData.Humidness}%");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"保存温湿度数据失败 - 房间ID: {roomId}");
+            }
         }
 
         private async Task HandleTransmitAsync(IotTopic topic, byte[] msg)

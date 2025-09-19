@@ -316,5 +316,56 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [AllowAnonymous]
         public async Task<ResponseWrapper<IEnumerable<EquipLedgerSearchReadDto>>> GetEquipExportRfid() =>
             (await _equipLedgerService.GetEquipExportRfid()).Wrap();
+
+        /// <summary>
+        /// 导出温湿度数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("rkserver/exportTemperatureHumidity")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ExportTemperatureHumidityAsync([FromBody] TemperatureHumidityExportRequestDto request)
+        {
+            try
+            {
+                var excelData = await _equipLedgerService.ExportTemperatureHumidityAsync(request);
+                
+                var fileName = $"温湿度数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                
+                return File(
+                    excelData,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileName
+                );
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"导出失败: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// 导出关键设备工作时长数据
+        /// </summary>
+        /// <param name="queryDto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("export-key-equip-working-hours")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ResponseWrapper<IEnumerable<KeyEquipWorkingHoursExportDto>>> ExportKeyEquipWorkingHoursAsync([FromBody] EquipLedgerQueryDto queryDto)
+        {
+            try
+            {
+                var data = await _equipLedgerService.ExportKeyEquipWorkingHoursAsync(queryDto);
+                return data.Wrap();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"导出关键设备工作时长失败: {ex.Message}");
+            }
+        }
     }
 }

@@ -49,4 +49,18 @@ public interface IEquipLedgerService : ICrudAppService<
     Task<string> GetEquipName(Guid equipId);
 
     Task<IEnumerable<EquipLedgerSearchReadDto>> GetEquipExportRfid();
+
+    /// <summary>
+    /// 导出温湿度数据到Excel
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    Task<byte[]> ExportTemperatureHumidityAsync(TemperatureHumidityExportRequestDto request);
+
+    /// <summary>
+    /// 导出关键设备工作时长数据
+    /// </summary>
+    /// <param name="queryDto"></param>
+    /// <returns></returns>
+    Task<IEnumerable<KeyEquipWorkingHoursExportDto>> ExportKeyEquipWorkingHoursAsync(EquipLedgerQueryDto queryDto);
 }

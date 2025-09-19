@@ -1099,6 +1099,69 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "TestData"
         };
 
+        // 资产数据
+        public static Menu AssetData = new ()
+        {
+            Id = Guid.Parse("2c90c9b9-d31d-40b6-8299-33b7acbd3c29"),
+            Name = "资产数据",
+            Code = "assetData",
+            ScopeCode = "equip:assetdata:list",
+            Type = MenuType.Menu,
+            IconUrl = "ri:bar-chart-box-line",
+            Route = "/equip/asset-data/index",
+            OrderNum = 1003,
+            ParentId = DataManagement.Id,
+            RouteName = "AssetData"
+        };
+
+        // 资产数据新增
+        public static Menu AssetDataAdd = new()
+        {
+            Id = Guid.Parse("3d91c9b9-d31d-40b6-8299-33b7acbd3c30"),
+            Name = "资产数据新增",
+            Code = "assetDataAdd",
+            ScopeCode = "equip:assetdata:add",
+            Type = MenuType.Component,
+            OrderNum = 1001,
+            ParentId = AssetData.Id
+        };
+
+        // 资产数据修改
+        public static Menu AssetDataEdit = new()
+        {
+            Id = Guid.Parse("4e92c9b9-d31d-40b6-8299-33b7acbd3c31"),
+            Name = "资产数据修改",
+            Code = "assetDataEdit",
+            ScopeCode = "equip:assetdata:edit",
+            Type = MenuType.Component,
+            OrderNum = 1002,
+            ParentId = AssetData.Id
+        };
+
+        // 资产数据查询
+        public static Menu AssetDataQuery = new()
+        {
+            Id = Guid.Parse("5f93c9b9-d31d-40b6-8299-33b7acbd3c32"),
+            Name = "资产数据查询",
+            Code = "assetDataQuery",
+            ScopeCode = "equip:assetdata:query",
+            Type = MenuType.Component,
+            OrderNum = 1003,
+            ParentId = AssetData.Id
+        };
+
+        // 资产数据删除
+        public static Menu AssetDataRemove = new()
+        {
+            Id = Guid.Parse("6a94c9b9-d31d-40b6-8299-33b7acbd3c33"),
+            Name = "资产数据删除",
+            Code = "assetDataRemove",
+            ScopeCode = "equip:assetdata:remove",
+            Type = MenuType.Component,
+            OrderNum = 1004,
+            ParentId = AssetData.Id
+        };
+
         #endregion
 
         #region 生产管理
@@ -1976,7 +2039,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //MainData, UnitManage, CustomerManage, SupplierManage,
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
-            Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse, TestData,
+            Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse, TestData, AssetData, AssetDataAdd, AssetDataEdit, AssetDataQuery, AssetDataRemove,
             OrientationManagement, EquipLedgerHistory, EquipLocationRecord, EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,

@@ -442,6 +442,7 @@ public sealed class SqlSugarContext
                     c.IfTable<EquipDataPoint>()
                         .OneToOne(t => t.EquipReceiveData, nameof(EquipDataPoint.EquipReceiveDataId))
                         .OneToOne(t => t.Connection, nameof(EquipDataPoint.ConnectionId));
+                    c.IfTable<AssetData>().OneToMany(t => t.Projects, nameof(AssetDataProjectItem.SystemId), nameof(AssetData.Id));
 
                     var desc = p.GetCustomAttribute<DescriptionAttribute>();
                     c.ColumnDescription = desc?.Description;

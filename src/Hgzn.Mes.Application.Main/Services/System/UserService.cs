@@ -352,7 +352,7 @@ namespace Hgzn.Mes.Application.Main.Services.System
         }
 
         /// <summary>
-        /// 用角色id查询用户列表  TODO：写到这里了接下来应该去写控制器然后对接接口了
+        /// 用角色id查询用户列表
         /// </summary>
         /// <param name="roleId"></param>
         /// <returns></returns>

@@ -428,3 +428,44 @@ public class EquipLedgerQueryDto : PaginatedTimeQueryDto
     public bool? NoRfidDevice { get; set; }
 
 }
+
+/// <summary>
+/// 关键设备工作时长导出DTO
+/// </summary>
+public class KeyEquipWorkingHoursExportDto
+{
+    /// <summary>
+    /// 本地化资产编号
+    /// </summary>
+    public string? AssetNumber { get; set; }
+
+    /// <summary>
+    /// 资产名称
+    /// </summary>
+    public string EquipName { get; set; } = null!;
+
+    /// <summary>
+    /// 设备规格型号
+    /// </summary>
+    public string? Model { get; set; }
+
+    /// <summary>
+    /// 安装地点
+    /// </summary>
+    public string? RoomName { get; set; }
+
+    /// <summary>
+    /// 是否计量
+    /// </summary>
+    public bool? IsMeasurementDevice { get; set; }
+
+    /// <summary>
+    /// 设备责任人
+    /// </summary>
+    public string? ResponsibleUserName { get; set; }
+
+    /// <summary>
+    /// 设备工作时长(小时)
+    /// </summary>
+    public decimal WorkingHours { get; set; }
+}

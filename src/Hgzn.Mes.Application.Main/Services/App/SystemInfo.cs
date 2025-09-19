@@ -5,6 +5,7 @@ using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT__ReceiveDatas;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_0_ReceiveDatas;
@@ -156,7 +157,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private const string EquipLiveRedisKey = "equipLive";
         private const string EquipRunTime = "equipRunTime";
         private readonly RedisHelper _redisHelper;
-        private IEquipLedgerService _equipLedgerService;
+        // 移除 IEquipLedgerService 依赖以避免循环依赖
         private readonly IBaseConfigService _baseConfigService;
         private IndexBasedTableGenerator _detailGenerator;
 
@@ -167,12 +168,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
         // key是设备ID,value是设备异常信息
         public List<Abnormal> Abnormals = new List<Abnormal>();
 
-        public SystemInfoManager(IConnectionMultiplexer connectionMultiplexer, RedisHelper redisHelper, ISqlSugarClient client, IEquipLedgerService equipLedgerService, IBaseConfigService baseConfigService)
+        public SystemInfoManager(IConnectionMultiplexer connectionMultiplexer, RedisHelper redisHelper, ISqlSugarClient client, IBaseConfigService baseConfigService)
         {
             _connectionMultiplexer = connectionMultiplexer;
             _redisHelper = redisHelper;
             _sqlSugarClient = client;
-            _equipLedgerService = equipLedgerService;
             _baseConfigService = baseConfigService;
             _detailGenerator = new IndexBasedTableGenerator();
             // 初始化数据
@@ -327,7 +327,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
                             IEnumerable<string> abnormal = await _redisHelper.GetTreeNodeChildrenValuesAsync(set);
                             if (abnormal == null) continue;
                             sum += abnormal.Count();
-                            EquipLedgerReadDto equip = (await _equipLedgerService.GetAsync(equipId))!;
+                            // 直接使用 SqlSugar 查询设备信息，避免循环依赖
+                            var equip = await _sqlSugarClient.Queryable<EquipLedger>()
+                                .Where(x => x.Id == equipId)
+                                .Select(x => new { x.AssetNumber, x.EquipName })
+                                .FirstAsync();
                             Abnormals.Add(new Abnormal()
                             {
                                 SystemInfo = si,
@@ -356,7 +360,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 }
                 foreach (EquipLedger item in pastDueEquips)
                 {
-                    if (item != null && item.RoomId == si.RoomId)
+                    if (item != null && item.RoomId != null && IsSameRoom(si.RoomId.ToString(), item.RoomId.ToString()!))
                     {
                         sum += 1;
                         Abnormals.Add(new Abnormal()
@@ -475,6 +479,21 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 });
             }
             return cameraData;
+        }
+
+        /// <summary>
+        /// 比较是否是等价的房间
+        /// </summary>
+        /// <param name="siRoomId"></param>
+        /// <param name="otherRoomId"></param>
+        /// <returns></returns>
+        public bool IsSameRoom(string siRoomId, string otherRoomId)
+        {
+            if (TestEquipData.EquivalentRoom.ContainsKey(siRoomId))
+            {
+                return TestEquipData.EquivalentRoom[siRoomId].Contains(otherRoomId);
+            }
+            return false;
         }
 
         #region ====== 获取展示数据的Table ======

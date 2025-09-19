@@ -25,6 +25,10 @@ using Hgzn.Mes.Domain.Entities.System.Account;
 using System.Collections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using System.Reflection.Metadata;
+using Hgzn.Mes.Domain.Entities.System.Location;
+using Hgzn.Mes.Domain.Entities.Equip.EquipData;
+using Hgzn.Mes.Application.Main.Services.App;
+using StackExchange.Redis;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -37,12 +41,16 @@ public class EquipLedgerService : SugarCrudAppService<
     private readonly HttpClient _httpClient;
     private readonly ICodeRuleService _codeRuleService;
     private readonly IotMessageHandler _handler;
+    private readonly SystemInfoManager _systemInfoManager;
+    private readonly IConnectionMultiplexer _connectionMultiplexer;
 
-    public EquipLedgerService(HttpClient httpClient, ICodeRuleService codeRuleService, IotMessageHandler handler, IMqttExplorer mqttExplorer)
+    public EquipLedgerService(HttpClient httpClient, ICodeRuleService codeRuleService, IotMessageHandler handler, IMqttExplorer mqttExplorer, SystemInfoManager systemInfoManager, IConnectionMultiplexer connectionMultiplexer)
     {
         _httpClient = httpClient;
         _codeRuleService = codeRuleService;
         _handler = handler;
+        _systemInfoManager = systemInfoManager;
+        _connectionMultiplexer = connectionMultiplexer;
         _handler.Initialize(mqttExplorer);
     }
 
@@ -598,5 +606,258 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         var entitys = await Queryable.Where(x => x.AssetNumber == assetNumber).ToArrayAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entitys);
+    }
+
+    /// <summary>
+    /// 导出温湿度数据到Excel
+    /// </summary>
+    public async Task<byte[]> ExportTemperatureHumidityAsync(TemperatureHumidityExportRequestDto request)
+    {
+        // 构建查询条件
+        var query = DbContext.Queryable<TemperatureHumidityRecord>()
+            .LeftJoin<EquipLedger>((t, e) => t.EquipId == e.Id)
+            .WhereIF(request.EquipCodes.Any(), (t, e) => request.EquipCodes.Contains(e.EquipCode));
+
+        // 日期筛选
+        if (!string.IsNullOrEmpty(request.StartDate) && DateTime.TryParse(request.StartDate, out var startDate))
+        {
+            query = query.Where((t, e) => t.RecordTime >= startDate);
+        }
+
+        if (!string.IsNullOrEmpty(request.EndDate) && DateTime.TryParse(request.EndDate, out var endDate))
+        {
+            var endDateTime = endDate.AddDays(1).AddSeconds(-1); // 包含结束日期的整天
+            query = query.Where((t, e) => t.RecordTime <= endDateTime);
+        }
+
+        // 查询数据并排序
+        var data = await query
+            .OrderBy((t, e) => t.RecordTime)
+            .Select((t, e) => new TemperatureHumidityExportDataDto
+            {
+                EquipName = e.EquipName,
+                EquipCode = e.EquipCode,
+                RoomName = t.RoomName,
+                Temperature = t.Temperature,
+                Humidness = t.Humidness,
+                IpAddress = t.IpAddress,
+                CreateTime = t.RecordTime.ToString("yyyy-MM-dd HH:mm:ss")
+            })
+            .ToListAsync();
+
+        // 添加序号
+        for (int i = 0; i < data.Count; i++)
+        {
+            data[i].SequenceNumber = i + 1;
+        }
+
+        // 生成Excel文件
+        return GenerateTemperatureHumidityExcel(data);
+    }
+
+    /// <summary>
+    /// 生成温湿度Excel文件
+    /// </summary>
+    private byte[] GenerateTemperatureHumidityExcel(List<TemperatureHumidityExportDataDto> data)
+    {
+        var workbook = new XSSFWorkbook();
+        var sheet = workbook.CreateSheet("温湿度数据");
+
+        // 创建标题行
+        var headerRow = sheet.CreateRow(0);
+        var headers = new[] { "序号", "设备名称", "设备编码", "房间名称", "温度(°C)", "湿度(%)", "IP地址", "记录时间" };
+        
+        for (int i = 0; i < headers.Length; i++)
+        {
+            var cell = headerRow.CreateCell(i);
+            cell.SetCellValue(headers[i]);
+            
+            // 设置标题样式
+            var style = workbook.CreateCellStyle();
+            var font = workbook.CreateFont();
+            font.IsBold = true;
+            style.SetFont(font);
+            cell.CellStyle = style;
+        }
+
+        // 填充数据行
+        for (int i = 0; i < data.Count; i++)
+        {
+            var row = sheet.CreateRow(i + 1);
+            var item = data[i];
+
+            row.CreateCell(0).SetCellValue(item.SequenceNumber);
+            row.CreateCell(1).SetCellValue(item.EquipName ?? "");
+            row.CreateCell(2).SetCellValue(item.EquipCode ?? "");
+            row.CreateCell(3).SetCellValue(item.RoomName ?? "");
+            row.CreateCell(4).SetCellValue(item.Temperature?.ToString() ?? "");
+            row.CreateCell(5).SetCellValue(item.Humidness?.ToString() ?? "");
+            row.CreateCell(6).SetCellValue(item.IpAddress ?? "");
+            row.CreateCell(7).SetCellValue(item.CreateTime ?? "");
+        }
+
+        // 自动调整列宽
+        for (int i = 0; i < headers.Length; i++)
+        {
+            sheet.AutoSizeColumn(i);
+        }
+
+        // 转换为字节数组
+        using var stream = new MemoryStream();
+        workbook.Write(stream);
+        return stream.ToArray();
+    }
+
+    /// <summary>
+    /// 导出关键设备工作时长数据
+    /// </summary>
+    /// <param name="queryDto"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<KeyEquipWorkingHoursExportDto>> ExportKeyEquipWorkingHoursAsync(EquipLedgerQueryDto queryDto)
+    {
+        // 构建查询条件，添加关键设备筛选
+        var query = Queryable
+            .LeftJoin<Room>((el, r) => el.RoomId == r.Id)
+            .LeftJoin<User>((el, r, u) => el.ResponsibleUserId == u.Id)
+            .WhereIF(!string.IsNullOrEmpty(queryDto.AssetNumber), (el, r, u) => el.AssetNumber!.Contains(queryDto.AssetNumber!))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.EquipName), (el, r, u) => el.EquipName.Contains(queryDto.EquipName!))
+            .WhereIF(!string.IsNullOrEmpty(queryDto.EquipCode), (el, r, u) => el.EquipCode.Contains(queryDto.EquipCode!))
+            .WhereIF(queryDto.TypeId.HasValue, (el, r, u) => el.TypeId == queryDto.TypeId)
+            .WhereIF(queryDto.RoomId.HasValue, (el, r, u) => el.RoomId == queryDto.RoomId)
+            .WhereIF(queryDto.ResponsibleUserId.HasValue, (el, r, u) => el.ResponsibleUserId == queryDto.ResponsibleUserId)
+            .WhereIF(queryDto.State.HasValue, (el, r, u) => el.State == queryDto.State)
+            .WhereIF(!string.IsNullOrEmpty(queryDto.Query), (el, r, u) => 
+                el.EquipName.Contains(queryDto.Query!) || el.Model!.Contains(queryDto.Query!))
+            .Where((el, r, u) => !el.SoftDeleted)
+            .Where((el, r, u) => el.EquipLevel == EquipLevelEnum.Important); // 只筛选关键设备
+
+        // 查询设备基础数据，包含设备ID用于计算工作时长
+        var equipDataQuery = await query
+            .Select((el, r, u) => new
+            {
+                Id = el.Id,
+                AssetNumber = el.AssetNumber,
+                EquipName = el.EquipName,
+                Model = el.Model,
+                RoomName = r.Name,
+                RoomId = el.RoomId,
+                IsMeasurementDevice = el.IsMeasurementDevice,
+                ResponsibleUserName = u.Name
+            })
+            .ToListAsync();
+
+        var equipData = new List<KeyEquipWorkingHoursExportDto>();
+
+        // 计算每个设备的工作时长
+        foreach (var item in equipDataQuery)
+        {
+            var workingHours = await CalculateEquipWorkingHours(item.Id, item.RoomId);
+            
+            equipData.Add(new KeyEquipWorkingHoursExportDto
+            {
+                AssetNumber = item.AssetNumber,
+                EquipName = item.EquipName,
+                Model = item.Model,
+                RoomName = item.RoomName,
+                IsMeasurementDevice = item.IsMeasurementDevice,
+                ResponsibleUserName = item.ResponsibleUserName,
+                WorkingHours = workingHours
+            });
+        }
+
+        return equipData;
+    }
+
+    /// <summary>
+    /// 计算设备工作时长（优先从数据库获取，Redis作为备用）
+    /// </summary>
+    /// <param name="equipId">设备ID</param>
+    /// <param name="roomId">房间ID</param>
+    /// <returns>工作时长（小时）</returns>
+    private async Task<decimal> CalculateEquipWorkingHours(Guid equipId, Guid? roomId)
+    {
+        try
+        {
+            if (!roomId.HasValue)
+            {
+                return 0; // 没有房间信息则返回0
+            }
+
+            // 根据房间ID获取系统编号
+            var systemNumber = GetSystemNumberByRoomId(roomId.Value);
+            if (systemNumber == 0)
+            {
+                return 0; // 无法确定系统编号则返回0
+            }
+
+            // 方案1：优先从数据库获取历史累计运行时长（更可靠）
+            var totalHoursFromDb = await GetTotalRuntimeFromDatabase(equipId, systemNumber);
+            if (totalHoursFromDb > 0)
+            {
+                return totalHoursFromDb;
+            }
+
+            // 方案2：从Redis获取近30天运行时长（备用方案）
+            var runTimeSeconds = await _systemInfoManager.GetRunTime((byte)systemNumber, equipId);
+            var runTimeHours = Math.Round((decimal)runTimeSeconds / 3600, 2);
+            
+            return runTimeHours;
+        }
+        catch (Exception ex)
+        {
+            // 记录异常日志
+            Console.WriteLine($"计算设备工作时长失败: {ex.Message}");
+            return 0; // 出现异常时返回0
+        }
+    }
+
+    /// <summary>
+    /// 从数据库获取设备的总运行时长
+    /// </summary>
+    /// <param name="equipId">设备ID</param>
+    /// <param name="systemNumber">系统编号</param>
+    /// <returns>总运行时长（小时）</returns>
+    private async Task<decimal> GetTotalRuntimeFromDatabase(Guid equipId, byte systemNumber)
+    {
+        try
+        {
+            // 计算最近30天的运行时长总和
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30).Date;
+            
+            var totalSeconds = await DbContext.Queryable<EquipDailyRuntime>()
+                .Where(x => x.EquipId == equipId && 
+                           x.SystemNumber == systemNumber &&
+                           x.RecordDate >= thirtyDaysAgo)
+                .SumAsync(x => x.RunningSeconds);
+
+            return Math.Round((decimal)totalSeconds / 3600, 2);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"从数据库获取设备运行时长失败: {ex.Message}");
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// 根据房间ID获取系统编号
+    /// </summary>
+    /// <param name="roomId">房间ID</param>
+    /// <returns>系统编号，如果找不到则返回0</returns>
+    private static byte GetSystemNumberByRoomId(Guid roomId)
+    {
+        var roomIdString = roomId.ToString().ToUpper();
+        
+        // 使用TestEquipData中的映射关系反向查找
+        for (int systemId = 1; systemId <= 10; systemId++)
+        {
+            var mappedRoomId = TestEquipData.GetRoomId(systemId);
+            if (string.Equals(mappedRoomId, roomIdString, StringComparison.OrdinalIgnoreCase))
+            {
+                return (byte)systemId;
+            }
+        }
+        
+        return 0; // 未找到对应的系统编号
     }
 }

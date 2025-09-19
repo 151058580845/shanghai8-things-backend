@@ -44,7 +44,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             _connectionMultiplexer = connectionMultiplexer;
             _testDataService = testDataService;
             _redisHelper = redisHelper;
-            _sysMgr = new SystemInfoManager(connectionMultiplexer, redisHelper, client, equipLedgerService, baseConfigService);
+            _sysMgr = new SystemInfoManager(connectionMultiplexer, redisHelper, client, baseConfigService);
             _systemInfoList = _sysMgr.SystemInfos;
             _logger = logger;
         }
