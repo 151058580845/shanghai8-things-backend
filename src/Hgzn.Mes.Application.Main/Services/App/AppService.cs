@@ -580,6 +580,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 SystemTestTimes systemTestTimes = new SystemTestTimes
                 {
                     Times = new Dictionary<string, List<DateTimeRange>>(),
+                    SystemMonthlyWorkDays = new Dictionary<string, Dictionary<NaturalMonth, int>>(),
                     TimePerMonth = new Dictionary<NaturalMonth, int>(),
                     CurrentMonthTotalSystemTestDays = 0,
                     CurrentYearTotalSystemTestDays = 0
@@ -588,6 +589,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 // 获取所有系统的工作日期数据
                 HashSet<DateTime> allWorkingDates = new HashSet<DateTime>();
                 HashSet<DateTime> currentMonthWorkingDates = new HashSet<DateTime>();
+                Dictionary<NaturalMonth, HashSet<DateTime>> monthlyAllSystemWorkingDates = new Dictionary<NaturalMonth, HashSet<DateTime>>();
+
+                // 初始化月度统计
+                for (int month = 1; month <= 12; month++)
+                {
+                    monthlyAllSystemWorkingDates[(NaturalMonth)month] = new HashSet<DateTime>();
+                }
 
                 // 遍历所有系统
                 for (int systemId = 1; systemId <= 10; systemId++)
@@ -615,16 +623,37 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         .ToListAsync();
 
                     if (!workingDates.Any())
+                    {
+                        // 即使没有工作日期，也要初始化该系统的月度统计
+                        systemTestTimes.SystemMonthlyWorkDays[systemName] = new Dictionary<NaturalMonth, int>();
+                        for (int month = 1; month <= 12; month++)
+                        {
+                            systemTestTimes.SystemMonthlyWorkDays[systemName][(NaturalMonth)month] = 0;
+                        }
                         continue;
+                    }
 
                     // 生成连续时间段
                     List<DateTimeRange> timeRanges = GenerateContinuousTimeRanges(workingDates.OrderBy(d => d).ToList());
                     systemTestTimes.Times[systemName] = timeRanges;
 
-                    // 累计所有工作日期
+                    // 初始化该系统的月度工作天数统计
+                    systemTestTimes.SystemMonthlyWorkDays[systemName] = new Dictionary<NaturalMonth, int>();
+                    for (int month = 1; month <= 12; month++)
+                    {
+                        systemTestTimes.SystemMonthlyWorkDays[systemName][(NaturalMonth)month] = 0;
+                    }
+
+                    // 按月统计该系统的工作天数
                     foreach (DateTime date in workingDates)
                     {
+                        NaturalMonth month = (NaturalMonth)date.Month;
+                        systemTestTimes.SystemMonthlyWorkDays[systemName][month]++;
+                        
+                        // 累计所有系统的工作日期（去重）
                         allWorkingDates.Add(date);
+                        monthlyAllSystemWorkingDates[month].Add(date);
+                        
                         if (date.Month == currentMonth)
                         {
                             currentMonthWorkingDates.Add(date);
@@ -632,11 +661,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     }
                 }
 
-                // 按月统计工作天数
-                Dictionary<NaturalMonth, int> monthlyWorkingDays = allWorkingDates.GroupBy(d => d.Month)
-                    .ToDictionary(g => (NaturalMonth)g.Key, g => g.Count());
+                // 计算每月所有系统的总工作天数（去重后的）
+                foreach (var kvp in monthlyAllSystemWorkingDates)
+                {
+                    systemTestTimes.TimePerMonth[kvp.Key] = kvp.Value.Count;
+                }
 
-                systemTestTimes.TimePerMonth = monthlyWorkingDays;
                 systemTestTimes.CurrentMonthTotalSystemTestDays = currentMonthWorkingDates.Count;
                 systemTestTimes.CurrentYearTotalSystemTestDays = allWorkingDates.Count;
 
@@ -662,6 +692,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 TypeTestTimes typeTestTimes = new TypeTestTimes
                 {
                     Times = new Dictionary<string, List<DateTimeRange>>(),
+                    TypeMonthlyWorkDays = new Dictionary<string, Dictionary<NaturalMonth, int>>(),
                     TimePerMonth = new Dictionary<NaturalMonth, int>(),
                     CurrentMonthTotalTypeTestDays = 0,
                     CurrentYearTotalTypeTestDays = 0
@@ -687,6 +718,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
                 HashSet<DateTime> allWorkingDates = new HashSet<DateTime>();
                 HashSet<DateTime> currentMonthWorkingDates = new HashSet<DateTime>();
+                Dictionary<NaturalMonth, HashSet<DateTime>> monthlyAllTypeWorkingDates = new Dictionary<NaturalMonth, HashSet<DateTime>>();
+
+                // 初始化月度统计
+                for (int month = 1; month <= 12; month++)
+                {
+                    monthlyAllTypeWorkingDates[(NaturalMonth)month] = new HashSet<DateTime>();
+                }
 
                 // 按型号分组统计
                 IEnumerable<IGrouping<string, TestData>> typeGroups = validTestData.GroupBy(x => x.ProjectName ?? "未知型号");
@@ -695,6 +733,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     string projectName = typeGroup.Key;
                     HashSet<DateTime> typeWorkingDates = new HashSet<DateTime>();
+
+                    // 初始化该型号的月度工作天数统计
+                    typeTestTimes.TypeMonthlyWorkDays[projectName] = new Dictionary<NaturalMonth, int>();
+                    for (int month = 1; month <= 12; month++)
+                    {
+                        typeTestTimes.TypeMonthlyWorkDays[projectName][(NaturalMonth)month] = 0;
+                    }
 
                     // 获取该型号在所有系统中的工作日期
                     foreach (TestData? testData in typeGroup)
@@ -732,10 +777,16 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         List<DateTimeRange> timeRanges = GenerateContinuousTimeRanges(typeWorkingDates.OrderBy(d => d).ToList());
                         typeTestTimes.Times[projectName] = timeRanges;
 
-                        // 累计所有工作日期
+                        // 按月统计该型号的工作天数
                         foreach (DateTime date in typeWorkingDates)
                         {
+                            NaturalMonth month = (NaturalMonth)date.Month;
+                            typeTestTimes.TypeMonthlyWorkDays[projectName][month]++;
+                            
+                            // 累计所有型号的工作日期（去重）
                             allWorkingDates.Add(date);
+                            monthlyAllTypeWorkingDates[month].Add(date);
+                            
                             if (date.Month == currentMonth)
                             {
                                 currentMonthWorkingDates.Add(date);
@@ -744,11 +795,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     }
                 }
 
-                // 按月统计工作天数
-                Dictionary<NaturalMonth, int> monthlyWorkingDays = allWorkingDates.GroupBy(d => d.Month)
-                    .ToDictionary(g => (NaturalMonth)g.Key, g => g.Count());
+                // 计算每月所有型号的总工作天数（去重后的）
+                foreach (var kvp in monthlyAllTypeWorkingDates)
+                {
+                    typeTestTimes.TimePerMonth[kvp.Key] = kvp.Value.Count;
+                }
 
-                typeTestTimes.TimePerMonth = monthlyWorkingDays;
                 typeTestTimes.CurrentMonthTotalTypeTestDays = currentMonthWorkingDates.Count;
                 typeTestTimes.CurrentYearTotalTypeTestDays = allWorkingDates.Count;
 
@@ -774,6 +826,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 SystemTestCost systemTestCost = new SystemTestCost
                 {
                     Costs = new Dictionary<string, List<CostBreakdown>>(),
+                    SystemMonthlyCosts = new Dictionary<string, Dictionary<NaturalMonth, decimal>>(),
+                    CostPerMonth = new Dictionary<NaturalMonth, decimal>(),
                     CurrentMonthTotalSystemTestCost = 0,
                     CurrentYearTotalSystemTestCost = 0
                 };
@@ -785,11 +839,25 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
                 decimal currentMonthTotalCost = 0;
                 decimal currentYearTotalCost = 0;
+                Dictionary<NaturalMonth, decimal> monthlyTotalCosts = new Dictionary<NaturalMonth, decimal>();
+
+                // 初始化月度总成本
+                for (int month = 1; month <= 12; month++)
+                {
+                    monthlyTotalCosts[(NaturalMonth)month] = 0;
+                }
 
                 foreach (AssetData assetData in allAssetData)
                 {
                     string systemName = assetData.SystemName;
                     List<CostBreakdown> systemCosts = new List<CostBreakdown>();
+
+                    // 初始化该系统的月度成本统计
+                    systemTestCost.SystemMonthlyCosts[systemName] = new Dictionary<NaturalMonth, decimal>();
+                    for (int month = 1; month <= 12; month++)
+                    {
+                        systemTestCost.SystemMonthlyCosts[systemName][(NaturalMonth)month] = 0;
+                    }
 
                     // 计算每个月的成本
                     for (int month = 1; month <= 12; month++)
@@ -797,7 +865,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         CostBreakdown monthCost = await CalculateMonthlySystemCost(assetData, currentYear, month);
                         systemCosts.Add(monthCost);
 
-                        // 累计当前月和当前年的总成本
+                        // 计算该系统该月的总成本
                         decimal totalMonthlyCost = (monthCost.FactoryUsageFee ?? 0) +
                                              (monthCost.EquipmentUsageFee ?? 0) +
                                              (monthCost.LaborCost ?? 0) +
@@ -805,6 +873,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
                                              (monthCost.FuelPowerCost ?? 0) +
                                              (monthCost.EquipmentMaintenanceCost ?? 0) +
                                              (monthCost.SystemIdleCost ?? 0);
+
+                        // 记录该系统该月的总成本
+                        systemTestCost.SystemMonthlyCosts[systemName][(NaturalMonth)month] = totalMonthlyCost;
+
+                        // 累计所有系统该月的总成本
+                        monthlyTotalCosts[(NaturalMonth)month] += totalMonthlyCost;
 
                         if (month == currentMonth)
                         {
@@ -816,6 +890,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     systemTestCost.Costs[systemName] = systemCosts;
                 }
 
+                systemTestCost.CostPerMonth = monthlyTotalCosts;
                 systemTestCost.CurrentMonthTotalSystemTestCost = (int)Math.Round(currentMonthTotalCost);
                 systemTestCost.CurrentYearTotalSystemTestCost = (int)Math.Round(currentYearTotalCost);
 
@@ -841,6 +916,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 TypeTestCost typeTestCost = new TypeTestCost
                 {
                     Costs = new Dictionary<string, List<CostBreakdown>>(),
+                    TypeMonthlyCosts = new Dictionary<string, Dictionary<NaturalMonth, decimal>>(),
+                    CostPerMonth = new Dictionary<NaturalMonth, decimal>(),
                     CurrentMonthTotalTypeTestCost = 0,
                     CurrentYearTotalTypeTestCost = 0
                 };
@@ -865,6 +942,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
                 decimal currentMonthTotalCost = 0;
                 decimal currentYearTotalCost = 0;
+                Dictionary<NaturalMonth, decimal> monthlyTotalCosts = new Dictionary<NaturalMonth, decimal>();
+
+                // 初始化月度总成本
+                for (int month = 1; month <= 12; month++)
+                {
+                    monthlyTotalCosts[(NaturalMonth)month] = 0;
+                }
 
                 // 按型号分组统计成本
                 IEnumerable<IGrouping<string, TestData>> typeGroups = validTestData.GroupBy(x => x.ProjectName ?? "未知型号");
@@ -874,13 +958,20 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     string projectName = typeGroup.Key;
                     List<CostBreakdown> typeCosts = new List<CostBreakdown>();
 
+                    // 初始化该型号的月度成本统计
+                    typeTestCost.TypeMonthlyCosts[projectName] = new Dictionary<NaturalMonth, decimal>();
+                    for (int month = 1; month <= 12; month++)
+                    {
+                        typeTestCost.TypeMonthlyCosts[projectName][(NaturalMonth)month] = 0;
+                    }
+
                     // 计算每个月的成本
                     for (int month = 1; month <= 12; month++)
                     {
                         CostBreakdown monthCost = await CalculateMonthlyTypeCost(typeGroup, currentYear, month);
                         typeCosts.Add(monthCost);
 
-                        // 累计当前月和当前年的总成本
+                        // 计算该型号该月的总成本
                         decimal totalMonthlyCost = (monthCost.FactoryUsageFee ?? 0) +
                                              (monthCost.EquipmentUsageFee ?? 0) +
                                              (monthCost.LaborCost ?? 0) +
@@ -888,6 +979,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
                                              (monthCost.FuelPowerCost ?? 0) +
                                              (monthCost.EquipmentMaintenanceCost ?? 0) +
                                              (monthCost.SystemIdleCost ?? 0);
+
+                        // 记录该型号该月的总成本
+                        typeTestCost.TypeMonthlyCosts[projectName][(NaturalMonth)month] = totalMonthlyCost;
+
+                        // 累计所有型号该月的总成本
+                        monthlyTotalCosts[(NaturalMonth)month] += totalMonthlyCost;
 
                         if (month == currentMonth)
                         {
@@ -899,6 +996,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     typeTestCost.Costs[projectName] = typeCosts;
                 }
 
+                typeTestCost.CostPerMonth = monthlyTotalCosts;
                 typeTestCost.CurrentMonthTotalTypeTestCost = (int)Math.Round(currentMonthTotalCost);
                 typeTestCost.CurrentYearTotalTypeTestCost = (int)Math.Round(currentYearTotalCost);
 

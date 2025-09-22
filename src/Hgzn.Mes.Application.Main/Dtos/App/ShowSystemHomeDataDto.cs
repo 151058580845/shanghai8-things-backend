@@ -374,7 +374,12 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public Dictionary<string, List<DateTimeRange>>? Times { get; set; }
 
         /// <summary>
-        /// 每月时间的系统总工作天数
+        /// 每个系统每月的工作天数统计 (key: 系统名, value: 每月工作天数字典)
+        /// </summary>
+        public Dictionary<string, Dictionary<NaturalMonth, int>>? SystemMonthlyWorkDays { get; set; }
+
+        /// <summary>
+        /// 每月所有系统总工作天数 (key: 月份, value: 所有系统该月总工作天数)
         /// </summary>
         public Dictionary<NaturalMonth, int>? TimePerMonth { get; set; }
 
@@ -397,7 +402,12 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public Dictionary<string, List<DateTimeRange>>? Times { get; set; }
 
         /// <summary>
-        /// 每月时间的型号总工作天数
+        /// 每个型号每月的工作天数统计 (key: 型号名, value: 每月工作天数字典)
+        /// </summary>
+        public Dictionary<string, Dictionary<NaturalMonth, int>>? TypeMonthlyWorkDays { get; set; }
+
+        /// <summary>
+        /// 每月所有型号总工作天数 (key: 月份, value: 所有型号该月总工作天数)
         /// </summary>
         public Dictionary<NaturalMonth, int>? TimePerMonth { get; set; }
 
@@ -465,6 +475,16 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public Dictionary<string, List<CostBreakdown>>? Costs { get; set; }
 
         /// <summary>
+        /// 每个系统每月的总成本统计 (key: 系统名, value: 每月总成本字典)
+        /// </summary>
+        public Dictionary<string, Dictionary<NaturalMonth, decimal>>? SystemMonthlyCosts { get; set; }
+
+        /// <summary>
+        /// 每月所有系统总成本 (key: 月份, value: 所有系统该月总成本)
+        /// </summary>
+        public Dictionary<NaturalMonth, decimal>? CostPerMonth { get; set; }
+
+        /// <summary>
         /// 当前自然月所有系统总成本(可能用于显示于大屏主页的"月试验成本")
         /// </summary>
         public int? CurrentMonthTotalSystemTestCost { get; set; }
@@ -481,6 +501,16 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 成本明细(key是型号名,value是该型号的成本明细)
         /// </summary>
         public Dictionary<string, List<CostBreakdown>>? Costs { get; set; }
+
+        /// <summary>
+        /// 每个型号每月的总成本统计 (key: 型号名, value: 每月总成本字典)
+        /// </summary>
+        public Dictionary<string, Dictionary<NaturalMonth, decimal>>? TypeMonthlyCosts { get; set; }
+
+        /// <summary>
+        /// 每月所有型号总成本 (key: 月份, value: 所有型号该月总成本)
+        /// </summary>
+        public Dictionary<NaturalMonth, decimal>? CostPerMonth { get; set; }
 
         /// <summary>
         /// 当前自然月所有型号总成本(可能用于显示于大屏主页的"月试验成本")
