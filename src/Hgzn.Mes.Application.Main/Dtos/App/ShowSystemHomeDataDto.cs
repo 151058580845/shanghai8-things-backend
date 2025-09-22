@@ -1,6 +1,7 @@
 ﻿using Hgzn.Mes.Application.Main.Dtos.Base;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -421,29 +422,39 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public NaturalMonth NaturalMonth { get; set; }
 
         /// <summary>
-        /// 场地成本
+        /// 厂房使用费
         /// </summary>
-        public double? VenueCost { get; set; }
+        public decimal? FactoryUsageFee { get; set; }
 
         /// <summary>
-        /// 人工成本
+        /// 设备使用费
         /// </summary>
-        public double? LaborCost { get; set; }
+        public decimal? EquipmentUsageFee { get; set; }
 
         /// <summary>
-        /// 设备成本
+        /// 人力成本
         /// </summary>
-        public double? EquipmentCost { get; set; }
+        public decimal? LaborCost { get; set; }
 
         /// <summary>
-        /// 维修成本
+        /// 电费
         /// </summary>
-        public double? MaintenanceCost { get; set; }
+        public decimal? ElectricityCost { get; set; }
 
         /// <summary>
-        /// 其他成本
+        /// 燃料动力费
         /// </summary>
-        public double? OtherCost { get; set; }
+        public decimal? FuelPowerCost { get; set; }
+
+        /// <summary>
+        /// 设备保养费用
+        /// </summary>
+        public decimal? EquipmentMaintenanceCost { get; set; }
+
+        /// <summary>
+        /// 系统空置成本
+        /// </summary>
+        public decimal? SystemIdleCost { get; set; }
     }
 
     public class SystemTestCost : ReadDto
