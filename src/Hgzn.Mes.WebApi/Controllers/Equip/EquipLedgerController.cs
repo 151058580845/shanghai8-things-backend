@@ -318,7 +318,7 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
             (await _equipLedgerService.GetEquipExportRfid()).Wrap();
 
         /// <summary>
-        /// 导出温湿度数据
+        /// 导出温湿度记录表到Word文档
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -330,19 +330,19 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         {
             try
             {
-                var excelData = await _equipLedgerService.ExportTemperatureHumidityAsync(request);
+                var wordData = await _equipLedgerService.ExportTemperatureHumidityAsync(request);
                 
-                var fileName = $"温湿度数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                var fileName = $"温湿度记录表_{DateTime.Now:yyyyMMdd_HHmmss}.docx";
                 
                 return File(
-                    excelData,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    wordData,
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     fileName
                 );
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = $"导出失败: {ex.Message}" });
+                return BadRequest(new { message = $"导出温湿度记录表失败: {ex.Message}" });
             }
         }
 
@@ -365,6 +365,35 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
             catch (Exception ex)
             {
                 throw new Exception($"导出关键设备工作时长失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 导出温湿度记录表到Word文档
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("export-temperature-humidity-record-word")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ExportTemperatureHumidityRecordToWordAsync([FromBody] TemperatureHumidityRecordExportRequestDto request)
+        {
+            try
+            {
+                var wordData = await _equipLedgerService.ExportTemperatureHumidityRecordToWordAsync(request);
+                
+                var fileName = $"温湿度记录表_{DateTime.Now:yyyyMMdd_HHmmss}.docx";
+                
+                return File(
+                    wordData,
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    fileName
+                );
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"导出温湿度记录表失败: {ex.Message}" });
             }
         }
     }

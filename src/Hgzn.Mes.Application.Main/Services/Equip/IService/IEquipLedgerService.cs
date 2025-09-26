@@ -63,4 +63,11 @@ public interface IEquipLedgerService : ICrudAppService<
     /// <param name="queryDto"></param>
     /// <returns></returns>
     Task<IEnumerable<KeyEquipWorkingHoursExportDto>> ExportKeyEquipWorkingHoursAsync(EquipLedgerQueryDto queryDto);
+
+    /// <summary>
+    /// 导出温湿度记录表到Word文档
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    Task<byte[]> ExportTemperatureHumidityRecordToWordAsync(TemperatureHumidityRecordExportRequestDto request);
 }

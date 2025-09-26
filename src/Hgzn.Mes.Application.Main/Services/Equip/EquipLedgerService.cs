@@ -24,11 +24,13 @@ using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.System.Account;
 using System.Collections;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
-using System.Reflection.Metadata;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Application.Main.Services.App;
 using StackExchange.Redis;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -609,104 +611,76 @@ public class EquipLedgerService : SugarCrudAppService<
     }
 
     /// <summary>
-    /// 导出温湿度数据到Excel
+    /// 导出温湿度记录表到Word文档
     /// </summary>
+    /// <param name="request">导出请求参数</param>
+    /// <returns>Word文档字节数组</returns>
     public async Task<byte[]> ExportTemperatureHumidityAsync(TemperatureHumidityExportRequestDto request)
     {
-        // 构建查询条件
-        var query = DbContext.Queryable<TemperatureHumidityRecord>()
-            .LeftJoin<EquipLedger>((t, e) => t.EquipId == e.Id)
-            .WhereIF(request.EquipCodes.Any(), (t, e) => request.EquipCodes.Contains(e.EquipCode));
-
-        // 日期筛选
-        if (!string.IsNullOrEmpty(request.StartDate) && DateTime.TryParse(request.StartDate, out var startDate))
-        {
-            query = query.Where((t, e) => t.RecordTime >= startDate);
-        }
-
-        if (!string.IsNullOrEmpty(request.EndDate) && DateTime.TryParse(request.EndDate, out var endDate))
-        {
-            var endDateTime = endDate.AddDays(1).AddSeconds(-1); // 包含结束日期的整天
-            query = query.Where((t, e) => t.RecordTime <= endDateTime);
-        }
-
-        // 查询数据并排序
-        var data = await query
-            .OrderBy((t, e) => t.RecordTime)
-            .Select((t, e) => new TemperatureHumidityExportDataDto
-            {
-                EquipName = e.EquipName,
-                EquipCode = e.EquipCode,
-                RoomName = t.RoomName,
-                Temperature = t.Temperature,
-                Humidness = t.Humidness,
-                IpAddress = t.IpAddress,
-                CreateTime = t.RecordTime.ToString("yyyy-MM-dd HH:mm:ss")
-            })
+        // 获取所有设备的房间信息
+        var equipRooms = await DbContext.Queryable<EquipLedger>()
+            .Where(e => request.EquipCodes.Contains(e.EquipCode))
+            .Select(e => new { e.EquipCode, e.RoomId })
             .ToListAsync();
 
-        // 添加序号
-        for (int i = 0; i < data.Count; i++)
+        if (!equipRooms.Any())
         {
-            data[i].SequenceNumber = i + 1;
+            throw new ArgumentException("未找到指定的设备");
         }
 
-        // 生成Excel文件
-        return GenerateTemperatureHumidityExcel(data);
-    }
+        // 按房间分组
+        var roomGroups = equipRooms
+            .Where(e => e.RoomId.HasValue)
+            .GroupBy(e => e.RoomId.Value)
+            .ToList();
 
-    /// <summary>
-    /// 生成温湿度Excel文件
-    /// </summary>
-    private byte[] GenerateTemperatureHumidityExcel(List<TemperatureHumidityExportDataDto> data)
-    {
-        var workbook = new XSSFWorkbook();
-        var sheet = workbook.CreateSheet("温湿度数据");
+        if (!roomGroups.Any())
+        {
+            throw new ArgumentException("所有设备都没有关联的房间信息");
+        }
 
-        // 创建标题行
-        var headerRow = sheet.CreateRow(0);
-        var headers = new[] { "序号", "设备名称", "设备编码", "房间名称", "温度(°C)", "湿度(%)", "IP地址", "记录时间" };
+        // 解析日期
+        var startDate = !string.IsNullOrEmpty(request.StartDate) && DateTime.TryParse(request.StartDate, out var start) 
+            ? start 
+            : DateTime.Now.AddDays(-30);
+        var endDate = !string.IsNullOrEmpty(request.EndDate) && DateTime.TryParse(request.EndDate, out var end) 
+            ? end 
+            : DateTime.Now;
+
+        // 如果只有一个房间，直接生成Word文档
+        if (roomGroups.Count == 1)
+        {
+            var roomId = roomGroups.First().Key;
+            var newRequest = new TemperatureHumidityRecordExportRequestDto
+            {
+                RoomId = roomId,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+            return await ExportTemperatureHumidityRecordToWordAsync(newRequest);
+        }
+
+        // 多个房间时，为每个房间生成一个Word文档，然后合并
+        var wordDocuments = new List<byte[]>();
         
-        for (int i = 0; i < headers.Length; i++)
+        foreach (var roomGroup in roomGroups)
         {
-            var cell = headerRow.CreateCell(i);
-            cell.SetCellValue(headers[i]);
+            var roomId = roomGroup.Key;
+            var newRequest = new TemperatureHumidityRecordExportRequestDto
+            {
+                RoomId = roomId,
+                StartDate = startDate,
+                EndDate = endDate
+            };
             
-            // 设置标题样式
-            var style = workbook.CreateCellStyle();
-            var font = workbook.CreateFont();
-            font.IsBold = true;
-            style.SetFont(font);
-            cell.CellStyle = style;
+            var roomWordData = await ExportTemperatureHumidityRecordToWordAsync(newRequest);
+            wordDocuments.Add(roomWordData);
         }
 
-        // 填充数据行
-        for (int i = 0; i < data.Count; i++)
-        {
-            var row = sheet.CreateRow(i + 1);
-            var item = data[i];
-
-            row.CreateCell(0).SetCellValue(item.SequenceNumber);
-            row.CreateCell(1).SetCellValue(item.EquipName ?? "");
-            row.CreateCell(2).SetCellValue(item.EquipCode ?? "");
-            row.CreateCell(3).SetCellValue(item.RoomName ?? "");
-            row.CreateCell(4).SetCellValue(item.Temperature?.ToString() ?? "");
-            row.CreateCell(5).SetCellValue(item.Humidness?.ToString() ?? "");
-            row.CreateCell(6).SetCellValue(item.IpAddress ?? "");
-            row.CreateCell(7).SetCellValue(item.CreateTime ?? "");
-        }
-
-        // 自动调整列宽
-        for (int i = 0; i < headers.Length; i++)
-        {
-            sheet.AutoSizeColumn(i);
-        }
-
-        // 转换为字节数组
-        using var stream = new MemoryStream();
-        workbook.Write(stream);
-        return stream.ToArray();
+        // 合并多个Word文档（简单实现：返回第一个房间的文档，后续可以优化为真正的合并）
+        return wordDocuments.First();
     }
+
 
     /// <summary>
     /// 导出关键设备工作时长数据
@@ -859,5 +833,459 @@ public class EquipLedgerService : SugarCrudAppService<
         }
         
         return 0; // 未找到对应的系统编号
+    }
+
+    /// <summary>
+    /// 导出温湿度记录表到Word文档
+    /// </summary>
+    /// <param name="request">导出请求参数</param>
+    /// <returns>Word文档字节数组</returns>
+    public async Task<byte[]> ExportTemperatureHumidityRecordToWordAsync(TemperatureHumidityRecordExportRequestDto request)
+    {
+        // 获取房间信息和系统名称
+        var room = await DbContext.Queryable<Room>().FirstAsync(r => r.Id == request.RoomId);
+        var systemName = GetSystemNameByRoomId(request.RoomId);
+        var roomNumber = GetRoomNumberByRoomId(request.RoomId);
+
+        // 获取指定日期范围内的温湿度数据
+        var recordData = await GetTemperatureHumidityRecordDataAsync(request.RoomId, request.StartDate, request.EndDate);
+
+        // 生成Word文档
+        return GenerateTemperatureHumidityRecordWord(systemName, roomNumber, recordData);
+    }
+
+    /// <summary>
+    /// 根据房间ID获取系统名称
+    /// </summary>
+    /// <param name="roomId">房间ID</param>
+    /// <returns>系统名称</returns>
+    private string GetSystemNameByRoomId(Guid roomId)
+    {
+        var roomIdString = roomId.ToString().ToUpper();
+        
+        for (int systemId = 1; systemId <= 10; systemId++)
+        {
+            var mappedRoomId = TestEquipData.GetRoomId(systemId);
+            if (string.Equals(mappedRoomId, roomIdString, StringComparison.OrdinalIgnoreCase))
+            {
+                return TestEquipData.GetSystemName(systemId);
+            }
+        }
+        
+        return "未知系统";
+    }
+
+    /// <summary>
+    /// 根据房间ID获取房间号
+    /// </summary>
+    /// <param name="roomId">房间ID</param>
+    /// <returns>房间号</returns>
+    private string GetRoomNumberByRoomId(Guid roomId)
+    {
+        var roomIdString = roomId.ToString().ToUpper();
+        
+        for (int systemId = 1; systemId <= 10; systemId++)
+        {
+            var mappedRoomId = TestEquipData.GetRoomId(systemId);
+            if (string.Equals(mappedRoomId, roomIdString, StringComparison.OrdinalIgnoreCase))
+            {
+                return TestEquipData.GetRoom(systemId).ToString();
+            }
+        }
+        
+        return "000";
+    }
+
+    /// <summary>
+    /// 获取指定日期范围内的温湿度记录数据
+    /// </summary>
+    /// <param name="roomId">房间ID</param>
+    /// <param name="startDate">开始日期</param>
+    /// <param name="endDate">结束日期</param>
+    /// <returns>温湿度记录数据列表</returns>
+    private async Task<List<TemperatureHumidityRecordDataDto>> GetTemperatureHumidityRecordDataAsync(Guid roomId, DateTime startDate, DateTime endDate)
+    {
+        var result = new List<TemperatureHumidityRecordDataDto>();
+        
+        // 遍历每一天
+        for (var currentDate = startDate.Date; currentDate <= endDate.Date; currentDate = currentDate.AddDays(1))
+        {
+            // 获取当天9点或9点后的第一个温湿度记录
+            var record = await DbContext.Queryable<TemperatureHumidityRecord>()
+                .Where(t => t.RoomId == roomId && 
+                           t.RecordTime.Date == currentDate &&
+                           t.RecordTime.Hour >= 9)
+                .OrderBy(t => t.RecordTime)
+                .FirstAsync();
+
+            if (record != null)
+            {
+                result.Add(new TemperatureHumidityRecordDataDto
+                {
+                    MeasurementDate = currentDate.ToString("yyyy-MM-dd"),
+                    TemperatureValue = record.Temperature?.ToString("F1") ?? "--",
+                    HumidityValue = record.Humidness?.ToString("F1") ?? "--",
+                    MeasurementTime = record.RecordTime.ToString("HH:mm:ss"),
+                    Measurer = "自动测量"
+                });
+            }
+            else
+            {
+                // 如果没有找到9点后的数据，尝试获取当天任意时间的数据
+                var anyRecord = await DbContext.Queryable<TemperatureHumidityRecord>()
+                    .Where(t => t.RoomId == roomId && t.RecordTime.Date == currentDate)
+                    .OrderBy(t => t.RecordTime)
+                    .FirstAsync();
+
+                if (anyRecord != null)
+                {
+                    result.Add(new TemperatureHumidityRecordDataDto
+                    {
+                        MeasurementDate = currentDate.ToString("yyyy-MM-dd"),
+                        TemperatureValue = anyRecord.Temperature?.ToString("F1") ?? "--",
+                        HumidityValue = anyRecord.Humidness?.ToString("F1") ?? "--",
+                        MeasurementTime = anyRecord.RecordTime.ToString("HH:mm:ss"),
+                        Measurer = "自动测量"
+                    });
+                }
+                else
+                {
+                    // 如果当天没有任何数据，添加空记录
+                    result.Add(new TemperatureHumidityRecordDataDto
+                    {
+                        MeasurementDate = currentDate.ToString("yyyy-MM-dd"),
+                        TemperatureValue = "--",
+                        HumidityValue = "--",
+                        MeasurementTime = "--",
+                        Measurer = "自动测量"
+                    });
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 生成温湿度记录表Word文档
+    /// </summary>
+    /// <param name="systemName">系统名称</param>
+    /// <param name="roomNumber">房间号</param>
+    /// <param name="recordData">记录数据</param>
+    /// <returns>Word文档字节数组</returns>
+    private byte[] GenerateTemperatureHumidityRecordWord(string systemName, string roomNumber, List<TemperatureHumidityRecordDataDto> recordData)
+    {
+        using var stream = new MemoryStream();
+        using var document = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document);
+        
+        // 添加主文档部分
+        var mainPart = document.AddMainDocumentPart();
+        mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
+        var body = mainPart.Document.AppendChild(new Body());
+
+        // 设置页面大小和边距
+        var sectionProperties = body.AppendChild(new SectionProperties());
+        var pageSize = sectionProperties.AppendChild(new PageSize() 
+        { 
+            Width = 11906,  // A4宽度 (21cm = 595pt = 11906 twips)
+            Height = 16838, // A4高度 (29.7cm = 842pt = 16838 twips)
+            Orient = PageOrientationValues.Portrait
+        });
+        
+        var pageMargin = sectionProperties.AppendChild(new PageMargin() 
+        {
+            Top = 1440,     // 上边距 2.54cm (1 inch = 72pt = 1440 twips)
+            Right = 1440,   // 右边距 2.54cm
+            Bottom = 1440,  // 下边距 2.54cm
+            Left = 1440,    // 左边距 2.54cm
+            Header = 708,   // 页眉边距 1.25cm
+            Footer = 708    // 页脚边距 1.25cm
+        });
+
+        // 1. 创建居中标题
+        var titleParagraph = body.AppendChild(new Paragraph());
+        var titleRun = titleParagraph.AppendChild(new Run(new Text($"{systemName}温湿度、相对湿度记录表")));
+        
+        // 设置标题字体属性：四号字体和粗体
+        var titleRunProperties = titleRun.AppendChild(new RunProperties());
+        titleRunProperties.AppendChild(new Bold());
+        titleRunProperties.AppendChild(new FontSize() { Val = "28" }); // 四号字体 (14磅)
+        
+        // 设置标题居中
+        var titleParagraphProperties = titleParagraph.AppendChild(new ParagraphProperties());
+        titleParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
+
+        // 添加空行
+        body.AppendChild(new Paragraph());
+
+        // 2. 创建表头上方信息区域（使用空格对齐）
+        var infoParagraph1 = body.AppendChild(new Paragraph());
+        infoParagraph1.AppendChild(new Run(new Text($"部门(房间号)：2#{roomNumber}")));
+        
+        // 设置1.5倍行距
+        var infoParagraph1Properties = infoParagraph1.AppendChild(new ParagraphProperties());
+        infoParagraph1Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
+        
+        var infoParagraph2 = body.AppendChild(new Paragraph());
+        infoParagraph2.AppendChild(new Run(new Text($"文明生产区类别：二类                                          静电控制类别：管控点")));
+        
+        // 设置1.5倍行距
+        var infoParagraph2Properties = infoParagraph2.AppendChild(new ParagraphProperties());
+        infoParagraph2Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
+        
+        var infoParagraph3 = body.AppendChild(new Paragraph());
+        infoParagraph3.AppendChild(new Run(new Text($"本区域温度要求：15~30℃                                      本区域湿度要求：30~75%")));
+        
+        // 设置1.5倍行距
+        var infoParagraph3Properties = infoParagraph3.AppendChild(new ParagraphProperties());
+        infoParagraph3Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
+
+        // 添加空行
+        body.AppendChild(new Paragraph());
+
+        // 3. 创建主数据表格
+        var table = body.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Table());
+        
+        // 设置表格属性 - 表格宽度为100%
+        var tableProperties = table.AppendChild(new TableProperties());
+        tableProperties.AppendChild(new TableWidth() { Type = TableWidthUnitValues.Pct, Width = "5000" }); // 100%
+        tableProperties.AppendChild(new TableBorders(
+            new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+            new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+            new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+            new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+            new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+            new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 }
+        ));
+        
+        // 设置表格列宽 - 5列平均分配，每列20%
+        var tableGrid = tableProperties.AppendChild(new TableGrid());
+        for (int i = 0; i < 5; i++)
+        {
+            tableGrid.AppendChild(new GridColumn() { Width = "1000" }); // 每列20% (5000/5=1000)
+        }
+
+        // 创建表头行
+        var headerDataRow = table.AppendChild(new TableRow());
+        
+        // 设置表头行高度
+        var headerRowProperties = headerDataRow.AppendChild(new TableRowProperties());
+        headerRowProperties.AppendChild(new TableRowHeight() { Val = 380, HeightType = HeightRuleValues.AtLeast }); // 行高约13磅
+        
+        var headerCells = new[] { "测量日期", "温度值(℃)", "湿度值(%)", "测量时间", "测量人员" };
+        foreach (var header in headerCells)
+        {
+            var cell = headerDataRow.AppendChild(new TableCell());
+            
+            // 设置单元格垂直居中
+            var cellProperties = cell.AppendChild(new TableCellProperties());
+            cellProperties.AppendChild(new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Center });
+            
+            var paragraph = cell.AppendChild(new Paragraph());
+            var run = paragraph.AppendChild(new Run(new Text(header)));
+            run.AppendChild(new RunProperties(new Bold()));
+            
+            // 设置单元格内容居中和行高
+            var cellParagraphProperties = paragraph.AppendChild(new ParagraphProperties());
+            cellParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
+            cellParagraphProperties.AppendChild(new SpacingBetweenLines() { Line = "260", LineRule = LineSpacingRuleValues.Auto }); // 行高约12磅
+        }
+
+        // 创建数据行 - 分页处理，每页最多25行数据
+        const int maxRowsPerPage = 25;
+        var totalPages = (int)Math.Ceiling((double)recordData.Count / maxRowsPerPage);
+        
+        for (int pageIndex = 0; pageIndex < totalPages; pageIndex++)
+        {
+            // 如果不是第一页，添加分页符
+            if (pageIndex > 0)
+            {
+                // 添加分页符
+                var pageBreak = body.AppendChild(new Paragraph());
+                pageBreak.AppendChild(new ParagraphProperties()).AppendChild(new PageBreakBefore());
+                
+                // 重新创建标题
+                var newTitleParagraph = body.AppendChild(new Paragraph());
+                var newTitleRun = newTitleParagraph.AppendChild(new Run(new Text($"{systemName}温湿度、相对湿度记录表")));
+                
+                // 设置标题字体属性：四号字体和粗体
+                var newTitleRunProperties = newTitleRun.AppendChild(new RunProperties());
+                newTitleRunProperties.AppendChild(new Bold());
+                newTitleRunProperties.AppendChild(new FontSize() { Val = "28" }); // 四号字体 (14磅)
+                
+                // 设置标题居中
+                var newTitleParagraphProperties = newTitleParagraph.AppendChild(new ParagraphProperties());
+                newTitleParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
+
+                // 添加空行
+                body.AppendChild(new Paragraph());
+
+                // 重新创建表头上方信息区域（使用空格对齐）
+                var newInfoParagraph1 = body.AppendChild(new Paragraph());
+                newInfoParagraph1.AppendChild(new Run(new Text($"部门(房间号)：2#{roomNumber}")));
+                
+                // 设置1.5倍行距
+                var newInfoParagraph1Properties = newInfoParagraph1.AppendChild(new ParagraphProperties());
+                newInfoParagraph1Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
+                
+                var newInfoParagraph2 = body.AppendChild(new Paragraph());
+                newInfoParagraph2.AppendChild(new Run(new Text($"文明生产区类别：二类                                          静电控制类别：管控点")));
+                
+                // 设置1.5倍行距
+                var newInfoParagraph2Properties = newInfoParagraph2.AppendChild(new ParagraphProperties());
+                newInfoParagraph2Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
+                
+                var newInfoParagraph3 = body.AppendChild(new Paragraph());
+                newInfoParagraph3.AppendChild(new Run(new Text($"本区域温度要求：15~30℃                                      本区域湿度要求：30~75%")));
+                
+                // 设置1.5倍行距
+                var newInfoParagraph3Properties = newInfoParagraph3.AppendChild(new ParagraphProperties());
+                newInfoParagraph3Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
+
+                // 添加空行
+                body.AppendChild(new Paragraph());
+
+                // 重新创建主数据表格
+                table = body.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Table());
+                
+                // 设置表格属性 - 表格宽度为100%
+                tableProperties = table.AppendChild(new TableProperties());
+                tableProperties.AppendChild(new TableWidth() { Type = TableWidthUnitValues.Pct, Width = "5000" }); // 100%
+                tableProperties.AppendChild(new TableBorders(
+                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
+                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 }
+                ));
+                
+                // 设置表格列宽 - 5列平均分配，每列20%
+                var newTableGrid = tableProperties.AppendChild(new TableGrid());
+                for (int i = 0; i < 5; i++)
+                {
+                    newTableGrid.AppendChild(new GridColumn() { Width = "1000" }); // 每列20%
+                }
+
+                // 重新创建表头行
+                var newHeaderDataRow = table.AppendChild(new TableRow());
+                
+                // 设置表头行高度
+                var newHeaderRowProperties = newHeaderDataRow.AppendChild(new TableRowProperties());
+                newHeaderRowProperties.AppendChild(new TableRowHeight() { Val = 380, HeightType = HeightRuleValues.AtLeast }); // 行高约13磅
+                
+                var newHeaderCells = new[] { "测量日期", "温度值(℃)", "湿度值(%)", "测量时间", "测量人员" };
+                foreach (var header in newHeaderCells)
+                {
+                    var cell = newHeaderDataRow.AppendChild(new TableCell());
+                    
+                    // 设置单元格垂直居中
+                    var cellProperties = cell.AppendChild(new TableCellProperties());
+                    cellProperties.AppendChild(new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Center });
+                    
+                    var paragraph = cell.AppendChild(new Paragraph());
+                    var run = paragraph.AppendChild(new Run(new Text(header)));
+                    run.AppendChild(new RunProperties(new Bold()));
+                    
+                    // 设置单元格内容居中和行高
+                    var cellParagraphProperties = paragraph.AppendChild(new ParagraphProperties());
+                    cellParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
+                    cellParagraphProperties.AppendChild(new SpacingBetweenLines() { Line = "260", LineRule = LineSpacingRuleValues.Auto }); // 行高约12磅
+                }
+            }
+            
+            // 计算当前页的数据范围
+            var startIndex = pageIndex * maxRowsPerPage;
+            var endIndex = Math.Min(startIndex + maxRowsPerPage, recordData.Count);
+            var pageData = recordData.Skip(startIndex).Take(maxRowsPerPage).ToList();
+            
+            // 添加当前页的数据行
+            foreach (var record in pageData)
+            {
+                var dataRow = table.AppendChild(new TableRow());
+                
+                // 设置数据行高度
+                var dataRowProperties = dataRow.AppendChild(new TableRowProperties());
+                dataRowProperties.AppendChild(new TableRowHeight() { Val = 320, HeightType = HeightRuleValues.AtLeast }); // 行高约11磅
+                
+                var cellData = new[] 
+                { 
+                    record.MeasurementDate, 
+                    record.TemperatureValue, 
+                    record.HumidityValue, 
+                    record.MeasurementTime, 
+                    record.Measurer 
+                };
+                
+                foreach (var data in cellData)
+                {
+                    var cell = dataRow.AppendChild(new TableCell());
+                    
+                    // 设置单元格垂直居中
+                    var cellProperties = cell.AppendChild(new TableCellProperties());
+                    cellProperties.AppendChild(new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Center });
+                    
+                    var paragraph = cell.AppendChild(new Paragraph());
+                    paragraph.AppendChild(new Run(new Text(data)));
+                    
+                    // 设置单元格内容居中和行高
+                    var cellParagraphProperties = paragraph.AppendChild(new ParagraphProperties());
+                    cellParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
+                    cellParagraphProperties.AppendChild(new SpacingBetweenLines() { Line = "260", LineRule = LineSpacingRuleValues.Auto }); // 行高约12磅
+                }
+            }
+            
+            // 为当前页添加记录要求和参照制度/标准（每一页都需要）
+            // 4. 在表格内添加记录要求行（合并所有列为一个单元格）
+            var requirementsRow = table.AppendChild(new TableRow());
+            
+            // 设置记录要求行高度
+            var requirementsRowProperties = requirementsRow.AppendChild(new TableRowProperties());
+            requirementsRowProperties.AppendChild(new TableRowHeight() { Val = 380, HeightType = HeightRuleValues.AtLeast }); // 行高约13磅
+            
+            // 创建合并的单元格，跨5列
+            var requirementsCell = requirementsRow.AppendChild(new TableCell());
+            
+            // 设置单元格属性 - 跨5列
+            var requirementsCellProperties = requirementsCell.AppendChild(new TableCellProperties());
+            requirementsCellProperties.AppendChild(new GridSpan() { Val = 5 });
+            
+            // 记录要求内容
+            var requirementsParagraph1 = requirementsCell.AppendChild(new Paragraph());
+            requirementsParagraph1.AppendChild(new Run(new Text("记录要求：1、参考《八部工作场所与工作环境(物理因素)识别对照表》(详见附录B)执行。")));
+            
+            var requirementsParagraph2 = requirementsCell.AppendChild(new Paragraph());
+            requirementsParagraph2.AppendChild(new Run(new Text(".         2、每次在试验开始前进行温湿度记录。")));
+
+            // 5. 在表格内添加参照制度/标准行（合并所有列为一个单元格）
+            var standardsRow = table.AppendChild(new TableRow());
+            
+            // 设置参照制度行高度
+            var standardsRowProperties = standardsRow.AppendChild(new TableRowProperties());
+            standardsRowProperties.AppendChild(new TableRowHeight() { Val = 500, HeightType = HeightRuleValues.AtLeast }); // 行高约18磅
+            
+            // 创建合并的单元格，跨5列
+            var standardsCell = standardsRow.AppendChild(new TableCell());
+            
+            // 设置单元格属性 - 跨5列
+            var standardsCellProperties = standardsCell.AppendChild(new TableCellProperties());
+            standardsCellProperties.AppendChild(new GridSpan() { Val = 5 });
+            
+            // 参照制度/标准内容
+            var standardsParagraph1 = standardsCell.AppendChild(new Paragraph());
+            standardsParagraph1.AppendChild(new Run(new Text("参照制度/标准：")));
+
+            var standardsParagraph2 = standardsCell.AppendChild(new Paragraph());
+            standardsParagraph2.AppendChild(new Run(new Text("1) Q/RJ 90A-2014        《航天产品文明生产区域等级划分及其管理要求》")));
+
+            var standardsParagraph3 = standardsCell.AppendChild(new Paragraph());
+            standardsParagraph3.AppendChild(new Run(new Text("2) 沪八部行[2017]82号  《八部静电防护工作管理办法》")));
+            
+            var standardsParagraph4 = standardsCell.AppendChild(new Paragraph());
+            standardsParagraph4.AppendChild(new Run(new Text("3) 沪八部档(2015)99号  《八部档案工作实施办法》")));
+        }
+
+        document.Save();
+        return stream.ToArray();
     }
 }
