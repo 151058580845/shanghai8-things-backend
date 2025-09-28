@@ -35,6 +35,9 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     [Description("资产编号")]
     public string? AssetNumber { get; set; }
 
+    [Description("集团资产编号")]
+    public string? Sn { get; set; }
+
     [Description("是否计量设备")]
     public bool? IsMeasurementDevice { get; set; }
 

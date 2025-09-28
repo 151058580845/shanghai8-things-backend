@@ -235,15 +235,40 @@ public class EquipLedgerService : SugarCrudAppService<
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull // 忽略 null 值
             };
 
-            var result = JsonSerializer.Deserialize<List<EquipLedgerCreateDto>>(jsonResponse, options);
+            var result = JsonSerializer.Deserialize<List<EquipLedgerImportDto>>(jsonResponse, options);
 
             var changeCount = 0;
             if (result != null && result.Any())
             {
                 foreach (var item in result)
                 {
-                    var info = Mapper.Map<EquipLedger>(item);
-                    changeCount += DbContext.Insertable<EquipLedger>(info).ExecuteCommand();
+                    // 映射新API格式到内部DTO
+                    var equipLedgerDto = MapImportDtoToCreateDto(item);
+                    
+                    // 检查是否已存在相同的本地化资产编号
+                    var existingEquip = await DbContext.Queryable<EquipLedger>()
+                        .Where(x => x.AssetNumber == item.Localsn && !x.SoftDeleted)
+                        .FirstAsync();
+
+                    if (existingEquip != null)
+                    {
+                        // 更新现有设备
+                        var updateInfo = Mapper.Map<EquipLedger>(equipLedgerDto);
+                        updateInfo.Id = existingEquip.Id;
+                        updateInfo.CreationTime = existingEquip.CreationTime;
+                        updateInfo.CreatorId = existingEquip.CreatorId;
+                        updateInfo.LastModificationTime = DateTime.Now;
+                        
+                        changeCount += DbContext.Updateable<EquipLedger>(updateInfo)
+                            .IgnoreColumns(x => new { x.CreationTime, x.CreatorId, x.SoftDeleted, x.DeleteTime })
+                            .ExecuteCommand();
+                    }
+                    else
+                    {
+                        // 新增设备
+                        var info = Mapper.Map<EquipLedger>(equipLedgerDto);
+                        changeCount += DbContext.Insertable<EquipLedger>(info).ExecuteCommand();
+                    }
                 }
             }
 
@@ -267,6 +292,59 @@ public class EquipLedgerService : SugarCrudAppService<
             LoggerAdapter.LogWarning($"发生错误: {ex.Message}");
             throw;
         }
+    }
+
+    /// <summary>
+    /// 将导入DTO映射为创建DTO
+    /// </summary>
+    /// <param name="importDto"></param>
+    /// <returns></returns>
+    private EquipLedgerCreateDto MapImportDtoToCreateDto(EquipLedgerImportDto importDto)
+    {
+        return new EquipLedgerCreateDto
+        {
+            EquipName = importDto.Assetname,
+            ResponsibleUserName = importDto.Dutyman,
+            IsMeasurementDevice = ParseIsCalibrate(importDto.Iscalibrate),
+            AssetNumber = importDto.Localsn,
+            Model = importDto.Model,
+            PurchaseDate = ParseDate(importDto.Factorydate),
+            ValidityDate = ParseDate(importDto.ValidPeriod),
+            Sn = importDto.Sn,
+            EquipCode = importDto.Localsn ?? Guid.NewGuid().ToString(), // 如果没有本地化编号，使用GUID
+            State = true
+        };
+    }
+
+    /// <summary>
+    /// 解析是否校准字段
+    /// </summary>
+    /// <param name="isCalibrate"></param>
+    /// <returns></returns>
+    private bool? ParseIsCalibrate(string? isCalibrate)
+    {
+        if (string.IsNullOrEmpty(isCalibrate))
+            return null;
+
+        return isCalibrate.Equals("是", StringComparison.OrdinalIgnoreCase) ||
+               isCalibrate.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+               isCalibrate.Equals("1", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// 解析日期字段
+    /// </summary>
+    /// <param name="dateString"></param>
+    /// <returns></returns>
+    private DateTime? ParseDate(string? dateString)
+    {
+        if (string.IsNullOrEmpty(dateString))
+            return null;
+
+        if (DateTime.TryParse(dateString, out var result))
+            return result;
+
+        return null;
     }
 
     public async Task<IEnumerable<EquipLedgerReadDto>> GetMissingDevicesAlarmAsync()

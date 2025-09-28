@@ -19,6 +19,8 @@ public class EquipLedgerReadDto : ReadDto
 
     [Description("资产编号")] public string? AssetNumber { get; set; }
 
+    [Description("集团资产编号")] public string? Sn { get; set; }
+
     [Description("安装地点")] //若是rfidReader则不可为null
     public Guid? RoomId { get; set; }
 
@@ -102,6 +104,8 @@ public class EquipLedgerSearchReadDto : ReadDto
 
     [Description("资产编号")] public string? AssetNumber { get; set; }
 
+    [Description("集团资产编号")] public string? Sn { get; set; }
+
     [Description("安装地点")] public Guid? RoomId { get; set; }
 
     [Description("设备责任人")]
@@ -165,6 +169,11 @@ public class EquipLedgerCreateDto : CreateDto
     /// 资产编号
     /// </summary>
     public string? AssetNumber { get; set; }
+
+    /// <summary>
+    /// 集团资产编号
+    /// </summary>
+    public string? Sn { get; set; }
 
     /// <summary>
     /// 安装地点
@@ -449,4 +458,60 @@ public class KeyEquipWorkingHoursExportDto
     /// 设备工作时长(小时)
     /// </summary>
     public decimal WorkingHours { get; set; }
+}
+
+/// <summary>
+/// 新API批量导入DTO
+/// </summary>
+public class EquipLedgerImportDto
+{
+    /// <summary>
+    /// 设备名称
+    /// </summary>
+    public string Assetname { get; set; } = null!;
+
+    /// <summary>
+    /// 责任人
+    /// </summary>
+    public string? Dutyman { get; set; }
+
+    /// <summary>
+    /// 责任人邮箱
+    /// </summary>
+    public string? Dutymanemail { get; set; }
+
+    /// <summary>
+    /// 责任人ID
+    /// </summary>
+    public string? Dutymanid { get; set; }
+
+    /// <summary>
+    /// 出厂日期
+    /// </summary>
+    public string? Factorydate { get; set; }
+
+    /// <summary>
+    /// 是否校准
+    /// </summary>
+    public string? Iscalibrate { get; set; }
+
+    /// <summary>
+    /// 本地化资产编号
+    /// </summary>
+    public string? Localsn { get; set; }
+
+    /// <summary>
+    /// 型号
+    /// </summary>
+    public string? Model { get; set; }
+
+    /// <summary>
+    /// 集团资产编号
+    /// </summary>
+    public string? Sn { get; set; }
+
+    /// <summary>
+    /// 有效期
+    /// </summary>
+    public string? ValidPeriod { get; set; }
 }

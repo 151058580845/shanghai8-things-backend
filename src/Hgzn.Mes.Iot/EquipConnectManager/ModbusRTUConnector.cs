@@ -9,6 +9,9 @@ using System.IO.Ports;
 using System.Text.Json;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Modbus.Device;
+using Hgzn.Mes.Infrastructure.Mqtt.Topic;
+using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Microsoft.Extensions.Configuration;
 
 /// <summary>
 /// ModbusRTU通信连接器实现类
@@ -31,6 +34,14 @@ public class ModbusRTUConnector : EquipConnectorBase
     // ModbusRTU连接参数配置
     private ModbusRtuConnInfo _connInfo = null!;
 
+    // 氧浓度读取相关配置
+    private Timer _oxygenReadingTimer = null!;
+    private int _readCount = 0;
+    private const int READ_INTERVAL_MS = 5000; // 每5秒读取一次氧浓度
+    private const int FORWARD_RATE = 10; // 每10次读取转发1次
+    private readonly Dictionary<string, string> _ipToRoomMapping;
+    private readonly IConfiguration _configuration;
+
     /// <summary>
     /// 构造函数
     /// </summary>
@@ -38,10 +49,32 @@ public class ModbusRTUConnector : EquipConnectorBase
         IConnectionMultiplexer connectionMultiplexer,
         IMqttExplorer mqttExplorer,
         ISqlSugarClient sqlSugarClient,
+        IConfiguration configuration,
         string uri, EquipConnType connType)
         : base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
     {
         _equipConnect = sqlSugarClient.Queryable<EquipConnect>().First(x => x.Id == Guid.Parse(uri));
+        _configuration = configuration;
+        
+        // 初始化IP到房间号的映射表
+        _ipToRoomMapping = new Dictionary<string, string>
+        {
+            { "10.125.157.151", "122" },  // 01机器
+            { "10.125.157.152", "209" },  // 02机器
+            { "10.125.157.153", "303" },  // 03机器
+            { "10.125.157.154", "203" },  // 04机器
+            { "10.125.157.155", "206" },  // 05机器
+            { "10.125.157.156", "306" },  // 06机器
+            { "10.125.157.157", "213" },  // 07机器
+            { "10.125.157.158", "215" },  // 08机器
+            { "10.125.157.159", "202" },  // 09机器
+            { "10.125.157.160", "108" },  // 10机器
+            { "10.125.157.161", "112" },  // 11机器
+            { "10.125.157.162", "119" },  // 12机器
+            { "10.125.157.163", "109" },  // 13机器
+            { "10.125.157.164", "302" },  // 14机器（未安装，但预留）
+            { "10.125.157.165", "103" }   // 15机器
+        };
     }
 
     /// <summary>
@@ -49,6 +82,10 @@ public class ModbusRTUConnector : EquipConnectorBase
     /// </summary>
     public override async Task CloseConnectionAsync()
     {
+        // 停止定时器
+        _oxygenReadingTimer?.Dispose();
+        _oxygenReadingTimer = null!;
+
         if (_modbusMaster != null)
         {
             _modbusMaster.Dispose();
@@ -150,6 +187,9 @@ public class ModbusRTUConnector : EquipConnectorBase
 
             _isRunning = true;
 
+            // 启动氧浓度读取定时器
+            _oxygenReadingTimer = new Timer(ReadOxygenConcentration, null, READ_INTERVAL_MS, READ_INTERVAL_MS);
+
             await UpdateStateAsync(ConnStateType.On);
             await UpdateOperationAsync(ConnStateType.On);
 
@@ -188,6 +228,125 @@ public class ModbusRTUConnector : EquipConnectorBase
         {
             LoggerAdapter.LogError($"Modbus RTU写入失败: {ex.Message}");
         }
+    }
+
+    /* ========== 氧浓度读取和转发方法 ========== */
+
+    /// <summary>
+    /// 定时读取氧浓度的回调方法
+    /// </summary>
+    private async void ReadOxygenConcentration(object? state)
+    {
+        if (!_isRunning || _modbusMaster == null)
+            return;
+
+        try
+        {
+            // 读取氧浓度寄存器（根据文档，从地址0x0006开始读取通道1的浓度值）
+            var oxygenValues = await ReadHoldingRegistersAsync(0x0006, 1); // 读取通道1的16位整数浓度值
+            
+            if (oxygenValues.Length > 0)
+            {
+                ushort rawValue = oxygenValues[0];
+                // 根据文档，结果为实际浓度值扩大100倍，如25.4寄存器值为2540
+                float actualConcentration = rawValue / 100.0f;
+
+                LoggerAdapter.LogDebug($"氧浓度读取成功: 原始值={rawValue}, 实际浓度={actualConcentration:F2}%");
+
+                _readCount++;
+                
+                // 根据转发率决定是否转发数据
+                if (_readCount >= FORWARD_RATE)
+                {
+                    await ForwardOxygenDataAsync(actualConcentration);
+                    _readCount = 0; // 重置计数器
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerAdapter.LogError($"读取氧浓度失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 转发氧浓度数据到MQTT
+    /// </summary>
+    private async Task ForwardOxygenDataAsync(float concentration)
+    {
+        try
+        {
+            // 根据配置获取本地IP地址，然后映射到房间号
+            var localIp = GetLocalIpAddress();
+            var roomNumber = GetRoomNumberByIp(localIp);
+
+            // 检查是否异常
+            const float NORMAL_MIN = 19.5f;
+            const float NORMAL_MAX = 23.5f;
+            bool isAbnormal = concentration < NORMAL_MIN || concentration > NORMAL_MAX;
+            int abnormalType = 0;
+            if (concentration < NORMAL_MIN) abnormalType = 1; // 过低
+            else if (concentration > NORMAL_MAX) abnormalType = 2; // 过高
+
+            // 构建氧浓度数据
+            var oxygenData = new
+            {
+                RoomNumber = roomNumber,
+                Concentration = concentration,
+                Timestamp = DateTime.Now,
+                DeviceId = _equipConnect.EquipId,
+                LocalIp = localIp,
+                IsAbnormal = isAbnormal,
+                AbnormalType = abnormalType
+            };
+
+            // 将数据序列化为字节数组
+            var jsonData = JsonSerializer.Serialize(oxygenData, Options.CustomJsonSerializerOptions);
+            var buffer = System.Text.Encoding.UTF8.GetBytes(jsonData);
+
+            // 构建MQTT主题（使用特殊的氧浓度设备类型）
+            var topic = IotTopicBuilder.CreateIotBuilder()
+                            .WithPrefix(TopicType.Iot)
+                            .WithDirection(MqttDirection.Up)
+                            .WithTag(MqttTag.Transmit)
+                            .WithDeviceType("OxygenConcentration") // 特殊的氧浓度设备类型
+                            .WithUri(_equipConnect.Id.ToString()).Build();
+
+            // 使用支持断点续传的发布方法
+            if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+            {
+                await mqttWithOffline.PublishWithOfflineSupportAsync(topic, buffer, priority: 0, maxRetryCount: 3);
+            }
+            else
+            {
+                await _mqttExplorer.PublishAsync(topic, buffer);
+            }
+
+            LoggerAdapter.LogInformation($"氧浓度数据已转发: 房间号={roomNumber}, 浓度={concentration:F2}%");
+        }
+        catch (Exception ex)
+        {
+            LoggerAdapter.LogError($"转发氧浓度数据失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 获取本地IP地址（从配置文件）
+    /// </summary>
+    private string GetLocalIpAddress()
+    {
+        var localIp = _configuration.GetValue<string>("LocalIpAddress");
+        return string.IsNullOrEmpty(localIp) ? "10.125.157.151" : localIp;
+    }
+
+    /// <summary>
+    /// 根据IP地址获取房间号
+    /// </summary>
+    private string GetRoomNumberByIp(string ipAddress)
+    {
+        return _ipToRoomMapping.TryGetValue(ipAddress, out var roomNumber) 
+            ? roomNumber 
+            : "未知";
     }
 
     /* ========== Modbus寄存器操作方法 ========== */

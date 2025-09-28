@@ -229,6 +229,14 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         {
             var uri = Guid.Parse(topic.ConnUri!);
             var connType = topic.ConnType;
+            
+            // 检查是否是氧浓度设备类型
+            if (topic.EquipType == "OxygenConcentration")
+            {
+                await HandleOxygenConcentrationAsync(topic, msg);
+                return;
+            }
+            
             if (connType == EquipConnType.IotServer)
             {
                 // 根据连接ID查询设备ID
@@ -237,6 +245,161 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 OnlineReceiveDispatch dispatch =
                     new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
                 await dispatch.Handle(msg);
+            }
+        }
+
+        /// <summary>
+        /// 处理氧浓度数据
+        /// </summary>
+        private async Task HandleOxygenConcentrationAsync(IotTopic topic, byte[] msg)
+        {
+            try
+            {
+                // 解析氧浓度数据
+                var jsonString = System.Text.Encoding.UTF8.GetString(msg);
+                var oxygenData = JsonSerializer.Deserialize<OxygenConcentrationData>(jsonString, Options.CustomJsonSerializerOptions);
+                
+                if (oxygenData != null)
+                {
+                    LoggerAdapter.LogInformation($"接收到氧浓度数据: 房间号={oxygenData.RoomNumber}, 浓度={oxygenData.Concentration:F2}%, 设备ID={oxygenData.DeviceId}");
+                    
+                    // 这里可以添加氧浓度数据的特殊处理逻辑
+                    // 例如：存储到数据库、触发告警、更新实时数据等
+                    
+                    // 示例：存储氧浓度数据到数据库
+                    await StoreOxygenConcentrationDataAsync(oxygenData);
+                    
+                    // 示例：检查氧浓度是否在正常范围内
+                    await CheckOxygenConcentrationAlarmAsync(oxygenData);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerAdapter.LogError($"处理氧浓度数据失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 存储氧浓度数据到数据库
+        /// </summary>
+        private async Task StoreOxygenConcentrationDataAsync(OxygenConcentrationData data)
+        {
+            try
+            {
+                // 创建氧浓度记录
+                var oxygenRecord = new OxygenConcentrationRecord
+                {
+                    Id = Guid.NewGuid(),
+                    RoomNumber = data.RoomNumber,
+                    Concentration = data.Concentration,
+                    RecordTime = data.Timestamp,
+                    DeviceId = data.DeviceId,
+                    LocalIp = data.LocalIp,
+                    IsAbnormal = data.IsAbnormal,
+                    AbnormalType = data.AbnormalType,
+                    CreationTime = DateTime.Now,
+                    CreatorId = User.DevUser.CreatorId
+                };
+
+                // 保存到数据库
+                await _client.Insertable(oxygenRecord).ExecuteCommandAsync();
+                
+                _logger.LogDebug($"氧浓度数据已保存到数据库: 房间号={data.RoomNumber}, 浓度={data.Concentration:F2}%, 时间={data.Timestamp}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"存储氧浓度数据失败: 房间号={data.RoomNumber}");
+            }
+        }
+
+        /// <summary>
+        /// 检查氧浓度告警
+        /// </summary>
+        private async Task CheckOxygenConcentrationAlarmAsync(OxygenConcentrationData data)
+        {
+            try
+            {
+                // 如果数据已经标记为异常，则创建告警记录并推送到Redis
+                if (data.IsAbnormal)
+                {
+                    string alarmTitle = "";
+                    string alarmContent = "";
+                    
+                    // 根据异常类型设置告警信息
+                    switch (data.AbnormalType)
+                    {
+                        case 1: // 过低
+                            alarmTitle = "氧浓度过低告警";
+                            alarmContent = $"房间号 {data.RoomNumber} 氧浓度过低: {data.Concentration:F2}%, 低于正常范围(19.5%)";
+                            _logger.LogWarning($"氧浓度过低告警: 房间号={data.RoomNumber}, 浓度={data.Concentration:F2}%");
+                            break;
+                        case 2: // 过高
+                            alarmTitle = "氧浓度过高告警";
+                            alarmContent = $"房间号 {data.RoomNumber} 氧浓度过高: {data.Concentration:F2}%, 高于正常范围(23.5%)";
+                            _logger.LogWarning($"氧浓度过高告警: 房间号={data.RoomNumber}, 浓度={data.Concentration:F2}%");
+                            break;
+                    }
+
+                    // 创建设备告警记录
+                    var alarmNotice = new EquipNotice
+                    {
+                        Id = Guid.NewGuid(),
+                        EquipId = data.DeviceId,
+                        SendTime = DateTime.Now,
+                        Title = alarmTitle,
+                        Content = alarmContent,
+                        Description = $"氧浓度异常 - 房间号: {data.RoomNumber}, 浓度: {data.Concentration:F2}%, 设备IP: {data.LocalIp}",
+                        NoticeType = EquipNoticeType.Alarm
+                    };
+
+                    // 保存告警记录到数据库
+                    await _client.Insertable(alarmNotice).ExecuteCommandAsync();
+
+                    // 推送到Redis（按照其他试验数据的处理流程）
+                    await SendOxygenAlarmToRedisAsync(data, alarmNotice, data.AbnormalType);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"检查氧浓度告警失败: 房间号={data.RoomNumber}");
+            }
+        }
+
+        /// <summary>
+        /// 发送氧浓度告警到Redis
+        /// </summary>
+        private async Task SendOxygenAlarmToRedisAsync(OxygenConcentrationData data, EquipNotice alarmNotice, int abnormalType)
+        {
+            try
+            {
+                // 构建Redis键名（按照房间号+设备类型）
+                var redisKey = $"oxygen_alarm:{data.RoomNumber}:{data.DeviceId}";
+                
+                // 获取Redis数据库
+                IDatabase redisDb = _connectionMultiplexer.GetDatabase();
+                
+                // 构建告警数据
+                var alarmData = new
+                {
+                    RoomNumber = data.RoomNumber,
+                    Concentration = data.Concentration,
+                    AbnormalType = abnormalType,
+                    AlarmTime = DateTime.Now,
+                    DeviceId = data.DeviceId,
+                    LocalIp = data.LocalIp,
+                    NoticeId = alarmNotice.Id,
+                    Title = alarmNotice.Title,
+                    Content = alarmNotice.Content
+                };
+
+                // 将告警数据推送到Redis
+                await redisDb.StringSetAsync(redisKey, JsonSerializer.Serialize(alarmData, Options.CustomJsonSerializerOptions), TimeSpan.FromHours(24));
+                
+                _logger.LogInformation($"氧浓度告警已推送到Redis: 房间号={data.RoomNumber}, 异常类型={abnormalType}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"推送氧浓度告警到Redis失败: 房间号={data.RoomNumber}");
             }
         }
 
