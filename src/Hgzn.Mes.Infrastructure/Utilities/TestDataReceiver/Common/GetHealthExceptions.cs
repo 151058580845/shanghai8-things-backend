@@ -11,6 +11,27 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
     public static class GetHealthExceptions
     {
         /// <summary>
+        /// 公共定义_阵列馈电_ZXWL-SL-1
+        /// </summary>
+        /// <param name="ulDevHealthState"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static List<string> GetXT_103_SL_1CommonHealthExceptionName(byte[] ulDevHealthState)
+        {
+            List<string> exceptions = new List<string>();
+            if (ulDevHealthState[0] == 0)
+            {
+                exceptions.Add(General_StatusType.DeviceHealthNotAcquired.GetDescription());
+                return exceptions;
+            }
+            if (ulDevHealthState[1] == (byte)XT_103_SL_1_OperationStatusEnum.Limit) exceptions.Add("横移轴状态" + XT_103_SL_1_OperationStatusEnum.Limit.GetDescription());
+            if (ulDevHealthState[2] == (byte)XT_103_SL_1_OperationStatusEnum.Limit) exceptions.Add("升降轴状态" + XT_103_SL_1_OperationStatusEnum.Limit.GetDescription());
+            if (ulDevHealthState[2] == (byte)XT_103_SL_1_OperationStatusEnum.Limit) exceptions.Add("前进轴状态" + XT_103_SL_1_OperationStatusEnum.Limit.GetDescription());
+            if (ulDevHealthState[2] == (byte)XT_103_SL_1_OperationStatusEnum.Limit) exceptions.Add("云台状态" + XT_103_SL_1_OperationStatusEnum.Limit.GetDescription());
+            return exceptions;
+        }
+
+        /// <summary>
         /// 公共定义_雷达转台_ZXWL-SL-2
         /// </summary>
         /// <param name="ulDevHealthState"></param>

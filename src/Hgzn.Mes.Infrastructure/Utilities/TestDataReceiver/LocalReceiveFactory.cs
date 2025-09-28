@@ -104,14 +104,16 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_7CommonHealthExceptionName, 2, 8));
 
                 // 202 低温环境红外制导控制半实物仿真系统
-                case 6 when devTypeId == 3:
+                case 7 when devTypeId == 3:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_202_SL_3CommonHealthExceptionName, 3, 6));
-                case 6 when devTypeId == 4:
+                case 7 when devTypeId == 4:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_4CommonHealthExceptionName, 6, 2));
-                case 6 when devTypeId == 7:
+                case 7 when devTypeId == 7:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_7CommonHealthExceptionName, 2, 8));
 
                 // 103 机械式制导控制半实物仿真系统
+                case 8 when devTypeId == 1:
+                    return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetXT_103_SL_1CommonHealthExceptionName, 3, 5));
                 case 8 when devTypeId == 2:
                     return (ILocalReceive)GetOrCreateLocalReceive(simuTestSysId, devTypeId, () => new GeneralLocalReceive(_equipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer, GetHealthExceptions.GetSL_2CommonHealthExceptionName, 3, 3));
                 case 8 when devTypeId == 4:
