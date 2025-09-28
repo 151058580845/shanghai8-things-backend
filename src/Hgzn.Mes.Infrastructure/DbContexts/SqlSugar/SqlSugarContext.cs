@@ -315,7 +315,6 @@ public sealed class SqlSugarContext
             var newDatabaseName = uri[1].Substring(uri[1].IndexOf('=') + 1);
             uri[1] = "DATABASE=postgres";
             string connectionString = string.Join(";", uri);
-
             var connConfig = new ConnectionConfig()
             {
                 ConfigId = DefaultConnectionStringName,

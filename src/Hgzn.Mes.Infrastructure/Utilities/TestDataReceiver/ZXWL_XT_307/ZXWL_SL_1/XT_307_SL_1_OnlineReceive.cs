@@ -217,7 +217,17 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             .WithUri(_equipId.ToString())
             .Build();
             // 推送ar的Data用于展示
-            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(ar.data)));
+            var payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(ar.data));
+            
+            // 使用支持断点续传的发布方法
+            if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+            {
+                await mqttWithOffline.PublishWithOfflineSupportAsync(topic, payload, priority: 0, maxRetryCount: 3);
+            }
+            else
+            {
+                await _mqttExplorer.PublishAsync(topic, payload);
+            }
         }
     }
 }

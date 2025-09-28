@@ -63,7 +63,7 @@ public class EquipConnectService : SugarCrudAppService<
             .WhereIF(protocolEnumNum != null && protocolEnumNum != 0, eq => eq.ProtocolEnum == (ConnType)protocolEnumNum!)
             .OrderBy(t => t.OrderNum)
             .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
-        
+
         // 从redis里查出来赋值给ReadDto
         foreach (var item in equips.Items)
         {
@@ -157,10 +157,17 @@ public class EquipConnectService : SugarCrudAppService<
         var connect = await Queryable.Where(it => it.Id == connectId)
            .Includes(t => t.EquipLedger, le => le!.EquipType)
            .FirstAsync();
-        await DbContext.Updateable<EquipConnect>()
-            .Where(ec => ec.Id == connectId)
-            .SetColumns(t => new EquipConnect { State = false })
-            .ExecuteCommandAsync();
+        
+        // 如果设备类型是数据采集器，则不修改State状态
+        var isDataCollector = connect.EquipLedger?.EquipType?.TypeName?.Contains("数据采集器") == true;
+        
+        if (!isDataCollector)
+        {
+            await DbContext.Updateable<EquipConnect>()
+                .Where(ec => ec.Id == connectId)
+                .SetColumns(t => new EquipConnect { State = false })
+                .ExecuteCommandAsync();
+        }
 
         await Publish(connect, CmdType.Conn, ConnStateType.Off, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);
     }
@@ -216,7 +223,17 @@ public class EquipConnectService : SugarCrudAppService<
                 .WithUri(connect.Id.ToString()).Build();
         if (await _mqttExplorer.IsConnectedAsync())
         {
-            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(conninfo)));
+            var payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(conninfo));
+            
+            // 使用支持断点续传的发布方法
+            if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+            {
+                await mqttWithOffline.PublishWithOfflineSupportAsync(topic, payload, priority: 0, maxRetryCount: 3);
+            }
+            else
+            {
+                await _mqttExplorer.PublishAsync(topic, payload);
+            }
         }
     }
 }

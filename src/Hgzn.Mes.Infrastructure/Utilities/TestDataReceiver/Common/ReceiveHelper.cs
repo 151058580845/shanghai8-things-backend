@@ -225,7 +225,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         }
 
         /// <summary>
-        /// 将异常发布到mqtt
+        /// 将异常发布到mqtt（支持断点续传）
         /// </summary>
         /// <param name="mqttExplorer"></param>
         /// <param name="equipNotice"></param>
@@ -233,15 +233,26 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         /// <returns></returns>
         public static async Task ExceptionPublishToMQTT(IMqttExplorer mqttExplorer, EquipNotice equipNotice, Guid equipId)
         {
-            // 将异常发布到mqtt
-            await mqttExplorer.PublishAsync(IotTopicBuilder
-            .CreateIotBuilder()
-            .WithPrefix(TopicType.Iot)
-            .WithDirection(MqttDirection.Up)
-            .WithTag(MqttTag.Alarm)
-            .WithDeviceType(EquipConnType.IotServer.ToString())
-            .WithUri(equipId.ToString()!)
-            .Build(), Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(equipNotice)));
+            var topic = IotTopicBuilder
+                .CreateIotBuilder()
+                .WithPrefix(TopicType.Iot)
+                .WithDirection(MqttDirection.Up)
+                .WithTag(MqttTag.Alarm)
+                .WithDeviceType(EquipConnType.IotServer.ToString())
+                .WithUri(equipId.ToString()!)
+                .Build();
+            
+            var payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(equipNotice));
+            
+            // 使用支持断点续传的发布方法，异常消息优先级较高
+            if (mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+            {
+                await mqttWithOffline.PublishWithOfflineSupportAsync(topic, payload, priority: 1, maxRetryCount: 5);
+            }
+            else
+            {
+                await mqttExplorer.PublishAsync(topic, payload);
+            }
         }
 
         /// <summary>

@@ -165,7 +165,17 @@ namespace Hgzn.Mes.Iot.Mqtt
         {
             var newTopic = topic;
             newTopic.Direction = MqttDirection.Down;
-            await _mqttExplorer.PublishAsync(newTopic.ToString(), new DeviceCalibrationMsg().AsFrame());
+            var payload = new DeviceCalibrationMsg().AsFrame();
+            
+            // 使用支持断点续传的发布方法
+            if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+            {
+                await mqttWithOffline.PublishWithOfflineSupportAsync(newTopic.ToString(), payload, priority: 0, maxRetryCount: 3);
+            }
+            else
+            {
+                await _mqttExplorer.PublishAsync(newTopic.ToString(), payload);
+            }
             _logger.LogInformation($"device: {topic.EquipType} time calibrate succeed");
         }
     }

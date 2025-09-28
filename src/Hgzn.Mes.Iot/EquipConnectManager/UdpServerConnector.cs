@@ -150,7 +150,16 @@ public class UdpServerConnector : EquipConnectorBase
                             .WithTag(MqttTag.Transmit)
                             .WithDeviceType(EquipConnType.IotServer.ToString())
                             .WithUri(_equipConnect.Id.ToString()).Build();
-            await _mqttExplorer.PublishAsync(topic, buffer);
+
+            // 使用支持断点续传的发布方法
+            if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+            {
+                await mqttWithOffline.PublishWithOfflineSupportAsync(topic, buffer, priority: 0, maxRetryCount: 3);
+            }
+            else
+            {
+                await _mqttExplorer.PublishAsync(topic, buffer);
+            }
             _forwardNum = 0;
         }
         _forwardNum++;

@@ -31,13 +31,23 @@ namespace Hgzn.Mes.WebApi.Worker
                 var equips = await _ledgerService.GetMissingDevicesAlarmAsync();
                 var tasks = equips.Select(async e =>
                 {
-                    await _mqttExplorer.PublishAsync(UserTopicBuilder
+                    var topic = UserTopicBuilder
                         .CreateUserBuilder()
                         .WithPrefix(TopicType.App)
                         .WithDirection(MqttDirection.Up)
                         .WithTag(MqttTag.Alarm)
                         .WithUri(e.EquipCode!)
-                        .Build(), []);
+                        .Build();
+                    
+                    // 使用支持断点续传的发布方法，告警消息优先级较高
+                    if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+                    {
+                        await mqttWithOffline.PublishWithOfflineSupportAsync(topic, [], priority: 1, maxRetryCount: 5);
+                    }
+                    else
+                    {
+                        await _mqttExplorer.PublishAsync(topic, []);
+                    }
                 });
                 await Task.WhenAll(tasks);
                 await Task.Delay(15 * 60 * 1000);

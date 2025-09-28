@@ -99,7 +99,19 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             throw new ArgumentNullException("equip type not exist"))
                     .WithUri(id.ToString()).Build();
             if (await _mqttExplorer.IsConnectedAsync())
-                await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(startInfo)));
+            {
+                var payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(startInfo));
+                
+                // 使用支持断点续传的发布方法
+                if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+                {
+                    await mqttWithOffline.PublishWithOfflineSupportAsync(topic, payload, priority: 0, maxRetryCount: 3);
+                }
+                else
+                {
+                    await _mqttExplorer.PublishAsync(topic, payload);
+                }
+            }
         }
 
         /// <summary>
@@ -133,7 +145,17 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 StateType = ConnStateType.Stop,
             };
 
-            await _mqttExplorer.PublishAsync(topic, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(stopInfo)));
+            var payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(stopInfo));
+            
+            // 使用支持断点续传的发布方法
+            if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
+            {
+                await mqttWithOffline.PublishWithOfflineSupportAsync(topic, payload, priority: 0, maxRetryCount: 3);
+            }
+            else
+            {
+                await _mqttExplorer.PublishAsync(topic, payload);
+            }
         }
     }
 }
