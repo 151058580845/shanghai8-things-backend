@@ -263,13 +263,9 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                 {
                     LoggerAdapter.LogInformation($"接收到氧浓度数据: 房间号={oxygenData.RoomNumber}, 浓度={oxygenData.Concentration:F2}%, 设备ID={oxygenData.DeviceId}");
                     
-                    // 这里可以添加氧浓度数据的特殊处理逻辑
-                    // 例如：存储到数据库、触发告警、更新实时数据等
-                    
-                    // 示例：存储氧浓度数据到数据库
+                    // 存储氧浓度数据到数据库
                     await StoreOxygenConcentrationDataAsync(oxygenData);
-                    
-                    // 示例：检查氧浓度是否在正常范围内
+                    // 检查氧浓度是否在正常范围内
                     await CheckOxygenConcentrationAlarmAsync(oxygenData);
                 }
             }

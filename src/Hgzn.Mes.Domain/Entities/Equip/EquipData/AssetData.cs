@@ -43,14 +43,14 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData
         [Description("区域(面积)")]
         public decimal? Area { get; set; }
 
-        [Description("员工职位数量")]
-        public int? StaffPositions { get; set; }
-
-        [Description("员工年工时")]
-        public int? StaffAnnualHours { get; set; }
+        [Description("人力成本(元/小时)")]
+        public decimal? LaborCostPerHour { get; set; }
 
         [Description("系统能耗")]
         public decimal? SystemEnergyConsumption { get; set; }
+
+        [Description("燃料动力费(万元/小时)")]
+        public decimal? FuelPowerCostPerHour { get; set; }
 
         [Description("项目列表")]
         [SugarColumn(IsIgnore = true)]

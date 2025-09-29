@@ -15,6 +15,12 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
 {
     public class AssetDataServer : SugarCrudAppService<AssetData, Guid, AssetDataReadDto, AssetDataQueryDto, AssetDataCreateDto, AssetDataUpdateDto>, IAssetDataServer
     {
+        private readonly ITestDataService _testDataService;
+
+        public AssetDataServer(ITestDataService testDataService)
+        {
+            _testDataService = testDataService;
+        }
         public override async Task<IEnumerable<AssetDataReadDto>> GetListAsync(AssetDataQueryDto? queryDto = null)
         {
             SqlSugar.ISugarQueryable<AssetData> query = DbContext.Queryable<AssetData>();
@@ -111,8 +117,8 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             await CalculateCosts(entity, new AssetDataCreateDto 
             { 
                 Area = dto.Area,
-                StaffPositions = dto.StaffPositions,
-                StaffAnnualHours = dto.StaffAnnualHours,
+                LaborCostPerHour = dto.LaborCostPerHour,
+                FuelPowerCostPerHour = dto.FuelPowerCostPerHour,
                 Projects = dto.Projects
             });
             
@@ -181,6 +187,26 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 entity.ElectricityCost = Math.Round(systemStats.TotalWorkingHours * entity.SystemEnergyConsumption.Value * ELECTRICITY_UNIT_PRICE, 2);
             }
 
+            // 重新计算燃料动力费：前端输入的燃料动力费(万元/小时) × 系统总工作时长(小时)
+            if (entity.FuelPowerCostPerHour.HasValue && entity.FuelPowerCostPerHour.Value > 0 && systemStats.TotalWorkingHours > 0)
+            {
+                entity.FuelPowerCost = Math.Round(entity.FuelPowerCostPerHour.Value * systemStats.TotalWorkingHours, 2);
+            }
+            else
+            {
+                entity.FuelPowerCost = null; // 没有输入时不显示0，显示为null
+            }
+
+            // 重新计算人力成本
+            if (entity.LaborCostPerHour.HasValue && entity.LaborCostPerHour.Value > 0)
+            {
+                var (staffCount, staffWorkingHours) = await CalculateStaffWorkingData(entity.SystemName);
+                if (staffCount > 0 && staffWorkingHours > 0)
+                {
+                    entity.LaborCost = Math.Round(staffCount * staffWorkingHours * entity.LaborCostPerHour.Value, 2);
+                }
+            }
+
             // 重新计算各项日均费用
             decimal dailyFactoryFee = (entity.FactoryUsageFee ?? 0) / 365;
             decimal dailyEquipmentFee = (entity.EquipmentUsageFee ?? 0) / 365;
@@ -207,6 +233,9 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     dailyMaintenanceFee
                 ), 2);
             }
+
+            // 保存重新计算的数据到数据库
+            await DbContext.Updateable(entity).ExecuteCommandAsync();
         }
 
         /// <summary>
@@ -216,7 +245,6 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         {
             // 常量定义
             const decimal INFRASTRUCTURE_UNIT_PRICE = 1000m; // 基建单价，单位：元/平方米/年
-            const decimal LABOR_UNIT_PRICE = 50m; // 人工单价，单位：元/小时
             const decimal MAINTENANCE_RATE = 0.05m; // 设备保养费率
             const decimal ELECTRICITY_UNIT_PRICE = 0.8m; // 电费单价，单位：元/千瓦时
 
@@ -229,10 +257,14 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 entity.EquipmentUsageFee = Math.Round(dto.Projects.Sum(p => p.Amount ?? 0), 2);
             }
 
-            // 3. 人力成本 = 员工职位数量 × 员工年工时 × 人工单价（年费用）
-            if (entity.StaffPositions.HasValue && entity.StaffAnnualHours.HasValue)
+            // 3. 人力成本 = 人员岗位数量 × 人员年工时 × 人力成本单价（年费用）
+            if (entity.LaborCostPerHour.HasValue && entity.LaborCostPerHour.Value > 0)
             {
-                entity.LaborCost = Math.Round(entity.StaffPositions.Value * entity.StaffAnnualHours.Value * LABOR_UNIT_PRICE, 2);
+                var (staffCount, staffWorkingHours) = await CalculateStaffWorkingData(entity.SystemName);
+                if (staffCount > 0 && staffWorkingHours > 0)
+                {
+                    entity.LaborCost = Math.Round(staffCount * staffWorkingHours * entity.LaborCostPerHour.Value, 2);
+                }
             }
 
             // 6. 设备保养费用：按设备使用费的一定比例计算
@@ -247,8 +279,15 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 entity.ElectricityCost = Math.Round(systemStats.TotalWorkingHours * entity.SystemEnergyConsumption.Value * ELECTRICITY_UNIT_PRICE, 2);
             }
 
-            // 5. 燃料动力费：需要从外部获取，暂不计算
-            entity.FuelPowerCost = 0;
+            // 5. 燃料动力费：前端输入的燃料动力费(万元/小时) × 系统总工作时长(小时)
+            if (entity.FuelPowerCostPerHour.HasValue && entity.FuelPowerCostPerHour.Value > 0 && systemStats.TotalWorkingHours > 0)
+            {
+                entity.FuelPowerCost = Math.Round(entity.FuelPowerCostPerHour.Value * systemStats.TotalWorkingHours, 2);
+            }
+            else
+            {
+                entity.FuelPowerCost = null; // 没有输入时不显示0，显示为null
+            }
 
             // 7. 系统空置成本 = 空置天数 × (厂房使用费/365 + 设备使用费/365 + 设备保养费/365)
             decimal dailyFactoryFee = (entity.FactoryUsageFee ?? 0) / 365;
@@ -351,6 +390,102 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             {
                 Console.WriteLine($"计算系统工作统计数据失败: {ex.Message}");
                 return new SystemWorkingStats(); // 异常时返回空统计
+            }
+        }
+
+        /// <summary>
+        /// 计算人员工作数据
+        /// </summary>
+        /// <param name="systemName">系统名称</param>
+        /// <returns>人员数量和年工时</returns>
+        private async Task<(int staffCount, decimal workingHours)> CalculateStaffWorkingData(string systemName)
+        {
+            try
+            {
+                // 获取当前任务列表
+                var currentTasks = await _testDataService.GetCurrentListByTestAsync();
+                var systemTasks = currentTasks.Where(t => t.SysName == systemName).ToList();
+
+                if (!systemTasks.Any())
+                {
+                    return (0, 0);
+                }
+
+                int totalStaffCount = 0;
+                decimal totalWorkingHours = 0;
+
+                foreach (var task in systemTasks)
+                {
+                    // 计算人员岗位数量
+                    int taskStaffCount = 0;
+                    
+                    // 1. 仿真试验专业代表（通常1人）
+                    if (!string.IsNullOrEmpty(task.SimuResp))
+                    {
+                        taskStaffCount += 1;
+                    }
+
+                    // 2. 仿真试验参与人员（可能多人，用逗号分隔）
+                    if (!string.IsNullOrEmpty(task.SimuStaff))
+                    {
+                        var staffNames = task.SimuStaff.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        taskStaffCount += staffNames.Length;
+                    }
+
+                    totalStaffCount += taskStaffCount;
+
+                    // 计算人员年工时
+                    if (DateTime.TryParse(task.TaskStartTime, out DateTime startTime) &&
+                        DateTime.TryParse(task.TaskEndTime, out DateTime endTime))
+                    {
+                        var taskDuration = endTime - startTime;
+                        var workingDays = taskDuration.Days;
+
+                        // 获取系统工作统计数据来计算实际工作时长
+                        var roomId = GetRoomIdBySystemName(systemName);
+                        if (roomId != Guid.Empty)
+                        {
+                            var systemEquips = await DbContext.Queryable<EquipLedger>()
+                                .Where(x => x.RoomId == roomId && !x.SoftDeleted)
+                                .ToListAsync();
+
+                            if (systemEquips.Any())
+                            {
+                                // 获取任务期间的实际运行时长
+                                var runningData = await DbContext.Queryable<EquipDailyRuntime>()
+                                    .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
+                                    .Where(x => x.RecordDate >= startTime.Date && x.RecordDate <= endTime.Date)
+                                    .Where(x => x.RunningSeconds > 0)
+                                    .ToListAsync();
+
+                                // 按日期分组计算每日工作时长（取每天运行时间最长的设备）
+                                var dailyWorkingHours = runningData
+                                    .GroupBy(x => x.RecordDate.Date)
+                                    .Select(g => Math.Max(8, Math.Round((decimal)g.Max(x => x.RunningSeconds) / 3600, 2))) // 最少8小时，最多当天运行时间最长的设备运行时间
+                                    .Sum();
+
+                                totalWorkingHours += dailyWorkingHours;
+                            }
+                            else
+                            {
+                                // 没有设备数据时，按每天8小时计算
+                                totalWorkingHours += workingDays * 8;
+                            }
+                        }
+                        else
+                        {
+                            // 找不到房间时，按每天8小时计算
+                            totalWorkingHours += workingDays * 8;
+                        }
+                    }
+                }
+
+                return (totalStaffCount, totalWorkingHours);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"计算人员工作数据失败: {ex.Message}");
+                return (0, 0);
             }
         }
 

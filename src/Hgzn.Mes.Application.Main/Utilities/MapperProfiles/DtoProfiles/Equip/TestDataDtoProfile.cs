@@ -15,6 +15,9 @@ namespace Hgzn.Mes.Application.Main.Utilities.MapperProfiles.DtoProfiles.Equip
         {
             CreateMap<TestData, TestDataReadDto>().ForMember(d => d.ProductInfo, opt => opt.MapFrom(x => GetProductInfo(x)));
             CreateMap<TestDataCreateDto, TestData>();
+            CreateMap<TestDataUST, TestDataUSTReadDto>();
+            CreateMap<TestDataUSTCreateDto, TestDataUST>();
+            CreateMap<TestDataUSTUpdateDto, TestDataUST>();
         }
 
         public string GetProductInfo(TestData data)

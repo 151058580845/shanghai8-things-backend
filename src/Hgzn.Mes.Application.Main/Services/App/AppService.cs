@@ -6,6 +6,7 @@ using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Domain.Entities.Equip.EquipControl;
 using Hgzn.Mes.Domain.Entities.Equip.EquipData;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.ExperimentData;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
@@ -232,6 +233,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             #region 产品列表 (已关联数据库)
 
             List<TableDto> productReadDto = new List<TableDto>();
+            List<TableDto> deviceReadDto = new List<TableDto>();
             TableDto td = new TableDto()
             {
                 Title = "产品列表",
@@ -259,13 +261,41 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 }
             }
             productReadDto.Add(td);
+            
+            // UST 设备列表
+            TableDto ustTd = new TableDto()
+            {
+                Title = "UST设备列表",
+                Header = new List<List<string>>()
+                    {
+                        new List<string> { "name", "资产名称" },
+                        new List<string> { "validityPeriod", "有效期" },
+                    },
+                Data = new List<Dictionary<string, string>>()
+            };
+            if (currentTestInSystem != null)
+            {
+                if (currentTestInSystem?.UST != null && currentTestInSystem.UST.Any())
+                {
+                    foreach (TestDataUSTReadDto item in currentTestInSystem.UST)
+                    {
+                        ustTd.Data.Add(new Dictionary<string, string>()
+                        {
+                            { "name" , item.Name! },
+                            { "validityPeriod" , item.ValidityPeriod! },
+                        });
+                    }
+                }
+            }
+            deviceReadDto.Add(ustTd);
             read.ProductList = productReadDto;
-
+            read.DeviceList = deviceReadDto;
+            
             #endregion
 
             #region 摄像头数据 (已关联数据库)
 
-            read.CameraData = await _sysMgr.GetCameraData();
+            read.CameraData = await _sysMgr.GetCameraData(showSystemDetailQueryDto.systemName);
 
             #endregion
 
@@ -561,6 +591,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
             #region 按型号统计试验成本 (TypeTestCost)
 
             testRead.TypeTestCost = await CalculateTypeTestCost();
+
+            #endregion
+
+            #region 摄像头数据 (已关联数据库)
+
+            testRead.CameraData = await _sysMgr.GetCameraData("home");
 
             #endregion
 
@@ -1097,8 +1133,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     costBreakdown.ElectricityCost = Math.Round(totalWorkingHours * assetData.SystemEnergyConsumption.Value * 0.8m, 2);
                 }
 
-                // 燃料动力费（暂不计算）
-                costBreakdown.FuelPowerCost = 0;
+                // 燃料动力费基于实际工作时长（平摊到月）
+                if (assetData.FuelPowerCost.HasValue && assetData.FuelPowerCost.Value > 0)
+                {
+                    // 计算该月的工作时长占比，然后按比例分配年度燃料动力费
+                    decimal monthlyWorkingHoursRatio = totalWorkingHours > 0 ? totalWorkingHours / (365 * 24) : 0; // 简化计算，实际应该基于全年总工作时长
+                    costBreakdown.FuelPowerCost = Math.Round(assetData.FuelPowerCost.Value / 12, 2); // 暂时按月份平摊
+                }
+                else
+                {
+                    costBreakdown.FuelPowerCost = 0;
+                }
 
                 // 系统空置成本（空置天数的成本）
                 if (idleDays > 0)
@@ -1139,6 +1184,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 decimal totalEquipmentUsageFee = 0;
                 decimal totalLaborCost = 0;
                 decimal totalElectricityCost = 0;
+                decimal totalFuelPowerCost = 0;
                 decimal totalEquipmentMaintenanceCost = 0;
                 decimal totalSystemIdleCost = 0;
 
@@ -1161,6 +1207,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     totalEquipmentUsageFee += systemMonthlyCost.EquipmentUsageFee ?? 0;
                     totalLaborCost += systemMonthlyCost.LaborCost ?? 0;
                     totalElectricityCost += systemMonthlyCost.ElectricityCost ?? 0;
+                    totalFuelPowerCost += systemMonthlyCost.FuelPowerCost ?? 0;
                     totalEquipmentMaintenanceCost += systemMonthlyCost.EquipmentMaintenanceCost ?? 0;
                     totalSystemIdleCost += systemMonthlyCost.SystemIdleCost ?? 0;
                 }
@@ -1169,7 +1216,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 costBreakdown.EquipmentUsageFee = Math.Round(totalEquipmentUsageFee, 2);
                 costBreakdown.LaborCost = Math.Round(totalLaborCost, 2);
                 costBreakdown.ElectricityCost = Math.Round(totalElectricityCost, 2);
-                costBreakdown.FuelPowerCost = 0; // 暂不计算
+                costBreakdown.FuelPowerCost = Math.Round(totalFuelPowerCost, 2);
                 costBreakdown.EquipmentMaintenanceCost = Math.Round(totalEquipmentMaintenanceCost, 2);
                 costBreakdown.SystemIdleCost = Math.Round(totalSystemIdleCost, 2);
 

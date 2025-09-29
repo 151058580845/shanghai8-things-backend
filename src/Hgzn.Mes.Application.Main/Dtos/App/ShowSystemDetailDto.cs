@@ -78,6 +78,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         public List<TableDto>? ProductList { get; set; }
 
         /// <summary>
+        /// 设备清单
+        /// </summary>
+        public List<TableDto>? DeviceList { get; set; }
+
+        /// <summary>
         /// 摄像头信息
         /// </summary>
         public List<CameraDto>? CameraData { get; set; }

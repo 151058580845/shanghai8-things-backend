@@ -77,6 +77,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 按型号统计的试验成本
         /// </summary>
         public TypeTestCost TypeTestCost { get; set; } = new TypeTestCost();
+
+        /// <summary>
+        /// 摄像头信息
+        /// </summary>
+        public List<CameraDto>? CameraData { get; set; }
     }
 
     /// <summary>

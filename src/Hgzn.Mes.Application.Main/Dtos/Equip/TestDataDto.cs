@@ -50,6 +50,8 @@ public class TestDataReadDto : ReadDto
     public string ProductInfo { get; set; }
     public List<TestDataProductReadDto> UUT { get; set; }
     
+    public List<TestDataUSTReadDto>? UST { get; set; }
+    
     [Description("当前状态")]
     public string? Status { get; set; }
 
@@ -93,6 +95,9 @@ public class TestDataCreateDto : CreateDto
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
     public List<TestDataProductCreateDto>? UUT { get; set; }
+    
+    [JsonPropertyName("UST")]
+    public List<TestDataUSTCreateDto>? UST { get; set; }
 }
 
 public class TestDataUpdateDto : UpdateDto
@@ -132,6 +137,8 @@ public class TestDataUpdateDto : UpdateDto
     [Description("制导控制专业代表，多个人名用 英文‘,’ 分隔")]
     public string QncResp { get; set; }
     public List<TestDataProductUpdateDto> UUT { get; set; }
+    
+    public List<TestDataUSTUpdateDto>? UST { get; set; }
 }
 
 public class TestDataQueryDto : PaginatedQueryDto

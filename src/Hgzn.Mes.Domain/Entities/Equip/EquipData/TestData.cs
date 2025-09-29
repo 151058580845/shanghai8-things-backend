@@ -42,6 +42,8 @@ public class TestData : UniversalEntity
     public string? QncResp { get; set; }
 
     public List<TestDataProduct>? UUT { get; set; }
+    
+    public List<TestDataUST>? UST { get; set; }
 
 #if DEBUG
     public static TestData[] Seeds { get; } = new TestData[]

@@ -8,8 +8,6 @@ using Hgzn.Mes.Domain.Entities.System.Code;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Infrastructure.Utilities;
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Runtime.Serialization.Json;
 using Hgzn.Mes.Application.Main.Services.System.IService;
 using Hgzn.Mes.Application.Main.Services.System;
@@ -51,6 +49,7 @@ public class TestDataService : SugarCrudAppService<
             .WhereIF(!string.IsNullOrEmpty(queryDto.simuStaffCodes), t => t.simuStaffCodes.Contains(queryDto.simuStaffCodes))
             .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
             .Includes(x => x.UUT)
+            .Includes(x => x.UST)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
@@ -76,6 +75,7 @@ public class TestDataService : SugarCrudAppService<
               .WhereIF(!string.IsNullOrEmpty(queryDto.simuStaffCodes), t => t.simuStaffCodes.Contains(queryDto.simuStaffCodes))
               .WhereIF(!string.IsNullOrEmpty(queryDto.QncResp), t => t.QncResp.Contains(queryDto.QncResp))
               .Includes(x => x.UUT)
+            .Includes(x => x.UST)
               .OrderByDescending(x => x.TaskStartTime)
               .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
         return Mapper.Map<PaginatedList<TestDataReadDto>>(entities);
@@ -148,14 +148,16 @@ public class TestDataService : SugarCrudAppService<
                     {
                         // 如果存在，则更新主表和子表
                         DbContext.UpdateNav(existingData)
-                            .Include(x => x.UUT) // 包含子表
+                            .Include(x => x.UUT) // 包含UUT子表
+                            .Include(x => x.UST) // 包含UST子表
                             .ExecuteCommand();
                     }
                     else
                     {
                         // 如果不存在，则插入新记录
                         var inData = DbContext.InsertNav<TestData>(info)
-                            .Include(x => x.UUT) // 包含子表
+                            .Include(x => x.UUT) // 包含UUT子表
+                            .Include(x => x.UST) // 包含UST子表
                             .ExecuteCommand();
                         if (inData)
                         {
@@ -191,6 +193,7 @@ public class TestDataService : SugarCrudAppService<
         List<TestData> entities = await Queryable
             .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) < DateTime.Now.ToLocalTime() && DateTime.Parse(x.TaskEndTime) >= firstDayOfYear)
             .Includes(x => x.UUT)
+            .Includes(x => x.UST)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
@@ -202,6 +205,7 @@ public class TestDataService : SugarCrudAppService<
             .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) >= DateTime.Now.ToLocalTime() &&
                         x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) <= DateTime.Now.ToLocalTime())
             .Includes(x => x.UUT)
+            .Includes(x => x.UST)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
         IEnumerable<TestDataReadDto> ret = Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
@@ -213,6 +217,7 @@ public class TestDataService : SugarCrudAppService<
         List<TestData> entities = await Queryable
             .Where(x => x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) > DateTime.Now.ToLocalTime())
             .Includes(x => x.UUT)
+            .Includes(x => x.UST)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
         return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);

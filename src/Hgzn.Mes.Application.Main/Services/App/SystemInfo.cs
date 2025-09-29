@@ -455,15 +455,41 @@ namespace Hgzn.Mes.Application.Main.Services.App
             return runTime;
         }
 
-        public async Task<List<CameraDto>> GetCameraData()
+        public async Task<List<CameraDto>> GetCameraData(string? systemName = null)
         {
             List<CameraDto> cameraData = new List<CameraDto>();
-            string? url = await _baseConfigService.GetValueByKeyAsync("camera_ip");
+            
+            // 根据系统名称获取房间号，然后构建对应的摄像头配置key
+            string cameraIpKey = "camera_ip"; // 默认key
+            string cameraUserKey = "camera_user"; // 共用用户名，不需要加房间号
+            string cameraPasswordKey = "camera_password"; // 共用密码，不需要加房间号
+            
+            if (!string.IsNullOrEmpty(systemName))
+            {
+                if (systemName.Equals("home", StringComparison.OrdinalIgnoreCase))
+                {
+                    // 主页使用固定的 home 前缀
+                    cameraIpKey = "home_camera_ip";
+                }
+                else
+                {
+                    // 根据系统名称找到对应的房间号
+                    int roomNumber = GetRoomNumberBySystemName(systemName);
+                    if (roomNumber > 0)
+                    {
+                        // 只有摄像头IP需要加房间号前缀，用户名和密码保持共用
+                        cameraIpKey = $"{roomNumber}_camera_ip";
+                    }
+                }
+            }
+            
+            string? url = await _baseConfigService.GetValueByKeyAsync(cameraIpKey);
             if (url == null) return cameraData;
 
-            string? userName = await _baseConfigService.GetValueByKeyAsync("camera_user");
-            string? password = await _baseConfigService.GetValueByKeyAsync("camera_password");
+            string? userName = await _baseConfigService.GetValueByKeyAsync(cameraUserKey);
+            string? password = await _baseConfigService.GetValueByKeyAsync(cameraPasswordKey);
 
+            // 用英文逗号分隔多个摄像头IP
             List<string> ips = url.Split(',').ToList();
             foreach (string ip in ips)
             {
@@ -479,6 +505,29 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 });
             }
             return cameraData;
+        }
+
+        /// <summary>
+        /// 根据系统名称获取房间号
+        /// </summary>
+        /// <param name="systemName">系统名称</param>
+        /// <returns>房间号，如果未找到返回0</returns>
+        private int GetRoomNumberBySystemName(string systemName)
+        {
+            if (string.IsNullOrEmpty(systemName))
+                return 0;
+
+            // 遍历所有系统ID，找到匹配的系统名称
+            for (int systemId = 1; systemId <= 10; systemId++)
+            {
+                string mappedSystemName = TestEquipData.GetSystemName(systemId);
+                if (string.Equals(mappedSystemName, systemName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return TestEquipData.GetRoom(systemId);
+                }
+            }
+            
+            return 0; // 未找到对应的房间号
         }
 
         /// <summary>
