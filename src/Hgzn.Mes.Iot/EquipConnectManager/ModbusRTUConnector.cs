@@ -82,18 +82,26 @@ public class ModbusRTUConnector : EquipConnectorBase
     /// </summary>
     public override async Task CloseConnectionAsync()
     {
+        LoggerAdapter.LogDebug($"AG - ModbusRTU开始关闭连接");
+        
         // 停止定时器
-        _oxygenReadingTimer?.Dispose();
-        _oxygenReadingTimer = null!;
+        if (_oxygenReadingTimer != null)
+        {
+            LoggerAdapter.LogDebug($"AG - ModbusRTU停止氧浓度读取定时器");
+            _oxygenReadingTimer.Dispose();
+            _oxygenReadingTimer = null!;
+        }
 
         if (_modbusMaster != null)
         {
+            LoggerAdapter.LogDebug($"AG - ModbusRTU释放Modbus主站对象");
             _modbusMaster.Dispose();
             _modbusMaster = null!;
         }
 
         if (_serialPort != null && _serialPort.IsOpen)
         {
+            LoggerAdapter.LogDebug($"AG - ModbusRTU关闭串口连接");
             _serialPort.Close();
             _serialPort.Dispose();
             _serialPort = null!;
@@ -102,6 +110,8 @@ public class ModbusRTUConnector : EquipConnectorBase
         _isRunning = false;
         await UpdateStateAsync(ConnStateType.Stop);
         await UpdateOperationAsync(ConnStateType.Stop);
+        
+        LoggerAdapter.LogDebug($"AG - ModbusRTU连接关闭完成");
     }
 
     /// <summary>
@@ -133,14 +143,21 @@ public class ModbusRTUConnector : EquipConnectorBase
         if (connInfo?.ConnString is null)
             throw new ArgumentNullException(nameof(connInfo));
 
+        LoggerAdapter.LogDebug($"AG - ModbusRTU开始连接,连接字符串:{connInfo.ConnString}");
+
         // 反序列化为ModbusRtuConnInfo类型
         try
         {
             _connInfo = JsonSerializer.Deserialize<ModbusRtuConnInfo>(
                 connInfo.ConnString, Options.CustomJsonSerializerOptions)
                 ?? throw new ArgumentNullException("conn");
+            
+            LoggerAdapter.LogDebug($"AG - ModbusRTU配置解析成功,串口:COM{_connInfo.PortName},波特率:{_connInfo.BaudRate},从站地址:{_connInfo.slaveAddress}");
         }
-        catch (Exception e) { }
+        catch (Exception e) 
+        { 
+            LoggerAdapter.LogDebug($"AG - ModbusRTU配置解析失败: {e.Message}");
+        }
 
         try
         {
@@ -176,24 +193,30 @@ public class ModbusRTUConnector : EquipConnectorBase
             _serialPort.WriteTimeout = _connInfo.WriteTimeout;
 
             // 打开串口
+            LoggerAdapter.LogDebug($"AG - ModbusRTU尝试打开串口:COM{_connInfo.PortName}");
             _serialPort.Open();
+            LoggerAdapter.LogDebug($"AG - ModbusRTU串口打开成功");
 
             // 创建Modbus RTU主站
+            LoggerAdapter.LogDebug($"AG - ModbusRTU创建主站对象");
             _modbusMaster = ModbusSerialMaster.CreateRtu(_serialPort);
 
             // 配置默认重试参数
             _modbusMaster.Transport.Retries = 3;
             _modbusMaster.Transport.WaitToRetryMilliseconds = 100;
+            LoggerAdapter.LogDebug($"AG - ModbusRTU主站配置完成,重试次数:3,重试间隔:100ms");
 
             _isRunning = true;
 
             // 启动氧浓度读取定时器
+            LoggerAdapter.LogDebug($"AG - ModbusRTU启动氧浓度读取定时器,间隔:{READ_INTERVAL_MS}ms,转发率:每{FORWARD_RATE}次转发1次");
             _oxygenReadingTimer = new Timer(ReadOxygenConcentration, null, READ_INTERVAL_MS, READ_INTERVAL_MS);
 
             await UpdateStateAsync(ConnStateType.On);
             await UpdateOperationAsync(ConnStateType.On);
 
             LoggerAdapter.LogInformation($"Modbus RTU连接已建立，串口:{"COM" + _connInfo.PortName} 从站ID:{_connInfo.slaveAddress}");
+            LoggerAdapter.LogDebug($"AG - ModbusRTU连接建立完成,状态更新为On");
             return true;
         }
         catch (Exception ex)
@@ -238,10 +261,15 @@ public class ModbusRTUConnector : EquipConnectorBase
     private async void ReadOxygenConcentration(object? state)
     {
         if (!_isRunning || _modbusMaster == null)
+        {
+            LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度读取跳过,运行状态:{_isRunning},主站对象:{_modbusMaster != null}");
             return;
+        }
 
         try
         {
+            LoggerAdapter.LogDebug($"AG - ModbusRTU开始读取氧浓度,寄存器地址:0x0006,读取次数:{_readCount + 1}");
+            
             // 读取氧浓度寄存器（根据文档，从地址0x0006开始读取通道1的浓度值）
             var oxygenValues = await ReadHoldingRegistersAsync(0x0006, 1); // 读取通道1的16位整数浓度值
             
@@ -251,21 +279,29 @@ public class ModbusRTUConnector : EquipConnectorBase
                 // 根据文档，结果为实际浓度值扩大100倍，如25.4寄存器值为2540
                 float actualConcentration = rawValue / 100.0f;
 
-                LoggerAdapter.LogDebug($"氧浓度读取成功: 原始值={rawValue}, 实际浓度={actualConcentration:F2}%");
+                LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度读取成功,原始值:{rawValue},实际浓度:{actualConcentration:F2}%");
 
                 _readCount++;
+                LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度读取计数:{_readCount}/{FORWARD_RATE}");
                 
                 // 根据转发率决定是否转发数据
                 if (_readCount >= FORWARD_RATE)
                 {
+                    LoggerAdapter.LogDebug($"AG - ModbusRTU达到转发条件,开始转发氧浓度数据");
                     await ForwardOxygenDataAsync(actualConcentration);
                     _readCount = 0; // 重置计数器
+                    LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度转发完成,计数器已重置");
                 }
+            }
+            else
+            {
+                LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度读取返回空数据,数组长度:{oxygenValues.Length}");
             }
         }
         catch (Exception ex)
         {
             LoggerAdapter.LogError($"读取氧浓度失败: {ex.Message}");
+            LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度读取异常详情:{ex}");
         }
     }
 
@@ -276,9 +312,12 @@ public class ModbusRTUConnector : EquipConnectorBase
     {
         try
         {
+            LoggerAdapter.LogDebug($"AG - ModbusRTU开始转发氧浓度数据,浓度值:{concentration:F2}%");
+            
             // 根据配置获取本地IP地址，然后映射到房间号
             var localIp = GetLocalIpAddress();
             var roomNumber = GetRoomNumberByIp(localIp);
+            LoggerAdapter.LogDebug($"AG - ModbusRTU获取本地IP:{localIp},映射房间号:{roomNumber}");
 
             // 检查是否异常
             const float NORMAL_MIN = 19.5f;
@@ -287,6 +326,8 @@ public class ModbusRTUConnector : EquipConnectorBase
             int abnormalType = 0;
             if (concentration < NORMAL_MIN) abnormalType = 1; // 过低
             else if (concentration > NORMAL_MAX) abnormalType = 2; // 过高
+            
+            LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度异常检查,正常范围:{NORMAL_MIN}-{NORMAL_MAX}%,当前值:{concentration:F2}%,异常:{isAbnormal},异常类型:{abnormalType}");
 
             // 构建氧浓度数据
             var oxygenData = new
@@ -303,6 +344,7 @@ public class ModbusRTUConnector : EquipConnectorBase
             // 将数据序列化为字节数组
             var jsonData = JsonSerializer.Serialize(oxygenData, Options.CustomJsonSerializerOptions);
             var buffer = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度数据序列化完成,JSON长度:{jsonData.Length},字节数组长度:{buffer.Length}");
 
             // 构建MQTT主题（使用特殊的氧浓度设备类型）
             var topic = IotTopicBuilder.CreateIotBuilder()
@@ -311,22 +353,28 @@ public class ModbusRTUConnector : EquipConnectorBase
                             .WithTag(MqttTag.Transmit)
                             .WithDeviceType("OxygenConcentration") // 特殊的氧浓度设备类型
                             .WithUri(_equipConnect.Id.ToString()).Build();
+            
+            LoggerAdapter.LogDebug($"AG - ModbusRTU构建MQTT主题:{topic}");
 
             // 使用支持断点续传的发布方法
             if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
             {
+                LoggerAdapter.LogDebug($"AG - ModbusRTU使用断点续传发布MQTT消息");
                 await mqttWithOffline.PublishWithOfflineSupportAsync(topic, buffer, priority: 0, maxRetryCount: 3);
             }
             else
             {
+                LoggerAdapter.LogDebug($"AG - ModbusRTU使用普通方式发布MQTT消息");
                 await _mqttExplorer.PublishAsync(topic, buffer);
             }
 
             LoggerAdapter.LogInformation($"氧浓度数据已转发: 房间号={roomNumber}, 浓度={concentration:F2}%");
+            LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度数据转发完成");
         }
         catch (Exception ex)
         {
             LoggerAdapter.LogError($"转发氧浓度数据失败: {ex.Message}");
+            LoggerAdapter.LogDebug($"AG - ModbusRTU氧浓度数据转发异常详情:{ex}");
         }
     }
 
@@ -362,10 +410,15 @@ public class ModbusRTUConnector : EquipConnectorBase
         if (!_isRunning)
             throw new InvalidOperationException("Modbus RTU未连接");
 
-        return await _modbusMaster.ReadHoldingRegistersAsync(
+        LoggerAdapter.LogDebug($"AG - ModbusRTU读取保持寄存器,从站地址:{_connInfo.slaveAddress},起始地址:0x{startAddress:X4},数量:{numberOfPoints}");
+        
+        var result = await _modbusMaster.ReadHoldingRegistersAsync(
             _connInfo.slaveAddress,      // 使用配置中的从站地址
             startAddress,
             numberOfPoints);
+            
+        LoggerAdapter.LogDebug($"AG - ModbusRTU保持寄存器读取完成,返回数据长度:{result.Length}");
+        return result;
     }
 
     /// <summary>

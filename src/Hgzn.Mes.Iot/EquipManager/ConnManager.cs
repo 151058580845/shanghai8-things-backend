@@ -92,7 +92,7 @@ namespace Hgzn.Mes.Iot.EquipManager
                                 if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
                                 break;
                             case ConnType.ModbusRtu:
-                                equipConnector = new ModbusRTUConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType);
+                                equipConnector = new ModbusRTUConnector(_connectionMultiplexer, _mqtt, _client, _configuration, id.ToString(), connType);
                                 if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
                                 break;
                         }
