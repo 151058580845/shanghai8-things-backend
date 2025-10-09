@@ -114,16 +114,23 @@ public class TestDataService : SugarCrudAppService<
     {
         try
         {
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - 开始执行API批量导入");
+            
             var url = await _baseConfigService.GetValueByKeyAsync("import_plan_url");
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - 获取到导入URL: {url}");
 
             // 发送 GET 请求
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - 正在发送HTTP GET请求...");
             var response = await _httpClient.GetAsync(url);
 
             // 确保请求成功
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - HTTP响应状态码: {response.StatusCode}");
             response.EnsureSuccessStatusCode();
 
             // 读取响应内容
             var jsonResponse = await response.Content.ReadAsStringAsync();
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - 接收到JSON响应, 长度: {jsonResponse?.Length ?? 0} 字符");
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - JSON内容前500字符: {(jsonResponse?.Length > 500 ? jsonResponse.Substring(0, 500) : jsonResponse)}");
 
             var options = new JsonSerializerOptions
             {
@@ -131,58 +138,127 @@ public class TestDataService : SugarCrudAppService<
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull // 忽略 null 值
             };
 
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - 开始反序列化JSON数据...");
             var result = JsonSerializer.Deserialize<List<TestDataCreateDto>>(jsonResponse, options);
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - 反序列化完成, 共解析到 {result?.Count ?? 0} 条数据");
 
             var changeCount = 0;
             if (result.Any())
             {
+                LoggerAdapter.LogDebug($"AG - 试验计划导入 - 开始处理 {result.Count} 条试验计划数据...");
+                
+                var processedCount = 0;
                 foreach (var item in result)
                 {
+                    processedCount++;
+                    LoggerAdapter.LogDebug($"AG - 试验计划导入 - 处理第 {processedCount}/{result.Count} 条: TestDataId={item.TestDataId}, 试验名称={item.TaskName}");
+                    LoggerAdapter.LogDebug($"AG - 试验计划导入 - 该计划包含 UUT数量: {item.UUT?.Count ?? 0}, UST数量: {item.UST?.Count ?? 0}");
+                    
+                    // 记录UST详细信息
+                    if (item.UST != null && item.UST.Any())
+                    {
+                        foreach (var ust in item.UST)
+                        {
+                            LoggerAdapter.LogDebug($"AG - 试验计划导入 - UST设备: 编号={ust.Code}, 名称={ust.Name}, 型号={ust.ModelSpecification}, 有效期={ust.ValidityPeriod}");
+                        }
+                    }
+                    else
+                    {
+                        LoggerAdapter.LogDebug($"AG - 试验计划导入 - 该计划未包含UST数据");
+                    }
+                    
                     var info = Mapper.Map<TestData>(item);
+                    LoggerAdapter.LogDebug($"AG - 试验计划导入 - Mapper映射完成, UUT映射后数量: {info.UUT?.Count ?? 0}, UST映射后数量: {info.UST?.Count ?? 0}");
+                    
                     // 首先检查数据库中是否已存在相同 TestDataId 的记录
+                    LoggerAdapter.LogDebug($"AG - 试验计划导入 - 查询数据库是否存在TestDataId: {info.TestDataId}");
                     var existingData = DbContext.Queryable<TestData>()
                         .Where(x => x.TestDataId == info.TestDataId)
                         .First();
 
                     if (existingData != null)
                     {
+                        LoggerAdapter.LogDebug($"AG - 试验计划导入 - 找到已存在记录, ID={existingData.Id}, 执行更新操作");
+                        LoggerAdapter.LogDebug($"AG - 试验计划导入 - 更新前: 现有UUT数量: {existingData.UUT?.Count ?? 0}, 现有UST数量: {existingData.UST?.Count ?? 0}");
+                        
+                        // 更新现有数据的属性
+                        existingData.SysName = info.SysName;
+                        existingData.ProjectName = info.ProjectName;
+                        existingData.TaskName = info.TaskName;
+                        existingData.DevPhase = info.DevPhase;
+                        existingData.TaskStartTime = info.TaskStartTime;
+                        existingData.TaskEndTime = info.TaskEndTime;
+                        existingData.ReqDep = info.ReqDep;
+                        existingData.ReqManager = info.ReqManager;
+                        existingData.ReqManagerCode = info.ReqManagerCode;
+                        existingData.GncResp = info.GncResp;
+                        existingData.GncRespCode = info.GncRespCode;
+                        existingData.SimuResp = info.SimuResp;
+                        existingData.simuRespCode = info.simuRespCode;
+                        existingData.SimuStaff = info.SimuStaff;
+                        existingData.simuStaffCodes = info.simuStaffCodes;
+                        existingData.QncResp = info.QncResp;
+                        existingData.UUT = info.UUT;
+                        existingData.UST = info.UST;
+                        
+                        LoggerAdapter.LogDebug($"AG - 试验计划导入 - 更新后: 新UUT数量: {existingData.UUT?.Count ?? 0}, 新UST数量: {existingData.UST?.Count ?? 0}");
+                        
                         // 如果存在，则更新主表和子表
-                        DbContext.UpdateNav(existingData)
+                        var updateResult = DbContext.UpdateNav(existingData)
                             .Include(x => x.UUT) // 包含UUT子表
                             .Include(x => x.UST) // 包含UST子表
                             .ExecuteCommand();
+                        
+                        LoggerAdapter.LogDebug($"AG - 试验计划导入 - 更新操作完成, 更新结果: {updateResult}");
+                        changeCount++;
                     }
                     else
                     {
+                        LoggerAdapter.LogDebug($"AG - 试验计划导入 - 未找到已存在记录, 执行新增操作");
+                        LoggerAdapter.LogDebug($"AG - 试验计划导入 - 新增数据: UUT数量: {info.UUT?.Count ?? 0}, UST数量: {info.UST?.Count ?? 0}");
+                        
                         // 如果不存在，则插入新记录
                         var inData = DbContext.InsertNav<TestData>(info)
                             .Include(x => x.UUT) // 包含UUT子表
                             .Include(x => x.UST) // 包含UST子表
                             .ExecuteCommand();
+                        
+                        LoggerAdapter.LogDebug($"AG - 试验计划导入 - 新增操作完成, 插入结果: {inData}");
                         if (inData)
                         {
                             changeCount++;
                         }
                     }
                 }
+                
+                LoggerAdapter.LogDebug($"AG - 试验计划导入 - 所有数据处理完成");
+            }
+            else
+            {
+                LoggerAdapter.LogDebug($"AG - 试验计划导入 - 未解析到任何数据或数据为空");
             }
 
+            LoggerAdapter.LogDebug($"AG - 试验计划导入 - 导入完成, 总共处理 {changeCount} 条记录");
             return changeCount;
         }
         catch (HttpRequestException ex)
         {
             // 处理 HTTP 请求异常
-            LoggerAdapter.LogError($"HTTP 请求失败: {ex.Message}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - HTTP 请求失败: {ex.Message}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - 异常堆栈: {ex.StackTrace}");
         }
         catch (JsonException ex)
         {
             // 处理 JSON 反序列化异常
-            LoggerAdapter.LogError($"JSON 反序列化失败: {ex.Message}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - JSON 反序列化失败: {ex.Message}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - 异常堆栈: {ex.StackTrace}");
         }
         catch (Exception ex)
         {
             // 处理其他异常
-            LoggerAdapter.LogError($"发生错误: {ex.Message}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - 发生未知错误: {ex.Message}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - 异常类型: {ex.GetType().Name}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - 异常堆栈: {ex.StackTrace}");
         }
         return 0;
     }

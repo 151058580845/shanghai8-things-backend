@@ -76,6 +76,7 @@ public class EquipLedgerService : SugarCrudAppService<
     public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListAsync(string? equipCode, string? equipName)
     {
         var entities = await DbContext.Queryable<EquipLedger>()
+            .Where(t => !string.IsNullOrEmpty(t.EquipName) && !string.IsNullOrEmpty(t.AssetNumber)) // 过滤没有设备名称或资产编号的记录
             .WhereIF(!string.IsNullOrEmpty(equipCode), t => t.EquipCode == equipCode)
             .WhereIF(!string.IsNullOrEmpty(equipName), t => t.EquipName == equipName)
             .ToListAsync();
@@ -103,7 +104,10 @@ public class EquipLedgerService : SugarCrudAppService<
     /// <returns></returns>
     public async Task<IEnumerable<EquipLedgerReadDto>> GetEquipsListInIdsAsync(List<Guid> equipIds)
     {
-        var entities = await Queryable.Where(t => equipIds.Contains(t.Id)).ToListAsync();
+        var entities = await Queryable
+            .Where(t => equipIds.Contains(t.Id))
+            .Where(t => !string.IsNullOrEmpty(t.EquipName) && !string.IsNullOrEmpty(t.AssetNumber)) // 过滤没有设备名称或资产编号的记录
+            .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
@@ -113,7 +117,10 @@ public class EquipLedgerService : SugarCrudAppService<
     /// <returns></returns>
     public async Task<PaginatedList<EquipLedgerSearchReadDto>> GetAppSearchAsync(int pageIndex, int pageSize)
     {
-        var entities = await Queryable.Where(t => t.DeviceStatus == DeviceStatus.Lost).Includes(t => t.EquipType)
+        var entities = await Queryable
+            .Where(t => t.DeviceStatus == DeviceStatus.Lost)
+            .Where(t => !string.IsNullOrEmpty(t.EquipName) && !string.IsNullOrEmpty(t.AssetNumber)) // 过滤没有设备名称或资产编号的记录
+            .Includes(t => t.EquipType)
             .Select(t => new EquipLedgerSearchReadDto()
             {
                 Id = t.Id,
@@ -132,13 +139,17 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public async Task<IEnumerable<EquipLedger>> GetEquipsListByRoomAsync(IEnumerable<Guid> rooms)
     {
-        var equipList = await Queryable.Where(t => t.RoomId != null && rooms.Contains(t.RoomId!.Value)).ToListAsync();
+        var equipList = await Queryable
+            .Where(t => t.RoomId != null && rooms.Contains(t.RoomId!.Value))
+            .Where(t => !string.IsNullOrEmpty(t.EquipName) && !string.IsNullOrEmpty(t.AssetNumber)) // 过滤没有设备名称或资产编号的记录
+            .ToListAsync();
         return Mapper.Map<IEnumerable<EquipLedger>>(equipList);
     }
 
     public override async Task<PaginatedList<EquipLedgerReadDto>> GetPaginatedListAsync(EquipLedgerQueryDto query)
     {
         var queryable = Queryable
+            .Where(m => !string.IsNullOrEmpty(m.EquipName) && !string.IsNullOrEmpty(m.AssetNumber)) // 过滤没有设备名称或资产编号的记录
             .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipCode.Contains(query.EquipCode!))
             .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.AssetNumber!.Contains(query.AssetNumber))
             .WhereIF(query.ResponsibleUserId is not null, m => m.ResponsibleUserId.Equals(query.ResponsibleUserId))
@@ -177,8 +188,9 @@ public class EquipLedgerService : SugarCrudAppService<
     public override async Task<IEnumerable<EquipLedgerReadDto>> GetListAsync(EquipLedgerQueryDto? query = null)
     {
         var queryable = query is null
-            ? Queryable
+            ? Queryable.Where(m => !string.IsNullOrEmpty(m.EquipName) && !string.IsNullOrEmpty(m.AssetNumber)) // 过滤没有设备名称或资产编号的记录
             : Queryable
+                .Where(m => !string.IsNullOrEmpty(m.EquipName) && !string.IsNullOrEmpty(m.AssetNumber)) // 过滤没有设备名称或资产编号的记录
                 .WhereIF(!string.IsNullOrEmpty(query.EquipCode), m => m.EquipCode.Contains(query.EquipCode!))
                 .WhereIF(!string.IsNullOrEmpty(query.AssetNumber), m => m.AssetNumber == query.AssetNumber)
                 .WhereIF(!string.IsNullOrEmpty(query.Query),
@@ -220,14 +232,20 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         try
         {
+            LoggerAdapter.LogDebug($"AG - 设备导入 - 开始执行API批量导入, URL: {url}");
+            
             // 发送 GET 请求
+            LoggerAdapter.LogDebug($"AG - 设备导入 - 正在发送HTTP GET请求...");
             var response = await _httpClient.GetAsync(url);
 
             // 确保请求成功
+            LoggerAdapter.LogDebug($"AG - 设备导入 - HTTP响应状态码: {response.StatusCode}");
             response.EnsureSuccessStatusCode();
 
             // 读取响应内容
             var jsonResponse = await response.Content.ReadAsStringAsync();
+            LoggerAdapter.LogDebug($"AG - 设备导入 - 接收到JSON响应, 长度: {jsonResponse?.Length ?? 0} 字符");
+            LoggerAdapter.LogDebug($"AG - 设备导入 - JSON内容前500字符: {(jsonResponse?.Length > 500 ? jsonResponse.Substring(0, 500) : jsonResponse)}");
 
             var options = new JsonSerializerOptions
             {
@@ -235,23 +253,35 @@ public class EquipLedgerService : SugarCrudAppService<
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull // 忽略 null 值
             };
 
+            LoggerAdapter.LogDebug($"AG - 设备导入 - 开始反序列化JSON数据...");
             var result = JsonSerializer.Deserialize<List<EquipLedgerImportDto>>(jsonResponse, options);
+            LoggerAdapter.LogDebug($"AG - 设备导入 - 反序列化完成, 共解析到 {result?.Count ?? 0} 条数据");
 
             var changeCount = 0;
             if (result != null && result.Any())
             {
+                LoggerAdapter.LogDebug($"AG - 设备导入 - 开始处理 {result.Count} 条设备数据...");
+                
+                var processedCount = 0;
                 foreach (var item in result)
                 {
+                    processedCount++;
+                    LoggerAdapter.LogDebug($"AG - 设备导入 - 处理第 {processedCount}/{result.Count} 条: 本地化资产编号={item.Localsn}, 设备名称={item.Assetname}");
+                    
                     // 映射新API格式到内部DTO
                     var equipLedgerDto = MapImportDtoToCreateDto(item);
+                    LoggerAdapter.LogDebug($"AG - 设备导入 - DTO映射完成: 设备编号={equipLedgerDto.EquipCode}, 资产编号={equipLedgerDto.AssetNumber}");
                     
                     // 检查是否已存在相同的本地化资产编号
+                    LoggerAdapter.LogDebug($"AG - 设备导入 - 查询数据库是否存在资产编号: {item.Localsn}");
                     var existingEquip = await DbContext.Queryable<EquipLedger>()
                         .Where(x => x.AssetNumber == item.Localsn && !x.SoftDeleted)
                         .FirstAsync();
 
                     if (existingEquip != null)
                     {
+                        LoggerAdapter.LogDebug($"AG - 设备导入 - 找到已存在设备, ID={existingEquip.Id}, 执行更新操作");
+                        
                         // 更新现有设备
                         var updateInfo = Mapper.Map<EquipLedger>(equipLedgerDto);
                         updateInfo.Id = existingEquip.Id;
@@ -259,37 +289,56 @@ public class EquipLedgerService : SugarCrudAppService<
                         updateInfo.CreatorId = existingEquip.CreatorId;
                         updateInfo.LastModificationTime = DateTime.Now;
                         
-                        changeCount += DbContext.Updateable<EquipLedger>(updateInfo)
+                        var updateResult = DbContext.Updateable<EquipLedger>(updateInfo)
                             .IgnoreColumns(x => new { x.CreationTime, x.CreatorId, x.SoftDeleted, x.DeleteTime })
                             .ExecuteCommand();
+                        
+                        LoggerAdapter.LogDebug($"AG - 设备导入 - 更新操作完成, 影响行数: {updateResult}");
+                        changeCount += updateResult;
                     }
                     else
                     {
+                        LoggerAdapter.LogDebug($"AG - 设备导入 - 未找到已存在设备, 执行新增操作");
+                        
                         // 新增设备
                         var info = Mapper.Map<EquipLedger>(equipLedgerDto);
-                        changeCount += DbContext.Insertable<EquipLedger>(info).ExecuteCommand();
+                        var insertResult = DbContext.Insertable<EquipLedger>(info).ExecuteCommand();
+                        
+                        LoggerAdapter.LogDebug($"AG - 设备导入 - 新增操作完成, 影响行数: {insertResult}");
+                        changeCount += insertResult;
                     }
                 }
+                
+                LoggerAdapter.LogDebug($"AG - 设备导入 - 所有数据处理完成");
+            }
+            else
+            {
+                LoggerAdapter.LogDebug($"AG - 设备导入 - 未解析到任何数据或数据为空");
             }
 
+            LoggerAdapter.LogDebug($"AG - 设备导入 - 导入完成, 总共影响 {changeCount} 条记录");
             return changeCount;
         }
         catch (HttpRequestException ex)
         {
             // 处理 HTTP 请求异常
-            LoggerAdapter.LogWarning($"HTTP 请求失败: {ex.Message}");
+            LoggerAdapter.LogWarning($"AG - 设备导入 - HTTP 请求失败: {ex.Message}");
+            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常堆栈: {ex.StackTrace}");
             throw;
         }
         catch (JsonException ex)
         {
             // 处理 JSON 反序列化异常
-            LoggerAdapter.LogWarning($"JSON 反序列化失败: {ex.Message}");
+            LoggerAdapter.LogWarning($"AG - 设备导入 - JSON 反序列化失败: {ex.Message}");
+            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常堆栈: {ex.StackTrace}");
             throw;
         }
         catch (Exception ex)
         {
             // 处理其他异常
-            LoggerAdapter.LogWarning($"发生错误: {ex.Message}");
+            LoggerAdapter.LogWarning($"AG - 设备导入 - 发生未知错误: {ex.Message}");
+            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常类型: {ex.GetType().Name}");
+            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常堆栈: {ex.StackTrace}");
             throw;
         }
     }
@@ -353,7 +402,9 @@ public class EquipLedgerService : SugarCrudAppService<
             .Includes(e => e.Room)
             .Where(e => e.IsMovable &&
                         (e.RoomId == null || (int)e.Room!.Purpose >= (int)RoomPurpose.Hallway) &&
-                        DateTime.Now.ToLocalTime().AddMinutes(-30) >= e.LastMoveTime).ToArrayAsync();
+                        DateTime.Now.ToLocalTime().AddMinutes(-30) >= e.LastMoveTime)
+            .Where(e => !string.IsNullOrEmpty(e.EquipName) && !string.IsNullOrEmpty(e.AssetNumber)) // 过滤没有设备名称或资产编号的记录
+            .ToArrayAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entities);
     }
 
@@ -361,6 +412,7 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         // var protocol = Enum.Parse<EquipConnType>(type, true);
         var entities = await Queryable
+            .Where(m => !string.IsNullOrEmpty(m.EquipName) && !string.IsNullOrEmpty(m.AssetNumber)) // 过滤没有设备名称或资产编号的记录
             .WhereIF(!string.IsNullOrEmpty(protocolEnum),
                 m => m.EquipType!.ProtocolEnum == protocolEnum &&
                      (!m.EquipName.Contains("测试") || !m.EquipCode.Contains("测试")))
@@ -494,6 +546,13 @@ public class EquipLedgerService : SugarCrudAppService<
                 if (hasRoomLocation)
                 {
                     roomStr = dataRow.GetCell(columnIndices["Rfid定位"])?.ToString()?.Trim();
+                }
+
+                // 如果设备名称或资产编号为空，跳过此条记录
+                if (string.IsNullOrEmpty(assetNameStr) || string.IsNullOrEmpty(localAssetNumberStr))
+                {
+                    LoggerAdapter.LogDebug($"AG - 跳过导入记录: 设备名称={assetNameStr ?? "空"}, 资产编号={localAssetNumberStr ?? "空"}");
+                    continue; // 跳过当前行
                 }
 
                 bool isExist = false;
@@ -651,6 +710,7 @@ public class EquipLedgerService : SugarCrudAppService<
     public async Task<IEnumerable<EquipLedgerSearchReadDto>> GetEquipExportRfid()
     {
         var entities = await DbContext.Queryable<EquipLedger>()
+            .Where(e => !string.IsNullOrEmpty(e.EquipName) && !string.IsNullOrEmpty(e.AssetNumber)) // 过滤没有设备名称或资产编号的记录
             .Select(e => new EquipLedgerSearchReadDto
             {
                 Id = e.Id,
@@ -684,7 +744,10 @@ public class EquipLedgerService : SugarCrudAppService<
 
     public async Task<IEnumerable<EquipLedgerReadDto>> GetListByAssetNumberAsync(string? assetNumber)
     {
-        var entitys = await Queryable.Where(x => x.AssetNumber == assetNumber).ToArrayAsync();
+        var entitys = await Queryable
+            .Where(x => x.AssetNumber == assetNumber)
+            .Where(x => !string.IsNullOrEmpty(x.EquipName) && !string.IsNullOrEmpty(x.AssetNumber)) // 过滤没有设备名称或资产编号的记录
+            .ToArrayAsync();
         return Mapper.Map<IEnumerable<EquipLedgerReadDto>>(entitys);
     }
 
@@ -771,6 +834,7 @@ public class EquipLedgerService : SugarCrudAppService<
         var query = Queryable
             .LeftJoin<Room>((el, r) => el.RoomId == r.Id)
             .LeftJoin<User>((el, r, u) => el.ResponsibleUserId == u.Id)
+            .Where((el, r, u) => !string.IsNullOrEmpty(el.EquipName) && !string.IsNullOrEmpty(el.AssetNumber)) // 过滤没有设备名称或资产编号的记录
             .WhereIF(!string.IsNullOrEmpty(queryDto.AssetNumber), (el, r, u) => el.AssetNumber!.Contains(queryDto.AssetNumber!))
             .WhereIF(!string.IsNullOrEmpty(queryDto.EquipName), (el, r, u) => el.EquipName.Contains(queryDto.EquipName!))
             .WhereIF(!string.IsNullOrEmpty(queryDto.EquipCode), (el, r, u) => el.EquipCode.Contains(queryDto.EquipCode!))

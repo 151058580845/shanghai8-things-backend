@@ -67,7 +67,19 @@ public class TestData : UniversalEntity
             simuRespCode = "种子试验专业代表编号1",
             SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号1",
-            QncResp = "种子制导控制专业代表1"
+            QncResp = "种子制导控制专业代表1",
+            UST = new List<TestDataUST>
+            {
+                new TestDataUST()
+                {
+                    Id = Guid.Parse("018060da-3cb6-4f80-b179-1d6319d9663a"),
+                    TestDataId = "1234",
+                    Code = "873112010314",
+                    ModelSpecification = "GEN40-38",
+                    Name = "直流稳压电源",
+                    ValidityPeriod = "2027-05-29 00:00:00.0"
+                }
+            }
         },
         new TestData()
         {
@@ -88,7 +100,19 @@ public class TestData : UniversalEntity
             simuRespCode = "种子试验专业代表编号2",
             SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号2",
-            QncResp = "种子制导控制专业代表2"
+            QncResp = "种子制导控制专业代表2",
+            UST = new List<TestDataUST>
+            {
+                new TestDataUST()
+                {
+                    Id = Guid.Parse("931946e0-1d9e-4e6f-a1a4-a10453ad6a3c"),
+                    TestDataId = "2345",
+                    Code = "873112010315",
+                    ModelSpecification = "GEN40-39",
+                    Name = "交流稳压电源",
+                    ValidityPeriod = "2027-06-15 00:00:00.0"
+                }
+            }
         },
         new TestData()
         {
@@ -109,7 +133,19 @@ public class TestData : UniversalEntity
             simuRespCode = "种子试验专业代表编号3",
             SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号3",
-            QncResp = "种子制导控制专业代表3"
+            QncResp = "种子制导控制专业代表3",
+            UST = new List<TestDataUST>
+            {
+                new TestDataUST()
+                {
+                    Id = Guid.Parse("a8f9e7d6-c5b4-a3b2-c1d0-e9f8a7b6c5d4"),
+                    TestDataId = "3456",
+                    Code = "873112010317",
+                    ModelSpecification = "GEN40-41",
+                    Name = "频谱分析仪",
+                    ValidityPeriod = "2027-08-10 00:00:00.0"
+                }
+            }
         },
         new TestData()
         {
@@ -130,7 +166,19 @@ public class TestData : UniversalEntity
             simuRespCode = "种子试验专业代表编号4",
             SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号4",
-            QncResp = "种子制导控制专业代表4"
+            QncResp = "种子制导控制专业代表4",
+            UST = new List<TestDataUST>
+            {
+                new TestDataUST()
+                {
+                    Id = Guid.Parse("d32cc889-bda8-4393-8ef4-887b2be5685d"),
+                    TestDataId = "4567",
+                    Code = "873112010316",
+                    ModelSpecification = "GEN40-40",
+                    Name = "数字示波器",
+                    ValidityPeriod = "2027-07-20 00:00:00.0"
+                }
+            }
         },
         new TestData()
         {
@@ -151,7 +199,19 @@ public class TestData : UniversalEntity
             simuRespCode = "种子试验专业代表编号5",
             SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号5",
-            QncResp = "种子制导控制专业代表5"
+            QncResp = "种子制导控制专业代表5",
+            UST = new List<TestDataUST>
+            {
+                new TestDataUST()
+                {
+                    Id = Guid.Parse("b7c8d9e0-f1a2-b3c4-d5e6-f7a8b9c0d1e2"),
+                    TestDataId = "5678",
+                    Code = "873112010318",
+                    ModelSpecification = "GEN40-42",
+                    Name = "信号发生器",
+                    ValidityPeriod = "2027-09-05 00:00:00.0"
+                }
+            }
         },
         new TestData()
         {
@@ -172,7 +232,19 @@ public class TestData : UniversalEntity
             simuRespCode = "种子试验专业代表编号6",
             SimuStaff = "种子试验参与人员1,种子试验参与人员2,种子试验参与人员3",
             simuStaffCodes = "种子试验参与人员代码编号6",
-            QncResp = "种子制导控制专业代表6"
+            QncResp = "种子制导控制专业代表6",
+            UST = new List<TestDataUST>
+            {
+                new TestDataUST()
+                {
+                    Id = Guid.Parse("c6d7e8f9-a0b1-c2d3-e4f5-a6b7c8d9e0f1"),
+                    TestDataId = "6789",
+                    Code = "873112010319",
+                    ModelSpecification = "GEN40-43",
+                    Name = "万用表",
+                    ValidityPeriod = "2027-10-01 00:00:00.0"
+                }
+            }
         },
     };
 #endif

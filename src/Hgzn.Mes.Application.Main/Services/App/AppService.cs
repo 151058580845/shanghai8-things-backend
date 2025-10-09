@@ -279,10 +279,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     foreach (TestDataUSTReadDto item in currentTestInSystem.UST)
                     {
+                        // 格式化有效期，只显示到日期
+                        var validityPeriod = item.ValidityPeriod;
+                        if (!string.IsNullOrEmpty(validityPeriod) && DateTime.TryParse(validityPeriod, out var date))
+                        {
+                            validityPeriod = date.ToString("yyyy-MM-dd");
+                        }
+                        
                         ustTd.Data.Add(new Dictionary<string, string>()
                         {
                             { "name" , item.Name! },
-                            { "validityPeriod" , item.ValidityPeriod! },
+                            { "validityPeriod" , validityPeriod! },
                         });
                     }
                 }
