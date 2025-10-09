@@ -182,7 +182,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 1,
                     Name = "微波/毫米波复合半实物仿真系统",
-                    SystemAbbreviationName = "射频复合",
+                    SystemAbbreviationName = "射频复合系统",
                     RoomId = Guid.Parse("4c246470-da66-4408-b287-09fd82ffa3d4"),
                     RoomNumber = "310",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -200,7 +200,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 2,
                     Name = "微波寻的半实物仿真系统",
-                    SystemAbbreviationName = "微波寻的",
+                    SystemAbbreviationName = "微波寻的系统",
                     RoomId = Guid.Parse("83168845-ef46-4aed-9187-de2024488230"),
                     RoomNumber = "307",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -210,7 +210,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 3,
                     Name = "射频/光学制导半实物仿真系统",
-                    SystemAbbreviationName = "射频/光学复合",
+                    SystemAbbreviationName = "射频/光学复合系统",
                     RoomId = Guid.Parse("7412dda2-5413-43ab-9976-255df60c3e14"),
                     RoomNumber = "314",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -220,7 +220,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 4,
                     Name = "紧缩场射频光学半实物仿真系统",
-                    SystemAbbreviationName = "紧缩场",
+                    SystemAbbreviationName = "紧缩场系统",
                     RoomId = Guid.Parse("09b374e8-4e7f-4146-9fe0-375edc7b9d7a"),
                     RoomNumber = "109",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -230,7 +230,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 5,
                     Name = "光学复合半实物仿真系统",
-                    SystemAbbreviationName = "光学复合",
+                    SystemAbbreviationName = "光学复合系统",
                     RoomId = Guid.Parse("0ac9885d-da23-4c0f-a66c-2ba467b8086c"),
                     RoomNumber = "108",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -240,7 +240,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 6,
                     Name = "三通道控制红外制导半实物仿真系统",
-                    SystemAbbreviationName = "三通道红外",
+                    SystemAbbreviationName = "三通道红外系统",
                     RoomId = Guid.Parse("24be4856-d95f-4ba0-b2aa-7049fedc3e39"),
                     RoomNumber = "121",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -250,7 +250,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 7,
                     Name = "低温环境红外制导控制半实物仿真系统",
-                    SystemAbbreviationName = "低温红外",
+                    SystemAbbreviationName = "低温红外系统",
                     RoomId = Guid.Parse("916edd0e-df70-4137-806c-41817587e438"),
                     RoomNumber = "202-2",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -260,7 +260,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 8,
                     Name = "机械式制导控制半实物仿真系统",
-                    SystemAbbreviationName = "机械阵",
+                    SystemAbbreviationName = "机械阵系统",
                     RoomId = Guid.Parse("7d6b322d-bf48-4963-bfe6-579560e84530"),
                     RoomNumber = "103",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -270,7 +270,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 9,
                     Name = "独立回路半实物仿真系统",
-                    SystemAbbreviationName = "独立回路",
+                    SystemAbbreviationName = "独立回路系统",
                     RoomId = Guid.Parse("a6ce46f1-d51f-45c8-a22e-2db3126da6cf"),
                     RoomNumber = "119",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
@@ -280,7 +280,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     SystemNum = 10,
                     Name = "独立回路/可见光制导半实物仿真系统",
-                    SystemAbbreviationName = "独立回路/可见光",
+                    SystemAbbreviationName = "独立回路/可见光系统",
                     RoomId = Guid.Parse("ddd64e08-5f2a-4578-84cb-2f90caa898e9"),
                     RoomNumber = "112",
                     TurntableEquipId = Guid.Parse("1e14e36a-ec3a-4358-aca4-8e655a252f54"),
