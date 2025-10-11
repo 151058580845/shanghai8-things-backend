@@ -39,34 +39,34 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             byte[] buffer = msg;
             // 仿真试验系统识别编码
             byte simuTestSysId = buffer[0];
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 仿真试验系统识别编码:{simuTestSysId}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 仿真试验系统识别编码:{simuTestSysId}");
             // 设备类型识别编码
             byte devTypeId = buffer[1];
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 设备类型识别编码:{devTypeId}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 设备类型识别编码:{devTypeId}");
             // 本机识别编码
             byte[] compId = new byte[20];
             Buffer.BlockCopy(buffer, 2, compId, 0, 20);
             string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
             // 最新需求,记录数据库的时候去掉引号保存
             compNumber = compNumber.Trim('"');
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 本机识别编码:{compNumber}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 本机识别编码:{compNumber}");
 
             // 工作模式信息
             byte[] workStyle = new byte[_WORKSTYLEANALYSISLENGTH];
             Buffer.BlockCopy(buffer, 22, workStyle, 0, _WORKSTYLEANALYSISLENGTH);
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 工作模式信息:{string.Join(", ", workStyle.Select(b => (int)b))}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 工作模式信息:{string.Join(", ", workStyle.Select(b => (int)b))}");
 
             // *** 健康状态信息
             // 状态类型
             byte[] stateType = new byte[_STATETYPEANALYSISLENGTH];
             Buffer.BlockCopy(buffer, 22 + _WORKSTYLEANALYSISLENGTH, stateType, 0, _STATETYPEANALYSISLENGTH);
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 健康状态信息:{string.Join(", ", stateType.Select(b => (int)b))}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 健康状态信息:{string.Join(", ", stateType.Select(b => (int)b))}");
 
             // *** 物理量
             // 剩余的都给物理量
             uint ulPhysicalQuantityCount;
             float[] floatData = GetPhysicalQuantity(buffer, 22 + _WORKSTYLEANALYSISLENGTH + _STATETYPEANALYSISLENGTH, out ulPhysicalQuantityCount);
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 物理量数量(不包含运行时长):{ulPhysicalQuantityCount}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 物理量数量(不包含运行时长):{ulPhysicalQuantityCount}");
 
             // *** 运行时间
             // 计算需要拷贝的起始位置和需要的总长度
@@ -79,7 +79,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
                 Buffer.BlockCopy(buffer, startPosition, runTime, 0, 4);
                 ulRunTime = BitConverter.ToUInt32(runTime, 0);
             }
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 运行时间:{ulRunTime}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 运行时间:{ulRunTime}");
 
             // *** 构建entity
             T entity = new T();
@@ -119,7 +119,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
 
             // *** 处理异常信息
             List<string> exception = _getHealthException(stateType);
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
 
             // 将试验数据记录数据库
             T receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
@@ -133,7 +133,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             //    Content = entity,
             //};
             //_sqlSugarClient.Insertable(new List<Receive>() { receive }).SplitTable().ExecuteCommand();
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 写入数据库完成");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 写入数据库完成");
             // 将试验数据的数据部分推送到mqtt给前端进行展示(暂时不进行数据展示)
             // await TestDataPublishToMQTT(receive);
             // 将异常和运行时长记录到redis
@@ -155,7 +155,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
                 // 将异常发布到mqtt,发布后会由webapi将异常记录到数据库
                 await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
             }
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 完毕");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 完毕");
             return _equipId;
         }
     }

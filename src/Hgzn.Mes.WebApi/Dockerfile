@@ -1,6 +1,19 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
+# 安装 SkiaSharp 所需的依赖库
+RUN apk add --no-cache \
+    libc6-compat \
+    fontconfig \
+    freetype \
+    libx11 \
+    libxext \
+    libxrender \
+    libxtst \
+    libxi \
+    libxrandr \
+    libxscrnsaver \
+    libgomp
 USER app
 WORKDIR /app
 EXPOSE 8080

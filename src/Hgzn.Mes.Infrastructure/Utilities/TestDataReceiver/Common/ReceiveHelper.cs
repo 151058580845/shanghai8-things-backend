@@ -47,15 +47,15 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
                 bufferLength = 0;
                 return false;
             }
-            LoggerAdapter.LogDebug($"AG - 远程/本地通用 - 报头符:{header}");
+            LoggerAdapter.LogInformation($"AG - 远程/本地通用 - 报头符:{header}");
 
             //报文长度
             bufferLength = BitConverter.ToUInt32(buffer, 1);
-            LoggerAdapter.LogDebug($"AG - 远程/本地通用 - 报文长度:{bufferLength}");
+            LoggerAdapter.LogInformation($"AG - 远程/本地通用 - 报文长度:{bufferLength}");
 
             //解析报文流水号（1字节）
             byte number = buffer[5];
-            LoggerAdapter.LogDebug($"AG - 远程/本地通用 - 报文流水号:{number}");
+            LoggerAdapter.LogInformation($"AG - 远程/本地通用 - 报文流水号:{number}");
 
             // 解析时间
             byte[] bYear = new byte[2];
@@ -67,15 +67,15 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             byte hour = buffer[10];
             byte minute = buffer[11];
             byte second = buffer[12];
-            LoggerAdapter.LogDebug($"AG - 远程/本地通用 - 时间:{year}-{month}-{day} {hour}:{minute}:{second}");
+            LoggerAdapter.LogInformation($"AG - 远程/本地通用 - 时间:{year}-{month}-{day} {hour}:{minute}:{second}");
 
             //报文数据
             var length = bufferLength - 13;
             message = new byte[length];
             Buffer.BlockCopy(buffer, BodyStartIndex, message, 0, message.Length);
             time = new DateTime(year, month, day, hour, minute, second);
-            LoggerAdapter.LogDebug($"AG - 远程/本地通用 - 仅正文长度:{length}");
-            LoggerAdapter.LogDebug($"AG - 远程/本地通用 - 仅正文数据: {BitConverter.ToString(message, 0, (int)length).Replace("-", " ")}");
+            LoggerAdapter.LogInformation($"AG - 远程/本地通用 - 仅正文长度:{length}");
+            LoggerAdapter.LogInformation($"AG - 远程/本地通用 - 仅正文数据: {BitConverter.ToString(message, 0, (int)length).Replace("-", " ")}");
 
             return true;
         }

@@ -110,7 +110,7 @@ public class UdpServerConnector : EquipConnectorBase
                 var remoteEndPoint = result.RemoteEndPoint;
                 var buffer = result.Buffer;
                 bool hasData = false;
-                LoggerAdapter.LogDebug($"AG - 收到Udp数据,数据来自{remoteEndPoint}");
+                LoggerAdapter.LogInformation($"AG - 收到Udp数据,数据来自{remoteEndPoint}");
                 // 在这里处理接收到的数据（示例：打印日志）
                 // 获取报文数据
                 byte[] newBuffer;
@@ -119,7 +119,7 @@ public class UdpServerConnector : EquipConnectorBase
                 hasData = ReceiveHelper.GetMessage(buffer, out bufferLength, out time, out newBuffer);
                 if (hasData && newBuffer != null)
                 {
-                    LoggerAdapter.LogDebug($"AG - Udp数据内容: {BitConverter.ToString(buffer, 0, (int)bufferLength).Replace("-", " ")}");
+                    LoggerAdapter.LogInformation($"AG - Udp数据内容: {BitConverter.ToString(buffer, 0, (int)bufferLength).Replace("-", " ")}");
                     // 获取部署在采集器里的数据库
                     LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, _localsqlSugarClinet, _connectionMultiplexer, _mqttExplorer);
                     await dispatch.Handle(buffer);

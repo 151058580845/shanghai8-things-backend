@@ -68,7 +68,7 @@ public class EquipTcpSession : TcpSession
                     _hasData = ReceiveHelper.GetMessage(buffer, out bufferLength, out time, out newBuffer);
                     if (_hasData && newBuffer != null)
                     {
-                        LoggerAdapter.LogDebug($"AG - Tcp数据内容: {BitConverter.ToString(buffer, 0, (int)bufferLength).Replace("-", " ")}");
+                        LoggerAdapter.LogInformation($"AG - Tcp数据内容: {BitConverter.ToString(buffer, 0, (int)bufferLength).Replace("-", " ")}");
                         if (_forwardLength != null && _forwardNum == _forwardLength)
                         {
                             var topic = IotTopicBuilder.CreateIotBuilder()
@@ -115,16 +115,16 @@ public class EquipTcpSession : TcpSession
         Ip = ipEndPoint.ToString();
         Mac = ipEndPoint.Address.ToString();
         base.OnConnected();
-        LoggerAdapter.LogDebug($"AG - tcp 客户端 {Ip} 连接");
+        LoggerAdapter.LogInformation($"AG - tcp 客户端 {Ip} 连接");
     }
 
     protected override async void OnReceived(byte[] buffer, long offset, long size)
     {
-        LoggerAdapter.LogDebug($"AG - 收到Tcp数据...");
+        LoggerAdapter.LogInformation($"AG - 收到Tcp数据...");
         _dataQueue.Enqueue(buffer);
         if (!_hasData)
         {
-            LoggerAdapter.LogDebug($"AG - 开始解析Tcp数据...");
+            LoggerAdapter.LogInformation($"AG - 开始解析Tcp数据...");
             _hasData = true;
             var cancellationTokenSource = new CancellationTokenSource();
             var token = cancellationTokenSource.Token;

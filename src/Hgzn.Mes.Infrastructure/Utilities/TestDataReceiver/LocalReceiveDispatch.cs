@@ -26,7 +26,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
             uint bufferLength;
             if (ReceiveHelper.GetMessage(msg, out bufferLength, out time, out newBuffer))
             {
-                LoggerAdapter.LogDebug($"AG - IOT本地解析的数据内容: {BitConverter.ToString(msg, 0, (int)bufferLength).Replace("-", " ")}");
+                LoggerAdapter.LogInformation($"AG - IOT本地解析的数据内容: {BitConverter.ToString(msg, 0, (int)bufferLength).Replace("-", " ")}");
 
                 // 使用 eventData.Data 作为 buffer
                 byte[] buffer = newBuffer;

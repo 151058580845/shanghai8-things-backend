@@ -49,11 +49,11 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
 
             // 仿真试验系统识别编码
             byte simuTestSysId = buffer[0];
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 仿真试验系统识别编码:{simuTestSysId}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 仿真试验系统识别编码:{simuTestSysId}");
 
             // 设备类型识别编码
             byte devTypeId = buffer[1];
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 设备类型识别编码:{devTypeId}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 设备类型识别编码:{devTypeId}");
 
             // 本机识别编码
             byte[] compId = new byte[20];
@@ -61,17 +61,17 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
             // 最新需求,记录数据库的时候去掉引号保存
             compNumber = compNumber.Trim('"');
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 本机识别编码:{compNumber}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 本机识别编码:{compNumber}");
 
             // 工作模式信息
             byte[] workStyle = new byte[10];
             Buffer.BlockCopy(buffer, 22, workStyle, 0, 10);
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 工作模式信息:{string.Join(", ", workStyle.Select(b => (int)b))}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 工作模式信息:{string.Join(", ", workStyle.Select(b => (int)b))}");
 
             // *** 健康状态信息
             // 状态类型
             byte stateType = buffer[32];
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 健康状态信息:{stateType}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 健康状态信息:{stateType}");
 
             // 自检状态1个uint,表中是4位的ulong,在C#中,直接用uint代替
 
@@ -90,7 +90,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             Buffer.BlockCopy(buffer, 41, physicalQuantityCount, 0, 4);
             uint ulPhysicalQuantityCount = BitConverter.ToUInt32(physicalQuantityCount, 0);
             ulPhysicalQuantityCount -= 1; // 减去1是因为最后一个物理量是运行时间,这个是后加的,且属性类型是uint,不好转成float一起赋值,在赋值完普通物理量后我会单独赋值
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 物理量数量(不包含运行时长):{ulPhysicalQuantityCount}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 物理量数量(不包含运行时长):{ulPhysicalQuantityCount}");
 
             // 剩余的都给物理量
             byte[] acquData = new byte[ulPhysicalQuantityCount * 4];
@@ -107,7 +107,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
                 Buffer.BlockCopy(buffer, startPosition, runTime, 0, 4);
                 ulRunTime = BitConverter.ToUInt32(runTime, 0);
             }
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 运行时间:{ulRunTime}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 运行时间:{ulRunTime}");
 
             // 将 byte[] 转换为 float[] , 每个 float 占用 4 字节
             int floatCount = acquData.Length / 4;
@@ -163,7 +163,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
                     // 获取电源电压异常
                     exception = GetSupplyVoltageExceptionName(ulSupplyVoltageState);
             }
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
 
             // 将试验数据记录数据库
             XT_307_SL_1_ReceiveData receive = await _sqlSugarClient.Insertable(entity).ExecuteReturnEntityAsync();
@@ -177,7 +177,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             //    Content = entity,
             //};
             //_sqlSugarClient.Insertable(new List<Receive>() { receive }).SplitTable().ExecuteCommand();
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 写入数据库完成");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 写入数据库完成");
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             // await TestDataPublishToMQTT(receive);
             // 将异常和运行时长记录到redis
@@ -200,7 +200,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
                 await ReceiveHelper.ExceptionPublishToMQTT(_mqttExplorer, equipNotice, _equipId);
             }
 
-            LoggerAdapter.LogDebug($"AG - 远程解析 - 完毕");
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 完毕");
             return _equipId;
         }
 

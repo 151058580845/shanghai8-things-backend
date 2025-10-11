@@ -30,6 +30,7 @@
     <PackageReference Include="NPOI" Version="2.7.3" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.22" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="UAParser" Version="3.1.47" />

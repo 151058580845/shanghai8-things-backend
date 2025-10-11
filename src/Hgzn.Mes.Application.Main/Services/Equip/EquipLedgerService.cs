@@ -232,20 +232,20 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         try
         {
-            LoggerAdapter.LogDebug($"AG - 设备导入 - 开始执行API批量导入, URL: {url}");
+            LoggerAdapter.LogInformation($"AG - 设备导入 - 开始执行API批量导入, URL: {url}");
             
             // 发送 GET 请求
-            LoggerAdapter.LogDebug($"AG - 设备导入 - 正在发送HTTP GET请求...");
+            LoggerAdapter.LogInformation($"AG - 设备导入 - 正在发送HTTP GET请求...");
             var response = await _httpClient.GetAsync(url);
 
             // 确保请求成功
-            LoggerAdapter.LogDebug($"AG - 设备导入 - HTTP响应状态码: {response.StatusCode}");
+            LoggerAdapter.LogInformation($"AG - 设备导入 - HTTP响应状态码: {response.StatusCode}");
             response.EnsureSuccessStatusCode();
 
             // 读取响应内容
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            LoggerAdapter.LogDebug($"AG - 设备导入 - 接收到JSON响应, 长度: {jsonResponse?.Length ?? 0} 字符");
-            LoggerAdapter.LogDebug($"AG - 设备导入 - JSON内容前500字符: {(jsonResponse?.Length > 500 ? jsonResponse.Substring(0, 500) : jsonResponse)}");
+            LoggerAdapter.LogInformation($"AG - 设备导入 - 接收到JSON响应, 长度: {jsonResponse?.Length ?? 0} 字符");
+            LoggerAdapter.LogInformation($"AG - 设备导入 - JSON内容前500字符: {(jsonResponse?.Length > 500 ? jsonResponse.Substring(0, 500) : jsonResponse)}");
 
             var options = new JsonSerializerOptions
             {
@@ -253,34 +253,34 @@ public class EquipLedgerService : SugarCrudAppService<
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull // 忽略 null 值
             };
 
-            LoggerAdapter.LogDebug($"AG - 设备导入 - 开始反序列化JSON数据...");
+            LoggerAdapter.LogInformation($"AG - 设备导入 - 开始反序列化JSON数据...");
             var result = JsonSerializer.Deserialize<List<EquipLedgerImportDto>>(jsonResponse, options);
-            LoggerAdapter.LogDebug($"AG - 设备导入 - 反序列化完成, 共解析到 {result?.Count ?? 0} 条数据");
+            LoggerAdapter.LogInformation($"AG - 设备导入 - 反序列化完成, 共解析到 {result?.Count ?? 0} 条数据");
 
             var changeCount = 0;
             if (result != null && result.Any())
             {
-                LoggerAdapter.LogDebug($"AG - 设备导入 - 开始处理 {result.Count} 条设备数据...");
+                LoggerAdapter.LogInformation($"AG - 设备导入 - 开始处理 {result.Count} 条设备数据...");
                 
                 var processedCount = 0;
                 foreach (var item in result)
                 {
                     processedCount++;
-                    LoggerAdapter.LogDebug($"AG - 设备导入 - 处理第 {processedCount}/{result.Count} 条: 本地化资产编号={item.Localsn}, 设备名称={item.Assetname}");
+                    LoggerAdapter.LogInformation($"AG - 设备导入 - 处理第 {processedCount}/{result.Count} 条: 本地化资产编号={item.Localsn}, 设备名称={item.Assetname}");
                     
                     // 映射新API格式到内部DTO
                     var equipLedgerDto = MapImportDtoToCreateDto(item);
-                    LoggerAdapter.LogDebug($"AG - 设备导入 - DTO映射完成: 设备编号={equipLedgerDto.EquipCode}, 资产编号={equipLedgerDto.AssetNumber}");
+                    LoggerAdapter.LogInformation($"AG - 设备导入 - DTO映射完成: 设备编号={equipLedgerDto.EquipCode}, 资产编号={equipLedgerDto.AssetNumber}");
                     
                     // 检查是否已存在相同的本地化资产编号
-                    LoggerAdapter.LogDebug($"AG - 设备导入 - 查询数据库是否存在资产编号: {item.Localsn}");
+                    LoggerAdapter.LogInformation($"AG - 设备导入 - 查询数据库是否存在资产编号: {item.Localsn}");
                     var existingEquip = await DbContext.Queryable<EquipLedger>()
                         .Where(x => x.AssetNumber == item.Localsn && !x.SoftDeleted)
                         .FirstAsync();
 
                     if (existingEquip != null)
                     {
-                        LoggerAdapter.LogDebug($"AG - 设备导入 - 找到已存在设备, ID={existingEquip.Id}, 执行更新操作");
+                        LoggerAdapter.LogInformation($"AG - 设备导入 - 找到已存在设备, ID={existingEquip.Id}, 执行更新操作");
                         
                         // 更新现有设备
                         var updateInfo = Mapper.Map<EquipLedger>(equipLedgerDto);
@@ -293,30 +293,30 @@ public class EquipLedgerService : SugarCrudAppService<
                             .IgnoreColumns(x => new { x.CreationTime, x.CreatorId, x.SoftDeleted, x.DeleteTime })
                             .ExecuteCommand();
                         
-                        LoggerAdapter.LogDebug($"AG - 设备导入 - 更新操作完成, 影响行数: {updateResult}");
+                        LoggerAdapter.LogInformation($"AG - 设备导入 - 更新操作完成, 影响行数: {updateResult}");
                         changeCount += updateResult;
                     }
                     else
                     {
-                        LoggerAdapter.LogDebug($"AG - 设备导入 - 未找到已存在设备, 执行新增操作");
+                        LoggerAdapter.LogInformation($"AG - 设备导入 - 未找到已存在设备, 执行新增操作");
                         
                         // 新增设备
                         var info = Mapper.Map<EquipLedger>(equipLedgerDto);
                         var insertResult = DbContext.Insertable<EquipLedger>(info).ExecuteCommand();
                         
-                        LoggerAdapter.LogDebug($"AG - 设备导入 - 新增操作完成, 影响行数: {insertResult}");
+                        LoggerAdapter.LogInformation($"AG - 设备导入 - 新增操作完成, 影响行数: {insertResult}");
                         changeCount += insertResult;
                     }
                 }
                 
-                LoggerAdapter.LogDebug($"AG - 设备导入 - 所有数据处理完成");
+                LoggerAdapter.LogInformation($"AG - 设备导入 - 所有数据处理完成");
             }
             else
             {
-                LoggerAdapter.LogDebug($"AG - 设备导入 - 未解析到任何数据或数据为空");
+                LoggerAdapter.LogInformation($"AG - 设备导入 - 未解析到任何数据或数据为空");
             }
 
-            LoggerAdapter.LogDebug($"AG - 设备导入 - 导入完成, 总共影响 {changeCount} 条记录");
+            LoggerAdapter.LogInformation($"AG - 设备导入 - 导入完成, 总共影响 {changeCount} 条记录");
             return changeCount;
         }
         catch (HttpRequestException ex)
@@ -361,7 +361,9 @@ public class EquipLedgerService : SugarCrudAppService<
             ValidityDate = ParseDate(importDto.ValidPeriod),
             Sn = importDto.Sn,
             EquipCode = importDto.Localsn ?? Guid.NewGuid().ToString(), // 如果没有本地化编号，使用GUID
-            State = true
+            State = true,
+            DeviceStatus = "Normal", // 默认设备状态为正常
+            DeviceLevel = "Basic"    // 默认设备重要度为普通设备
         };
     }
 
@@ -551,7 +553,7 @@ public class EquipLedgerService : SugarCrudAppService<
                 // 如果设备名称或资产编号为空，跳过此条记录
                 if (string.IsNullOrEmpty(assetNameStr) || string.IsNullOrEmpty(localAssetNumberStr))
                 {
-                    LoggerAdapter.LogDebug($"AG - 跳过导入记录: 设备名称={assetNameStr ?? "空"}, 资产编号={localAssetNumberStr ?? "空"}");
+                    LoggerAdapter.LogInformation($"AG - 跳过导入记录: 设备名称={assetNameStr ?? "空"}, 资产编号={localAssetNumberStr ?? "空"}");
                     continue; // 跳过当前行
                 }
 
