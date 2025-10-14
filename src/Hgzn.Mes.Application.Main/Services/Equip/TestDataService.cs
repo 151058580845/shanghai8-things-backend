@@ -115,7 +115,7 @@ public class TestDataService : SugarCrudAppService<
         try
         {
             LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始执行API批量导入");
-            
+
             var url = await _baseConfigService.GetValueByKeyAsync("import_plan_url");
             LoggerAdapter.LogInformation($"AG - 试验计划导入 - 获取到导入URL: {url}");
 
@@ -146,14 +146,14 @@ public class TestDataService : SugarCrudAppService<
             if (result.Any())
             {
                 LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始处理 {result.Count} 条试验计划数据...");
-                
+
                 var processedCount = 0;
                 foreach (var item in result)
                 {
                     processedCount++;
                     LoggerAdapter.LogInformation($"AG - 试验计划导入 - 处理第 {processedCount}/{result.Count} 条: TestDataId={item.TestDataId}, 试验名称={item.TaskName}");
                     LoggerAdapter.LogInformation($"AG - 试验计划导入 - 该计划包含 UUT数量: {item.UUT?.Count ?? 0}, UST数量: {item.UST?.Count ?? 0}");
-                    
+
                     // 记录UST详细信息
                     if (item.UST != null && item.UST.Any())
                     {
@@ -166,10 +166,10 @@ public class TestDataService : SugarCrudAppService<
                     {
                         LoggerAdapter.LogInformation($"AG - 试验计划导入 - 该计划未包含UST数据");
                     }
-                    
+
                     var info = Mapper.Map<TestData>(item);
                     LoggerAdapter.LogInformation($"AG - 试验计划导入 - Mapper映射完成, UUT映射后数量: {info.UUT?.Count ?? 0}, UST映射后数量: {info.UST?.Count ?? 0}");
-                    
+
                     // 首先检查数据库中是否已存在相同 TestDataId 的记录
                     LoggerAdapter.LogInformation($"AG - 试验计划导入 - 查询数据库是否存在TestDataId: {info.TestDataId}");
                     var existingData = DbContext.Queryable<TestData>()
@@ -180,7 +180,7 @@ public class TestDataService : SugarCrudAppService<
                     {
                         LoggerAdapter.LogInformation($"AG - 试验计划导入 - 找到已存在记录, ID={existingData.Id}, 执行更新操作");
                         LoggerAdapter.LogInformation($"AG - 试验计划导入 - 更新前: 现有UUT数量: {existingData.UUT?.Count ?? 0}, 现有UST数量: {existingData.UST?.Count ?? 0}");
-                        
+
                         // 更新现有数据的属性
                         existingData.SysName = info.SysName;
                         existingData.ProjectName = info.ProjectName;
@@ -200,15 +200,15 @@ public class TestDataService : SugarCrudAppService<
                         existingData.QncResp = info.QncResp;
                         existingData.UUT = info.UUT;
                         existingData.UST = info.UST;
-                        
+
                         LoggerAdapter.LogInformation($"AG - 试验计划导入 - 更新后: 新UUT数量: {existingData.UUT?.Count ?? 0}, 新UST数量: {existingData.UST?.Count ?? 0}");
-                        
+
                         // 如果存在，则更新主表和子表
                         var updateResult = DbContext.UpdateNav(existingData)
                             .Include(x => x.UUT) // 包含UUT子表
                             .Include(x => x.UST) // 包含UST子表
                             .ExecuteCommand();
-                        
+
                         LoggerAdapter.LogInformation($"AG - 试验计划导入 - 更新操作完成, 更新结果: {updateResult}");
                         changeCount++;
                     }
@@ -216,13 +216,13 @@ public class TestDataService : SugarCrudAppService<
                     {
                         LoggerAdapter.LogInformation($"AG - 试验计划导入 - 未找到已存在记录, 执行新增操作");
                         LoggerAdapter.LogInformation($"AG - 试验计划导入 - 新增数据: UUT数量: {info.UUT?.Count ?? 0}, UST数量: {info.UST?.Count ?? 0}");
-                        
+
                         // 如果不存在，则插入新记录
                         var inData = DbContext.InsertNav<TestData>(info)
                             .Include(x => x.UUT) // 包含UUT子表
                             .Include(x => x.UST) // 包含UST子表
                             .ExecuteCommand();
-                        
+
                         LoggerAdapter.LogInformation($"AG - 试验计划导入 - 新增操作完成, 插入结果: {inData}");
                         if (inData)
                         {
@@ -230,7 +230,7 @@ public class TestDataService : SugarCrudAppService<
                         }
                     }
                 }
-                
+
                 LoggerAdapter.LogInformation($"AG - 试验计划导入 - 所有数据处理完成");
             }
             else
@@ -265,37 +265,110 @@ public class TestDataService : SugarCrudAppService<
 
     public async Task<IEnumerable<TestDataReadDto>> GetHistoryListByTestAsync()
     {
-        DateTime firstDayOfYear = new DateTime(DateTime.Now.Year, 1, 1);
+        DateTime todayMidnight = DateTime.Now.Date; // 今天0点
+        DateTime firstDayOfYear = new DateTime(DateTime.Now.Year, 1, 1); // 今年1月1日0点
+
         List<TestData> entities = await Queryable
-            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) < DateTime.Now.ToLocalTime() && DateTime.Parse(x.TaskEndTime) >= firstDayOfYear)
+            .Where(x => x.TaskEndTime != null)
             .Includes(x => x.UUT)
             .Includes(x => x.UST)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
-        return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
+
+        // 规范化日期并筛选
+        var filteredEntities = entities.Where(x =>
+        {
+            try
+            {
+                DateTime parsedEndTime = DateTime.Parse(x.TaskEndTime!).Date;
+                
+                // 如果是最大值或最小值，直接使用，不进行规范化
+                DateTime endTime;
+                if (parsedEndTime >= DateTime.MaxValue.Date || parsedEndTime <= DateTime.MinValue.Date)
+                {
+                    endTime = parsedEndTime;
+                }
+                
+                return parsedEndTime < todayMidnight && parsedEndTime >= firstDayOfYear;
+            }
+            catch
+            {
+                return false; // 如果解析失败，排除该记录
+            }
+        }).ToList();
+
+        return Mapper.Map<IEnumerable<TestDataReadDto>>(filteredEntities);
     }
 
     public async Task<IEnumerable<TestDataReadDto>> GetCurrentListByTestAsync()
     {
+        DateTime today = DateTime.Now.Date.ToLocalTime();
+
         List<TestData> entities = await Queryable
-            .Where(x => x.TaskEndTime != null && DateTime.Parse(x.TaskEndTime) >= DateTime.Now.ToLocalTime() &&
-                        x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) <= DateTime.Now.ToLocalTime())
+            .Where(x => x.TaskEndTime != null && x.TaskStartTime != null)
             .Includes(x => x.UUT)
             .Includes(x => x.UST)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
-        IEnumerable<TestDataReadDto> ret = Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
+
+        // 规范化日期并筛选
+        var filteredEntities = entities.Where(x =>
+        {
+            try
+            {
+                DateTime parsedStartTime = DateTime.Parse(x.TaskStartTime!).Date;
+                DateTime parsedEndTime = DateTime.Parse(x.TaskEndTime!).Date;
+                
+                DateTime startTime = parsedStartTime; // 规范化到当天0点
+                
+                // 如果是最大值或最小值，直接使用，不进行规范化
+                DateTime endTime;
+                if (parsedEndTime >= DateTime.MaxValue.Date || parsedEndTime <= DateTime.MinValue.Date)
+                {
+                    endTime = parsedEndTime;
+                }
+                else
+                {
+                    endTime = parsedEndTime.AddDays(1).AddSeconds(-1); // 规范化到当天23:59:59
+                }
+                
+                return startTime < today && endTime > today;
+            }
+            catch
+            {
+                return false; // 如果解析失败，排除该记录
+            }
+        }).ToList();
+
+        IEnumerable<TestDataReadDto> ret = Mapper.Map<IEnumerable<TestDataReadDto>>(filteredEntities);
         return ret;
     }
 
     public async Task<IEnumerable<TestDataReadDto>> GetFeatureListByTestAsync()
     {
+        DateTime todayEnd = DateTime.Now.Date.AddDays(1).AddSeconds(-1); // 今天23:59:59
+
         List<TestData> entities = await Queryable
-            .Where(x => x.TaskStartTime != null && DateTime.Parse(x.TaskStartTime) > DateTime.Now.ToLocalTime())
+            .Where(x => x.TaskStartTime != null)
             .Includes(x => x.UUT)
             .Includes(x => x.UST)
             .OrderByDescending(x => x.TaskStartTime)
             .ToListAsync();
-        return Mapper.Map<IEnumerable<TestDataReadDto>>(entities);
+
+        // 规范化日期并筛选
+        var filteredEntities = entities.Where(x =>
+        {
+            try
+            {
+                DateTime startTime = DateTime.Parse(x.TaskStartTime!).Date; // 规范化到当天0点
+                return startTime > todayEnd;
+            }
+            catch
+            {
+                return false; // 如果解析失败，排除该记录
+            }
+        }).ToList();
+
+        return Mapper.Map<IEnumerable<TestDataReadDto>>(filteredEntities);
     }
 }

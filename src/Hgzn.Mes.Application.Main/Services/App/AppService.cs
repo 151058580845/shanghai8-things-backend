@@ -62,7 +62,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
                                                                          x.SysName.Trim() == showSystemDetailQueryDto.systemName.Trim())!;
             IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
 
-
             #region 人员展示 (已关联数据库)
 
             List<ExperimenterDto> experimentersData = new List<ExperimenterDto>
@@ -152,13 +151,15 @@ namespace Hgzn.Mes.Application.Main.Services.App
             int currentTestActivatedDay = 0;
             string currentTestDevPhase = "无";
             string currentTestTaskEndTime = "无";
+            double finishingRate = 0;
             if (currentTestInSystem != null)
             {
                 currentTestName = currentTestInSystem.TaskName;
                 if (DateTime.TryParse(currentTestInSystem.TaskStartTime, out DateTime startTime))
                     currentTestActivatedDay = (DateTime.Now.ToLocalTime() - startTime).Days;
                 currentTestDevPhase = currentTestInSystem.DevPhase;
-                currentTestTaskEndTime = currentTestInSystem.TaskEndTime;
+                currentTestTaskEndTime = DateTime.Parse(currentTestInSystem.TaskEndTime!).Date.ToString("yyyy-MM-dd");
+                finishingRate = Math.Round((double)currentTestActivatedDay / (DateTime.Parse(currentTestInSystem.TaskEndTime) - DateTime.Parse(currentTestInSystem.TaskStartTime)).Days, 2) * 100;
             }
             // 在本系统中的后续试验计划
             TestDataReadDto featureTestInSystem = feature.FirstOrDefault(x => showSystemDetailQueryDto.systemName != null &&
@@ -181,7 +182,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     new List<string>(){ "已开展天数", currentTestActivatedDay + "天" },
                     new List<string>(){ "当前研制阶段", currentTestDevPhase },
                     new List<string>(){ "当前试验计划结束日期", currentTestTaskEndTime }
-                }
+                },
+                FinishingRate = finishingRate,
             };
             read.FollowTask = new TaskDetailDto()
             {
@@ -261,7 +263,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 }
             }
             productReadDto.Add(td);
-            
+
             // UST 设备列表
             TableDto ustTd = new TableDto()
             {
@@ -285,7 +287,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         {
                             validityPeriod = date.ToString("yyyy-MM-dd");
                         }
-                        
+
                         ustTd.Data.Add(new Dictionary<string, string>()
                         {
                             { "name" , item.Name! },
@@ -297,7 +299,27 @@ namespace Hgzn.Mes.Application.Main.Services.App
             deviceReadDto.Add(ustTd);
             read.ProductList = productReadDto;
             read.DeviceList = deviceReadDto;
-            
+
+            #endregion
+
+            #region 该系统设备在线率
+
+            string? roomName = _sysMgr.SystemInfos.Where(x => x.Name == showSystemDetailQueryDto.systemName).FirstOrDefault()?.RoomNumber;
+            List<EquipConnect> connectEquips = new List<EquipConnect>();
+            try
+            {
+
+                connectEquips = _sqlSugarClient.Queryable<EquipConnect>()
+                   .Includes(el => el.EquipLedger)
+                   .Includes(el => el.EquipLedger!.Room).ToList();
+                connectEquips = connectEquips.Where(x => roomName != null && x.EquipLedger != null && x.EquipLedger != null && x.EquipLedger.Room != null && x.EquipLedger.Room.Name == roomName).ToList();
+            }
+            catch (Exception e) { }
+            int onlineCount = connectEquips.Where(x => x.State).Count();
+            int workingRateData = connectEquips.Count == 0 ? 0 : (int)((double)onlineCount / connectEquips.Count() * 100);
+            int offlineRateData = 100 - workingRateData;
+            read.OnlineRateData = new OnlineRateData() { WorkingRateData = workingRateData, FreeRateData = 0, OfflineRateData = offlineRateData };
+
             #endregion
 
             #region 摄像头数据 (已关联数据库)
@@ -360,9 +382,25 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 }
                 // 型号名称
                 string typeName = "空闲";
-                string ttypeName = current.FirstOrDefault(x => x.SysName.Trim() == sysInfo.Name.Trim())?.ProjectName!;
-                if (!string.IsNullOrEmpty(ttypeName))
-                    typeName = ttypeName;
+                // 任务名称
+                string taskName = "无";
+                // 当前试验天数
+                int finishingDays = 0;
+                TestDataReadDto? currentTestInSystem = current.FirstOrDefault(x => x.SysName.Trim() == sysInfo.Name.Trim());
+                if (currentTestInSystem != null)
+                {
+                    // 型号名称
+                    string ttypeName = currentTestInSystem.ProjectName!;
+                    if (!string.IsNullOrEmpty(ttypeName))
+                        typeName = ttypeName;
+                    // 任务名称
+                    string tTaskName = currentTestInSystem.TaskName!;
+                    if (!string.IsNullOrEmpty(tTaskName))
+                        taskName = tTaskName;
+                    // 当前试验天数
+                    if (DateTime.TryParse(currentTestInSystem.TaskStartTime, out DateTime startTime))
+                        finishingDays = (DateTime.Now.ToLocalTime() - startTime).Days;
+                }
 
                 list.Add(new SystemDeviceData()
                 {
@@ -374,6 +412,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     Status = status,
                     RoomId = sysInfo.RoomId.ToString(),
                     TypeName = typeName,
+                    CurrentTaskName = taskName,
+                    FinishingDays = finishingDays,
                 });
             }
             testRead.SystemDeviceList = list;
@@ -541,13 +581,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
             // *** 在线设备状态统计（在线率）
             // 获取在线设备
             int onlineCount = connectEquips.Where(x => x.State).Count();
-            int workingRateData = (int)((double)onlineCount / connectEquips.Count() * 100);
+            int workingRateData = connectEquips.Count == 0 ? 0 : (int)((double)onlineCount / connectEquips.Count() * 100);
             int offlineRateData = 100 - workingRateData;
             testRead.OnlineRateData = new OnlineRateData() { WorkingRateData = workingRateData, FreeRateData = 0, OfflineRateData = offlineRateData };
             // *** 在线设备状态统计（故障率）
             int abnormalSysCount = testRead.AbnormalDeviceList.Where(x => x.AbnormalCount > 0).Count();
             int sysCount = testRead.AbnormalDeviceList.Count();
-            int breakdownData = (int)((double)abnormalSysCount / (double)sysCount * 100);
+            int breakdownData = sysCount == 0 ? 0 : (int)((double)abnormalSysCount / (double)sysCount * 100);
             int healthData = 100 - breakdownData;
             testRead.FailureRateData = new FailureRateData() { BreakdownData = breakdownData, HealthData = healthData, PreferablyData = 0 };
 
@@ -607,6 +647,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
+            #region 各个系统的当前任务名称和已开展的天数
+
+
+
+            #endregion
+
             return testRead;
         }
 
@@ -645,7 +691,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     string systemName = TestEquipData.GetSystemName(systemId);
                     string roomIdStr = TestEquipData.GetRoomId(systemId);
-                    
+
                     if (!Guid.TryParse(roomIdStr, out Guid roomId))
                         continue;
 
@@ -692,11 +738,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     {
                         NaturalMonth month = (NaturalMonth)date.Month;
                         systemTestTimes.SystemMonthlyWorkDays[systemName][month]++;
-                        
+
                         // 累计所有系统的工作日期（去重）
                         allWorkingDates.Add(date);
                         monthlyAllSystemWorkingDates[month].Add(date);
-                        
+
                         if (date.Month == currentMonth)
                         {
                             currentMonthWorkingDates.Add(date);
@@ -748,9 +794,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
                 // 筛选出当前年度的试验计划
                 List<TestData> validTestData = currentYearTestData
-                    .Where(x => 
+                    .Where(x =>
                     {
-                        if (DateTime.TryParse(x.TaskStartTime, out DateTime start) && 
+                        if (DateTime.TryParse(x.TaskStartTime, out DateTime start) &&
                             DateTime.TryParse(x.TaskEndTime, out DateTime end))
                         {
                             return start.Year == currentYear || end.Year == currentYear;
@@ -825,11 +871,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         {
                             NaturalMonth month = (NaturalMonth)date.Month;
                             typeTestTimes.TypeMonthlyWorkDays[projectName][month]++;
-                            
+
                             // 累计所有型号的工作日期（去重）
                             allWorkingDates.Add(date);
                             monthlyAllTypeWorkingDates[month].Add(date);
-                            
+
                             if (date.Month == currentMonth)
                             {
                                 currentMonthWorkingDates.Add(date);
@@ -972,9 +1018,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
                 // 筛选出当前年度的试验计划
                 List<TestData> validTestData = currentYearTestData
-                    .Where(x => 
+                    .Where(x =>
                     {
-                        if (DateTime.TryParse(x.TaskStartTime, out DateTime start) && 
+                        if (DateTime.TryParse(x.TaskStartTime, out DateTime start) &&
                             DateTime.TryParse(x.TaskEndTime, out DateTime end))
                         {
                             return start.Year == currentYear || end.Year == currentYear;
@@ -1158,7 +1204,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     decimal dailyFactoryFee = (assetData.FactoryUsageFee ?? 0) / 365;
                     decimal dailyEquipmentFee = (assetData.EquipmentUsageFee ?? 0) / 365;
                     decimal dailyMaintenanceFee = (assetData.EquipmentMaintenanceCost ?? 0) / 365;
-                    
+
                     costBreakdown.SystemIdleCost = Math.Round(idleDays * (dailyFactoryFee + dailyEquipmentFee + dailyMaintenanceFee), 2);
                 }
 
@@ -1259,7 +1305,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     }
                 }
             }
-            
+
             return Guid.Empty; // 未找到对应的房间ID
         }
     }

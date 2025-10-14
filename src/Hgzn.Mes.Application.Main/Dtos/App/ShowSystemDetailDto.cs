@@ -86,6 +86,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 摄像头信息
         /// </summary>
         public List<CameraDto>? CameraData { get; set; }
+
+        /// <summary>
+        /// 设备在线率
+        /// </summary>
+        public OnlineRateData? OnlineRateData { get; set; }
     }
 
     /// <summary>
@@ -186,6 +191,11 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 任务详情（二维数组，每项为[label, value]）
         /// </summary>
         public List<List<string>>? Details { get; set; }
+
+        /// <summary>
+        /// 完成率
+        /// </summary>
+        public double? FinishingRate { get; set; }
     }
 
     /// <summary>

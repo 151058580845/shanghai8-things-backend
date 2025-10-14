@@ -156,7 +156,7 @@ public class TestData : UniversalEntity
             TaskName = "种子试验名称4",
             DevPhase = "种子当前型号研制阶段4",
             TaskStartTime = $"{new DateTime(2025,6,4)}",
-            TaskEndTime = $"{new DateTime(2025,7,4)}",
+            TaskEndTime = $"{new DateTime(2025,10,14)}",
             ReqDep = "种子申请项目办4",
             ReqManager = "种子申请调度4",
             ReqManagerCode = "种子申请调度员工编号4",

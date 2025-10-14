@@ -144,6 +144,16 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 系统所在的房间ID,用于获取MQTT推上来的温湿度数据,不展示
         /// </summary>
         public string? RoomId { get; set; }
+
+        /// <summary>
+        /// 当前任务名称
+        /// </summary>
+        public string? CurrentTaskName { get; set; }
+
+        /// <summary>
+        /// 已经开展天数
+        /// </summary>
+        public int? FinishingDays { get; set; }
     }
 
     /// <summary>
