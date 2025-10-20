@@ -216,8 +216,6 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
                 // 保存到数据库
                 await _client.Insertable(record).ExecuteCommandAsync();
-                
-                _logger.LogInformation($"温湿度数据已保存到数据库 - 房间ID: {roomId}, 温度: {rkData.Temperature}°C, 湿度: {rkData.Humidness}%");
             }
             catch (Exception ex)
             {

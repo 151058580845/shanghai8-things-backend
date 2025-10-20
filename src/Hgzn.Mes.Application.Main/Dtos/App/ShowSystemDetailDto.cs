@@ -91,6 +91,17 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 设备在线率
         /// </summary>
         public OnlineRateData? OnlineRateData { get; set; }
+
+        /// <summary>
+        /// 温度
+        /// </summary>
+        public double? Temperature { get; set; }
+
+        /// <summary>
+        /// 湿度
+        /// </summary>
+        public double? Humidity { get; set; }
+
     }
 
     /// <summary>

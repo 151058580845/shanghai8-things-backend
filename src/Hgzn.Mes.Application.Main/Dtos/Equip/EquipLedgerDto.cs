@@ -234,10 +234,31 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// 设备名称
     /// </summary>
     public string EquipName { get; set; } = null!;
+
+    /// <summary>
+    /// 设备类型ID
+    /// </summary>
+    public Guid? TypeId { get; set; }
+
+    /// <summary>
+    /// 规格型号
+    /// </summary>
+    public string? Model { get; set; }
+
+    /// <summary>
+    /// 购置日期
+    /// </summary>
+    public DateTime? PurchaseDate { get; set; }
+
     /// <summary>
     /// 资产编号
     /// </summary>
     public string? AssetNumber { get; set; }
+
+    /// <summary>
+    /// 集团资产编号
+    /// </summary>
+    public string? Sn { get; set; }
 
     /// <summary>
     /// 安装地点
@@ -270,7 +291,19 @@ public class EquipLedgerUpdateDto : UpdateDto
     /// </summary>
     public string? Remark { get; set; }
 
+    /// <summary>
+    /// 设备类型为读写器时触发，楼层关键节点
+    /// </summary>
+    [Description("是否是关卡")]
+    public bool? IsCustoms { get; set; } = false;
+
     public bool State { get; set; } = true;
+
+    /// <summary>
+    /// 排序号
+    /// </summary>
+    public int OrderNum { get; set; } = 0;
+
     /// <summary>
     /// 设备当前的IP地址
     /// </summary>

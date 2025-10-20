@@ -180,8 +180,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 {
                     new List<string>(){ "任务名称", currentTestName },
                     new List<string>(){ "已开展天数", currentTestActivatedDay + "天" },
-                    new List<string>(){ "当前研制阶段", currentTestDevPhase },
-                    new List<string>(){ "当前试验计划结束日期", currentTestTaskEndTime }
+                    new List<string>(){ "研制阶段", currentTestDevPhase },
+                    new List<string>(){ "结束日期", currentTestTaskEndTime }
                 },
                 FinishingRate = finishingRate,
             };
@@ -328,6 +328,20 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
+            #region 温湿度计数据
+
+            int iTemperature = 0;
+            int iHumidity = 0;
+            if (RKData.RoomId_TemperatureAndHumidness.ContainsKey(TestEquipData.HygrothermographRoom[TestEquipData.GetSystemRoom(showSystemDetailQueryDto.systemName!)]))
+            {
+                iTemperature = (int)RKData.RoomId_TemperatureAndHumidness[TestEquipData.HygrothermographRoom[TestEquipData.GetSystemRoom(showSystemDetailQueryDto.systemName!)]].Item1;
+                iHumidity = (int)RKData.RoomId_TemperatureAndHumidness[TestEquipData.HygrothermographRoom[TestEquipData.GetSystemRoom(showSystemDetailQueryDto.systemName!)]].Item2;
+            }
+            read.Temperature = iTemperature;
+            read.Humidity = iHumidity;
+
+            #endregion
+
             return read;
         }
 
@@ -357,10 +371,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 // 获取系统温湿度,这个数据本来是打算从后台内存中读取的,现在修改为根据MQTT推送的消息,在前端获取,所以现在随便传个数字过去就行,在前端改
                 int iTemperature = 0;
                 int iHumidity = 0;
-                if (RKData.RoomId_TemperatureAndHumidness.ContainsKey(sysInfo.RoomId))
+                if (RKData.RoomId_TemperatureAndHumidness.ContainsKey(TestEquipData.HygrothermographRoom[sysInfo.RoomId]))
                 {
-                    iTemperature = (int)RKData.RoomId_TemperatureAndHumidness[sysInfo.RoomId].Item1;
-                    iHumidity = (int)RKData.RoomId_TemperatureAndHumidness[sysInfo.RoomId].Item2;
+                    iTemperature = (int)RKData.RoomId_TemperatureAndHumidness[TestEquipData.HygrothermographRoom[sysInfo.RoomId]].Item1;
+                    iHumidity = (int)RKData.RoomId_TemperatureAndHumidness[TestEquipData.HygrothermographRoom[sysInfo.RoomId]].Item2;
                 }
                 // 获取系统是否存在异常
                 string status = "正常";

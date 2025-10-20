@@ -10,7 +10,7 @@ public class TestEquipData : UniversalEntity
 {
     [Description("仿真试验系统识别编码,设备类型识别编码,本机识别编码")]
     public byte[] TestEquip { get; set; } = null!;
-    
+
     [Description("仿真试验系统识别编码")]
     public byte SimuTestSysld { get; set; }
 
@@ -55,6 +55,26 @@ public class TestEquipData : UniversalEntity
     };
 
     /// <summary>
+    /// 根据仿真试验系统名获取协议上的房间
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public static Guid GetSystemRoom(string sysName) => sysName switch
+    {
+        "微波/毫米波复合半实物仿真系统" => new Guid("4c246470-da66-4408-b287-09fd82ffa3d4"),
+        "微波寻的半实物仿真系统" => new Guid("83168845-ef46-4aed-9187-de2024488230"),
+        "射频/光学制导半实物仿真系统" => new Guid("7412dda2-5413-43ab-9976-255df60c3e14"),
+        "紧缩场射频光学半实物仿真系统" => new Guid("09b374e8-4e7f-4146-9fe0-375edc7b9d7a"),
+        "光学复合半实物仿真系统" => new Guid("0ac9885d-da23-4c0f-a66c-2ba467b8086c"),
+        "三通道控制红外制导半实物仿真系统" => new Guid("24be4856-d95f-4ba0-b2aa-7049fedc3e39"),
+        "低温环境红外制导控制半实物仿真系统" => new Guid("00860af7-1e65-4085-ab2f-7af2396fd13d"),
+        "机械式制导控制半实物仿真系统" => new Guid("7d6b322d-bf48-4963-bfe6-579560e84530"),
+        "独立回路半实物仿真系统" => new Guid("ddd64e08-5f2a-4578-84cb-2f90caa898e9"),
+        "独立回路/可见光制导半实物仿真系统" => new Guid("a6ce46f1-d51f-45c8-a22e-2db3126da6cf"),
+        _ => Guid.Empty
+    };
+
+    /// <summary>
     /// 根据仿真试验系统识别编码获取房间id
     /// </summary>
     /// <param name="id"></param>
@@ -79,16 +99,33 @@ public class TestEquipData : UniversalEntity
     /// </summary>
     public static Dictionary<string, List<string>> EquivalentRoom { get; set; } = new Dictionary<string, List<string>>()
     {
-        { "4c246470-da66-4408-b287-09fd82ffa3d4",new List<string>{ "4c246470-da66-4408-b287-09fd82ffa3d4" } },
-        { "83168845-ef46-4aed-9187-de2024488230",new List<string>{ "83168845-ef46-4aed-9187-de2024488230" } },
-        { "7412dda2-5413-43ab-9976-255df60c3e14",new List<string>{ "7412dda2-5413-43ab-9976-255df60c3e14" } },
-        { "09b374e8-4e7f-4146-9fe0-375edc7b9d7a",new List<string>{ "09b374e8-4e7f-4146-9fe0-375edc7b9d7a" } },
-        { "0ac9885d-da23-4c0f-a66c-2ba467b8086c",new List<string>{ "0ac9885d-da23-4c0f-a66c-2ba467b8086c" } },
-        { "24be4856-d95f-4ba0-b2aa-7049fedc3e39",new List<string>{ "24be4856-d95f-4ba0-b2aa-7049fedc3e39" } },
-        { "00860af7-1e65-4085-ab2f-7af2396fd13d",new List<string>{ "00860af7-1e65-4085-ab2f-7af2396fd13d" } },
-        { "7d6b322d-bf48-4963-bfe6-579560e84530",new List<string>{ "7d6b322d-bf48-4963-bfe6-579560e84530" } },
-        { "ddd64e08-5f2a-4578-84cb-2f90caa898e9",new List<string>{ "ddd64e08-5f2a-4578-84cb-2f90caa898e9" } },
-        { "a6ce46f1-d51f-45c8-a22e-2db3126da6cf",new List<string>{ "a6ce46f1-d51f-45c8-a22e-2db3126da6cf" } },
+        { "4c246470-da66-4408-b287-09fd82ffa3d4",new List<string>{ "4c246470-da66-4408-b287-09fd82ffa3d4" } }, // 310
+        { "83168845-ef46-4aed-9187-de2024488230",new List<string>{ "83168845-ef46-4aed-9187-de2024488230" } }, // 307
+        { "7412dda2-5413-43ab-9976-255df60c3e14",new List<string>{ "7412dda2-5413-43ab-9976-255df60c3e14" } }, // 314
+        { "09b374e8-4e7f-4146-9fe0-375edc7b9d7a",new List<string>{ "09b374e8-4e7f-4146-9fe0-375edc7b9d7a" } }, // 109
+        { "0ac9885d-da23-4c0f-a66c-2ba467b8086c",new List<string>{ "0ac9885d-da23-4c0f-a66c-2ba467b8086c" } }, // 108
+        { "24be4856-d95f-4ba0-b2aa-7049fedc3e39",new List<string>{ "24be4856-d95f-4ba0-b2aa-7049fedc3e39" } }, // 121
+        { "00860af7-1e65-4085-ab2f-7af2396fd13d",new List<string>{ "00860af7-1e65-4085-ab2f-7af2396fd13d" } }, // 202-1
+        { "7d6b322d-bf48-4963-bfe6-579560e84530",new List<string>{ "7d6b322d-bf48-4963-bfe6-579560e84530" } }, // 103
+        { "ddd64e08-5f2a-4578-84cb-2f90caa898e9",new List<string>{ "ddd64e08-5f2a-4578-84cb-2f90caa898e9" } }, // 112
+        { "a6ce46f1-d51f-45c8-a22e-2db3126da6cf",new List<string>{ "a6ce46f1-d51f-45c8-a22e-2db3126da6cf" } }, // 119
+    };
+
+    /// <summary>
+    /// 协议上的房间并不一定是温湿度计实际安装的房间,比如310 微波/毫米波复合半实物仿真系统 , 温湿度计就放在306房间
+    /// </summary>
+    public static Dictionary<Guid, Guid> HygrothermographRoom { get; set; } = new Dictionary<Guid, Guid>()
+    {
+        { new Guid("4c246470-da66-4408-b287-09fd82ffa3d4"),new Guid("d235887e-ac0d-4c9f-ae8e-0d749f751bd8") }, // 协议310的温湿度计在306
+        { new Guid("83168845-ef46-4aed-9187-de2024488230"),new Guid("6c26b99f-d112-465b-919f-758a8b366d59") }, // 协议307的温湿度计在206
+        { new Guid("7412dda2-5413-43ab-9976-255df60c3e14"),new Guid("198f64a9-c9e5-4c71-9b2c-cf7e6f7fdd77") }, // 协议314的温湿度计在213
+        { new Guid("09b374e8-4e7f-4146-9fe0-375edc7b9d7a"),new Guid("09b374e8-4e7f-4146-9fe0-375edc7b9d7a") }, // 协议109的温湿度计在109
+        { new Guid("0ac9885d-da23-4c0f-a66c-2ba467b8086c"),new Guid("0ac9885d-da23-4c0f-a66c-2ba467b8086c") }, // 协议108的温湿度计在108
+        { new Guid("24be4856-d95f-4ba0-b2aa-7049fedc3e39"),new Guid("d902c47b-b178-49ca-8cb2-904a4c08dda6") }, // 协议121的温湿度计在122
+        { new Guid("00860af7-1e65-4085-ab2f-7af2396fd13d"),new Guid("a8bd6cc6-29b0-4e96-8eb1-e444df27de2d") }, // 协议202-1的温湿度计在111
+        { new Guid("7d6b322d-bf48-4963-bfe6-579560e84530"),new Guid("7d6b322d-bf48-4963-bfe6-579560e84530") }, // 协议103的温湿度计在103
+        { new Guid("ddd64e08-5f2a-4578-84cb-2f90caa898e9"),new Guid("ddd64e08-5f2a-4578-84cb-2f90caa898e9") }, // 协议112的温湿度计在112
+        { new Guid("a6ce46f1-d51f-45c8-a22e-2db3126da6cf"),new Guid("a6ce46f1-d51f-45c8-a22e-2db3126da6cf") }, // 协议119的温湿度计在119
     };
 
     /// <summary>

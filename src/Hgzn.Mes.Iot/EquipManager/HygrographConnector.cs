@@ -30,25 +30,27 @@ public class HygrographConnector : EquipConnectorBase
         : base(connectionMultiplexer, mqttExplorer, sugarClient, uri, connType)
     {
         _equipLedgers = sugarClient.Queryable<EquipLedger>()
-            .Where(t => t.EquipType!.ProtocolEnum == EquipConnType.RKServer.ToString()).ToList();
+            .Where(t => t.EquipType!.ProtocolEnum == EquipConnType.RKServer.ToString() && !t.SoftDeleted)
+            .ToList();
         var rooms = sugarClient.Queryable<Room>().ToList();
         foreach (var equipLedger in _equipLedgers)
         {
             if (int.TryParse(equipLedger.EquipCode, out int code))
             {
-                _dictionary.Add(code, equipLedger);
+                if (!_dictionary.TryAdd(code, equipLedger))
+                    LoggerAdapter.LogInformation($"AG - 温湿度计连接 - 设备编号 {code} 已存在于字典中，跳过重复添加。EquipId: {equipLedger.Id}");
             }
         }
 
         foreach (var room in rooms)
         {
-            _dictionaryRoom.Add(room.Id.ToString(), room);
+            if (!_dictionaryRoom.TryAdd(room.Id.ToString(), room))
+                LoggerAdapter.LogInformation($"AG - 温湿度计连接 - 房间ID {room.Id} 已存在于字典中，跳过重复添加。RoomName: {room.Name}");
         }
     }
 
     private void ServerOnOnReceiveRealtimeData(RKServer server, RealTimeData data)
     {
-        LoggerAdapter.LogInformation($"即将推送温湿度计的数据...");
         var deviceId = data.DeviceID;
         var data1 = data.NodeList[0];
         var entity = new HygrographData()
@@ -62,7 +64,7 @@ public class HygrographConnector : EquipConnectorBase
             Humidness = data1.Hum,
             CreateTime = DateTime.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
         };
-        Console.WriteLine(JsonSerializer.Serialize(entity));
+        LoggerAdapter.LogDebug("温湿度计即将推送:" + JsonSerializer.Serialize(entity));
 
         _mqttExplorer.PublishAsync(IotTopicBuilder
             .CreateIotBuilder()
@@ -97,12 +99,12 @@ public class HygrographConnector : EquipConnectorBase
 
     public override async Task<bool> ConnectAsync(ConnInfo connInfo)
     {
-        LoggerAdapter.LogInformation($"开始温湿度计的连接...");
+        LoggerAdapter.LogInformation($"AG - 温湿度计连接 - 开始温湿度计的连接...");
         if (connInfo?.ConnString is null) throw new ArgumentNullException("connIfo");
         SocketConnInfo conn = JsonSerializer.Deserialize<SocketConnInfo>(connInfo.ConnString, Options.CustomJsonSerializerOptions) ?? throw new ArgumentNullException("conn");
         try
         {
-            LoggerAdapter.LogInformation($"收到需要连接的温湿度计地址{conn.Address},端口{conn.Port}");
+            LoggerAdapter.LogInformation($"AG - 温湿度计连接 - 收到需要连接的温湿度计地址{conn.Address},端口{conn.Port}");
             _server = RKServer.Initiate(conn.Address, conn.Port);
             _server.OnReceiveRealtimeData += ServerOnOnReceiveRealtimeData;
             _server.Start();

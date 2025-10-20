@@ -102,15 +102,20 @@ namespace Hgzn.Mes.Iot.EquipManager
                     // Mqtt会让所有IOT都进行连接,不是该ip的就会连接失败,重新更新UI,所以只能让指定IP的IOT进行连接
                     JsonNode rkjn = JsonSerializer.Deserialize<JsonNode>(connectStr);
                     JsonNode? rkip = rkjn["address"];
-                    LoggerAdapter.LogDebug($"解析连接字符串中的地址是:{rkip}");
+                    LoggerAdapter.LogInformation($"AG - 温湿度计连接 - 解析连接字符串中的地址是:{rkip}");
                     string rklocalIp = _configuration.GetValue<string>("LocalIpAddress");
-                    LoggerAdapter.LogDebug($"本机配置的IP地址是:{rklocalIp}或127.0.0.1");
+                    LoggerAdapter.LogInformation($"AG - 温湿度计连接 - 本机配置的IP地址是:{rklocalIp}或127.0.0.1");
                     if (rkip.ToString() == "127.0.0.1" || (rklocalIp != null && rkip != null && rkip.ToString() == rklocalIp))
                     {
+                        LoggerAdapter.LogInformation($"AG - 温湿度计连接 - IP地址匹配成功，创建HygrographConnector");
                         equipConnector = new HygrographConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(),
                             connType);
                         if (!Connections.TryAdd(id, equipConnector))
                             throw new Exception("equip exist");
+                    }
+                    else
+                    {
+                        LoggerAdapter.LogWarning($"AG - 温湿度计连接 - IP地址不匹配，跳过连接器创建。期望:{rklocalIp}或127.0.0.1，实际:{rkip}");
                     }
                     break;
                 case EquipConnType.CardIssuer:

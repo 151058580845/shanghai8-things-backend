@@ -27,7 +27,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         public static DbConnOptions LOCALDBCONFIG = new DbConnOptions
         {
             DbType = DbType.OpenGauss,
-            Url = "PORT=5431;DATABASE=dev;HOST=localhost;PASSWORD=Dev@2024;USER ID=dev;No Reset On Close=true",
+            Url = "PORT=5432;DATABASE=dev;HOST=localhost;PASSWORD=Dev@2024;USER ID=dev;No Reset On Close=true",
             EnabledReadWrite = false,
             EnabledCodeFirst = true,
             EnabledSqlLog = true,
