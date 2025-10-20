@@ -270,6 +270,38 @@ public class EquipLedgerService : SugarCrudAppService<
                     
                     // 映射新API格式到内部DTO
                     var equipLedgerDto = MapImportDtoToCreateDto(item);
+
+                    // 补全与清洗：责任人、编码、名称等
+                    try
+                    {
+                        // 去除首尾空格
+                        equipLedgerDto.EquipName = equipLedgerDto.EquipName?.Trim() ?? string.Empty;
+                        equipLedgerDto.AssetNumber = equipLedgerDto.AssetNumber?.Trim();
+                        equipLedgerDto.Model = equipLedgerDto.Model?.Trim();
+                        equipLedgerDto.Sn = equipLedgerDto.Sn?.Trim();
+                        equipLedgerDto.ResponsibleUserName = equipLedgerDto.ResponsibleUserName?.Trim();
+
+                        // 责任人：按姓名查询用户ID
+                        if (!string.IsNullOrWhiteSpace(equipLedgerDto.ResponsibleUserName))
+                        {
+                            var user = await DbContext.Queryable<User>()
+                                .FirstAsync(x => x.Name == equipLedgerDto.ResponsibleUserName);
+                            if (user != null)
+                            {
+                                equipLedgerDto.ResponsibleUserId = user.Id;
+                            }
+                        }
+
+                        // 状态与级别兜底
+                        equipLedgerDto.State = equipLedgerDto.State;
+                        equipLedgerDto.DeviceStatus ??= DeviceStatus.Normal.ToString();
+                        equipLedgerDto.DeviceLevel ??= EquipLevelEnum.Basic.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggerAdapter.LogWarning($"AG - 设备导入 - 清洗/补全导入数据异常: {ex.Message}");
+                    }
+
                     LoggerAdapter.LogInformation($"AG - 设备导入 - DTO映射完成: 设备编号={equipLedgerDto.EquipCode}, 资产编号={equipLedgerDto.AssetNumber}");
                     
                     // 检查是否已存在相同的本地化资产编号
