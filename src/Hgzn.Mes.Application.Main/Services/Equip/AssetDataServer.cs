@@ -176,21 +176,37 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         private async Task RecalculateDynamicCosts(AssetData entity)
         {
             // 常量定义
-            const decimal ELECTRICITY_UNIT_PRICE = 0.8m; // 电费单价，单位：元/千瓦时
+            const decimal ELECTRICITY_UNIT_PRICE = 1m; // 电费单价，单位：元/千瓦时
 
             // 获取最新的系统工作统计数据
             SystemWorkingStats systemStats = await CalculateSystemWorkingStats(entity.SystemName);
 
-            // 重新计算电费：系统工作时长 × 系统能耗 × 电费单价
-            if (entity.SystemEnergyConsumption.HasValue && systemStats.TotalWorkingHours > 0)
+            // 重新计算电费：按“计划周期存在真实运行则按真实运行时长；否则按8小时/天”策略
+            if (entity.SystemEnergyConsumption.HasValue)
             {
-                entity.ElectricityCost = Math.Round(systemStats.TotalWorkingHours * entity.SystemEnergyConsumption.Value * ELECTRICITY_UNIT_PRICE, 2);
+                decimal adjustedTotalWorkingHours = await CalculateAdjustedTotalWorkingHours(entity.SystemName);
+                if (adjustedTotalWorkingHours > 0)
+                {
+                    entity.ElectricityCost = Math.Round(adjustedTotalWorkingHours * entity.SystemEnergyConsumption.Value * ELECTRICITY_UNIT_PRICE, 2);
+                }
+                else
+                {
+                    entity.ElectricityCost = null;
+                }
             }
 
-            // 重新计算燃料动力费：前端输入的燃料动力费(万元/小时) × 系统总工作时长(小时)
-            if (entity.FuelPowerCostPerHour.HasValue && entity.FuelPowerCostPerHour.Value > 0 && systemStats.TotalWorkingHours > 0)
+            // 重新计算燃料动力费：按同一策略（真实运行或8小时/天）
+            if (entity.FuelPowerCostPerHour.HasValue && entity.FuelPowerCostPerHour.Value > 0)
             {
-                entity.FuelPowerCost = Math.Round(entity.FuelPowerCostPerHour.Value * systemStats.TotalWorkingHours, 2);
+                decimal adjustedTotalWorkingHours = await CalculateAdjustedTotalWorkingHours(entity.SystemName);
+                if (adjustedTotalWorkingHours > 0)
+                {
+                    entity.FuelPowerCost = Math.Round(entity.FuelPowerCostPerHour.Value * adjustedTotalWorkingHours, 2);
+                }
+                else
+                {
+                    entity.FuelPowerCost = null; // 没有输入时不显示0，显示为null
+                }
             }
             else
             {
@@ -317,7 +333,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         }
 
         /// <summary>
-        /// 计算系统工作统计数据
+        /// 计算系统工作统计数据（按新算法：基于试验计划周期）
         /// </summary>
         /// <param name="systemName">系统名称</param>
         /// <returns>系统工作统计信息</returns>
@@ -337,51 +353,82 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     .Where(x => x.RoomId == roomId && !x.SoftDeleted)
                     .ToListAsync();
 
-                if (!systemEquips.Any())
+                // 获取试验任务
+                var currentTasks = await _testDataService.GetCurrentListByTestAsync();
+                var systemTasks = currentTasks.Where(t => t.SysName == systemName).ToList();
+                
+                if (!systemTasks.Any())
                 {
-                    return new SystemWorkingStats(); // 没有设备则返回空统计
+                    return new SystemWorkingStats(); // 没有试验任务则返回空统计
                 }
 
-                // 获取最早的运行时长记录日期
-                DateTime earliestDate = await DbContext.Queryable<EquipDailyRuntime>()
-                    .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                    .MinAsync(x => x.RecordDate);
+                DateTime earliestDate = DateTime.MaxValue;
+                DateTime latestDate = DateTime.MinValue;
+                int totalWorkingDays = 0;
+                int totalIdleDays = 0;
+                decimal totalWorkingHours = 0;
 
-                if (earliestDate == default)
+                // 遍历所有试验任务，计算工作天数
+                foreach (var task in systemTasks)
                 {
-                    // 如果没有运行时长记录，使用设备最早的创建时间
-                    earliestDate = systemEquips.Min(x => x.CreationTime).Date;
+                    if (!DateTime.TryParse(task.TaskStartTime, out DateTime start) ||
+                        !DateTime.TryParse(task.TaskEndTime, out DateTime end))
+                    {
+                        continue;
+                    }
+
+                    // 只统计过去或当前正在进行的计划周期
+                    if (start > DateTime.Now.Date) continue;
+
+                    // 限制结束时间不早于开始时间
+                    if (end < start) continue;
+
+                    // 更新最早和最晚日期
+                    if (start < earliestDate) earliestDate = start.Date;
+                    if (end > latestDate) latestDate = end.Date;
+
+                    // 计算该任务期间的天数
+                    int taskDays = (int)(end.Date - start.Date).TotalDays + 1;
+                    
+                    // 查询该任务期间的真实运行数据
+                    uint taskSeconds = 0;
+                    if (systemEquips.Any())
+                    {
+                        taskSeconds = await DbContext.Queryable<EquipDailyRuntime>()
+                            .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
+                            .Where(x => x.RecordDate >= start.Date && x.RecordDate <= end.Date)
+                            .SumAsync(x => x.RunningSeconds);
+                    }
+
+                    if (taskSeconds > 0)
+                    {
+                        // 有真实运行数据，按实际运行计算
+                        totalWorkingDays += taskDays;
+                        totalWorkingHours += Math.Round((decimal)taskSeconds / 3600, 2);
+                    }
+                    else
+                    {
+                        // 无真实运行数据，按8小时/天计算
+                        totalWorkingDays += taskDays;
+                        totalWorkingHours += taskDays * 8;
+                    }
                 }
 
-                // 计算从最早记录到现在的所有日期
-                DateTime today = DateTime.Now.Date;
-                int totalDays = (int)(today - earliestDate).TotalDays + 1;
+                if (earliestDate == DateTime.MaxValue)
+                {
+                    return new SystemWorkingStats(); // 没有有效任务
+                }
 
-                // 获取所有有运行记录的日期（去重）
-                List<DateTime> workingDates = await DbContext.Queryable<EquipDailyRuntime>()
-                    .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                    .Where(x => x.RecordDate >= earliestDate && x.RecordDate <= today)
-                    .Where(x => x.RunningSeconds > 0) // 只统计有实际运行时间的日期
-                    .Select(x => x.RecordDate.Date)
-                    .Distinct()
-                    .ToListAsync();
-
-                // 计算总工作时长（所有设备在所有工作日的运行时长总和）
-                uint totalWorkingSeconds = await DbContext.Queryable<EquipDailyRuntime>()
-                    .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                    .Where(x => x.RecordDate >= earliestDate && x.RecordDate <= today)
-                    .SumAsync(x => x.RunningSeconds);
-
-                int workingDays = workingDates.Count;
-                int idleDays = totalDays - workingDays;
-                decimal totalWorkingHours = Math.Round((decimal)totalWorkingSeconds / 3600, 2);
+                // 计算总天数（从最早任务开始到最晚任务结束）
+                int totalDays = (int)(latestDate - earliestDate).TotalDays + 1;
+                totalIdleDays = totalDays - totalWorkingDays;
 
                 return new SystemWorkingStats
                 {
                     EarliestDate = earliestDate,
                     TotalDays = totalDays,
-                    WorkingDays = workingDays,
-                    IdleDays = idleDays,
+                    WorkingDays = totalWorkingDays,
+                    IdleDays = totalIdleDays,
                     TotalWorkingHours = totalWorkingHours,
                     EquipmentCount = systemEquips.Count
                 };
@@ -418,64 +465,53 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 {
                     // 计算人员岗位数量
                     int taskStaffCount = 0;
-                    
-                    // 1. 仿真试验专业代表（通常1人）
-                    if (!string.IsNullOrEmpty(task.SimuResp))
-                    {
-                        taskStaffCount += 1;
-                    }
-
-                    // 2. 仿真试验参与人员（可能多人，用逗号分隔）
+                    if (!string.IsNullOrEmpty(task.SimuResp)) taskStaffCount += 1; // 专业代表
                     if (!string.IsNullOrEmpty(task.SimuStaff))
                     {
                         var staffNames = task.SimuStaff.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        taskStaffCount += staffNames.Length;
+                        taskStaffCount += staffNames.Length; // 参与人员
                     }
-
                     totalStaffCount += taskStaffCount;
 
-                    // 计算人员年工时
+                    // 计算人员年工时（按计划周期：有真实运行按真实，无则8小时/天）
                     if (DateTime.TryParse(task.TaskStartTime, out DateTime startTime) &&
                         DateTime.TryParse(task.TaskEndTime, out DateTime endTime))
                     {
-                        var taskDuration = endTime - startTime;
-                        var workingDays = taskDuration.Days;
-
-                        // 获取系统工作统计数据来计算实际工作时长
                         var roomId = GetRoomIdBySystemName(systemName);
                         if (roomId != Guid.Empty)
                         {
                             var systemEquips = await DbContext.Queryable<EquipLedger>()
                                 .Where(x => x.RoomId == roomId && !x.SoftDeleted)
+                                .Select(x => x.Id)
                                 .ToListAsync();
 
                             if (systemEquips.Any())
                             {
-                                // 获取任务期间的实际运行时长
-                                var runningData = await DbContext.Queryable<EquipDailyRuntime>()
-                                    .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
+                                uint totalSeconds = await DbContext.Queryable<EquipDailyRuntime>()
+                                    .Where(x => systemEquips.Contains(x.EquipId))
                                     .Where(x => x.RecordDate >= startTime.Date && x.RecordDate <= endTime.Date)
-                                    .Where(x => x.RunningSeconds > 0)
-                                    .ToListAsync();
+                                    .SumAsync(x => x.RunningSeconds);
 
-                                // 按日期分组计算每日工作时长（取每天运行时间最长的设备）
-                                var dailyWorkingHours = runningData
-                                    .GroupBy(x => x.RecordDate.Date)
-                                    .Select(g => Math.Max(8, Math.Round((decimal)g.Max(x => x.RunningSeconds) / 3600, 2))) // 最少8小时，最多当天运行时间最长的设备运行时间
-                                    .Sum();
-
-                                totalWorkingHours += dailyWorkingHours;
+                                if (totalSeconds > 0)
+                                {
+                                    totalWorkingHours += Math.Round((decimal)totalSeconds / 3600, 2);
+                                }
+                                else
+                                {
+                                    int days = (int)(endTime.Date - startTime.Date).TotalDays + 1;
+                                    totalWorkingHours += days * 8;
+                                }
                             }
                             else
                             {
-                                // 没有设备数据时，按每天8小时计算
-                                totalWorkingHours += workingDays * 8;
+                                int days = (int)(endTime.Date - startTime.Date).TotalDays + 1;
+                                totalWorkingHours += days * 8;
                             }
                         }
                         else
                         {
-                            // 找不到房间时，按每天8小时计算
-                            totalWorkingHours += workingDays * 8;
+                            int days = (int)(endTime.Date - startTime.Date).TotalDays + 1;
+                            totalWorkingHours += days * 8;
                         }
                     }
                 }
@@ -486,6 +522,110 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             {
                 Console.WriteLine($"计算人员工作数据失败: {ex.Message}");
                 return (0, 0);
+            }
+        }
+
+        /// <summary>
+        /// 计算系统的“调整后总工作时长”：
+        /// - 对于每个过去或正在进行中的试验计划周期，如果存在真实设备运行时长，则使用真实运行时长；
+        /// - 否则按该周期内每天8小时计算。
+        /// </summary>
+        private async Task<decimal> CalculateAdjustedTotalWorkingHours(string systemName)
+        {
+            try
+            {
+                var currentTasks = await _testDataService.GetCurrentListByTestAsync();
+                var taskList = currentTasks.ToList();
+                Console.WriteLine($"AG - 调整后工作时长计算 - 获取到 {taskList.Count} 个总任务");
+                
+                var systemTasks = currentTasks.Where(t => t.SysName == systemName).ToList();
+                if (!systemTasks.Any()) 
+                {
+                    Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 没有找到试验任务");
+                    Console.WriteLine($"AG - 调整后工作时长计算 - 所有任务的系统名称: {string.Join(", ", currentTasks.Select(t => t.SysName).Distinct())}");
+                    return 0;
+                }
+                
+                Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 找到 {systemTasks.Count} 个试验任务");
+
+                var roomId = GetRoomIdBySystemName(systemName);
+                if (roomId == Guid.Empty) return 0;
+
+                var systemEquipIds = await DbContext.Queryable<EquipLedger>()
+                    .Where(x => x.RoomId == roomId && !x.SoftDeleted)
+                    .Select(x => x.Id)
+                    .ToListAsync();
+                
+                Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 找到 {systemEquipIds.Count} 个设备");
+                
+                // 即使没有设备，也可以按8小时/天计算，所以不直接返回0
+
+                DateTime now = DateTime.Now;
+                decimal totalHours = 0;
+                foreach (var task in systemTasks)
+                {
+                    if (!DateTime.TryParse(task.TaskStartTime, out DateTime start) ||
+                        !DateTime.TryParse(task.TaskEndTime, out DateTime end))
+                    {
+                        Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 时间解析失败");
+                        continue;
+                    }
+
+                    // 只统计过去或当前正在进行的计划周期（开始时间不晚于今天）
+                    if (start > DateTime.Now.Date) 
+                    {
+                        Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 开始时间 {start:yyyy-MM-dd} 晚于今天，跳过");
+                        continue;
+                    }
+
+                    // 限制结束时间不早于开始时间
+                    if (end < start) 
+                    {
+                        Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 结束时间早于开始时间，跳过");
+                        continue;
+                    }
+
+                    Console.WriteLine($"AG - 调整后工作时长计算 - 处理任务 {task.TaskName}，时间范围: {start:yyyy-MM-dd} 到 {end:yyyy-MM-dd}");
+
+                    uint seconds = 0;
+                    
+                    // 如果有设备，查询真实运行数据
+                    if (systemEquipIds.Any())
+                    {
+                        // 统计该周期的真实运行秒数
+                        seconds = await DbContext.Queryable<EquipDailyRuntime>()
+                            .Where(x => systemEquipIds.Contains(x.EquipId))
+                            .Where(x => x.RecordDate >= start.Date && x.RecordDate <= end.Date)
+                            .SumAsync(x => x.RunningSeconds);
+                    }
+
+                    Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 真实运行秒数: {seconds}");
+
+                    if (seconds > 0)
+                    {
+                        decimal taskHours = Math.Round((decimal)seconds / 3600, 2);
+                        totalHours += taskHours;
+                        Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 使用真实运行时长: {taskHours} 小时");
+                    }
+                    else
+                    {
+                        int days = (int)(end.Date - start.Date).TotalDays + 1;
+                        if (days > 0) 
+                        {
+                            decimal taskHours = days * 8;
+                            totalHours += taskHours;
+                            Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 无真实运行数据，按 {days} 天 × 8小时 = {taskHours} 小时计算");
+                        }
+                    }
+                }
+
+                Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 总工作时长: {totalHours} 小时");
+                return totalHours;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 计算失败: {ex.Message}");
+                return 0;
             }
         }
 
@@ -511,6 +651,147 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             }
             
             return Guid.Empty; // 未找到对应的房间ID
+        }
+
+        /// <summary>
+        /// 获取成本计算明细
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<AssetDataCalculationDetailsDto> GetCalculationDetailsAsync(Guid id)
+        {
+            var entity = await DbContext.Queryable<AssetData>()
+                .Includes(x => x.Projects)
+                .InSingleAsync(id);
+            
+            if (entity == null)
+                throw new KeyNotFoundException($"未找到ID为{id}的资产数据");
+
+            // 获取系统工作统计数据和调整后工作时长
+            var systemStats = await CalculateSystemWorkingStats(entity.SystemName);
+            var adjustedWorkingHours = await CalculateAdjustedTotalWorkingHours(entity.SystemName);
+            var (staffCount, staffWorkingHours) = await CalculateStaffWorkingData(entity.SystemName);
+
+            // 重新计算动态成本数据以获取最新值
+            await RecalculateDynamicCosts(entity);
+
+            return new AssetDataCalculationDetailsDto
+            {
+                SystemName = entity.SystemName,
+                FactoryUsageFee = new CostDetailDto
+                {
+                    CostName = "厂房使用费",
+                    CalculationFormula = "区域(面积) × 基建单价（年费用）",
+                    DataSource = $"区域面积: {entity.Area}平方米, 基建单价: 1000元/平方米/年",
+                    CalculationProcess = $"{entity.Area} × 1000 = {entity.FactoryUsageFee}元",
+                    FinalResult = entity.FactoryUsageFee,
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "Area", entity.Area ?? 0 },
+                        { "InfrastructureUnitPrice", 1000m }
+                    }
+                },
+                EquipmentUsageFee = new CostDetailDto
+                {
+                    CostName = "设备使用费",
+                    CalculationFormula = "项目费用之和（年费用）",
+                    DataSource = $"项目数量: {entity.Projects?.Count ?? 0}个, 项目费用: {string.Join(", ", entity.Projects?.Select(p => $"{p.ProjectType}:{p.Amount}元") ?? new string[0])}",
+                    CalculationProcess = $"项目费用总和 = {entity.EquipmentUsageFee}元",
+                    FinalResult = entity.EquipmentUsageFee,
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "ProjectCount", entity.Projects?.Count ?? 0 },
+                        { "TotalProjectAmount", entity.EquipmentUsageFee ?? 0 }
+                    }
+                },
+                LaborCost = new CostDetailDto
+                {
+                    CostName = "人力成本",
+                    CalculationFormula = "人员岗位数量 × 人员年工时 × 人力成本单价（年费用）",
+                    DataSource = $"人员数量: {staffCount}人, 年工时: {staffWorkingHours}小时, 人力成本单价: {entity.LaborCostPerHour}元/小时",
+                    CalculationProcess = $"{staffCount} × {staffWorkingHours} × {entity.LaborCostPerHour} = {entity.LaborCost}元",
+                    FinalResult = entity.LaborCost,
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "StaffCount", staffCount },
+                        { "WorkingHours", staffWorkingHours },
+                        { "LaborCostPerHour", entity.LaborCostPerHour ?? 0 }
+                    }
+                },
+                ElectricityCost = new CostDetailDto
+                {
+                    CostName = "电费",
+                    CalculationFormula = "调整后总工作时长 × 系统能耗 × 电费单价",
+                    DataSource = $"调整后总工作时长: {adjustedWorkingHours}小时, 系统能耗: {entity.SystemEnergyConsumption}千瓦时, 电费单价: 1元/千瓦时",
+                    CalculationProcess = $"{adjustedWorkingHours} × {entity.SystemEnergyConsumption} × 1 = {entity.ElectricityCost}元",
+                    FinalResult = entity.ElectricityCost,
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "AdjustedWorkingHours", adjustedWorkingHours },
+                        { "SystemEnergyConsumption", entity.SystemEnergyConsumption ?? 0 },
+                        { "ElectricityUnitPrice", 1m }
+                    }
+                },
+                FuelPowerCost = new CostDetailDto
+                {
+                    CostName = "燃料动力费",
+                    CalculationFormula = "燃料动力费单价 × 调整后总工作时长",
+                    DataSource = $"燃料动力费单价: {entity.FuelPowerCostPerHour}万元/小时, 调整后总工作时长: {adjustedWorkingHours}小时",
+                    CalculationProcess = $"{entity.FuelPowerCostPerHour} × {adjustedWorkingHours} = {entity.FuelPowerCost}元",
+                    FinalResult = entity.FuelPowerCost,
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "FuelPowerCostPerHour", entity.FuelPowerCostPerHour ?? 0 },
+                        { "AdjustedWorkingHours", adjustedWorkingHours }
+                    }
+                },
+                EquipmentMaintenanceCost = new CostDetailDto
+                {
+                    CostName = "设备保养费用",
+                    CalculationFormula = "设备使用费 × 保养费率",
+                    DataSource = $"设备使用费: {entity.EquipmentUsageFee}元, 保养费率: 5%",
+                    CalculationProcess = $"{entity.EquipmentUsageFee} × 0.05 = {entity.EquipmentMaintenanceCost}元",
+                    FinalResult = entity.EquipmentMaintenanceCost,
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "EquipmentUsageFee", entity.EquipmentUsageFee ?? 0 },
+                        { "MaintenanceRate", 0.05m }
+                    }
+                },
+                SystemIdleCost = new CostDetailDto
+                {
+                    CostName = "系统空置成本",
+                    CalculationFormula = "空置天数 × (厂房使用费/365 + 设备使用费/365 + 设备保养费/365)",
+                    DataSource = $"空置天数: {systemStats.IdleDays}天, 日均厂房费: {(entity.FactoryUsageFee ?? 0) / 365}元, 日均设备费: {(entity.EquipmentUsageFee ?? 0) / 365}元, 日均保养费: {(entity.EquipmentMaintenanceCost ?? 0) / 365}元",
+                    CalculationProcess = $"{systemStats.IdleDays} × ({(entity.FactoryUsageFee ?? 0) / 365} + {(entity.EquipmentUsageFee ?? 0) / 365} + {(entity.EquipmentMaintenanceCost ?? 0) / 365}) = {entity.SystemIdleCost}元",
+                    FinalResult = entity.SystemIdleCost,
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "IdleDays", systemStats.IdleDays },
+                        { "DailyFactoryFee", (entity.FactoryUsageFee ?? 0) / 365 },
+                        { "DailyEquipmentFee", (entity.EquipmentUsageFee ?? 0) / 365 },
+                        { "DailyMaintenanceFee", (entity.EquipmentMaintenanceCost ?? 0) / 365 }
+                    }
+                },
+                SystemExperimentCost = new CostDetailDto
+                {
+                    CostName = "系统试验成本",
+                    CalculationFormula = "工作天数 × (厂房使用费/365 + 设备使用费/365 + 人力成本/365 + 电费/365 + 燃料动力费/365 + 设备保养费/365)",
+                    DataSource = $"工作天数: {systemStats.WorkingDays}天, 各项日均费用: 厂房{(entity.FactoryUsageFee ?? 0) / 365}元, 设备{(entity.EquipmentUsageFee ?? 0) / 365}元, 人力{(entity.LaborCost ?? 0) / 365}元, 电费{(entity.ElectricityCost ?? 0) / 365}元, 燃料{(entity.FuelPowerCost ?? 0) / 365}元, 保养{(entity.EquipmentMaintenanceCost ?? 0) / 365}元",
+                    CalculationProcess = $"{systemStats.WorkingDays} × ({(entity.FactoryUsageFee ?? 0) / 365} + {(entity.EquipmentUsageFee ?? 0) / 365} + {(entity.LaborCost ?? 0) / 365} + {(entity.ElectricityCost ?? 0) / 365} + {(entity.FuelPowerCost ?? 0) / 365} + {(entity.EquipmentMaintenanceCost ?? 0) / 365}) = {entity.SystemExperimentCost}元",
+                    FinalResult = entity.SystemExperimentCost,
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "WorkingDays", systemStats.WorkingDays },
+                        { "DailyFactoryFee", (entity.FactoryUsageFee ?? 0) / 365 },
+                        { "DailyEquipmentFee", (entity.EquipmentUsageFee ?? 0) / 365 },
+                        { "DailyLaborFee", (entity.LaborCost ?? 0) / 365 },
+                        { "DailyElectricityFee", (entity.ElectricityCost ?? 0) / 365 },
+                        { "DailyFuelPowerFee", (entity.FuelPowerCost ?? 0) / 365 },
+                        { "DailyMaintenanceFee", (entity.EquipmentMaintenanceCost ?? 0) / 365 }
+                    }
+                }
+            };
         }
     }
 

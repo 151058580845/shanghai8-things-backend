@@ -82,5 +82,17 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ResponseWrapper<AssetDataReadDto>> GetAsync(Guid id) =>
             (await _assetDataServer.GetAsync(id)).Wrap();
+
+        /// <summary>
+        /// 获取成本计算明细
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{id:guid}/details")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ResponseWrapper<AssetDataCalculationDetailsDto>> GetCalculationDetailsAsync(Guid id) =>
+            (await _assetDataServer.GetCalculationDetailsAsync(id)).Wrap();
     }
 }

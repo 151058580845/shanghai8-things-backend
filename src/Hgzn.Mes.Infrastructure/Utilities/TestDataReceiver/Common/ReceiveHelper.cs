@@ -27,7 +27,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         public static DbConnOptions LOCALDBCONFIG = new DbConnOptions
         {
             DbType = DbType.OpenGauss,
-            Url = "PORT=5432;DATABASE=dev;HOST=localhost;PASSWORD=Dev@2024;USER ID=dev;No Reset On Close=true",
+            Url = "PORT=5432;DATABASE=dev;HOST=opengauss;PASSWORD=Dev@2024;USER ID=dev;No Reset On Close=true",
             EnabledReadWrite = false,
             EnabledCodeFirst = true,
             EnabledSqlLog = true,
@@ -129,25 +129,43 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         /// 将异常记录到redis
         /// </summary>
         /// <param name="connectionMultiplexer"></param>
+        /// <param name="sqlSugarClient"></param>
         /// <param name="simuTestSysId"></param>
         /// <param name="devTypeId"></param>
         /// <param name="compId"></param>
         /// <param name="equipId"></param>
         /// <param name="exception"></param>
         /// <returns></returns>
-        public static async Task ExceptionRecordToRedis(IConnectionMultiplexer connectionMultiplexer, byte simuTestSysId, byte devTypeId, byte[] compId, Guid equipId, List<string> exception, DateTime sendTime, uint runTime)
+        public static async Task ExceptionRecordToRedis(IConnectionMultiplexer connectionMultiplexer, ISqlSugarClient sqlSugarClient, byte simuTestSysId, byte devTypeId, byte[] compId, Guid equipId, List<string> exception, DateTime sendTime, uint runTime)
         {
             // 记录到redis
             IDatabase redisDb = connectionMultiplexer.GetDatabase();
+
+            // 优先根据compId在台账中查找设备，使用其Id作为Redis键的equipId
+            Guid equipIdToUse = equipId;
+            try
+            {
+                string compNumber = Encoding.ASCII.GetString(compId).Trim('\0').Trim('"');
+                var ledger = await sqlSugarClient.Queryable<EquipLedger>()
+                    .Where(x => x.AssetNumber == compNumber && !x.SoftDeleted)
+                    .FirstAsync();
+                if (ledger != null)
+                    equipIdToUse = ledger.Id;
+            }
+            catch (Exception ex)
+            {
+                LoggerAdapter.LogWarning($"AG - 异常记录 - 通过compId映射equipId失败，回退使用传入的equipId。原因: {ex.Message}");
+            }
+
             // 记录异常信息
-            var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, equipId);
+            var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, equipIdToUse);
             await redisDb.KeyDeleteAsync(key);
             foreach (string item in exception)
             {
                 await redisDb.SetAddAsync(key, item);
             }
             // 记录运行时长
-            var runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, simuTestSysId, devTypeId, equipId);
+            var runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, simuTestSysId, devTypeId, equipIdToUse);
             await ReportRunningTimeAsync(redisDb, runTimeKey, sendTime, runTime);
             await CleanupOldDataAsync(redisDb, runTimeKey);
         }

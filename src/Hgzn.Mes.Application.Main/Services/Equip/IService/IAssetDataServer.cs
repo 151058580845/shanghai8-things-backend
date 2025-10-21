@@ -12,6 +12,11 @@ namespace Hgzn.Mes.Application.Main.Services.Equip.IService
     AssetData, Guid,
     AssetDataReadDto, AssetDataQueryDto, AssetDataCreateDto, AssetDataUpdateDto>
     {
-
+        /// <summary>
+        /// 获取成本计算明细
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<AssetDataCalculationDetailsDto> GetCalculationDetailsAsync(Guid id);
     }
 }

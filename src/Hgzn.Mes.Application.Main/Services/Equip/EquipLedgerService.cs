@@ -312,20 +312,47 @@ public class EquipLedgerService : SugarCrudAppService<
 
                     if (existingEquip != null)
                     {
-                        LoggerAdapter.LogInformation($"AG - 设备导入 - 找到已存在设备, ID={existingEquip.Id}, 执行更新操作");
-                        
-                        // 更新现有设备
-                        var updateInfo = Mapper.Map<EquipLedger>(equipLedgerDto);
-                        updateInfo.Id = existingEquip.Id;
-                        updateInfo.CreationTime = existingEquip.CreationTime;
-                        updateInfo.CreatorId = existingEquip.CreatorId;
-                        updateInfo.LastModificationTime = DateTime.Now;
-                        
-                        var updateResult = DbContext.Updateable<EquipLedger>(updateInfo)
+                        LoggerAdapter.LogInformation($"AG - 设备导入 - 找到已存在设备, ID={existingEquip.Id}, 执行选择性更新");
+
+                        // 仅当新数据提供值时才覆盖；否则保留旧值
+                        static bool HasText(string? s) => !string.IsNullOrWhiteSpace(s);
+
+                        if (HasText(equipLedgerDto.EquipName)) existingEquip.EquipName = equipLedgerDto.EquipName!;
+                        if (HasText(equipLedgerDto.AssetNumber)) existingEquip.AssetNumber = equipLedgerDto.AssetNumber!;
+                        if (HasText(equipLedgerDto.Model)) existingEquip.Model = equipLedgerDto.Model!;
+                        if (HasText(equipLedgerDto.Sn)) existingEquip.Sn = equipLedgerDto.Sn!;
+                        if (HasText(equipLedgerDto.EquipCode)) existingEquip.EquipCode = equipLedgerDto.EquipCode!;
+                        if (HasText(equipLedgerDto.IpAddress)) existingEquip.IpAddress = equipLedgerDto.IpAddress!;
+
+                        if (equipLedgerDto.PurchaseDate.HasValue) existingEquip.PurchaseDate = equipLedgerDto.PurchaseDate;
+                        if (equipLedgerDto.ValidityDate.HasValue) existingEquip.ValidityDate = equipLedgerDto.ValidityDate;
+                        if (equipLedgerDto.IsMeasurementDevice.HasValue) existingEquip.IsMeasurementDevice = equipLedgerDto.IsMeasurementDevice;
+                        if (equipLedgerDto.RoomId.HasValue) existingEquip.RoomId = equipLedgerDto.RoomId;
+                        if (equipLedgerDto.TypeId.HasValue) existingEquip.TypeId = equipLedgerDto.TypeId;
+
+                        if (HasText(equipLedgerDto.DeviceStatus))
+                        {
+                            // 允许字符串到枚举的安全转换；失败则忽略
+                            if (Enum.TryParse<DeviceStatus>(equipLedgerDto.DeviceStatus, true, out var ds))
+                                existingEquip.DeviceStatus = ds;
+                        }
+                        if (HasText(equipLedgerDto.DeviceLevel))
+                        {
+                            if (Enum.TryParse<EquipLevelEnum>(equipLedgerDto.DeviceLevel, true, out var dl))
+                                existingEquip.EquipLevel = dl;
+                        }
+
+                        if (equipLedgerDto.ResponsibleUserId.HasValue) existingEquip.ResponsibleUserId = equipLedgerDto.ResponsibleUserId;
+                        if (HasText(equipLedgerDto.ResponsibleUserName)) existingEquip.ResponsibleUserName = equipLedgerDto.ResponsibleUserName!;
+
+                        existingEquip.State = equipLedgerDto.State; // State 为 bool，维持新值（若需要保留旧值请告知）
+                        existingEquip.LastModificationTime = DateTime.Now;
+
+                        var updateResult = DbContext.Updateable(existingEquip)
                             .IgnoreColumns(x => new { x.CreationTime, x.CreatorId, x.SoftDeleted, x.DeleteTime })
                             .ExecuteCommand();
-                        
-                        LoggerAdapter.LogInformation($"AG - 设备导入 - 更新操作完成, 影响行数: {updateResult}");
+
+                        LoggerAdapter.LogInformation($"AG - 设备导入 - 选择性更新完成, 影响行数: {updateResult}");
                         changeCount += updateResult;
                     }
                     else

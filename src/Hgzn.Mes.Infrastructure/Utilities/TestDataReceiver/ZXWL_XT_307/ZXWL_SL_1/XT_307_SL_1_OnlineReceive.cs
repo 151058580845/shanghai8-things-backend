@@ -181,7 +181,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             // await TestDataPublishToMQTT(receive);
             // 将异常和运行时长记录到redis
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
+            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, _sqlSugarClient, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
 
             if (exception.Count > 0)
             {

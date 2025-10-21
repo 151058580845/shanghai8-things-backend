@@ -67,7 +67,7 @@ public class TestEquipData : UniversalEntity
         "紧缩场射频光学半实物仿真系统" => new Guid("09b374e8-4e7f-4146-9fe0-375edc7b9d7a"),
         "光学复合半实物仿真系统" => new Guid("0ac9885d-da23-4c0f-a66c-2ba467b8086c"),
         "三通道控制红外制导半实物仿真系统" => new Guid("24be4856-d95f-4ba0-b2aa-7049fedc3e39"),
-        "低温环境红外制导控制半实物仿真系统" => new Guid("00860af7-1e65-4085-ab2f-7af2396fd13d"),
+        "低温环境红外制导控制半实物仿真系统" => new Guid("916edd0e-df70-4137-806c-41817587e438"),
         "机械式制导控制半实物仿真系统" => new Guid("7d6b322d-bf48-4963-bfe6-579560e84530"),
         "独立回路半实物仿真系统" => new Guid("ddd64e08-5f2a-4578-84cb-2f90caa898e9"),
         "独立回路/可见光制导半实物仿真系统" => new Guid("a6ce46f1-d51f-45c8-a22e-2db3126da6cf"),
@@ -106,6 +106,7 @@ public class TestEquipData : UniversalEntity
         { "0ac9885d-da23-4c0f-a66c-2ba467b8086c",new List<string>{ "0ac9885d-da23-4c0f-a66c-2ba467b8086c" } }, // 108
         { "24be4856-d95f-4ba0-b2aa-7049fedc3e39",new List<string>{ "24be4856-d95f-4ba0-b2aa-7049fedc3e39" } }, // 121
         { "00860af7-1e65-4085-ab2f-7af2396fd13d",new List<string>{ "00860af7-1e65-4085-ab2f-7af2396fd13d" } }, // 202-1
+        { "916edd0e-df70-4137-806c-41817587e438",new List<string>{ "916edd0e-df70-4137-806c-41817587e438" } }, // 202-2(因为我也不知道协议的202是202-1还是202-2)
         { "7d6b322d-bf48-4963-bfe6-579560e84530",new List<string>{ "7d6b322d-bf48-4963-bfe6-579560e84530" } }, // 103
         { "ddd64e08-5f2a-4578-84cb-2f90caa898e9",new List<string>{ "ddd64e08-5f2a-4578-84cb-2f90caa898e9" } }, // 112
         { "a6ce46f1-d51f-45c8-a22e-2db3126da6cf",new List<string>{ "a6ce46f1-d51f-45c8-a22e-2db3126da6cf" } }, // 119
@@ -123,6 +124,7 @@ public class TestEquipData : UniversalEntity
         { new Guid("0ac9885d-da23-4c0f-a66c-2ba467b8086c"),new Guid("0ac9885d-da23-4c0f-a66c-2ba467b8086c") }, // 协议108的温湿度计在108
         { new Guid("24be4856-d95f-4ba0-b2aa-7049fedc3e39"),new Guid("d902c47b-b178-49ca-8cb2-904a4c08dda6") }, // 协议121的温湿度计在122
         { new Guid("00860af7-1e65-4085-ab2f-7af2396fd13d"),new Guid("a8bd6cc6-29b0-4e96-8eb1-e444df27de2d") }, // 协议202-1的温湿度计在111
+        { new Guid("916edd0e-df70-4137-806c-41817587e438"),new Guid("a8bd6cc6-29b0-4e96-8eb1-e444df27de2d") }, // 协议202-2的温湿度计在111(因为我也不知道协议的202是202-1还是202-2)
         { new Guid("7d6b322d-bf48-4963-bfe6-579560e84530"),new Guid("7d6b322d-bf48-4963-bfe6-579560e84530") }, // 协议103的温湿度计在103
         { new Guid("ddd64e08-5f2a-4578-84cb-2f90caa898e9"),new Guid("ddd64e08-5f2a-4578-84cb-2f90caa898e9") }, // 协议112的温湿度计在112
         { new Guid("a6ce46f1-d51f-45c8-a22e-2db3126da6cf"),new Guid("a6ce46f1-d51f-45c8-a22e-2db3126da6cf") }, // 协议119的温湿度计在119

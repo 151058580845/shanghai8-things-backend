@@ -157,4 +157,61 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
         public string? Remark { get; set; }
         public string? Responsible { get; set; }
     }
+
+    /// <summary>
+    /// 成本计算明细DTO
+    /// </summary>
+    public class AssetDataCalculationDetailsDto
+    {
+        [Description("系统名称")]
+        public string SystemName { get; set; } = null!;
+
+        [Description("厂房使用费明细")]
+        public CostDetailDto FactoryUsageFee { get; set; } = null!;
+
+        [Description("设备使用费明细")]
+        public CostDetailDto EquipmentUsageFee { get; set; } = null!;
+
+        [Description("人力成本明细")]
+        public CostDetailDto LaborCost { get; set; } = null!;
+
+        [Description("电费明细")]
+        public CostDetailDto ElectricityCost { get; set; } = null!;
+
+        [Description("燃料动力费明细")]
+        public CostDetailDto FuelPowerCost { get; set; } = null!;
+
+        [Description("设备保养费用明细")]
+        public CostDetailDto EquipmentMaintenanceCost { get; set; } = null!;
+
+        [Description("系统空置成本明细")]
+        public CostDetailDto SystemIdleCost { get; set; } = null!;
+
+        [Description("系统试验成本明细")]
+        public CostDetailDto SystemExperimentCost { get; set; } = null!;
+    }
+
+    /// <summary>
+    /// 成本明细DTO
+    /// </summary>
+    public class CostDetailDto
+    {
+        [Description("成本名称")]
+        public string CostName { get; set; } = null!;
+
+        [Description("计算公式")]
+        public string CalculationFormula { get; set; } = null!;
+
+        [Description("数据来源")]
+        public string DataSource { get; set; } = null!;
+
+        [Description("计算过程")]
+        public string CalculationProcess { get; set; } = null!;
+
+        [Description("最终结果")]
+        public decimal? FinalResult { get; set; }
+
+        [Description("相关参数")]
+        public Dictionary<string, object> Parameters { get; set; } = new();
+    }
 }
