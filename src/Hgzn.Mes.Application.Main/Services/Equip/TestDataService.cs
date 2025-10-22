@@ -302,7 +302,7 @@ public class TestDataService : SugarCrudAppService<
 
     public async Task<IEnumerable<TestDataReadDto>> GetCurrentListByTestAsync()
     {
-        DateTime today = DateTime.Now.Date.ToLocalTime();
+        DateTime today = DateTime.Now.ToLocalTime();
 
         List<TestData> entities = await Queryable
             .Where(x => x.TaskEndTime != null && x.TaskStartTime != null)
@@ -332,7 +332,7 @@ public class TestDataService : SugarCrudAppService<
                     endTime = parsedEndTime.AddDays(1).AddSeconds(-1); // 规范化到当天23:59:59
                 }
                 
-                return startTime < today && endTime > today;
+                return startTime <= today && endTime > today;
             }
             catch
             {

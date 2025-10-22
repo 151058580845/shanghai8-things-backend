@@ -34,13 +34,13 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             }
 
             List<AssetData> entities = await query.Includes(x => x.Projects).OrderByDescending(x => x.CreationTime).ToListAsync();
-            
+
             // 重新计算每个实体的成本数据
             foreach (AssetData entity in entities)
             {
                 await RecalculateDynamicCosts(entity);
             }
-            
+
             return Mapper.Map<IEnumerable<AssetDataReadDto>>(entities);
         }
 
@@ -72,7 +72,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public override async Task<AssetDataReadDto?> CreateAsync(AssetDataCreateDto dto)
         {
             AssetData entity = Mapper.Map<AssetData>(dto);
-            
+
             // 计算各项成本
             await CalculateCosts(entity, dto);
 
@@ -112,16 +112,16 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
 
             // 更新主记录
             Mapper.Map(dto, entity);
-            
+
             // 重新计算各项成本
-            await CalculateCosts(entity, new AssetDataCreateDto 
-            { 
+            await CalculateCosts(entity, new AssetDataCreateDto
+            {
                 Area = dto.Area,
                 LaborCostPerHour = dto.LaborCostPerHour,
                 FuelPowerCostPerHour = dto.FuelPowerCostPerHour,
                 Projects = dto.Projects
             });
-            
+
             await DbContext.Updateable(entity).ExecuteCommandAsync();
 
             // 删除旧的项目数据
@@ -159,13 +159,13 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             AssetData entity = await DbContext.Queryable<AssetData>()
                 .Includes(x => x.Projects)
                 .InSingleAsync(key);
-                
+
             if (entity != null)
             {
                 // 重新计算动态成本数据
                 await RecalculateDynamicCosts(entity);
             }
-            
+
             return Mapper.Map<AssetDataReadDto>(entity);
         }
 
@@ -241,11 +241,11 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             if (systemStats.WorkingDays > 0)
             {
                 entity.SystemExperimentCost = Math.Round(systemStats.WorkingDays * (
-                    dailyFactoryFee + 
-                    dailyEquipmentFee + 
-                    dailyLaborFee + 
-                    dailyElectricityFee + 
-                    dailyFuelPowerFee + 
+                    dailyFactoryFee +
+                    dailyEquipmentFee +
+                    dailyLaborFee +
+                    dailyElectricityFee +
+                    dailyFuelPowerFee +
                     dailyMaintenanceFee
                 ), 2);
             }
@@ -262,7 +262,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             // 常量定义
             const decimal INFRASTRUCTURE_UNIT_PRICE = 1000m; // 基建单价，单位：元/平方米/年
             const decimal MAINTENANCE_RATE = 0.05m; // 设备保养费率
-            const decimal ELECTRICITY_UNIT_PRICE = 0.8m; // 电费单价，单位：元/千瓦时
+            const decimal ELECTRICITY_UNIT_PRICE = 1m; // 电费单价，单位：元/千瓦时
 
             // 1. 厂房使用费 = 区域(面积) × 基建单价（年费用）
             entity.FactoryUsageFee = Math.Round((entity.Area ?? 0) * INFRASTRUCTURE_UNIT_PRICE, 2);
@@ -322,11 +322,11 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             if (systemStats.WorkingDays > 0)
             {
                 entity.SystemExperimentCost = Math.Round(systemStats.WorkingDays * (
-                    dailyFactoryFee + 
-                    dailyEquipmentFee + 
-                    dailyLaborFee + 
-                    dailyElectricityFee + 
-                    dailyFuelPowerFee + 
+                    dailyFactoryFee +
+                    dailyEquipmentFee +
+                    dailyLaborFee +
+                    dailyElectricityFee +
+                    dailyFuelPowerFee +
                     dailyMaintenanceFee
                 ), 2);
             }
@@ -354,9 +354,13 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     .ToListAsync();
 
                 // 获取试验任务
-                var currentTasks = await _testDataService.GetCurrentListByTestAsync();
-                var systemTasks = currentTasks.Where(t => t.SysName == systemName).ToList();
-                
+                List<TestDataReadDto> tasks = new List<TestDataReadDto>();
+                IEnumerable<TestDataReadDto> currentTasks = await _testDataService.GetCurrentListByTestAsync();
+                tasks.AddRange(currentTasks);
+                IEnumerable<TestDataReadDto> historyTasks = await _testDataService.GetHistoryListByTestAsync();
+                tasks.AddRange(historyTasks);
+                List<TestDataReadDto> systemTasks = tasks.Where(t => t.SysName == systemName).ToList();
+
                 if (!systemTasks.Any())
                 {
                     return new SystemWorkingStats(); // 没有试验任务则返回空统计
@@ -378,18 +382,15 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     }
 
                     // 只统计过去或当前正在进行的计划周期
-                    if (start > DateTime.Now.Date) continue;
-
-                    // 限制结束时间不早于开始时间
-                    if (end < start) continue;
+                    if (start.Date > DateTime.Now.Date) continue;
 
                     // 更新最早和最晚日期
                     if (start < earliestDate) earliestDate = start.Date;
-                    if (end > latestDate) latestDate = end.Date;
+                    if (end > latestDate) latestDate = end.Date > DateTime.Now.Date ? DateTime.Now.Date : end.Date;
 
                     // 计算该任务期间的天数
                     int taskDays = (int)(end.Date - start.Date).TotalDays + 1;
-                    
+
                     // 查询该任务期间的真实运行数据
                     uint taskSeconds = 0;
                     if (systemEquips.Any())
@@ -449,9 +450,13 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         {
             try
             {
-                // 获取当前任务列表
-                var currentTasks = await _testDataService.GetCurrentListByTestAsync();
-                var systemTasks = currentTasks.Where(t => t.SysName == systemName).ToList();
+                // 获取试验任务
+                List<TestDataReadDto> tasks = new List<TestDataReadDto>();
+                IEnumerable<TestDataReadDto> currentTasks = await _testDataService.GetCurrentListByTestAsync();
+                tasks.AddRange(currentTasks);
+                IEnumerable<TestDataReadDto> historyTasks = await _testDataService.GetHistoryListByTestAsync();
+                tasks.AddRange(historyTasks);
+                var systemTasks = tasks.Where(t => t.SysName == systemName).ToList();
 
                 if (!systemTasks.Any())
                 {
@@ -494,23 +499,29 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
 
                                 if (totalSeconds > 0)
                                 {
+                                    // 如果有真实的设备运行时间,那就按真实的设备运行时间算
                                     totalWorkingHours += Math.Round((decimal)totalSeconds / 3600, 2);
                                 }
                                 else
                                 {
-                                    int days = (int)(endTime.Date - startTime.Date).TotalDays + 1;
+                                    // 如果没有真实的运行时间,就按照一天8小时算
+                                    DateTime end = endTime.Date > DateTime.Now.Date ? DateTime.Now.Date : endTime.Date;
+                                    int days = (int)(end - startTime.Date).TotalDays + 1;
                                     totalWorkingHours += days * 8;
                                 }
                             }
                             else
                             {
-                                int days = (int)(endTime.Date - startTime.Date).TotalDays + 1;
+                                // 如果没有真实的运行时间,就按照一天8小时算
+                                DateTime end = endTime.Date > DateTime.Now.Date ? DateTime.Now.Date : endTime.Date;
+                                int days = (int)(end - startTime.Date).TotalDays + 1;
                                 totalWorkingHours += days * 8;
                             }
                         }
                         else
                         {
-                            int days = (int)(endTime.Date - startTime.Date).TotalDays + 1;
+                            DateTime end = endTime.Date > DateTime.Now.Date ? DateTime.Now.Date : endTime.Date;
+                            int days = (int)(end - startTime.Date).TotalDays + 1;
                             totalWorkingHours += days * 8;
                         }
                     }
@@ -534,18 +545,22 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         {
             try
             {
-                var currentTasks = await _testDataService.GetCurrentListByTestAsync();
-                var taskList = currentTasks.ToList();
+                // 获取试验任务
+                List<TestDataReadDto> taskList = new List<TestDataReadDto>();
+                IEnumerable<TestDataReadDto> currentTasks = await _testDataService.GetCurrentListByTestAsync();
+                taskList.AddRange(currentTasks);
+                IEnumerable<TestDataReadDto> historyTasks = await _testDataService.GetHistoryListByTestAsync();
+                taskList.AddRange(historyTasks);
                 Console.WriteLine($"AG - 调整后工作时长计算 - 获取到 {taskList.Count} 个总任务");
-                
-                var systemTasks = currentTasks.Where(t => t.SysName == systemName).ToList();
-                if (!systemTasks.Any()) 
+
+                var systemTasks = taskList.Where(t => t.SysName == systemName).ToList();
+                if (!systemTasks.Any())
                 {
                     Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 没有找到试验任务");
                     Console.WriteLine($"AG - 调整后工作时长计算 - 所有任务的系统名称: {string.Join(", ", currentTasks.Select(t => t.SysName).Distinct())}");
                     return 0;
                 }
-                
+
                 Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 找到 {systemTasks.Count} 个试验任务");
 
                 var roomId = GetRoomIdBySystemName(systemName);
@@ -555,9 +570,9 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     .Where(x => x.RoomId == roomId && !x.SoftDeleted)
                     .Select(x => x.Id)
                     .ToListAsync();
-                
+
                 Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 找到 {systemEquipIds.Count} 个设备");
-                
+
                 // 即使没有设备，也可以按8小时/天计算，所以不直接返回0
 
                 DateTime now = DateTime.Now;
@@ -572,23 +587,14 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     }
 
                     // 只统计过去或当前正在进行的计划周期（开始时间不晚于今天）
-                    if (start > DateTime.Now.Date) 
+                    if (start.Date > DateTime.Now.Date)
                     {
                         Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 开始时间 {start:yyyy-MM-dd} 晚于今天，跳过");
                         continue;
                     }
 
-                    // 限制结束时间不早于开始时间
-                    if (end < start) 
-                    {
-                        Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 结束时间早于开始时间，跳过");
-                        continue;
-                    }
-
-                    Console.WriteLine($"AG - 调整后工作时长计算 - 处理任务 {task.TaskName}，时间范围: {start:yyyy-MM-dd} 到 {end:yyyy-MM-dd}");
-
                     uint seconds = 0;
-                    
+
                     // 如果有设备，查询真实运行数据
                     if (systemEquipIds.Any())
                     {
@@ -609,8 +615,9 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     }
                     else
                     {
-                        int days = (int)(end.Date - start.Date).TotalDays + 1;
-                        if (days > 0) 
+                        var endDay = end.Date > DateTime.Now.Date ? DateTime.Now.Date : end.Date;
+                        int days = (int)(endDay - start.Date).TotalDays + 1;
+                        if (days > 0)
                         {
                             decimal taskHours = days * 8;
                             totalHours += taskHours;
@@ -649,7 +656,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     }
                 }
             }
-            
+
             return Guid.Empty; // 未找到对应的房间ID
         }
 
@@ -663,7 +670,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             var entity = await DbContext.Queryable<AssetData>()
                 .Includes(x => x.Projects)
                 .InSingleAsync(id);
-            
+
             if (entity == null)
                 throw new KeyNotFoundException($"未找到ID为{id}的资产数据");
 

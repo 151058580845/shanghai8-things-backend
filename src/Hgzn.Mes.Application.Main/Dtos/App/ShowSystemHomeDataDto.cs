@@ -502,12 +502,12 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 当前自然月所有系统总成本(可能用于显示于大屏主页的"月试验成本")
         /// </summary>
-        public int? CurrentMonthTotalSystemTestCost { get; set; }
+        public decimal? CurrentMonthTotalSystemTestCost { get; set; }
 
         /// <summary>
         /// 当前自然年所有系统总成本(可能用于显示于大屏主页的"年试验成本")
         /// </summary>
-        public int? CurrentYearTotalSystemTestCost { get; set; }
+        public decimal? CurrentYearTotalSystemTestCost { get; set; }
     }
 
     public class TypeTestCost : ReadDto
@@ -530,12 +530,12 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// <summary>
         /// 当前自然月所有型号总成本(可能用于显示于大屏主页的"月试验成本")
         /// </summary>
-        public int? CurrentMonthTotalTypeTestCost { get; set; }
+        public decimal? CurrentMonthTotalTypeTestCost { get; set; }
 
         /// <summary>
         /// 当前自然年所有型号总成本(可能用于显示于大屏主页的"年试验成本")
         /// </summary>
-        public int? CurrentYearTotalTypeTestCost { get; set; }
+        public decimal? CurrentYearTotalTypeTestCost { get; set; }
     }
 
     /// <summary>

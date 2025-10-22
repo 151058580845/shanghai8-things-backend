@@ -233,7 +233,7 @@ public class EquipLedgerService : SugarCrudAppService<
         try
         {
             LoggerAdapter.LogInformation($"AG - 设备导入 - 开始执行API批量导入, URL: {url}");
-            
+
             // 发送 GET 请求
             LoggerAdapter.LogInformation($"AG - 设备导入 - 正在发送HTTP GET请求...");
             var response = await _httpClient.GetAsync(url);
@@ -254,20 +254,20 @@ public class EquipLedgerService : SugarCrudAppService<
             };
 
             LoggerAdapter.LogInformation($"AG - 设备导入 - 开始反序列化JSON数据...");
-            var result = JsonSerializer.Deserialize<List<EquipLedgerImportDto>>(jsonResponse, options);
+            List<EquipLedgerImportDto>? result = JsonSerializer.Deserialize<List<EquipLedgerImportDto>>(jsonResponse, options);
             LoggerAdapter.LogInformation($"AG - 设备导入 - 反序列化完成, 共解析到 {result?.Count ?? 0} 条数据");
 
             var changeCount = 0;
             if (result != null && result.Any())
             {
                 LoggerAdapter.LogInformation($"AG - 设备导入 - 开始处理 {result.Count} 条设备数据...");
-                
+
                 var processedCount = 0;
                 foreach (var item in result)
                 {
                     processedCount++;
                     LoggerAdapter.LogInformation($"AG - 设备导入 - 处理第 {processedCount}/{result.Count} 条: 本地化资产编号={item.Localsn}, 设备名称={item.Assetname}");
-                    
+
                     // 映射新API格式到内部DTO
                     var equipLedgerDto = MapImportDtoToCreateDto(item);
 
@@ -303,9 +303,12 @@ public class EquipLedgerService : SugarCrudAppService<
                     }
 
                     LoggerAdapter.LogInformation($"AG - 设备导入 - DTO映射完成: 设备编号={equipLedgerDto.EquipCode}, 资产编号={equipLedgerDto.AssetNumber}");
-                    
+
                     // 检查是否已存在相同的本地化资产编号
                     LoggerAdapter.LogInformation($"AG - 设备导入 - 查询数据库是否存在资产编号: {item.Localsn}");
+
+                    var existingEquips = await DbContext.Queryable<EquipLedger>().ToListAsync();
+
                     var existingEquip = await DbContext.Queryable<EquipLedger>()
                         .Where(x => x.AssetNumber == item.Localsn && !x.SoftDeleted)
                         .FirstAsync();
@@ -321,14 +324,11 @@ public class EquipLedgerService : SugarCrudAppService<
                         if (HasText(equipLedgerDto.AssetNumber)) existingEquip.AssetNumber = equipLedgerDto.AssetNumber!;
                         if (HasText(equipLedgerDto.Model)) existingEquip.Model = equipLedgerDto.Model!;
                         if (HasText(equipLedgerDto.Sn)) existingEquip.Sn = equipLedgerDto.Sn!;
-                        if (HasText(equipLedgerDto.EquipCode)) existingEquip.EquipCode = equipLedgerDto.EquipCode!;
                         if (HasText(equipLedgerDto.IpAddress)) existingEquip.IpAddress = equipLedgerDto.IpAddress!;
 
                         if (equipLedgerDto.PurchaseDate.HasValue) existingEquip.PurchaseDate = equipLedgerDto.PurchaseDate;
                         if (equipLedgerDto.ValidityDate.HasValue) existingEquip.ValidityDate = equipLedgerDto.ValidityDate;
                         if (equipLedgerDto.IsMeasurementDevice.HasValue) existingEquip.IsMeasurementDevice = equipLedgerDto.IsMeasurementDevice;
-                        if (equipLedgerDto.RoomId.HasValue) existingEquip.RoomId = equipLedgerDto.RoomId;
-                        if (equipLedgerDto.TypeId.HasValue) existingEquip.TypeId = equipLedgerDto.TypeId;
 
                         if (HasText(equipLedgerDto.DeviceStatus))
                         {
@@ -348,6 +348,10 @@ public class EquipLedgerService : SugarCrudAppService<
                         existingEquip.State = equipLedgerDto.State; // State 为 bool，维持新值（若需要保留旧值请告知）
                         existingEquip.LastModificationTime = DateTime.Now;
 
+                        // 如果已存在设备没有设备编码,那么就分配一个
+                        if (!HasText(existingEquip.EquipCode))
+                            existingEquip.EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ");
+
                         var updateResult = DbContext.Updateable(existingEquip)
                             .IgnoreColumns(x => new { x.CreationTime, x.CreatorId, x.SoftDeleted, x.DeleteTime })
                             .ExecuteCommand();
@@ -358,16 +362,18 @@ public class EquipLedgerService : SugarCrudAppService<
                     else
                     {
                         LoggerAdapter.LogInformation($"AG - 设备导入 - 未找到已存在设备, 执行新增操作");
-                        
+
                         // 新增设备
-                        var info = Mapper.Map<EquipLedger>(equipLedgerDto);
+                        EquipLedger info = Mapper.Map<EquipLedger>(equipLedgerDto);
+                        // 新增设备自动分配一个设备编码
+                        info.EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ");
                         var insertResult = DbContext.Insertable<EquipLedger>(info).ExecuteCommand();
-                        
+
                         LoggerAdapter.LogInformation($"AG - 设备导入 - 新增操作完成, 影响行数: {insertResult}");
                         changeCount += insertResult;
                     }
                 }
-                
+
                 LoggerAdapter.LogInformation($"AG - 设备导入 - 所有数据处理完成");
             }
             else
@@ -378,27 +384,10 @@ public class EquipLedgerService : SugarCrudAppService<
             LoggerAdapter.LogInformation($"AG - 设备导入 - 导入完成, 总共影响 {changeCount} 条记录");
             return changeCount;
         }
-        catch (HttpRequestException ex)
-        {
-            // 处理 HTTP 请求异常
-            LoggerAdapter.LogWarning($"AG - 设备导入 - HTTP 请求失败: {ex.Message}");
-            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常堆栈: {ex.StackTrace}");
-            throw;
-        }
-        catch (JsonException ex)
-        {
-            // 处理 JSON 反序列化异常
-            LoggerAdapter.LogWarning($"AG - 设备导入 - JSON 反序列化失败: {ex.Message}");
-            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常堆栈: {ex.StackTrace}");
-            throw;
-        }
         catch (Exception ex)
         {
-            // 处理其他异常
-            LoggerAdapter.LogWarning($"AG - 设备导入 - 发生未知错误: {ex.Message}");
-            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常类型: {ex.GetType().Name}");
-            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常堆栈: {ex.StackTrace}");
-            throw;
+            LoggerAdapter.LogWarning($"AG - 设备导入 - 异常: {ex.Message}");
+            return 0;
         }
     }
 
@@ -419,7 +408,6 @@ public class EquipLedgerService : SugarCrudAppService<
             PurchaseDate = ParseDate(importDto.Factorydate),
             ValidityDate = ParseDate(importDto.ValidPeriod),
             Sn = importDto.Sn,
-            EquipCode = importDto.Localsn ?? Guid.NewGuid().ToString(), // 如果没有本地化编号，使用GUID
             State = true,
             DeviceStatus = "Normal", // 默认设备状态为正常
             DeviceLevel = "Basic"    // 默认设备重要度为普通设备
@@ -842,11 +830,11 @@ public class EquipLedgerService : SugarCrudAppService<
         }
 
         // 解析日期
-        var startDate = !string.IsNullOrEmpty(request.StartDate) && DateTime.TryParse(request.StartDate, out var start) 
-            ? start 
+        var startDate = !string.IsNullOrEmpty(request.StartDate) && DateTime.TryParse(request.StartDate, out var start)
+            ? start
             : DateTime.Now.AddDays(-30);
-        var endDate = !string.IsNullOrEmpty(request.EndDate) && DateTime.TryParse(request.EndDate, out var end) 
-            ? end 
+        var endDate = !string.IsNullOrEmpty(request.EndDate) && DateTime.TryParse(request.EndDate, out var end)
+            ? end
             : DateTime.Now;
 
         // 如果只有一个房间，直接生成Word文档
@@ -864,7 +852,7 @@ public class EquipLedgerService : SugarCrudAppService<
 
         // 多个房间时，为每个房间生成一个Word文档，然后合并
         var wordDocuments = new List<byte[]>();
-        
+
         foreach (var roomGroup in roomGroups)
         {
             var roomId = roomGroup.Key;
@@ -874,7 +862,7 @@ public class EquipLedgerService : SugarCrudAppService<
                 StartDate = startDate,
                 EndDate = endDate
             };
-            
+
             var roomWordData = await ExportTemperatureHumidityRecordToWordAsync(newRequest);
             wordDocuments.Add(roomWordData);
         }
@@ -903,7 +891,7 @@ public class EquipLedgerService : SugarCrudAppService<
             .WhereIF(queryDto.RoomId.HasValue, (el, r, u) => el.RoomId == queryDto.RoomId)
             .WhereIF(queryDto.ResponsibleUserId.HasValue, (el, r, u) => el.ResponsibleUserId == queryDto.ResponsibleUserId)
             .WhereIF(queryDto.State.HasValue, (el, r, u) => el.State == queryDto.State)
-            .WhereIF(!string.IsNullOrEmpty(queryDto.Query), (el, r, u) => 
+            .WhereIF(!string.IsNullOrEmpty(queryDto.Query), (el, r, u) =>
                 el.EquipName.Contains(queryDto.Query!) || el.Model!.Contains(queryDto.Query!))
             .Where((el, r, u) => !el.SoftDeleted)
             .Where((el, r, u) => el.EquipLevel == EquipLevelEnum.Important); // 只筛选关键设备
@@ -929,7 +917,7 @@ public class EquipLedgerService : SugarCrudAppService<
         foreach (var item in equipDataQuery)
         {
             var workingHours = await CalculateEquipWorkingHours(item.Id, item.RoomId);
-            
+
             equipData.Add(new KeyEquipWorkingHoursExportDto
             {
                 AssetNumber = item.AssetNumber,
@@ -977,7 +965,7 @@ public class EquipLedgerService : SugarCrudAppService<
             // 方案2：从Redis获取近30天运行时长（备用方案）
             var runTimeSeconds = await _systemInfoManager.GetRunTime((byte)systemNumber, equipId);
             var runTimeHours = Math.Round((decimal)runTimeSeconds / 3600, 2);
-            
+
             return runTimeHours;
         }
         catch (Exception ex)
@@ -1000,9 +988,9 @@ public class EquipLedgerService : SugarCrudAppService<
         {
             // 计算最近30天的运行时长总和
             var thirtyDaysAgo = DateTime.Now.AddDays(-30).Date;
-            
+
             var totalSeconds = await DbContext.Queryable<EquipDailyRuntime>()
-                .Where(x => x.EquipId == equipId && 
+                .Where(x => x.EquipId == equipId &&
                            x.SystemNumber == systemNumber &&
                            x.RecordDate >= thirtyDaysAgo)
                 .SumAsync(x => x.RunningSeconds);
@@ -1024,7 +1012,7 @@ public class EquipLedgerService : SugarCrudAppService<
     private static byte GetSystemNumberByRoomId(Guid roomId)
     {
         var roomIdString = roomId.ToString().ToUpper();
-        
+
         // 使用TestEquipData中的映射关系反向查找
         for (int systemId = 1; systemId <= 10; systemId++)
         {
@@ -1034,7 +1022,7 @@ public class EquipLedgerService : SugarCrudAppService<
                 return (byte)systemId;
             }
         }
-        
+
         return 0; // 未找到对应的系统编号
     }
 
@@ -1065,7 +1053,7 @@ public class EquipLedgerService : SugarCrudAppService<
     private string GetSystemNameByRoomId(Guid roomId)
     {
         var roomIdString = roomId.ToString().ToUpper();
-        
+
         for (int systemId = 1; systemId <= 10; systemId++)
         {
             var mappedRoomId = TestEquipData.GetRoomId(systemId);
@@ -1074,7 +1062,7 @@ public class EquipLedgerService : SugarCrudAppService<
                 return TestEquipData.GetSystemName(systemId);
             }
         }
-        
+
         return "未知系统";
     }
 
@@ -1086,7 +1074,7 @@ public class EquipLedgerService : SugarCrudAppService<
     private string GetRoomNumberByRoomId(Guid roomId)
     {
         var roomIdString = roomId.ToString().ToUpper();
-        
+
         for (int systemId = 1; systemId <= 10; systemId++)
         {
             var mappedRoomId = TestEquipData.GetRoomId(systemId);
@@ -1095,7 +1083,7 @@ public class EquipLedgerService : SugarCrudAppService<
                 return TestEquipData.GetRoom(systemId).ToString();
             }
         }
-        
+
         return "000";
     }
 
@@ -1109,13 +1097,13 @@ public class EquipLedgerService : SugarCrudAppService<
     private async Task<List<TemperatureHumidityRecordDataDto>> GetTemperatureHumidityRecordDataAsync(Guid roomId, DateTime startDate, DateTime endDate)
     {
         var result = new List<TemperatureHumidityRecordDataDto>();
-        
+
         // 遍历每一天
         for (var currentDate = startDate.Date; currentDate <= endDate.Date; currentDate = currentDate.AddDays(1))
         {
             // 获取当天9点或9点后的第一个温湿度记录
             var record = await DbContext.Queryable<TemperatureHumidityRecord>()
-                .Where(t => t.RoomId == roomId && 
+                .Where(t => t.RoomId == roomId &&
                            t.RecordTime.Date == currentDate &&
                            t.RecordTime.Hour >= 9)
                 .OrderBy(t => t.RecordTime)
@@ -1180,7 +1168,7 @@ public class EquipLedgerService : SugarCrudAppService<
     {
         using var stream = new MemoryStream();
         using var document = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document);
-        
+
         // 添加主文档部分
         var mainPart = document.AddMainDocumentPart();
         mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
@@ -1188,14 +1176,14 @@ public class EquipLedgerService : SugarCrudAppService<
 
         // 设置页面大小和边距
         var sectionProperties = body.AppendChild(new SectionProperties());
-        var pageSize = sectionProperties.AppendChild(new PageSize() 
-        { 
+        var pageSize = sectionProperties.AppendChild(new PageSize()
+        {
             Width = 11906,  // A4宽度 (21cm = 595pt = 11906 twips)
             Height = 16838, // A4高度 (29.7cm = 842pt = 16838 twips)
             Orient = PageOrientationValues.Portrait
         });
-        
-        var pageMargin = sectionProperties.AppendChild(new PageMargin() 
+
+        var pageMargin = sectionProperties.AppendChild(new PageMargin()
         {
             Top = 1440,     // 上边距 2.54cm (1 inch = 72pt = 1440 twips)
             Right = 1440,   // 右边距 2.54cm
@@ -1208,12 +1196,12 @@ public class EquipLedgerService : SugarCrudAppService<
         // 1. 创建居中标题
         var titleParagraph = body.AppendChild(new Paragraph());
         var titleRun = titleParagraph.AppendChild(new Run(new Text($"{systemName}温湿度、相对湿度记录表")));
-        
+
         // 设置标题字体属性：四号字体和粗体
         var titleRunProperties = titleRun.AppendChild(new RunProperties());
         titleRunProperties.AppendChild(new Bold());
         titleRunProperties.AppendChild(new FontSize() { Val = "28" }); // 四号字体 (14磅)
-        
+
         // 设置标题居中
         var titleParagraphProperties = titleParagraph.AppendChild(new ParagraphProperties());
         titleParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
@@ -1224,21 +1212,21 @@ public class EquipLedgerService : SugarCrudAppService<
         // 2. 创建表头上方信息区域（使用空格对齐）
         var infoParagraph1 = body.AppendChild(new Paragraph());
         infoParagraph1.AppendChild(new Run(new Text($"部门(房间号)：2#{roomNumber}")));
-        
+
         // 设置1.5倍行距
         var infoParagraph1Properties = infoParagraph1.AppendChild(new ParagraphProperties());
         infoParagraph1Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
-        
+
         var infoParagraph2 = body.AppendChild(new Paragraph());
         infoParagraph2.AppendChild(new Run(new Text($"文明生产区类别：二类                                          静电控制类别：管控点")));
-        
+
         // 设置1.5倍行距
         var infoParagraph2Properties = infoParagraph2.AppendChild(new ParagraphProperties());
         infoParagraph2Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
-        
+
         var infoParagraph3 = body.AppendChild(new Paragraph());
         infoParagraph3.AppendChild(new Run(new Text($"本区域温度要求：15~30℃                                      本区域湿度要求：30~75%")));
-        
+
         // 设置1.5倍行距
         var infoParagraph3Properties = infoParagraph3.AppendChild(new ParagraphProperties());
         infoParagraph3Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
@@ -1248,7 +1236,7 @@ public class EquipLedgerService : SugarCrudAppService<
 
         // 3. 创建主数据表格
         var table = body.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Table());
-        
+
         // 设置表格属性 - 表格宽度为100%
         var tableProperties = table.AppendChild(new TableProperties());
         tableProperties.AppendChild(new TableWidth() { Type = TableWidthUnitValues.Pct, Width = "5000" }); // 100%
@@ -1260,7 +1248,7 @@ public class EquipLedgerService : SugarCrudAppService<
             new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
             new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 }
         ));
-        
+
         // 设置表格列宽 - 5列平均分配，每列20%
         var tableGrid = tableProperties.AppendChild(new TableGrid());
         for (int i = 0; i < 5; i++)
@@ -1270,24 +1258,24 @@ public class EquipLedgerService : SugarCrudAppService<
 
         // 创建表头行
         var headerDataRow = table.AppendChild(new TableRow());
-        
+
         // 设置表头行高度
         var headerRowProperties = headerDataRow.AppendChild(new TableRowProperties());
         headerRowProperties.AppendChild(new TableRowHeight() { Val = 380, HeightType = HeightRuleValues.AtLeast }); // 行高约13磅
-        
+
         var headerCells = new[] { "测量日期", "温度值(℃)", "湿度值(%)", "测量时间", "测量人员" };
         foreach (var header in headerCells)
         {
             var cell = headerDataRow.AppendChild(new TableCell());
-            
+
             // 设置单元格垂直居中
             var cellProperties = cell.AppendChild(new TableCellProperties());
             cellProperties.AppendChild(new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Center });
-            
+
             var paragraph = cell.AppendChild(new Paragraph());
             var run = paragraph.AppendChild(new Run(new Text(header)));
             run.AppendChild(new RunProperties(new Bold()));
-            
+
             // 设置单元格内容居中和行高
             var cellParagraphProperties = paragraph.AppendChild(new ParagraphProperties());
             cellParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
@@ -1297,7 +1285,7 @@ public class EquipLedgerService : SugarCrudAppService<
         // 创建数据行 - 分页处理，每页最多25行数据
         const int maxRowsPerPage = 25;
         var totalPages = (int)Math.Ceiling((double)recordData.Count / maxRowsPerPage);
-        
+
         for (int pageIndex = 0; pageIndex < totalPages; pageIndex++)
         {
             // 如果不是第一页，添加分页符
@@ -1306,16 +1294,16 @@ public class EquipLedgerService : SugarCrudAppService<
                 // 添加分页符
                 var pageBreak = body.AppendChild(new Paragraph());
                 pageBreak.AppendChild(new ParagraphProperties()).AppendChild(new PageBreakBefore());
-                
+
                 // 重新创建标题
                 var newTitleParagraph = body.AppendChild(new Paragraph());
                 var newTitleRun = newTitleParagraph.AppendChild(new Run(new Text($"{systemName}温湿度、相对湿度记录表")));
-                
+
                 // 设置标题字体属性：四号字体和粗体
                 var newTitleRunProperties = newTitleRun.AppendChild(new RunProperties());
                 newTitleRunProperties.AppendChild(new Bold());
                 newTitleRunProperties.AppendChild(new FontSize() { Val = "28" }); // 四号字体 (14磅)
-                
+
                 // 设置标题居中
                 var newTitleParagraphProperties = newTitleParagraph.AppendChild(new ParagraphProperties());
                 newTitleParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
@@ -1326,21 +1314,21 @@ public class EquipLedgerService : SugarCrudAppService<
                 // 重新创建表头上方信息区域（使用空格对齐）
                 var newInfoParagraph1 = body.AppendChild(new Paragraph());
                 newInfoParagraph1.AppendChild(new Run(new Text($"部门(房间号)：2#{roomNumber}")));
-                
+
                 // 设置1.5倍行距
                 var newInfoParagraph1Properties = newInfoParagraph1.AppendChild(new ParagraphProperties());
                 newInfoParagraph1Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
-                
+
                 var newInfoParagraph2 = body.AppendChild(new Paragraph());
                 newInfoParagraph2.AppendChild(new Run(new Text($"文明生产区类别：二类                                          静电控制类别：管控点")));
-                
+
                 // 设置1.5倍行距
                 var newInfoParagraph2Properties = newInfoParagraph2.AppendChild(new ParagraphProperties());
                 newInfoParagraph2Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
-                
+
                 var newInfoParagraph3 = body.AppendChild(new Paragraph());
                 newInfoParagraph3.AppendChild(new Run(new Text($"本区域温度要求：15~30℃                                      本区域湿度要求：30~75%")));
-                
+
                 // 设置1.5倍行距
                 var newInfoParagraph3Properties = newInfoParagraph3.AppendChild(new ParagraphProperties());
                 newInfoParagraph3Properties.AppendChild(new SpacingBetweenLines() { Line = "360", LineRule = LineSpacingRuleValues.Auto }); // 1.5倍行距
@@ -1350,7 +1338,7 @@ public class EquipLedgerService : SugarCrudAppService<
 
                 // 重新创建主数据表格
                 table = body.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Table());
-                
+
                 // 设置表格属性 - 表格宽度为100%
                 tableProperties = table.AppendChild(new TableProperties());
                 tableProperties.AppendChild(new TableWidth() { Type = TableWidthUnitValues.Pct, Width = "5000" }); // 100%
@@ -1362,7 +1350,7 @@ public class EquipLedgerService : SugarCrudAppService<
                     new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 },
                     new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 12 }
                 ));
-                
+
                 // 设置表格列宽 - 5列平均分配，每列20%
                 var newTableGrid = tableProperties.AppendChild(new TableGrid());
                 for (int i = 0; i < 5; i++)
@@ -1372,108 +1360,108 @@ public class EquipLedgerService : SugarCrudAppService<
 
                 // 重新创建表头行
                 var newHeaderDataRow = table.AppendChild(new TableRow());
-                
+
                 // 设置表头行高度
                 var newHeaderRowProperties = newHeaderDataRow.AppendChild(new TableRowProperties());
                 newHeaderRowProperties.AppendChild(new TableRowHeight() { Val = 380, HeightType = HeightRuleValues.AtLeast }); // 行高约13磅
-                
+
                 var newHeaderCells = new[] { "测量日期", "温度值(℃)", "湿度值(%)", "测量时间", "测量人员" };
                 foreach (var header in newHeaderCells)
                 {
                     var cell = newHeaderDataRow.AppendChild(new TableCell());
-                    
+
                     // 设置单元格垂直居中
                     var cellProperties = cell.AppendChild(new TableCellProperties());
                     cellProperties.AppendChild(new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Center });
-                    
+
                     var paragraph = cell.AppendChild(new Paragraph());
                     var run = paragraph.AppendChild(new Run(new Text(header)));
                     run.AppendChild(new RunProperties(new Bold()));
-                    
+
                     // 设置单元格内容居中和行高
                     var cellParagraphProperties = paragraph.AppendChild(new ParagraphProperties());
                     cellParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
                     cellParagraphProperties.AppendChild(new SpacingBetweenLines() { Line = "260", LineRule = LineSpacingRuleValues.Auto }); // 行高约12磅
                 }
             }
-            
+
             // 计算当前页的数据范围
             var startIndex = pageIndex * maxRowsPerPage;
             var endIndex = Math.Min(startIndex + maxRowsPerPage, recordData.Count);
             var pageData = recordData.Skip(startIndex).Take(maxRowsPerPage).ToList();
-            
+
             // 添加当前页的数据行
             foreach (var record in pageData)
             {
                 var dataRow = table.AppendChild(new TableRow());
-                
+
                 // 设置数据行高度
                 var dataRowProperties = dataRow.AppendChild(new TableRowProperties());
                 dataRowProperties.AppendChild(new TableRowHeight() { Val = 320, HeightType = HeightRuleValues.AtLeast }); // 行高约11磅
-                
-                var cellData = new[] 
-                { 
-                    record.MeasurementDate, 
-                    record.TemperatureValue, 
-                    record.HumidityValue, 
-                    record.MeasurementTime, 
-                    record.Measurer 
+
+                var cellData = new[]
+                {
+                    record.MeasurementDate,
+                    record.TemperatureValue,
+                    record.HumidityValue,
+                    record.MeasurementTime,
+                    record.Measurer
                 };
-                
+
                 foreach (var data in cellData)
                 {
                     var cell = dataRow.AppendChild(new TableCell());
-                    
+
                     // 设置单元格垂直居中
                     var cellProperties = cell.AppendChild(new TableCellProperties());
                     cellProperties.AppendChild(new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Center });
-                    
+
                     var paragraph = cell.AppendChild(new Paragraph());
                     paragraph.AppendChild(new Run(new Text(data)));
-                    
+
                     // 设置单元格内容居中和行高
                     var cellParagraphProperties = paragraph.AppendChild(new ParagraphProperties());
                     cellParagraphProperties.AppendChild(new Justification() { Val = JustificationValues.Center });
                     cellParagraphProperties.AppendChild(new SpacingBetweenLines() { Line = "260", LineRule = LineSpacingRuleValues.Auto }); // 行高约12磅
                 }
             }
-            
+
             // 为当前页添加记录要求和参照制度/标准（每一页都需要）
             // 4. 在表格内添加记录要求行（合并所有列为一个单元格）
             var requirementsRow = table.AppendChild(new TableRow());
-            
+
             // 设置记录要求行高度
             var requirementsRowProperties = requirementsRow.AppendChild(new TableRowProperties());
             requirementsRowProperties.AppendChild(new TableRowHeight() { Val = 380, HeightType = HeightRuleValues.AtLeast }); // 行高约13磅
-            
+
             // 创建合并的单元格，跨5列
             var requirementsCell = requirementsRow.AppendChild(new TableCell());
-            
+
             // 设置单元格属性 - 跨5列
             var requirementsCellProperties = requirementsCell.AppendChild(new TableCellProperties());
             requirementsCellProperties.AppendChild(new GridSpan() { Val = 5 });
-            
+
             // 记录要求内容
             var requirementsParagraph1 = requirementsCell.AppendChild(new Paragraph());
             requirementsParagraph1.AppendChild(new Run(new Text("记录要求：1、参考《八部工作场所与工作环境(物理因素)识别对照表》(详见附录B)执行。")));
-            
+
             var requirementsParagraph2 = requirementsCell.AppendChild(new Paragraph());
             requirementsParagraph2.AppendChild(new Run(new Text(".         2、每次在试验开始前进行温湿度记录。")));
 
             // 5. 在表格内添加参照制度/标准行（合并所有列为一个单元格）
             var standardsRow = table.AppendChild(new TableRow());
-            
+
             // 设置参照制度行高度
             var standardsRowProperties = standardsRow.AppendChild(new TableRowProperties());
             standardsRowProperties.AppendChild(new TableRowHeight() { Val = 500, HeightType = HeightRuleValues.AtLeast }); // 行高约18磅
-            
+
             // 创建合并的单元格，跨5列
             var standardsCell = standardsRow.AppendChild(new TableCell());
-            
+
             // 设置单元格属性 - 跨5列
             var standardsCellProperties = standardsCell.AppendChild(new TableCellProperties());
             standardsCellProperties.AppendChild(new GridSpan() { Val = 5 });
-            
+
             // 参照制度/标准内容
             var standardsParagraph1 = standardsCell.AppendChild(new Paragraph());
             standardsParagraph1.AppendChild(new Run(new Text("参照制度/标准：")));
@@ -1483,7 +1471,7 @@ public class EquipLedgerService : SugarCrudAppService<
 
             var standardsParagraph3 = standardsCell.AppendChild(new Paragraph());
             standardsParagraph3.AppendChild(new Run(new Text("2) 沪八部行[2017]82号  《八部静电防护工作管理办法》")));
-            
+
             var standardsParagraph4 = standardsCell.AppendChild(new Paragraph());
             standardsParagraph4.AppendChild(new Run(new Text("3) 沪八部档(2015)99号  《八部档案工作实施办法》")));
         }

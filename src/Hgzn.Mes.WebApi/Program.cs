@@ -283,8 +283,9 @@ builder.Services.AddMediatR(config =>
 
 builder.Services.AddHttpClient(); // 注册 IHttpClientFactory
 
-// builder.Services.AddHostedService<TestDataImport>();
-//builder.Services.AddHostedService<ConnCollectWorker>();
+// 注册后台服务
+builder.Services.AddHostedService<TestDataImport>();
+builder.Services.AddHostedService<ConnCollectWorker>();
 
 var app = builder.Build();
 

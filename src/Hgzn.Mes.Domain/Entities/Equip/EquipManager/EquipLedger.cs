@@ -2414,6 +2414,501 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
     }
 #endif
 
+    /// <summary>
+    /// 采集适配器种子数据
+    /// </summary>
+    public static EquipLedger[] DataCollectors
+    {
+        get
+        {
+            List<EquipLedger> list = [];
+
+            // 310系统 - 微波/毫米波复合半实物仿真系统 - 采集适配器
+            // 303、203、306房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("0bdc1444-ec5a-4cf3-be2c-c5dc9b216981"),
+                EquipCode = "0bdc1444******c5dc9b216981",
+                EquipName = "303房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"), // 设备类型ID需要确认
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500031",
+                DepartmentId = null,
+                RoomId = Guid.Parse("4c246470-da66-4408-b287-09fd82ffa3d4"), // 310系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "310系统-303房间采集器",
+                Mac = "",
+                IpAddress = "10.125.157.153",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("7de8eabe-9f47-4f52-b259-25330183917b"),
+                EquipCode = "7de8eabe******25330183917b",
+                EquipName = "203房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500030",
+                DepartmentId = null,
+                RoomId = Guid.Parse("4c246470-da66-4408-b287-09fd82ffa3d4"), // 310系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "310系统-203房间采集器",
+                Mac = "",
+                IpAddress = "10.125.157.154",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("202b39b8-c14c-4e03-9c07-3a2e819f6734"),
+                EquipCode = "202b39b8******3a2e819f6734",
+                EquipName = "306房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500028",
+                DepartmentId = null,
+                RoomId = Guid.Parse("4c246470-da66-4408-b287-09fd82ffa3d4"), // 310系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "310系统-306房间采集器",
+                Mac = "",
+                IpAddress = "10.125.157.156",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 307系统 - 微波寻的半实物仿真系统 - 采集适配器
+            // 209、206房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("8d9e77b7-e532-4616-a254-978118b27a0f"),
+                EquipCode = "8d9e77b7******978118b27a0f",
+                EquipName = "209房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500032",
+                DepartmentId = null,
+                RoomId = Guid.Parse("83168845-ef46-4aed-9187-de2024488230"), // 307系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "307系统-209房间采集器",
+                Mac = "",
+                IpAddress = "10.125.157.152",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("495bcb95-ae08-4e32-aefe-92db918f124f"),
+                EquipCode = "495bcb95******92db918f124f",
+                EquipName = "206房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500029",
+                DepartmentId = null,
+                RoomId = Guid.Parse("83168845-ef46-4aed-9187-de2024488230"), // 307系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "307系统-206房间采集器",
+                Mac = "",
+                IpAddress = "10.125.157.155",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 314系统 - 射频/光学制导半实物仿真系统 - 采集适配器
+            // 213、215房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("b4a77fa5-7bdb-4b18-9996-8346ab90cfcd"),
+                EquipCode = "b4a77fa5******8346ab90cfcd",
+                EquipName = "213房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500027",
+                DepartmentId = null,
+                RoomId = Guid.Parse("7412dda2-5413-43ab-9976-255df60c3e14"), // 314系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "314系统-213房间采集器",
+                Mac = "",
+                IpAddress = "10.125.157.157",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("6b6b8f12-9a7a-476d-8bc8-e500488022c7"),
+                EquipCode = "6b6b8f12******e500488022c7",
+                EquipName = "215房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500026",
+                DepartmentId = null,
+                RoomId = Guid.Parse("7412dda2-5413-43ab-9976-255df60c3e14"), // 314系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "314系统-215房间采集器",
+                Mac = "",
+                IpAddress = "10.125.157.158",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 109系统 - 紧缩场射频光学半实物仿真系统 - 采集适配器
+            // 109房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("09ab1a11-7d4b-40a3-b523-7bd2bddd8f3e"),
+                EquipCode = "09ab1a11******7bd2bddd8f3e",
+                EquipName = "109房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500021",
+                DepartmentId = null,
+                RoomId = Guid.Parse("09b374e8-4e7f-4146-9fe0-375edc7b9d7a"), // 109系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "109系统采集器",
+                Mac = "",
+                IpAddress = "10.125.157.163",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 108系统 - 光学复合半实物仿真系统 - 采集适配器
+            // 108房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("968d02ef-43ea-439d-a357-530667b79ce3"),
+                EquipCode = "968d02ef******530667b79ce3",
+                EquipName = "108房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500024",
+                DepartmentId = null,
+                RoomId = Guid.Parse("0ac9885d-da23-4c0f-a66c-2ba467b8086c"), // 108系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "108系统采集器",
+                Mac = "",
+                IpAddress = "10.125.157.160",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 121系统 - 三通道控制红外制导半实物仿真系统 - 采集适配器
+            // 122房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("0e0f73ee-bb48-47ee-b57e-24f0751e6734"),
+                EquipCode = "0e0f73ee******24f0751e6734",
+                EquipName = "122房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500003",
+                DepartmentId = null,
+                RoomId = Guid.Parse("24be4856-d95f-4ba0-b2aa-7049fedc3e39"), // 121系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "121系统采集器",
+                Mac = "",
+                IpAddress = "10.125.157.151",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 202系统 - 低温环境红外制导控制半实物仿真系统 - 采集适配器
+            // 202房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("64d478e9-cc72-4db1-80de-d5c9aa732584"),
+                EquipCode = "64d478e9******d5c9aa732584",
+                EquipName = "202房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500025",
+                DepartmentId = null,
+                RoomId = Guid.Parse("916edd0e-df70-4137-806c-41817587e438"), // 202系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "202系统采集器,服役中,连接本地数据库待测试",
+                Mac = "",
+                IpAddress = "10.125.157.159",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 103系统 - 机械式制导控制半实物仿真系统 - 采集适配器
+            // 103房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("896445c4-015f-46a7-bca8-42bb355a3fd4"),
+                EquipCode = "896445c4******42bb355a3fd4",
+                EquipName = "103房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500019",
+                DepartmentId = null,
+                RoomId = Guid.Parse("7d6b322d-bf48-4963-bfe6-579560e84530"), // 103系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "103系统采集器",
+                Mac = "",
+                IpAddress = "10.125.157.165",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 112系统 - 独立回路半实物仿真系统 - 采集适配器
+            // 112房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("14b6b226-2f36-449a-b369-f3053453edcb"),
+                EquipCode = "14b6b226******f3053453edcb",
+                EquipName = "112房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500023",
+                DepartmentId = null,
+                RoomId = Guid.Parse("ddd64e08-5f2a-4578-84cb-2f90caa898e9"), // 112系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "112系统采集器",
+                Mac = "",
+                IpAddress = "10.125.157.161",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            // 119系统 - 独立回路/可见光制导半实物仿真系统 - 采集适配器
+            // 119房间
+            list.Add(new EquipLedger
+            {
+                Id = Guid.Parse("0dfd0d83-4765-4ac3-a44d-8cfbcc06df40"),
+                EquipCode = "0dfd0d83******8cfbcc06df40",
+                EquipName = "119房间采集适配器",
+                TypeId = Guid.Parse("0630d15c-1433-4f3f-94dc-e0f6dd60217b"),
+                Model = "",
+                PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                SupplierId = null,
+                AssetNumber = "308099900202500022",
+                DepartmentId = null,
+                RoomId = Guid.Parse("a6ce46f1-d51f-45c8-a22e-2db3126da6cf"), // 119系统房间ID
+                IsMoving = false,
+                IsMovable = false,
+                LastMoveTime = null,
+                DeviceStatus = (Hgzn.Mes.Domain.Shared.Enums.DeviceStatus)0,
+                ValidityDate = DateTime.Parse("2025-06-06 03:04:40.523"),
+                IsMeasurementDevice = false,
+                ResourceId = null,
+                Remark = "119系统采集器",
+                Mac = "",
+                IpAddress = "10.125.157.162",
+                EquipLevel = (Hgzn.Mes.Domain.Shared.Enums.EquipLevelEnum)3,
+                State = true,
+                OrderNum = 0,
+                SoftDeleted = false,
+                DeleteTime = null,
+                CreatorId = User.DevUser.Id,
+                CreationTime = DateTime.Parse("2025-06-06 11:06:08.498451"),
+                LastModifierId = null,
+                LastModificationTime = null,
+            });
+
+            return [.. list];
+        }
+    }
+
     public static EquipLedger[] Seeds
     {
         get
@@ -2492,7 +2987,7 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
                     Model = "",
                     PurchaseDate = DateTime.Parse("2025-06-06 03:04:40.523"),
                     SupplierId = null,
-                    AssetNumber = "240010144212500003",
+                    AssetNumber = "240010144202500003",
                     DepartmentId = null,
                     RoomId = Guid.Parse("6c26b99f-d112-465b-919f-758a8b366d59"),
                     IsMoving = false,
@@ -2740,6 +3235,8 @@ public class EquipLedger : UniversalEntity, ISoftDelete, IState, IOrder, IAudite
                     LastModificationTime = null,
                 }
             ];
+
+            list.AddRange(DataCollectors);
             return [.. list];
         }
     }

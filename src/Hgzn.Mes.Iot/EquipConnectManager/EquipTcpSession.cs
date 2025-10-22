@@ -21,13 +21,13 @@ namespace Hgzn.Mes.Iot.EquipConnectManager;
 
 public class EquipTcpSession : TcpSession
 {
-    private readonly string _heartBeatMessage;
+    private readonly string? _heartBeatMessage;
 
-    private readonly string _heartBeatAck;
+    private readonly string? _heartBeatAck;
 
     // private readonly Timer _timer;
-    private string Ip;
-    private string Mac;
+    private string? Ip;
+    private string? Mac;
     // 多少个转一个（从前端配置进行）
     private int? _forwardLength = 10;
     private readonly IConnectionMultiplexer _connectionMultiplexer;
@@ -96,15 +96,14 @@ public class EquipTcpSession : TcpSession
                         LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, _sqlSugarClient, _connectionMultiplexer, _mqttExplorer);
                         await dispatch.Handle(buffer);
                     }
-
+                }
+                else
+                {
+                    // 队列为空时等待一小段时间，避免CPU占用过高
+                    await Task.Delay(10, cancellationToken);
                 }
             }
             catch (Exception e) { LoggerAdapter.LogError(e.Message); }
-            finally
-            {
-                _hasData = false;
-            }
-            return;
         }
     }
 
@@ -118,17 +117,28 @@ public class EquipTcpSession : TcpSession
         LoggerAdapter.LogInformation($"AG - tcp 客户端 {Ip} 连接");
     }
 
-    protected override async void OnReceived(byte[] buffer, long offset, long size)
+    protected override void OnDisconnected()
+    {
+        // 停止数据处理任务
+        _cancellationTokenSource?.Cancel();
+        _isProcessing = false;
+        base.OnDisconnected();
+        LoggerAdapter.LogInformation($"AG - tcp 客户端 {Ip} 断开连接");
+    }
+
+    private volatile bool _isProcessing = false;
+    private CancellationTokenSource? _cancellationTokenSource;
+
+    protected override void OnReceived(byte[] buffer, long offset, long size)
     {
         LoggerAdapter.LogInformation($"AG - 收到Tcp数据...");
         _dataQueue.Enqueue(buffer);
-        if (!_hasData)
+        if (!_isProcessing)
         {
             LoggerAdapter.LogInformation($"AG - 开始解析Tcp数据...");
-            _hasData = true;
-            var cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
-            _ = Task.Run(async () => await ProcessDataAsync(token, size), token);
+            _isProcessing = true;
+            _cancellationTokenSource = new CancellationTokenSource();
+            _ = Task.Run(async () => await ProcessDataAsync(_cancellationTokenSource.Token, size), _cancellationTokenSource.Token);
         }
     }
 }

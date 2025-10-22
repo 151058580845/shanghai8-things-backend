@@ -1299,7 +1299,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private string GetTurntableStatus(byte status)
         {
             if (status == 0) return "异常";
-            if (status == 2) return "预警";
+            if (status == 1) return "预警";
             return "正常";
         }
 
