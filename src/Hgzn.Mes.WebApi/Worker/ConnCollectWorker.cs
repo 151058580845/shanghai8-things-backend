@@ -126,7 +126,7 @@ namespace Hgzn.Mes.WebApi.Worker
                     
                     if (!isConnected)
                     {
-                        LoggerAdapter.LogInformation($"AG - 设备连接已断开,准备重连: {connection.Name} (Id: {connection.Id}, Protocol: {connection.ProtocolEnum}, RedisState: {stateValue})");
+                        LoggerAdapter.LogDebug($"AG - 设备连接已断开,准备重连: {connection.Name} (Id: {connection.Id}, Protocol: {connection.ProtocolEnum}, RedisState: {stateValue})");
                         
                         // 调用服务启动连接
                         await equipConnectService.PutStartConnect(connection.Id);

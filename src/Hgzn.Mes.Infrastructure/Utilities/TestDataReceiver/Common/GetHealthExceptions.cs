@@ -193,30 +193,21 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         /// <param name="ulDevHealthState"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public static List<string> GetXT_202_SL_3CommonHealthExceptionName(byte[] ulDevHealthState)
+        public static List<string> GetXT_202_SL_3CommonHealthExceptionName(short[] ulDevHealthState)
         {
             List<string> exceptions = new List<string>();
             if (ulDevHealthState[0] == 0) General_StatusType.DeviceHealthNotAcquired.GetDescription();
-            for (int i = 1; i < 6; i++)
+            List<string> axis = new List<string>() { "滚转轴", "偏航轴", "俯仰轴", "高低轴", "方位轴" };
+            for (int i = 0; i < axis.Count; i++)
             {
-                XT_202_SL_3_OperationStatusEnum status = ulDevHealthState[i] switch
-                {
-                    0 => XT_202_SL_3_OperationStatusEnum.Normal,
-                    1 => XT_202_SL_3_OperationStatusEnum.SoftwarePositiveLimit,
-                    2 => XT_202_SL_3_OperationStatusEnum.SoftwareNegativeLimit,
-                    3 => XT_202_SL_3_OperationStatusEnum.OverSpeed,
-                    4 => XT_202_SL_3_OperationStatusEnum.DA_Limit,
-                    5 => XT_202_SL_3_OperationStatusEnum.Runaway,
-                    6 => XT_202_SL_3_OperationStatusEnum.Locked,
-                    7 => XT_202_SL_3_OperationStatusEnum.HomingFailed,
-                    8 => XT_202_SL_3_OperationStatusEnum.DriveFault,
-                    9 => XT_202_SL_3_OperationStatusEnum.FeedbackError,
-                    10 => XT_202_SL_3_OperationStatusEnum.ElectricalSwitchLimit,
-                    11 => XT_202_SL_3_OperationStatusEnum.RelativePositionLimit,
-                    _ => throw new ArgumentOutOfRangeException(nameof(status), $"无效的操作状态值: {ulDevHealthState[i]} (有效范围: 0-11)")
-                };
-                if (status == XT_202_SL_3_OperationStatusEnum.Normal) continue;
-                exceptions.Add(status.GetDescription());
+                var statusFlags = (XT_202_SL_3_OperationStatusEnum)ulDevHealthState[i];
+                if (statusFlags == XT_202_SL_3_OperationStatusEnum.NormalStatus)
+                    return exceptions;
+                exceptions.AddRange(Enum.GetValues(typeof(XT_202_SL_3_OperationStatusEnum))
+                .Cast<XT_202_SL_3_OperationStatusEnum>()
+                .Where(flag => flag != XT_202_SL_3_OperationStatusEnum.NormalStatus)
+                .Where(flag => statusFlags.HasFlag(flag))
+                .Select(flag => axis[i] + flag.GetDescription()));
             }
             return exceptions;
         }

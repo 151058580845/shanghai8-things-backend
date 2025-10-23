@@ -6,6 +6,7 @@ using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Mqtt.Manager;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using Hgzn.Mes.Iot.EquipManager;
+using Microsoft.Extensions.Configuration;
 using SqlSugar;
 using StackExchange.Redis;
 using System.Text.Json;
@@ -21,10 +22,12 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             IConnectionMultiplexer connectionMultiplexer,
             IMqttExplorer mqttExplorer,
             ISqlSugarClient sqlSugarClient,
-            string uri, EquipConnType connType) :
+            string uri, EquipConnType connType,
+            IConfiguration configuration) :
             base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
         {
-            _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
+            DbConnOptions localdbconfig = configuration.GetSection("DbConnIotOptions").Get<DbConnOptions>()!;
+            _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(localdbconfig));
         }
 
         public override async Task CloseConnectionAsync()

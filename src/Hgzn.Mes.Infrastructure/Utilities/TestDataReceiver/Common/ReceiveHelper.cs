@@ -23,17 +23,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
     public static class ReceiveHelper
     {
         public static  readonly ConcurrentQueue<byte[]> ReceiveTestSystem = new();
-        
-        public static DbConnOptions LOCALDBCONFIG = new DbConnOptions
-        {
-            DbType = DbType.OpenGauss,
-            Url = "PORT=5432;DATABASE=dev;HOST=opengauss;PASSWORD=Dev@2024;USER ID=dev;No Reset On Close=true",
-            EnabledReadWrite = false,
-            EnabledCodeFirst = true,
-            EnabledSqlLog = true,
-            EnabledDbSeed = true,
-            EnabledSaasMultiTenancy = false
-        };
+
         private const int BodyStartIndex = 13;
         public static bool GetMessage(byte[] buffer, out uint bufferLength, out DateTime time, out byte[] message)
         {

@@ -1103,7 +1103,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 .ToListAsync()).FirstOrDefault()!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
-                ("状态类型", GetStatus(() => data.StatusType == 1)),
+                // 最新一次协议对接,去掉了状态类型 ("状态类型", GetStatus(() => data.StatusType == 1)),
                 ("三轴转台滚动轴状态", GetStatus(() => data.RollAxisFaultCode == 0)),
                 ("三轴转台偏航轴状态", GetStatus(() => data.YawAxisFaultCode == 0)),
                 ("三轴转台俯仰轴状态", GetStatus(() => data.PitchAxisFaultCode == 0)),

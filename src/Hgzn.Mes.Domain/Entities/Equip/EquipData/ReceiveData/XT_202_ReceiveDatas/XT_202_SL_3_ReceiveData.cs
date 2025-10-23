@@ -43,29 +43,25 @@ public class XT_202_SL_3_ReceiveData : UniversalEntity, IAudited
 
     #region 健康状态信息 6个
 
-    [Description("状态类型")]
-    [TableNotShow]
-    public byte StatusType { get; set; }
-
     [Description("三轴转台滚动轴故障号")]
     [TableNotShow]
-    public byte RollAxisFaultCode { get; set; }
+    public short RollAxisFaultCode { get; set; }
 
     [Description("三轴转台偏航轴故障号")]
     [TableNotShow]
-    public byte YawAxisFaultCode { get; set; }
+    public short YawAxisFaultCode { get; set; }
 
     [Description("三轴转台俯仰轴故障号")]
     [TableNotShow]
-    public byte PitchAxisFaultCode { get; set; }
+    public short PitchAxisFaultCode { get; set; }
 
     [Description("两轴转台高低轴故障号")]
     [TableNotShow]
-    public byte ElevationAxisFaultCode { get; set; }
+    public short ElevationAxisFaultCode { get; set; }
 
     [Description("两轴转台方位轴故障号")]
     [TableNotShow]
-    public byte AzimuthAxisFaultCode { get; set; }
+    public short AzimuthAxisFaultCode { get; set; }
 
     #endregion
 
@@ -255,7 +251,6 @@ public class XT_202_SL_3_ReceiveData : UniversalEntity, IAudited
                     LocalOrRemote = 1,
                     WorkPattern = 1,
                     Reserved = 1,
-                    StatusType = 1,
                     RollAxisFaultCode = 1,
                     YawAxisFaultCode = 1,
                     PitchAxisFaultCode = 1,

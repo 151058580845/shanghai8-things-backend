@@ -20,6 +20,7 @@ using System.Text.Json;
 using Hgzn.Mes.Domain.Shared;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
+using SixLabors.ImageSharp;
 
 namespace Hgzn.Mes.Iot.EquipManager
 {
@@ -80,7 +81,7 @@ namespace Hgzn.Mes.Iot.EquipManager
                         switch (connectInfo.ConnType)
                         {
                             case ConnType.TcpServer:
-                                equipConnector = new TcpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType);
+                                equipConnector = new TcpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType, _configuration);
                                 if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
                                 break;
                             case ConnType.ModbusTcp:
@@ -88,7 +89,7 @@ namespace Hgzn.Mes.Iot.EquipManager
                                 if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
                                 break;
                             case ConnType.UdpServer:
-                                equipConnector = new UdpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType);
+                                equipConnector = new UdpServerConnector(_connectionMultiplexer, _mqtt, _client, id.ToString(), connType, _configuration);
                                 if (!Connections.TryAdd(id, equipConnector)) throw new Exception("equip exist");
                                 break;
                             case ConnType.ModbusRtu:

@@ -48,19 +48,19 @@ public class XT_109_SL_3_ReceiveData : UniversalEntity, IAudited
 
     [Description("滚转轴工作状态")]
     [TableNotShow]
-    public byte RollingAxisOperationStatus { get; set; }
+    public short RollingAxisOperationStatus { get; set; }
     [Description("俯仰轴工作状态")]
     [TableNotShow]
-    public byte PitchAxisOperationStatus { get; set; }
+    public short PitchAxisOperationStatus { get; set; }
     [Description("偏航轴工作状态")]
     [TableNotShow]
-    public byte YawAxisOperationStatus { get; set; }
+    public short YawAxisOperationStatus { get; set; }
     [Description("高低轴工作状态")]
     [TableNotShow]
-    public byte ElevationAxisOperationStatus { get; set; }
+    public short ElevationAxisOperationStatus { get; set; }
     [Description("方位轴工作状态")]
     [TableNotShow]
-    public byte AzimuthAxisOperationStatus { get; set; }
+    public short AzimuthAxisOperationStatus { get; set; }
 
     #endregion
 

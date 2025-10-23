@@ -114,18 +114,30 @@ public enum XT_314_SL_3_OperationStatusEnum
 /// </summary>
 public enum XT_109_SL_3_OperationStatusEnum
 {
-    [Description("正常状态")]
+    [Description("正常")]
     NormalStatus = 0,
-    [Description("正限位")]
-    PositiveLimit = 1 << 0,
-    [Description("负限位")]
-    NegativeLimit = 1 << 1,
-    [Description("限速")]
-    SpeedLimit = 1 << 2,
-    [Description("飞车保护")]
-    OverspeedProtection = 1 << 3,
+    [Description("软件正限位")]
+    SoftwarePositiveLimit = 1 << 0,
+    [Description("软件负限位")]
+    SoftwareNegativeLimit = 1 << 1,
+    [Description("超速")]
+    OverSpeed = 1 << 2,
+    [Description("限DA")]
+    DA_Limit = 1 << 3,
+    [Description("飞车")]
+    Runaway = 1 << 4,
+    [Description("锁紧")]
+    Locked = 1 << 5,
+    [Description("寻零失败")]
+    HomingFailed = 1 << 6,
     [Description("驱动故障")]
-    DriveFailure = 1 << 4,
+    DriveFault = 1 << 7,
+    [Description("反馈异常")]
+    FeedbackError = 1 << 8,
+    [Description("电开关限位")]
+    ElectricalSwitchLimit = 1 << 9,
+    [Description("相对位置限位")]
+    RelativePositionLimit = 1 << 10
 }
 
 /// <summary>
@@ -134,29 +146,29 @@ public enum XT_109_SL_3_OperationStatusEnum
 public enum XT_202_SL_3_OperationStatusEnum
 {
     [Description("正常状态")]
-    Normal = 0,
+    NormalStatus = 0,
     [Description("软件正限位")]
-    SoftwarePositiveLimit = 1,
+    SoftwarePositiveLimit = 1 << 0,
     [Description("软件负限位")]
-    SoftwareNegativeLimit = 2,
+    SoftwareNegativeLimit = 1 << 1,
     [Description("超速")]
-    OverSpeed = 3,
+    OverSpeed = 1 << 2,
     [Description("限DA")]
-    DA_Limit = 4,
+    DA_Limit = 1 << 3,
     [Description("飞车")]
-    Runaway = 5,
+    Runaway = 1 << 4,
     [Description("锁紧")]
-    Locked = 6,
+    Locked = 1 << 5,
     [Description("寻零失败")]
-    HomingFailed = 7,
+    HomingFailed = 1 << 6,
     [Description("驱动故障")]
-    DriveFault = 8,
+    DriveFault = 1 << 7,
     [Description("反馈异常")]
-    FeedbackError = 9,
+    FeedbackError = 1 << 8,
     [Description("电开关限位")]
-    ElectricalSwitchLimit = 10,
+    ElectricalSwitchLimit = 1 << 9,
     [Description("相对位置限位")]
-    RelativePositionLimit = 11
+    RelativePositionLimit = 1 << 10
 }
 
 /// <summary>

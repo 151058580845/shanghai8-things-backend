@@ -16,6 +16,7 @@ using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Hgzn.Mes.Infrastructure.Mqtt.Topic;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Microsoft.Extensions.Configuration;
 
 public class UdpServerConnector : EquipConnectorBase
 {
@@ -33,12 +34,16 @@ public class UdpServerConnector : EquipConnectorBase
         IConnectionMultiplexer connectionMultiplexer,
         IMqttExplorer mqttExplorer,
         ISqlSugarClient sqlSugarClient,
-        string uri, EquipConnType connType)
+        string uri, EquipConnType connType,
+        IConfiguration configuration)
         : base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
     {
         _equipConnect = sqlSugarClient.Queryable<EquipConnect>()?.First(x => x.Id == Guid.Parse(uri))!;
         _forwardNum = _equipConnect?.ForwardRate.Value;
-        _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(ReceiveHelper.LOCALDBCONFIG));
+
+        // 从配置文件中读取数据库连接配置
+        DbConnOptions localdbconfig = configuration.GetSection("DbConnIotOptions").Get<DbConnOptions>()!;
+        _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(localdbconfig));
     }
 
     public override async Task CloseConnectionAsync()
