@@ -694,6 +694,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             int offlineRateData = 100 - workingRateData;
             testRead.OnlineRateData = new OnlineRateData() { WorkingRateData = workingRateData, FreeRateData = 0, OfflineRateData = offlineRateData };
             // *** 在线设备状态统计（故障率）
+            // 统计有异常的系统（包括运行异常和计量到期）
             int abnormalSysCount = testRead.AbnormalDeviceList.Where(x => x.AbnormalCount > 0).Count();
             int sysCount = testRead.AbnormalDeviceList.Count();
             int breakdownData = sysCount == 0 ? 0 : (int)((double)abnormalSysCount / (double)sysCount * 100);
