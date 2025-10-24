@@ -552,7 +552,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 tasks.AddRange(currentTasks);
                 IEnumerable<TestDataReadDto> historyTasks = await _testDataService.GetHistoryListByTestAsync();
                 tasks.AddRange(historyTasks);
-                List<TestDataReadDto> systemTasks = tasks.Where(t => t.SysName == systemName).ToList();
+                List<TestDataReadDto> systemTasks = tasks.Where(t => SystemNameEquals(t.SysName, systemName)).ToList();
 
                 if (!systemTasks.Any())
                 {
@@ -666,7 +666,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 tasks.AddRange(currentTasks);
                 IEnumerable<TestDataReadDto> historyTasks = await _testDataService.GetHistoryListByTestAsync();
                 tasks.AddRange(historyTasks);
-                var systemTasks = tasks.Where(t => t.SysName == systemName).ToList();
+                var systemTasks = tasks.Where(t => SystemNameEquals(t.SysName, systemName)).ToList();
 
                 if (!systemTasks.Any())
                 {
@@ -763,7 +763,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 taskList.AddRange(historyTasks);
                 Console.WriteLine($"AG - 调整后工作时长计算 - 获取到 {taskList.Count} 个总任务");
 
-                var systemTasks = taskList.Where(t => t.SysName == systemName).ToList();
+                var systemTasks = taskList.Where(t => SystemNameEquals(t.SysName, systemName)).ToList();
                 if (!systemTasks.Any())
                 {
                     Console.WriteLine($"AG - 调整后工作时长计算 - 系统 {systemName} 没有找到试验任务");
@@ -849,17 +849,53 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         }
 
         /// <summary>
+        /// 规范化系统名称（去除换行符、空格等）
+        /// </summary>
+        /// <param name="systemName">系统名称</param>
+        /// <returns>规范化后的系统名称</returns>
+        private string NormalizeSystemName(string systemName)
+        {
+            if (string.IsNullOrEmpty(systemName))
+                return string.Empty;
+            
+            return systemName
+                .Replace("\n", "")
+                .Replace("\r", "")
+                .Replace("\t", "")
+                .Trim();
+        }
+
+        /// <summary>
+        /// 比较两个系统名称是否相等（忽略换行符、空格等）
+        /// </summary>
+        /// <param name="name1">系统名称1</param>
+        /// <param name="name2">系统名称2</param>
+        /// <returns>是否相等</returns>
+        private bool SystemNameEquals(string name1, string name2)
+        {
+            return NormalizeSystemName(name1) == NormalizeSystemName(name2);
+        }
+
+        /// <summary>
         /// 根据系统名称获取对应的房间ID
         /// </summary>
         /// <param name="systemName">系统名称</param>
         /// <returns>房间ID</returns>
         private Guid GetRoomIdBySystemName(string systemName)
         {
+            if (string.IsNullOrEmpty(systemName))
+                return Guid.Empty;
+
+            // 规范化输入的系统名称
+            string normalizedSystemName = NormalizeSystemName(systemName);
+
             // 根据TestEquipData中的系统名称映射获取房间ID
             for (int systemId = 1; systemId <= 10; systemId++)
             {
                 string mappedSystemName = TestEquipData.GetSystemName(systemId);
-                if (string.Equals(mappedSystemName, systemName, StringComparison.OrdinalIgnoreCase))
+                // 规范化映射的系统名称
+                string normalizedMappedName = NormalizeSystemName(mappedSystemName);
+                if (string.Equals(normalizedMappedName, normalizedSystemName, StringComparison.OrdinalIgnoreCase))
                 {
                     string roomIdString = TestEquipData.GetRoomId(systemId);
                     if (Guid.TryParse(roomIdString, out Guid roomId))
@@ -1035,7 +1071,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                 }
 
                 // 从缓存获取试验任务
-                var systemTasks = cache.AllTasks.Where(t => t.SysName == systemName).ToList();
+                var systemTasks = cache.AllTasks.Where(t => SystemNameEquals(t.SysName, systemName)).ToList();
                 if (!systemTasks.Any())
                 {
                     return new SystemWorkingStats();
@@ -1129,7 +1165,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         {
             try
             {
-                var systemTasks = cache.AllTasks.Where(t => t.SysName == systemName).ToList();
+                var systemTasks = cache.AllTasks.Where(t => SystemNameEquals(t.SysName, systemName)).ToList();
                 if (!systemTasks.Any())
                 {
                     return 0;
@@ -1190,7 +1226,7 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         {
             try
             {
-                var systemTasks = cache.AllTasks.Where(t => t.SysName == systemName).ToList();
+                var systemTasks = cache.AllTasks.Where(t => SystemNameEquals(t.SysName, systemName)).ToList();
                 if (!systemTasks.Any())
                 {
                     return (0, 0);

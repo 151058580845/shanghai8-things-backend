@@ -93,7 +93,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_109.ZXWL_SL
             XT_109_SL_3_ReceiveData entity = new XT_109_SL_3_ReceiveData();
             // 使用反射将后面指定数量个物理量数据进行填充
             PropertyInfo[] properties = typeof(XT_109_SL_3_ReceiveData).GetProperties();
-            properties[0].SetValue(entity, _equipId);
+            // properties[0] 是 Id 字段，会自动生成唯一的GUID，不应该赋值为设备ID
             properties[1].SetValue(entity, sendTime);
             properties[2].SetValue(entity, simuTestSysId);
             properties[3].SetValue(entity, devTypeId);

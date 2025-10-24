@@ -69,7 +69,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
             // *** 构建entity
             XT_0_SL_6_ReceiveData entity = new XT_0_SL_6_ReceiveData()
             {
-                Id = _equipId,
+                // Id 由 UniversalEntity 自动生成唯一的 GUID，不应该手动设置为 _equipId
                 CreationTime = sendTime,
                 SimuTestSysld = simuTestSysId,
                 DevTypeld = devTypeId,

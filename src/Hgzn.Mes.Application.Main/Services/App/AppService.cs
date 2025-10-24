@@ -35,6 +35,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private List<SystemInfo> _systemInfoList;
         private const double NumberOfSecondsPerMonth = 22 * 8 * 60 * 60;
 
+        /// <summary>
+        /// 成本计算缓存 - 用于批量计算时避免重复查询
+        /// </summary>
+        private class CostCalculationCache
+        {
+            public List<AssetData> AllAssetData { get; set; } = new();
+            public Dictionary<Guid, List<Guid>> RoomEquipmentMap { get; set; } = new();
+            public Dictionary<string, Dictionary<DateTime, uint>> EquipmentRuntimeCache { get; set; } = new();
+            public List<TestDataReadDto> AllTasks { get; set; } = new();
+        }
+
         public AppService(ISqlSugarClient client,
         IConnectionMultiplexer connectionMultiplexer,
         ITestDataService testDataService,
@@ -59,7 +70,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             ShowSystemDetailDto read = new ShowSystemDetailDto();
             IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
             TestDataReadDto currentTestInSystem = current.FirstOrDefault(x => showSystemDetailQueryDto.systemName != null &&
-                                                                         x.SysName.Trim() == showSystemDetailQueryDto.systemName.Trim())!;
+                                                                         SystemNameEquals(x.SysName, showSystemDetailQueryDto.systemName))!;
             IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
 
             #region 人员展示 (已关联数据库)
@@ -163,7 +174,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
             // 在本系统中的后续试验计划
             TestDataReadDto featureTestInSystem = feature.FirstOrDefault(x => showSystemDetailQueryDto.systemName != null &&
-                                                                         x.SysName.Trim() == showSystemDetailQueryDto.systemName.Trim())!;
+                                                                         SystemNameEquals(x.SysName, showSystemDetailQueryDto.systemName))!;
             string featureTestName = "无";
             int leftUntilToday = 0;
             if (featureTestInSystem != null)
@@ -400,7 +411,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 string taskName = "无";
                 // 当前试验天数
                 int finishingDays = 0;
-                TestDataReadDto? currentTestInSystem = current.FirstOrDefault(x => x.SysName.Trim() == sysInfo.Name.Trim());
+                TestDataReadDto? currentTestInSystem = current.FirstOrDefault(x => SystemNameEquals(x.SysName, sysInfo.Name));
                 if (currentTestInSystem != null)
                 {
                     // 型号名称
@@ -724,7 +735,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         .ToListAsync();
 
                     // 从传入的试验任务中筛选该系统的任务
-                    List<TestDataReadDto> systemTasks = allTasks.Where(t => t.SysName == systemName).ToList();
+                    List<TestDataReadDto> systemTasks = allTasks.Where(t => SystemNameEquals(t.SysName, systemName)).ToList();
 
                     if (!systemTasks.Any())
                     {
@@ -1017,10 +1028,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 allTasks.AddRange(currentTasks);
                 allTasks.AddRange(historyTasks);
 
-                // 获取所有系统的资产数据
-                List<AssetData> allAssetData = await _sqlSugarClient.Queryable<AssetData>()
-                    .Includes(x => x.Projects)
-                    .ToListAsync();
+                // 批量加载缓存
+                var cache = await LoadCostCalculationCacheAsync(allTasks);
+                var allAssetData = cache.AllAssetData;
 
                 decimal currentMonthTotalCost = 0;
                 decimal currentYearTotalCost = 0;
@@ -1047,7 +1057,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     // 计算每个月的成本
                     for (int month = 1; month <= 12; month++)
                     {
-                        CostBreakdown monthCost = await CalculateMonthlySystemCost(assetData, currentYear, month, allTasks);
+                        CostBreakdown monthCost = await CalculateMonthlySystemCost(assetData, currentYear, month, allTasks, cache);
                         systemCosts.Add(monthCost);
 
                         // 计算该系统该月的总成本
@@ -1243,8 +1253,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
         /// <param name="year">年份</param>
         /// <param name="month">月份</param>
         /// <param name="allTasks">所有试验任务（当前+历史）</param>
+        /// <param name="cache">成本计算缓存</param>
         /// <returns>月度成本分解</returns>
-        private async Task<CostBreakdown> CalculateMonthlySystemCost(AssetData assetData, int year, int month, List<TestDataReadDto> allTasks)
+        private Task<CostBreakdown> CalculateMonthlySystemCost(AssetData assetData, int year, int month, List<TestDataReadDto> allTasks, CostCalculationCache cache)
         {  
             try
             {
@@ -1258,14 +1269,16 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 // 获取该系统在指定月份的工作天数和工作时长
                 Guid roomId = GetRoomIdBySystemName(assetData.SystemName);
                 if (roomId == Guid.Empty)
-                    return costBreakdown;
+                    return Task.FromResult(costBreakdown);
 
-                List<EquipLedger> systemEquips = await _sqlSugarClient.Queryable<EquipLedger>()
-                    .Where(x => x.RoomId == roomId && !x.SoftDeleted)
-                    .ToListAsync();
+                // 从缓存获取设备列表
+                if (!cache.RoomEquipmentMap.TryGetValue(roomId, out var systemEquipIds))
+                {
+                    systemEquipIds = new List<Guid>();
+                }
 
                 // 从传入的试验任务中筛选该系统的任务
-                List<TestDataReadDto> systemTasks = allTasks.Where(t => t.SysName == assetData.SystemName).ToList();
+                List<TestDataReadDto> systemTasks = allTasks.Where(t => SystemNameEquals(t.SysName, assetData.SystemName)).ToList();
 
                 // 指定月份的起止时间
                 DateTime monthStart = new DateTime(year, month, 1);
@@ -1274,7 +1287,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 // 如果月份起始时间就在未来，直接返回空成本
                 if (monthStart > DateTime.Now.Date)
                 {
-                    return costBreakdown;
+                    return Task.FromResult(costBreakdown);
                 }
                 
                 if (monthEnd > DateTime.Now.Date)
@@ -1303,26 +1316,29 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     // 如果任务与该月没有交集，跳过
                     if (start > end) continue;
 
-                    // 查询该任务在该月期间的真实运行数据
+                    // 从缓存查询该任务在该月期间的真实运行数据
                     uint taskSeconds = 0;
-                    if (systemEquips.Any())
+                    if (systemEquipIds.Any())
                     {
-                        taskSeconds = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
-                            .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                            .Where(x => x.RecordDate >= start && x.RecordDate <= end)
-                            .SumAsync(x => x.RunningSeconds);
+                        taskSeconds = GetEquipmentRuntimeFromCache(systemEquipIds, start, end, cache);
                     }
 
                     if (taskSeconds > 0)
                     {
-                        // 有真实运行数据，按实际运行日期计算
-                        var actualWorkingDates = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
-                            .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                            .Where(x => x.RecordDate >= start && x.RecordDate <= end)
-                            .Where(x => x.RunningSeconds > 0)
-                            .Select(x => x.RecordDate.Date)
-                            .Distinct()
-                            .ToListAsync();
+                        // 有真实运行数据，从缓存中获取实际运行日期
+                        HashSet<DateTime> actualWorkingDates = new HashSet<DateTime>();
+                        foreach (var equipId in systemEquipIds)
+                        {
+                            for (DateTime date = start.Date; date <= end.Date; date = date.AddDays(1))
+                            {
+                                string key = $"{equipId}_{date:yyyy-MM-dd}";
+                                if (cache.EquipmentRuntimeCache.TryGetValue(key, out var dateMap) &&
+                                    dateMap.TryGetValue(date, out uint seconds) && seconds > 0)
+                                {
+                                    actualWorkingDates.Add(date);
+                                }
+                            }
+                        }
 
                         foreach (var date in actualWorkingDates)
                         {
@@ -1445,12 +1461,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     costBreakdown.SystemIdleCost = 0;
                 }
 
-                return costBreakdown;
+                return Task.FromResult(costBreakdown);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "计算系统月度成本失败: {SystemName}, {Year}-{Month}", assetData.SystemName, year, month);
-                return new CostBreakdown { NaturalMonth = (NaturalMonth)month };
+                return Task.FromResult(new CostBreakdown { NaturalMonth = (NaturalMonth)month });
             }
         }
 
@@ -1534,7 +1550,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     // 从传入的试验任务中筛选该系统且该型号的任务
                     string projectName = typeGroup.Key;
                     List<TestDataReadDto> typeSystemTasks = allTasks
-                        .Where(t => t.SysName == systemName && t.ProjectName == projectName)
+                        .Where(t => SystemNameEquals(t.SysName, systemName) && t.ProjectName == projectName)
                         .ToList();
 
                     if (!typeSystemTasks.Any())
@@ -1683,6 +1699,34 @@ namespace Hgzn.Mes.Application.Main.Services.App
         }
 
         /// <summary>
+        /// 规范化系统名称（去除换行符、空格等）
+        /// </summary>
+        /// <param name="systemName">系统名称</param>
+        /// <returns>规范化后的系统名称</returns>
+        private string NormalizeSystemName(string systemName)
+        {
+            if (string.IsNullOrEmpty(systemName))
+                return string.Empty;
+            
+            return systemName
+                .Replace("\n", "")
+                .Replace("\r", "")
+                .Replace("\t", "")
+                .Trim();
+        }
+
+        /// <summary>
+        /// 比较两个系统名称是否相等（忽略换行符、空格等）
+        /// </summary>
+        /// <param name="name1">系统名称1</param>
+        /// <param name="name2">系统名称2</param>
+        /// <returns>是否相等</returns>
+        private bool SystemNameEquals(string name1, string name2)
+        {
+            return NormalizeSystemName(name1) == NormalizeSystemName(name2);
+        }
+
+        /// <summary>
         /// 根据系统名称获取对应的房间ID
         /// </summary>
         /// <param name="systemName">系统名称</param>
@@ -1692,11 +1736,16 @@ namespace Hgzn.Mes.Application.Main.Services.App
             if (string.IsNullOrEmpty(systemName))
                 return Guid.Empty;
 
+            // 规范化输入的系统名称
+            string normalizedSystemName = NormalizeSystemName(systemName);
+
             // 根据TestEquipData中的系统名称映射获取房间ID
             for (int systemId = 1; systemId <= 10; systemId++)
             {
                 string mappedSystemName = TestEquipData.GetSystemName(systemId);
-                if (string.Equals(mappedSystemName, systemName, StringComparison.OrdinalIgnoreCase))
+                // 规范化映射的系统名称
+                string normalizedMappedName = NormalizeSystemName(mappedSystemName);
+                if (string.Equals(normalizedMappedName, normalizedSystemName, StringComparison.OrdinalIgnoreCase))
                 {
                     string roomIdString = TestEquipData.GetRoomId(systemId);
                     if (Guid.TryParse(roomIdString, out Guid roomId))
@@ -1707,6 +1756,97 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
 
             return Guid.Empty; // 未找到对应的房间ID
+        }
+
+        /// <summary>
+        /// 批量加载成本计算所需的数据缓存
+        /// </summary>
+        private async Task<CostCalculationCache> LoadCostCalculationCacheAsync(List<TestDataReadDto> allTasks)
+        {
+            var cache = new CostCalculationCache();
+            cache.AllTasks = allTasks;
+
+            // 1. 批量加载所有资产数据
+            cache.AllAssetData = await _sqlSugarClient.Queryable<AssetData>()
+                .Includes(x => x.Projects)
+                .ToListAsync();
+
+            // 2. 批量加载所有房间的设备映射
+            var allRoomIds = new List<Guid>();
+            for (int systemId = 1; systemId <= 10; systemId++)
+            {
+                var roomIdStr = TestEquipData.GetRoomId(systemId);
+                if (Guid.TryParse(roomIdStr, out Guid roomId))
+                {
+                    allRoomIds.Add(roomId);
+                }
+            }
+
+            if (allRoomIds.Any())
+            {
+                var allEquips = await _sqlSugarClient.Queryable<EquipLedger>()
+                    .Where(x => allRoomIds.Contains(x.RoomId.Value) && !x.SoftDeleted)
+                    .Select(x => new { x.Id, RoomId = x.RoomId.Value })
+                    .ToListAsync();
+
+                foreach (var roomId in allRoomIds.Distinct())
+                {
+                    cache.RoomEquipmentMap[roomId] = allEquips
+                        .Where(e => e.RoomId == roomId)
+                        .Select(e => e.Id)
+                        .ToList();
+                }
+
+                // 3. 批量加载所有设备的运行时间数据（只加载当年的数据）
+                var allEquipIds = allEquips.Select(e => e.Id).ToList();
+                if (allEquipIds.Any())
+                {
+                    int currentYear = DateTime.Now.Year;
+                    var runtimeData = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
+                        .Where(x => allEquipIds.Contains(x.EquipId))
+                        .Where(x => x.RecordDate.Year == currentYear)
+                        .Select(x => new
+                        {
+                            x.EquipId,
+                            x.RecordDate,
+                            x.RunningSeconds
+                        })
+                        .ToListAsync();
+
+                    foreach (var data in runtimeData)
+                    {
+                        string key = $"{data.EquipId}_{data.RecordDate:yyyy-MM-dd}";
+                        if (!cache.EquipmentRuntimeCache.ContainsKey(key))
+                        {
+                            cache.EquipmentRuntimeCache[key] = new Dictionary<DateTime, uint>();
+                        }
+                        cache.EquipmentRuntimeCache[key][data.RecordDate] = data.RunningSeconds;
+                    }
+                }
+            }
+
+            return cache;
+        }
+
+        /// <summary>
+        /// 从缓存中获取设备的运行秒数
+        /// </summary>
+        private uint GetEquipmentRuntimeFromCache(List<Guid> equipIds, DateTime startDate, DateTime endDate, CostCalculationCache cache)
+        {
+            uint totalSeconds = 0;
+            foreach (var equipId in equipIds)
+            {
+                for (DateTime date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
+                {
+                    string key = $"{equipId}_{date:yyyy-MM-dd}";
+                    if (cache.EquipmentRuntimeCache.TryGetValue(key, out var dateMap) &&
+                        dateMap.TryGetValue(date, out uint seconds))
+                    {
+                        totalSeconds += seconds;
+                    }
+                }
+            }
+            return totalSeconds;
         }
     }
 }

@@ -137,7 +137,7 @@ namespace Hgzn.Mes.WebApi.Worker
                     }
                     else
                     {
-                        LoggerAdapter.LogInformation($"AG - 设备连接正常: {connection.Name} (Id: {connection.Id}, State: {stateValue})");
+                        LoggerAdapter.LogDebug($"AG - 设备连接正常: {connection.Name} (Id: {connection.Id}, State: {stateValue})");
                     }
                 }
                 catch (Exception ex)

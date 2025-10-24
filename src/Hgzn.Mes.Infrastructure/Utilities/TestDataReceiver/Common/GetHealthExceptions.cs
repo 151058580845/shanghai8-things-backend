@@ -152,8 +152,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             for (int i = 0; i < axis.Count; i++)
             {
                 var statusFlags = (XT_109_SL_3_OperationStatusEnum)ulDevHealthState[i];
-                if (statusFlags == XT_109_SL_3_OperationStatusEnum.NormalStatus)
-                    return exceptions;
+                if (statusFlags == XT_109_SL_3_OperationStatusEnum.NormalStatus) continue;
                 exceptions.AddRange(Enum.GetValues(typeof(XT_109_SL_3_OperationStatusEnum))
                 .Cast<XT_109_SL_3_OperationStatusEnum>()
                 .Where(flag => flag != XT_109_SL_3_OperationStatusEnum.NormalStatus)
@@ -201,8 +200,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             for (int i = 0; i < axis.Count; i++)
             {
                 var statusFlags = (XT_202_SL_3_OperationStatusEnum)ulDevHealthState[i];
-                if (statusFlags == XT_202_SL_3_OperationStatusEnum.NormalStatus)
-                    return exceptions;
+                if (statusFlags == XT_202_SL_3_OperationStatusEnum.NormalStatus) continue;
                 exceptions.AddRange(Enum.GetValues(typeof(XT_202_SL_3_OperationStatusEnum))
                 .Cast<XT_202_SL_3_OperationStatusEnum>()
                 .Where(flag => flag != XT_202_SL_3_OperationStatusEnum.NormalStatus)

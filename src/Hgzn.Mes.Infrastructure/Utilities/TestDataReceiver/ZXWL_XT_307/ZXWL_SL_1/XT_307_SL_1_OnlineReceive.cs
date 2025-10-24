@@ -119,7 +119,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
 
             XT_307_SL_1_ReceiveData entity = new XT_307_SL_1_ReceiveData()
             {
-                Id = _equipId,
+                // Id 由 UniversalEntity 自动生成唯一的 GUID，不应该手动设置为 _equipId
                 CreationTime = sendTime.ToString("yyyy-MM-dd hh:mm:ss"),
                 SimuTestSysld = simuTestSysId,
                 DevTypeld = devTypeId,
