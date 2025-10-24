@@ -86,10 +86,33 @@ namespace Hgzn.Mes.WebApi.Worker
             // 2. ConnectStr不为空(有连接配置)
             // 3. 协议类型为TcpServer(8)或UdpServer(9) - 采集适配器使用这两种协议
             // 4. 未被软删除
+            // 注意：只选择需要的字段，避免自动加载导航属性导致列数异常
             EquipConnect[] connections = await _sqlClient.Queryable<EquipConnect>()
                 .Where(ec => ec.State && ec.ConnectStr != null)
                 .Where(ec => ec.ProtocolEnum == ConnType.TcpServer || ec.ProtocolEnum == ConnType.UdpServer)
                 .Where(ec => !ec.SoftDeleted)
+                .Select(ec => new EquipConnect
+                {
+                    Id = ec.Id,
+                    EquipId = ec.EquipId,
+                    Name = ec.Name,
+                    Code = ec.Code,
+                    ProtocolEnum = ec.ProtocolEnum,
+                    ConnectStr = ec.ConnectStr,
+                    State = ec.State,
+                    ConnectState = ec.ConnectState,
+                    ForwardRate = ec.ForwardRate,
+                    CreationTime = ec.CreationTime,
+                    CreatorId = ec.CreatorId,
+                    CreatorLevel = ec.CreatorLevel,
+                    LastModificationTime = ec.LastModificationTime,
+                    LastModifierId = ec.LastModifierId,
+                    SoftDeleted = ec.SoftDeleted,
+                    DeleteTime = ec.DeleteTime,
+                    OrderNum = ec.OrderNum,
+                    CollectionConfigId = ec.CollectionConfigId,
+                    CollectionExtension = ec.CollectionExtension
+                })
                 .ToArrayAsync();
 
             if (!connections.Any())

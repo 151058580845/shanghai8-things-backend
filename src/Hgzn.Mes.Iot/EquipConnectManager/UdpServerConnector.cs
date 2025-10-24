@@ -24,7 +24,6 @@ public class UdpServerConnector : EquipConnectorBase
     private UdpClient _udpServer = null!;
     private IPEndPoint _localEndPoint = null!;
     private bool _isRunning = false;
-    private EquipConnect _equipConnect = null!;
     // 多少个转一个（从前端配置进行）
     private int? _forwardLength = 10;
     private int? _forwardNum = 1;
@@ -38,8 +37,7 @@ public class UdpServerConnector : EquipConnectorBase
         IConfiguration configuration)
         : base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
     {
-        _equipConnect = sqlSugarClient.Queryable<EquipConnect>()?.First(x => x.Id == Guid.Parse(uri))!;
-        _forwardNum = _equipConnect?.ForwardRate.Value;
+        _forwardNum = _equipConnect?.ForwardRate ?? 1;
 
         // 从配置文件中读取数据库连接配置
         DbConnOptions localdbconfig = configuration.GetSection("DbConnIotOptions").Get<DbConnOptions>()!;
@@ -50,8 +48,24 @@ public class UdpServerConnector : EquipConnectorBase
     {
         if (_udpServer != null)
         {
-            _udpServer.Close();
-            _isRunning = false;
+            try
+            {
+                // 先停止接收循环
+                _isRunning = false;
+                
+                // 关闭并释放UDP客户端（这会中断正在等待的 ReceiveAsync）
+                // Close() 会自动中断 ReceiveAsync() 并抛出 ObjectDisposedException
+                _udpServer.Close();
+                _udpServer.Dispose();
+                _udpServer = null!;
+                
+                // 等待一小段时间让接收任务有机会处理 ObjectDisposedException 并退出
+                await Task.Delay(100);
+            }
+            catch (Exception ex)
+            {
+                LoggerAdapter.LogError($"关闭UDP连接时发生错误: {ex.Message}");
+            }
         }
         await UpdateStateAsync(ConnStateType.Stop);
         await UpdateOperationAsync(ConnStateType.Stop);
@@ -61,7 +75,7 @@ public class UdpServerConnector : EquipConnectorBase
     {
         if (_udpServer != null && _isRunning)
         {
-            _isRunning = true;
+            // 已经开始运行，更新状态为 Run
             await UpdateStateAsync(ConnStateType.Run);
             await UpdateOperationAsync(ConnStateType.Run);
         }
@@ -83,9 +97,25 @@ public class UdpServerConnector : EquipConnectorBase
 
         try
         {
+            // 先关闭旧连接（如果存在）
+            if (_udpServer != null)
+            {
+                LoggerAdapter.LogInformation($"关闭旧UDP连接以释放端口 {conn.Port}");
+                await CloseConnectionAsync();
+                // 等待端口完全释放
+                await Task.Delay(200);
+            }
+
             // 创建UDP服务端
             _localEndPoint = new IPEndPoint(IPAddress.Any, conn.Port);
-            _udpServer = new UdpClient(_localEndPoint);
+            
+            // 先创建 UdpClient，然后设置 SO_REUSEADDR，再绑定端口
+            var newUdpServer = new UdpClient();
+            newUdpServer.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            newUdpServer.Client.Bind(_localEndPoint);
+            
+            // 只有成功绑定后才赋值给成员变量
+            _udpServer = newUdpServer;
             _isRunning = true;
 
             // 启动异步接收（UDP不需要Accept，直接开始接收数据）
@@ -98,7 +128,24 @@ public class UdpServerConnector : EquipConnectorBase
         }
         catch (Exception ex)
         {
-            await CloseConnectionAsync();
+            // 如果异常发生，确保清理
+            try
+            {
+                if (_udpServer != null)
+                {
+                    _isRunning = false;
+                    _udpServer.Close();
+                    _udpServer.Dispose();
+                    _udpServer = null!;
+                }
+            }
+            catch
+            {
+                // 忽略清理时的异常
+            }
+            
+            await UpdateStateAsync(ConnStateType.Off);
+            await UpdateOperationAsync(ConnStateType.Off);
             LoggerAdapter.LogError($"UDP Server start failed: {ex.Message}");
             return false;
         }
@@ -107,7 +154,7 @@ public class UdpServerConnector : EquipConnectorBase
     // UDP数据接收方法
     private async Task ReceiveDataAsync()
     {
-        while (_isRunning)
+        while (_isRunning && _udpServer != null)
         {
             try
             {
@@ -126,7 +173,7 @@ public class UdpServerConnector : EquipConnectorBase
                 {
                     LoggerAdapter.LogInformation($"AG - Udp数据内容: {BitConverter.ToString(buffer, 0, (int)bufferLength).Replace("-", " ")}");
                     // 获取部署在采集器里的数据库
-                    LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect.EquipId, _localsqlSugarClinet, _connectionMultiplexer, _mqttExplorer);
+                    LocalReceiveDispatch dispatch = new LocalReceiveDispatch(_equipConnect!.EquipId, _localsqlSugarClinet, _connectionMultiplexer, _mqttExplorer);
                     await dispatch.Handle(buffer);
                     // 调用基类或MQTT等方法转发数据
                     await ProcessDataAsync(buffer);
@@ -135,14 +182,27 @@ public class UdpServerConnector : EquipConnectorBase
             catch (ObjectDisposedException)
             {
                 // Socket已关闭（正常退出）
+                LoggerAdapter.LogInformation("UDP Server socket disposed, exiting receive loop");
+                break;
+            }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.Interrupted)
+            {
+                // Socket被中断（如Close被调用）
+                LoggerAdapter.LogInformation("UDP Server socket interrupted, exiting receive loop");
                 break;
             }
             catch (Exception ex)
             {
                 LoggerAdapter.LogError($"UDP receive error: {ex.Message}");
+                // 如果 socket 已被关闭，退出循环
+                if (_udpServer == null || !_isRunning)
+                {
+                    break;
+                }
                 await Task.Delay(1000); // 避免错误循环
             }
         }
+        LoggerAdapter.LogInformation("UDP receive loop exited");
     }
 
     private async Task ProcessDataAsync(byte[] buffer)
@@ -154,7 +214,7 @@ public class UdpServerConnector : EquipConnectorBase
                             .WithDirection(MqttDirection.Up)
                             .WithTag(MqttTag.Transmit)
                             .WithDeviceType(EquipConnType.IotServer.ToString())
-                            .WithUri(_equipConnect.Id.ToString()).Build();
+                            .WithUri(_equipConnect!.Id.ToString()).Build();
 
             // 使用支持断点续传的发布方法
             if (_mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
@@ -195,5 +255,5 @@ public class UdpServerConnector : EquipConnectorBase
     }
 
     // 可选：记录最后通信的客户端地址（用于回复）
-    private IPEndPoint _lastRemoteEndPoint = null;
+    private IPEndPoint? _lastRemoteEndPoint = null;
 }
