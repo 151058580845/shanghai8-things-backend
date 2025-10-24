@@ -325,8 +325,19 @@ namespace Hgzn.Mes.Application.Main.Services.App
                    .Includes(el => el.EquipLedger!.Room).ToList();
                 connectEquips = connectEquips.Where(x => roomName != null && x.EquipLedger != null && x.EquipLedger != null && x.EquipLedger.Room != null && x.EquipLedger.Room.Name == roomName).ToList();
             }
-            catch (Exception e) { }
-            int onlineCount = connectEquips.Where(x => x.State).Count();
+            catch (Exception) { }
+            
+            // 使用 Redis 中的实际在线状态计算在线率（而不是数据库中的 State 字段）
+            int onlineCount = 0;
+            foreach (var connectEquip in connectEquips)
+            {
+                if (connectEquip.EquipLedger != null)
+                {
+                    bool isOnline = await _sysMgr.GetEquipOnline(connectEquips, connectEquip.EquipLedger.Id);
+                    if (isOnline)
+                        onlineCount++;
+                }
+            }
             int workingRateData = connectEquips.Count == 0 ? 0 : (int)((double)onlineCount / connectEquips.Count() * 100);
             int offlineRateData = 100 - workingRateData;
             read.OnlineRateData = new OnlineRateData() { WorkingRateData = workingRateData, FreeRateData = 0, OfflineRateData = offlineRateData };
@@ -373,6 +384,47 @@ namespace Hgzn.Mes.Application.Main.Services.App
             // *** 环境数据
             testRead.EnvironmentData = new EnvironmentData() { Humidity = 101, Temperature = 101 };
 
+            // ========== 性能优化：批量预加载数据 ==========
+            // 1. 构建系统名称到当前任务的映射字典（避免循环中重复查找）
+            Dictionary<string, TestDataReadDto> currentTaskBySystemName = current
+                .GroupBy(x => NormalizeSystemName(x.SysName))
+                .ToDictionary(g => g.Key, g => g.First());
+            
+            // 2. 批量获取所有设备的在线状态（避免循环中重复查询 Redis）
+            Dictionary<Guid, bool> equipOnlineStatus = new Dictionary<Guid, bool>();
+            IDatabase redisDb = _connectionMultiplexer.GetDatabase();
+            foreach (var connectEquip in connectEquips)
+            {
+                if (connectEquip.EquipLedger != null)
+                {
+                    string key = string.Format(CacheKeyFormatter.EquipState, connectEquip.EquipLedger.Id, connectEquip.Id);
+                    var value = await redisDb.StringGetAsync(key);
+                    equipOnlineStatus[connectEquip.EquipLedger.Id] = value == 3;
+                }
+            }
+            
+            // 3. 批量获取系统转台的运行时间（避免循环中重复查询 Redis）
+            Dictionary<int, uint> systemRunTimeCache = new Dictionary<int, uint>();
+            foreach (var sysInfo in _systemInfoList)
+            {
+                string runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, sysInfo.SystemNum, 3, sysInfo.TurntableEquipId);
+                uint runTime = await ReceiveHelper.GetLast30DaysRunningTimeAsync(_connectionMultiplexer, runTimeKey);
+                systemRunTimeCache[sysInfo.SystemNum] = runTime;
+            }
+            
+            // 4. 批量获取关键设备的运行时间（避免嵌套循环中重复查询 Redis）
+            Dictionary<(byte systemNum, Guid equipId), uint> keyDeviceRunTimeCache = new Dictionary<(byte, Guid), uint>();
+            foreach (var sysInfo in _systemInfoList)
+            {
+                foreach (var kd in sysInfo.keyDevices)
+                {
+                    string runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, sysInfo.SystemNum, kd.EquipTypeNum, kd.EquipId);
+                    uint runTime = await ReceiveHelper.GetLast30DaysRunningTimeAsync(_connectionMultiplexer, runTimeKey);
+                    keyDeviceRunTimeCache[(sysInfo.SystemNum, kd.EquipId)] = runTime;
+                }
+            }
+            // ========== 性能优化结束 ==========
+
             #region 试验系统列表数据 (已关联数据库)
 
             // *** 试验系统列表数据
@@ -411,8 +463,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 string taskName = "无";
                 // 当前试验天数
                 int finishingDays = 0;
-                TestDataReadDto? currentTestInSystem = current.FirstOrDefault(x => SystemNameEquals(x.SysName, sysInfo.Name));
-                if (currentTestInSystem != null)
+                // 使用缓存的字典查询，避免循环中重复查找
+                string normalizedSystemName = NormalizeSystemName(sysInfo.Name);
+                if (currentTaskBySystemName.TryGetValue(normalizedSystemName, out TestDataReadDto? currentTestInSystem))
                 {
                     // 型号名称
                     string ttypeName = currentTestInSystem.ProjectName!;
@@ -452,14 +505,18 @@ namespace Hgzn.Mes.Application.Main.Services.App
             List<EquipmentData> equipDatas = new List<EquipmentData>();
             for (int i = 0; i < connectEquips.Count; i++)
             {
+                Guid equipId = connectEquips[i].EquipLedger!.Id;
+                // 使用缓存的状态，避免循环中重复查询 Redis
+                bool isOnline = equipOnlineStatus.TryGetValue(equipId, out bool online) ? online : false;
+                string state = isOnline ? "在线" : "离线";
                 equipDatas.Add(new EquipmentData()
                 {
                     Index = i + 1,
                     Code = connectEquips[i].EquipLedger!.EquipCode,
                     Name = connectEquips[i].EquipLedger!.EquipName,
                     Location = connectEquips[i].EquipLedger?.Room?.Name ?? "",
-                    State = await _sysMgr.GetEquipOnline(connectEquips, connectEquips[i].EquipLedger!.Id) ? "在线" : "离线",
-                    Health = _abnormalEquipDic.ContainsKey(connectEquips[i].EquipLedger!.Id.ToString()) ? "异常" : "健康"
+                    State = state,
+                    Health = _abnormalEquipDic.ContainsKey(equipId.ToString()) ? "异常" : "健康"
                 });
             }
 
@@ -486,12 +543,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
             testRead.DeviceListData = new List<DeviceUtilizationData>();
             for (int i = 0; i < _systemInfoList.Count; i++)
             {
-                // 计算利用率
-                uint runTime = await _sysMgr.GetRunTime(_systemInfoList[i].SystemNum, 3, _systemInfoList[i].TurntableEquipId);
+                // 使用缓存的运行时间，避免循环中重复查询 Redis
+                uint runTime = systemRunTimeCache.TryGetValue(_systemInfoList[i].SystemNum, out uint cachedRunTime) ? cachedRunTime : 0;
                 int utilization = (int)Math.Round((double)((double)runTime * 100 / NumberOfSecondsPerMonth), 0);
                 int idle = 100 - utilization;
-                // 获取连接状态
-                string status = await _sysMgr.GetEquipOnline(connectEquips, _systemInfoList[i].TurntableEquipId) ? "在线" : "离线";
+                // 使用缓存的状态，避免循环中重复查询 Redis
+                bool isOnline = equipOnlineStatus.TryGetValue(_systemInfoList[i].TurntableEquipId, out bool online) ? online : false;
+                string status = isOnline ? "在线" : "离线";
                 testRead.DeviceListData.Add(new DeviceUtilizationData()
                 {
                     Name = _systemInfoList[i].Name,
@@ -604,8 +662,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
             #region 在线率 和 故障率 (已关联数据库)
 
             // *** 在线设备状态统计（在线率）
-            // 获取在线设备
-            int onlineCount = connectEquips.Where(x => x.State).Count();
+            // 使用 Redis 中的实际在线状态计算在线率（而不是数据库中的 State 字段）
+            int onlineCount = 0;
+            foreach (var connectEquip in connectEquips)
+            {
+                if (connectEquip.EquipLedger != null)
+                {
+                    bool isOnline = equipOnlineStatus.TryGetValue(connectEquip.EquipLedger.Id, out bool online) ? online : false;
+                    if (isOnline)
+                        onlineCount++;
+                }
+            }
             int workingRateData = connectEquips.Count == 0 ? 0 : (int)((double)onlineCount / connectEquips.Count() * 100);
             int offlineRateData = 100 - workingRateData;
             testRead.OnlineRateData = new OnlineRateData() { WorkingRateData = workingRateData, FreeRateData = 0, OfflineRateData = offlineRateData };
@@ -626,7 +693,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
             {
                 foreach (SDevice kd in item.keyDevices)
                 {
-                    uint runTime = await _sysMgr.GetRunTime(item.SystemNum, kd.EquipId);
+                    // 使用缓存的运行时间，避免嵌套循环中重复查询 Redis
+                    var cacheKey = (item.SystemNum, kd.EquipId);
+                    uint runTime = keyDeviceRunTimeCache.TryGetValue(cacheKey, out uint cachedRunTime) ? cachedRunTime : 0;
                     int utilization = (int)Math.Round((double)((double)runTime * 100 / NumberOfSecondsPerMonth), 0);
                     int idle = 100 - utilization;
 
