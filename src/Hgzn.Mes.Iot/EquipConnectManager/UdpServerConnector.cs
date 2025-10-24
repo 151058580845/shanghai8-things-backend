@@ -179,18 +179,6 @@ public class UdpServerConnector : EquipConnectorBase
                     await ProcessDataAsync(buffer);
                 }
             }
-            catch (ObjectDisposedException)
-            {
-                // Socket已关闭（正常退出）
-                LoggerAdapter.LogInformation("UDP Server socket disposed, exiting receive loop");
-                break;
-            }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.Interrupted)
-            {
-                // Socket被中断（如Close被调用）
-                LoggerAdapter.LogInformation("UDP Server socket interrupted, exiting receive loop");
-                break;
-            }
             catch (Exception ex)
             {
                 LoggerAdapter.LogError($"UDP receive error: {ex.Message}");

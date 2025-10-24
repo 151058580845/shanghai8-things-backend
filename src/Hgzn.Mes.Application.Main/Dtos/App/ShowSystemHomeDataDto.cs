@@ -352,6 +352,17 @@ namespace Hgzn.Mes.Application.Main.Dtos.App
         /// 设备故障数
         /// </summary>
         public int Breakdown { get; set; }
+
+        /// <summary>
+        /// 资产编号
+        /// </summary>
+        public string? AssetNumber { get; set; }
+
+        /// <summary>
+        /// 规格型号
+        /// </summary>
+        public string? Model { get; set; }
+
     }
 
     /// <summary>

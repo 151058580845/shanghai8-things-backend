@@ -414,13 +414,30 @@ namespace Hgzn.Mes.Application.Main.Services.App
             
             // 4. 批量获取关键设备的运行时间（避免嵌套循环中重复查询 Redis）
             Dictionary<(byte systemNum, Guid equipId), uint> keyDeviceRunTimeCache = new Dictionary<(byte, Guid), uint>();
+            HashSet<Guid> keyDeviceIds = new HashSet<Guid>();
             foreach (var sysInfo in _systemInfoList)
             {
                 foreach (var kd in sysInfo.keyDevices)
                 {
+                    keyDeviceIds.Add(kd.EquipId);
                     string runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, sysInfo.SystemNum, kd.EquipTypeNum, kd.EquipId);
                     uint runTime = await ReceiveHelper.GetLast30DaysRunningTimeAsync(_connectionMultiplexer, runTimeKey);
                     keyDeviceRunTimeCache[(sysInfo.SystemNum, kd.EquipId)] = runTime;
+                }
+            }
+            
+            // 5. 批量获取关键设备的台账信息（资产编号和型号）
+            Dictionary<Guid, (string? assetNumber, string? model)> keyDeviceLedgerCache = new Dictionary<Guid, (string?, string?)>();
+            if (keyDeviceIds.Any())
+            {
+                var keyDeviceLedgers = await _sqlSugarClient.Queryable<EquipLedger>()
+                    .Where(x => keyDeviceIds.Contains(x.Id))
+                    .Select(x => new { x.Id, x.AssetNumber, x.Model })
+                    .ToListAsync();
+                
+                foreach (var ledger in keyDeviceLedgers)
+                {
+                    keyDeviceLedgerCache[ledger.Id] = (ledger.AssetNumber, ledger.Model);
                 }
             }
             // ========== 性能优化结束 ==========
@@ -699,12 +716,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     int utilization = (int)Math.Round((double)((double)runTime * 100 / NumberOfSecondsPerMonth), 0);
                     int idle = 100 - utilization;
 
+                    // 使用缓存的台账信息，避免重复查询数据库
+                    var ledgerInfo = keyDeviceLedgerCache.TryGetValue(kd.EquipId, out var cachedLedger) ? cachedLedger : (null, null);
+
                     testRead.KeyDeviceList.Add(new KeyDeviceData()
                     {
                         Name = kd.EquipName,
                         Utilization = utilization,
                         Idle = idle,
                         Breakdown = 0,
+                        AssetNumber = ledgerInfo.assetNumber,
+                        Model = ledgerInfo.model,
                     });
                 }
             }
@@ -865,8 +887,16 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         }
                         else
                         {
-                            // 无真实运行数据，按任务期间每天8小时计算
-                            for (DateTime date = start.Date; date <= end.Date && date <= DateTime.Now.Date; date = date.AddDays(1))
+                            // 无真实运行数据，按计划天数计算
+                            DateTime planEndDate = end.Date;
+                            // 如果计划还没结束，不能超过今天
+                            if (planEndDate > DateTime.Now.Date)
+                            {
+                                planEndDate = DateTime.Now.Date;
+                            }
+                            
+                            // 历史计划按整个计划周期算，当前计划截止到今天
+                            for (DateTime date = start.Date; date <= planEndDate; date = date.AddDays(1))
                             {
                                 workingDates.Add(date);
                             }
@@ -1016,8 +1046,16 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         }
                         else
                         {
-                            // 无真实运行数据，按任务期间每天8小时计算
-                            for (DateTime date = start.Date; date <= end.Date && date <= DateTime.Now.Date; date = date.AddDays(1))
+                            // 无真实运行数据，按计划天数计算
+                            DateTime planEndDate = end.Date;
+                            // 如果计划还没结束，不能超过今天
+                            if (planEndDate > DateTime.Now.Date)
+                            {
+                                planEndDate = DateTime.Now.Date;
+                            }
+                            
+                            // 历史计划按整个计划周期算，当前计划截止到今天
+                            for (DateTime date = start.Date; date <= planEndDate; date = date.AddDays(1))
                             {
                                 typeWorkingDates.Add(date);
                             }
