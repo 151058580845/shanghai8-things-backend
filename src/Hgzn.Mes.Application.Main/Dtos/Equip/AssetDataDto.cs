@@ -189,6 +189,33 @@ namespace Hgzn.Mes.Application.Main.Dtos.Equip
 
         [Description("系统试验成本明细")]
         public CostDetailDto SystemExperimentCost { get; set; } = null!;
+
+        [Description("工作时长明细")]
+        public List<WorkingTimeDetailDto> WorkingTimeDetails { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 工作时长明细DTO
+    /// </summary>
+    public class WorkingTimeDetailDto
+    {
+        [Description("试验计划名称")]
+        public string TaskName { get; set; } = null!;
+
+        [Description("计划开始时间")]
+        public string TaskStartTime { get; set; } = null!;
+
+        [Description("计划结束时间")]
+        public string TaskEndTime { get; set; } = null!;
+
+        [Description("工作时长(小时)")]
+        public decimal WorkingHours { get; set; }
+
+        [Description("是否使用真实运行数据")]
+        public bool UseRealRuntime { get; set; }
+
+        [Description("说明")]
+        public string Description { get; set; } = null!;
     }
 
     /// <summary>

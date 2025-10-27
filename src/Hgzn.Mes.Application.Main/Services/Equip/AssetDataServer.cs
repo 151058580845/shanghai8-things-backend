@@ -589,10 +589,20 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     uint taskSeconds = 0;
                     if (systemEquips.Any())
                     {
-                        taskSeconds = await DbContext.Queryable<EquipDailyRuntime>()
+                        // 先获取所有数据，然后按设备和日期分组取最大值（因为RunningSeconds是累积值）
+                        var runtimeData = await DbContext.Queryable<EquipDailyRuntime>()
                             .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
                             .Where(x => x.RecordDate >= start.Date && x.RecordDate <= taskEndDate)
-                            .SumAsync(x => x.RunningSeconds);
+                            .Select(x => new { x.EquipId, x.RecordDate, x.RunningSeconds })
+                            .ToListAsync();
+
+                        // 按设备和日期分组，取每天的最大秒数
+                        var groupedData = runtimeData
+                            .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                            .Select(g => new { g.Key.Date, MaxSeconds = g.Max(x => x.RunningSeconds) })
+                            .ToList();
+
+                        taskSeconds = (uint)groupedData.Sum(x => x.MaxSeconds);
                     }
 
                     if (taskSeconds > 0)
@@ -705,10 +715,20 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
 
                             if (systemEquips.Any())
                             {
-                                uint totalSeconds = await DbContext.Queryable<EquipDailyRuntime>()
+                                // 先获取所有数据，然后按设备和日期分组取最大值（因为RunningSeconds是累积值）
+                                var runtimeData = await DbContext.Queryable<EquipDailyRuntime>()
                                     .Where(x => systemEquips.Contains(x.EquipId))
                                     .Where(x => x.RecordDate >= startTime.Date && x.RecordDate <= taskEndDate)
-                                    .SumAsync(x => x.RunningSeconds);
+                                    .Select(x => new { x.EquipId, x.RecordDate, x.RunningSeconds })
+                                    .ToListAsync();
+
+                                // 按设备和日期分组，取每天的最大秒数
+                                var groupedData = runtimeData
+                                    .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                                    .Select(g => new { g.Key.Date, MaxSeconds = g.Max(x => x.RunningSeconds) })
+                                    .ToList();
+
+                                uint totalSeconds = (uint)groupedData.Sum(x => x.MaxSeconds);
 
                                 if (totalSeconds > 0)
                                 {
@@ -811,11 +831,20 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                     // 如果有设备，查询真实运行数据
                     if (systemEquipIds.Any())
                     {
-                        // 统计该周期的真实运行秒数
-                        seconds = await DbContext.Queryable<EquipDailyRuntime>()
+                        // 先获取所有数据，然后按设备和日期分组取最大值（因为RunningSeconds是累积值）
+                        var runtimeData = await DbContext.Queryable<EquipDailyRuntime>()
                             .Where(x => systemEquipIds.Contains(x.EquipId))
                             .Where(x => x.RecordDate >= start.Date && x.RecordDate <= taskEndDate)
-                            .SumAsync(x => x.RunningSeconds);
+                            .Select(x => new { x.EquipId, x.RecordDate, x.RunningSeconds })
+                            .ToListAsync();
+
+                        // 按设备和日期分组，取每天的最大秒数
+                        var groupedData = runtimeData
+                            .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                            .Select(g => new { g.Key.Date, MaxSeconds = g.Max(x => x.RunningSeconds) })
+                            .ToList();
+
+                        seconds = (uint)groupedData.Sum(x => x.MaxSeconds);
                     }
 
                     Console.WriteLine($"AG - 调整后工作时长计算 - 任务 {task.TaskName} 真实运行秒数: {seconds}");
@@ -1047,8 +1076,121 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
                         { "DailyFuelPowerFee", (entity.FuelPowerCost ?? 0) / 365 },
                         { "DailyMaintenanceFee", (entity.EquipmentMaintenanceCost ?? 0) / 365 }
                     }
-                }
+                },
+                WorkingTimeDetails = await GetWorkingTimeDetailsAsync(entity.SystemName)
             };
+        }
+
+        /// <summary>
+        /// 获取工作时长明细
+        /// </summary>
+        private async Task<List<WorkingTimeDetailDto>> GetWorkingTimeDetailsAsync(string systemName)
+        {
+            var workingTimeDetails = new List<WorkingTimeDetailDto>();
+
+            try
+            {
+                // 获取试验任务
+                List<TestDataReadDto> tasks = new List<TestDataReadDto>();
+                IEnumerable<TestDataReadDto> currentTasks = await _testDataService.GetCurrentListByTestAsync();
+                tasks.AddRange(currentTasks);
+                IEnumerable<TestDataReadDto> historyTasks = await _testDataService.GetHistoryListByTestAsync();
+                tasks.AddRange(historyTasks);
+                List<TestDataReadDto> systemTasks = tasks.Where(t => SystemNameEquals(t.SysName, systemName)).ToList();
+
+                if (!systemTasks.Any())
+                {
+                    return workingTimeDetails;
+                }
+
+                // 获取系统设备
+                Guid roomId = GetRoomIdBySystemName(systemName);
+                if (roomId == Guid.Empty)
+                {
+                    return workingTimeDetails;
+                }
+
+                List<EquipLedger> systemEquips = await DbContext.Queryable<EquipLedger>()
+                    .Where(x => x.RoomId == roomId && !x.SoftDeleted)
+                    .ToListAsync();
+
+                // 遍历每个试验计划，计算工作时长
+                foreach (var task in systemTasks)
+                {
+                    if (!DateTime.TryParse(task.TaskStartTime, out DateTime start) ||
+                        !DateTime.TryParse(task.TaskEndTime, out DateTime end))
+                    {
+                        continue;
+                    }
+
+                    // 只统计过去或当前正在进行的计划周期
+                    if (start.Date > DateTime.Now.Date) continue;
+
+                    // 计算任务的实际结束日期（超过今天的任务只算到今天）
+                    DateTime taskEndDate = end.Date > DateTime.Now.Date ? DateTime.Now.Date : end.Date;
+
+                    decimal workingHours = 0;
+                    bool useRealRuntime = false;
+
+                    // 查询该任务期间的真实运行数据
+                    if (systemEquips.Any())
+                    {
+                        // 先获取所有数据，然后按设备和日期分组取最大值（因为RunningSeconds是累积值）
+                        var runtimeData = await DbContext.Queryable<EquipDailyRuntime>()
+                            .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
+                            .Where(x => x.RecordDate >= start.Date && x.RecordDate <= taskEndDate)
+                            .Select(x => new { x.EquipId, x.RecordDate, x.RunningSeconds })
+                            .ToListAsync();
+
+                        // 按设备和日期分组，取每天的最大秒数
+                        var groupedData = runtimeData
+                            .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                            .Select(g => new { g.Key.Date, MaxSeconds = g.Max(x => x.RunningSeconds) })
+                            .ToList();
+
+                        uint taskSeconds = (uint)groupedData.Sum(x => x.MaxSeconds);
+
+                        if (taskSeconds > 0)
+                        {
+                            // 有真实运行数据
+                            workingHours = Math.Round((decimal)taskSeconds / 3600, 2);
+                            useRealRuntime = true;
+                        }
+                        else
+                        {
+                            // 无真实运行数据，按8小时/天计算
+                            int days = (int)(taskEndDate - start.Date).TotalDays + 1;
+                            workingHours = days * 8;
+                            useRealRuntime = false;
+                        }
+                    }
+                    else
+                    {
+                        // 无设备信息，按8小时/天计算
+                        int days = (int)(taskEndDate - start.Date).TotalDays + 1;
+                        workingHours = days * 8;
+                        useRealRuntime = false;
+                    }
+
+                    workingTimeDetails.Add(new WorkingTimeDetailDto
+                    {
+                        TaskName = task.TaskName ?? "未命名任务",
+                        TaskStartTime = start.ToString("yyyy-MM-dd"),
+                        TaskEndTime = end.ToString("yyyy-MM-dd"),
+                        WorkingHours = workingHours,
+                        UseRealRuntime = useRealRuntime,
+                        Description = useRealRuntime 
+                            ? $"有真实设备运行数据，实际运行 {workingHours} 小时" 
+                            : $"无真实设备运行数据，按计划周期计算，预计 {workingHours} 小时（{workingHours / 8} 天 × 8小时/天）"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"获取工作时长明细失败: {ex.Message}");
+            }
+
+            return workingTimeDetails;
         }
 
         /// <summary>
@@ -1299,11 +1441,20 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
             // 但我们可以优化为只查询必要的日期范围
             try
             {
-                var seconds = DbContext.Queryable<EquipDailyRuntime>()
+                // 先获取所有数据，然后按设备和日期分组取最大值（因为RunningSeconds是累积值）
+                var runtimeData = DbContext.Queryable<EquipDailyRuntime>()
                     .Where(x => equipIds.Contains(x.EquipId))
                     .Where(x => x.RecordDate >= startDate && x.RecordDate <= endDate)
-                    .Sum(x => x.RunningSeconds);
-                return seconds;
+                    .Select(x => new { x.EquipId, x.RecordDate, x.RunningSeconds })
+                    .ToList();
+
+                // 按设备和日期分组，取每天的最大秒数
+                var groupedData = runtimeData
+                    .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                    .Select(g => new { g.Key.Date, MaxSeconds = g.Max(x => x.RunningSeconds) })
+                    .ToList();
+
+                return (uint)groupedData.Sum(x => x.MaxSeconds);
             }
             catch
             {

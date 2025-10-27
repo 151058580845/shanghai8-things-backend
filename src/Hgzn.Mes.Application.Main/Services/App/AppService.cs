@@ -369,22 +369,31 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         public async Task<ShowSystemHomeDataDto> GetTestListAsync()
         {
+            var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+            _logger.LogInformation("[GetTestListAsync] 开始执行");
+
             await _sysMgr.SnapshootHomeData();
+            _logger.LogInformation("[GetTestListAsync] SnapshootHomeData 完成，耗时: {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
+
             _abnormalEquipDic = new Dictionary<string, List<string>>();
             IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
             IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
             IEnumerable<TestDataReadDto> history = await _testDataService.GetHistoryListByTestAsync();
+            _logger.LogInformation("[GetTestListAsync] 获取任务列表完成，耗时: {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
 
             ShowSystemHomeDataDto testRead = new ShowSystemHomeDataDto();
             List<EquipConnect> connectEquips = _sqlSugarClient.Queryable<EquipConnect>()
                 .Includes(el => el.EquipLedger)
                 .Includes(el => el.EquipLedger!.Room).ToList();
+            _logger.LogInformation("[GetTestListAsync] 查询设备连接信息完成，耗时: {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
             // 试验系统设备数据
 
             // *** 环境数据
             testRead.EnvironmentData = new EnvironmentData() { Humidity = 101, Temperature = 101 };
 
             // ========== 性能优化：批量预加载数据 ==========
+            var batchLoadStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+            
             // 1. 构建系统名称到当前任务的映射字典（避免循环中重复查找）
             Dictionary<string, TestDataReadDto> currentTaskBySystemName = current
                 .GroupBy(x => NormalizeSystemName(x.SysName))
@@ -402,6 +411,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     equipOnlineStatus[connectEquip.EquipLedger.Id] = value == 3;
                 }
             }
+            _logger.LogInformation("[GetTestListAsync] 批量获取设备在线状态完成，耗时: {ElapsedMs}ms", batchLoadStopwatch.ElapsedMilliseconds);
             
             // 3. 批量获取系统转台的运行时间（避免循环中重复查询 Redis）
             Dictionary<int, uint> systemRunTimeCache = new Dictionary<int, uint>();
@@ -411,6 +421,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 uint runTime = await ReceiveHelper.GetLast30DaysRunningTimeAsync(_connectionMultiplexer, runTimeKey);
                 systemRunTimeCache[sysInfo.SystemNum] = runTime;
             }
+            _logger.LogInformation("[GetTestListAsync] 批量获取系统转台运行时间完成，耗时: {ElapsedMs}ms", batchLoadStopwatch.ElapsedMilliseconds);
             
             // 4. 批量获取关键设备的运行时间（避免嵌套循环中重复查询 Redis）
             Dictionary<(byte systemNum, Guid equipId), uint> keyDeviceRunTimeCache = new Dictionary<(byte, Guid), uint>();
@@ -425,6 +436,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     keyDeviceRunTimeCache[(sysInfo.SystemNum, kd.EquipId)] = runTime;
                 }
             }
+            _logger.LogInformation("[GetTestListAsync] 批量获取关键设备运行时间完成，耗时: {ElapsedMs}ms", batchLoadStopwatch.ElapsedMilliseconds);
             
             // 5. 批量获取关键设备的台账信息（资产编号和型号）
             Dictionary<Guid, (string? assetNumber, string? model)> keyDeviceLedgerCache = new Dictionary<Guid, (string?, string?)>();
@@ -440,10 +452,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     keyDeviceLedgerCache[ledger.Id] = (ledger.AssetNumber, ledger.Model);
                 }
             }
+            _logger.LogInformation("[GetTestListAsync] 批量预加载数据完成，总耗时: {ElapsedMs}ms", batchLoadStopwatch.ElapsedMilliseconds);
             // ========== 性能优化结束 ==========
 
             #region 试验系统列表数据 (已关联数据库)
 
+            var systemListStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             // *** 试验系统列表数据
             List<SystemDeviceData> list = new List<SystemDeviceData>();
             foreach (SystemInfo sysInfo in _systemInfoList)
@@ -512,11 +526,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 });
             }
             testRead.SystemDeviceList = list;
+            _logger.LogInformation("[GetTestListAsync] 试验系统列表数据完成，耗时: {ElapsedMs}ms", systemListStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 设备状态统计详细数据 (已关联数据库)
 
+            var equipmentStateStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             // *** 设备状态统计详细数据
             // 获取设备信息
             List<EquipmentData> equipDatas = new List<EquipmentData>();
@@ -550,11 +566,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
             },
                 Data = equipDatas
             };
+            _logger.LogInformation("[GetTestListAsync] 设备状态统计详细数据完成，耗时: {ElapsedMs}ms", equipmentStateStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 试验系统利用率数据 (已关联数据库)
 
+            var utilizationStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             // 试验系统利用率数据
             // 系统利用率算法:将这个系统转台按月工作时间累加(秒) / 22*8*60*60
             testRead.DeviceListData = new List<DeviceUtilizationData>();
@@ -575,11 +593,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     Utilization = utilization,
                 });
             }
+            _logger.LogInformation("[GetTestListAsync] 试验系统利用率数据完成，耗时: {ElapsedMs}ms", utilizationStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 实验任务数据 (已关联数据库)
 
+            var experimentDataStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             // 当前试验任务数据组织
             List<Dictionary<string, object>> currentListDic = new List<Dictionary<string, object>>();
             foreach (TestDataReadDto item in current)
@@ -656,6 +676,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 },
                 Data = historyListDic
             });
+            _logger.LogInformation("[GetTestListAsync] 实验任务数据完成，耗时: {ElapsedMs}ms", experimentDataStopwatch.ElapsedMilliseconds);
 
             #endregion
 
@@ -678,6 +699,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #region 在线率 和 故障率 (已关联数据库)
 
+            var rateDataStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             // *** 在线设备状态统计（在线率）
             // 使用 Redis 中的实际在线状态计算在线率（而不是数据库中的 State 字段）
             int onlineCount = 0;
@@ -700,11 +722,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
             int breakdownData = sysCount == 0 ? 0 : (int)((double)abnormalSysCount / (double)sysCount * 100);
             int healthData = 100 - breakdownData;
             testRead.FailureRateData = new FailureRateData() { BreakdownData = breakdownData, HealthData = healthData, PreferablyData = 0 };
+            _logger.LogInformation("[GetTestListAsync] 在线率和故障率完成，耗时: {ElapsedMs}ms", rateDataStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 关键设备利用率 (已关联数据库)
 
+            var keyDeviceStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             // 关键设备利用率数据
             testRead.KeyDeviceList = new List<KeyDeviceData>();
             foreach (SystemInfo item in _systemInfoList)
@@ -731,36 +755,47 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     });
                 }
             }
+            _logger.LogInformation("[GetTestListAsync] 关键设备利用率完成，耗时: {ElapsedMs}ms", keyDeviceStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 按系统统计试验时间 (SystemTestTimes)
 
+            var systemTestTimesStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             testRead.SystemTestTimes = await CalculateSystemTestTimes(current, history);
+            _logger.LogInformation("[GetTestListAsync] 按系统统计试验时间完成，耗时: {ElapsedMs}ms", systemTestTimesStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 按型号统计试验时间 (TypeTestTimes)
 
+            var typeTestTimesStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             testRead.TypeTestTimes = await CalculateTypeTestTimes();
+            _logger.LogInformation("[GetTestListAsync] 按型号统计试验时间完成，耗时: {ElapsedMs}ms", typeTestTimesStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 按系统统计试验成本 (SystemTestCost)
 
+            var systemTestCostStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             testRead.SystemTestCost = await CalculateSystemTestCost(current, history);
+            _logger.LogInformation("[GetTestListAsync] 按系统统计试验成本完成，耗时: {ElapsedMs}ms", systemTestCostStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 按型号统计试验成本 (TypeTestCost)
 
+            var typeTestCostStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             testRead.TypeTestCost = await CalculateTypeTestCost(current, history);
+            _logger.LogInformation("[GetTestListAsync] 按型号统计试验成本完成，耗时: {ElapsedMs}ms", typeTestCostStopwatch.ElapsedMilliseconds);
 
             #endregion
 
             #region 摄像头数据 (已关联数据库)
 
+            var cameraDataStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             testRead.CameraData = await _sysMgr.GetCameraData("home");
+            _logger.LogInformation("[GetTestListAsync] 摄像头数据完成，耗时: {ElapsedMs}ms", cameraDataStopwatch.ElapsedMilliseconds);
 
             #endregion
 
@@ -770,6 +805,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
+            stopwatch.Stop();
+            _logger.LogInformation("[GetTestListAsync] 总耗时: {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
             return testRead;
         }
 
@@ -796,21 +833,28 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     CurrentYearTotalSystemTestDays = 0
                 };
 
-                // 获取所有系统的工作日期数据
-                HashSet<DateTime> allWorkingDates = new HashSet<DateTime>();
-                HashSet<DateTime> currentMonthWorkingDates = new HashSet<DateTime>();
-                Dictionary<NaturalMonth, HashSet<DateTime>> monthlyAllSystemWorkingDates = new Dictionary<NaturalMonth, HashSet<DateTime>>();
-
-                // 初始化月度统计
+                // 初始化月度统计（不再使用去重的日期集合）
+                Dictionary<NaturalMonth, int> monthlySystemDays = new Dictionary<NaturalMonth, int>();
                 for (int month = 1; month <= 12; month++)
                 {
-                    monthlyAllSystemWorkingDates[(NaturalMonth)month] = new HashSet<DateTime>();
+                    monthlySystemDays[(NaturalMonth)month] = 0;
                 }
 
                 // 合并当前和历史试验任务
                 List<TestDataReadDto> allTasks = new List<TestDataReadDto>();
                 allTasks.AddRange(currentTasks);
                 allTasks.AddRange(historyTasks);
+
+                // 筛选出当前年度的试验任务
+                allTasks = allTasks.Where(x =>
+                {
+                    if (DateTime.TryParse(x.TaskStartTime, out DateTime start) &&
+                        DateTime.TryParse(x.TaskEndTime, out DateTime end))
+                    {
+                        return start.Year == currentYear || end.Year == currentYear;
+                    }
+                    return false;
+                }).ToList();
 
                 // 遍历所有系统
                 for (int systemId = 1; systemId <= 10; systemId++)
@@ -868,25 +912,35 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         uint taskSeconds = 0;
                         if (systemEquips.Any())
                         {
-                            taskSeconds = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
+                            // 先获取所有数据，然后按设备和日期分组取最大值（因为RunningSeconds是累积值）
+                            var runtimeData = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
                                 .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
                                 .Where(x => x.RecordDate >= start.Date && x.RecordDate <= end.Date)
-                                .SumAsync(x => x.RunningSeconds);
+                                .Select(x => new { x.EquipId, x.RecordDate, x.RunningSeconds })
+                                .ToListAsync();
+
+                            // 按设备和日期分组，取每天的最大秒数
+                            var groupedData = runtimeData
+                                .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                                .Select(g => new { g.Key.Date, MaxSeconds = g.Max(x => x.RunningSeconds) })
+                                .ToList();
+
+                            taskSeconds = (uint)groupedData.Sum(x => x.MaxSeconds);
+
+                            if (taskSeconds > 0)
+                            {
+                                // 有真实运行数据，使用已分组的数据收集有运行的日期
+                                var actualWorkingDates = groupedData
+                                    .Where(g => g.MaxSeconds > 0)
+                                    .Select(g => g.Date)
+                                    .Distinct()
+                                    .ToList();
+
+                                workingDates.AddRange(actualWorkingDates);
+                            }
                         }
 
-                        if (taskSeconds > 0)
-                        {
-                            // 有真实运行数据，按实际运行日期计算
-                            var actualWorkingDates = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
-                                .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                                .Where(x => x.RecordDate >= start.Date && x.RecordDate <= end.Date)
-                                .Where(x => x.RunningSeconds > 0)
-                                .Select(x => x.RecordDate.Date)
-                                .Distinct()
-                                .ToListAsync();
-                            workingDates.AddRange(actualWorkingDates);
-                        }
-                        else
+                        if (taskSeconds == 0)
                         {
                             // 无真实运行数据，按计划天数计算
                             DateTime planEndDate = end.Date;
@@ -918,27 +972,38 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         {
                             NaturalMonth month = (NaturalMonth)date.Month;
                             systemTestTimes.SystemMonthlyWorkDays[systemName][month]++;
-
-                            // 累计所有系统的工作日期（去重）
-                            allWorkingDates.Add(date);
-                            monthlyAllSystemWorkingDates[month].Add(date);
-
-                            if (date.Month == currentMonth)
-                            {
-                                currentMonthWorkingDates.Add(date);
-                            }
                         }
                     }
                 }
 
-                // 计算每月所有系统的总工作天数（去重后的）
-                foreach (var kvp in monthlyAllSystemWorkingDates)
+                // 计算每月所有系统的总工作天数（每个系统的天数相加）
+                foreach (var systemName in systemTestTimes.SystemMonthlyWorkDays.Keys)
                 {
-                    systemTestTimes.TimePerMonth[kvp.Key] = kvp.Value.Count;
+                    foreach (var month in systemTestTimes.SystemMonthlyWorkDays[systemName].Keys)
+                    {
+                        monthlySystemDays[month] += systemTestTimes.SystemMonthlyWorkDays[systemName][month];
+                    }
                 }
+                systemTestTimes.TimePerMonth = monthlySystemDays;
 
-                systemTestTimes.CurrentMonthTotalSystemTestDays = currentMonthWorkingDates.Count;
-                systemTestTimes.CurrentYearTotalSystemTestDays = allWorkingDates.Count;
+                // 计算当前月总试验天数（每个系统的天数相加）
+                int currentMonthTotalDays = 0;
+                foreach (var systemName in systemTestTimes.SystemMonthlyWorkDays.Keys)
+                {
+                    currentMonthTotalDays += systemTestTimes.SystemMonthlyWorkDays[systemName][(NaturalMonth)currentMonth];
+                }
+                systemTestTimes.CurrentMonthTotalSystemTestDays = currentMonthTotalDays;
+
+                // 计算年度总试验天数（每个系统的天数相加）
+                int currentYearTotalDays = 0;
+                foreach (var systemName in systemTestTimes.SystemMonthlyWorkDays.Keys)
+                {
+                    foreach (var month in systemTestTimes.SystemMonthlyWorkDays[systemName].Keys)
+                    {
+                        currentYearTotalDays += systemTestTimes.SystemMonthlyWorkDays[systemName][month];
+                    }
+                }
+                systemTestTimes.CurrentYearTotalSystemTestDays = currentYearTotalDays;
 
                 return systemTestTimes;
             }
@@ -972,15 +1037,86 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 List<TestData> allTestData = await _sqlSugarClient.Queryable<TestData>()
                     .Where(x => !string.IsNullOrEmpty(x.TaskStartTime) && !string.IsNullOrEmpty(x.TaskEndTime))
                     .ToListAsync();
+                
+                // 筛选出当前年度的试验计划
+                allTestData = allTestData.Where(x =>
+                {
+                    if (DateTime.TryParse(x.TaskStartTime, out DateTime start) &&
+                        DateTime.TryParse(x.TaskEndTime, out DateTime end))
+                    {
+                        return start.Year == currentYear || end.Year == currentYear;
+                    }
+                    return false;
+                }).ToList();
 
-                HashSet<DateTime> allWorkingDates = new HashSet<DateTime>();
-                HashSet<DateTime> currentMonthWorkingDates = new HashSet<DateTime>();
-                Dictionary<NaturalMonth, HashSet<DateTime>> monthlyAllTypeWorkingDates = new Dictionary<NaturalMonth, HashSet<DateTime>>();
+                // ========== 性能优化：批量预加载数据 ==========
+                // 批量加载所有房间的设备映射
+                Dictionary<Guid, List<EquipLedger>> roomEquipCache = new Dictionary<Guid, List<EquipLedger>>();
+                var allRoomIds = new List<Guid>();
+                for (int systemId = 1; systemId <= 10; systemId++)
+                {
+                    var roomIdStr = TestEquipData.GetRoomId(systemId);
+                    if (Guid.TryParse(roomIdStr, out Guid roomId))
+                    {
+                        allRoomIds.Add(roomId);
+                    }
+                }
+                if (allRoomIds.Any())
+                {
+                    var allEquips = await _sqlSugarClient.Queryable<EquipLedger>()
+                        .Where(x => allRoomIds.Contains(x.RoomId.Value) && !x.SoftDeleted)
+                        .ToListAsync();
+                    
+                    foreach (var roomId in allRoomIds.Distinct())
+                    {
+                        roomEquipCache[roomId] = allEquips.Where(e => e.RoomId == roomId).ToList();
+                    }
+                }
 
-                // 初始化月度统计
+                // 批量加载所有设备的运行时间数据（只加载当年的数据）
+                var allEquipIds = roomEquipCache.Values.SelectMany(e => e.Select(x => x.Id)).Distinct().ToList();
+                Dictionary<string, Dictionary<DateTime, uint>> equipmentRuntimeCache = new Dictionary<string, Dictionary<DateTime, uint>>();
+                if (allEquipIds.Any())
+                {
+                    var runtimeData = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
+                        .Where(x => allEquipIds.Contains(x.EquipId))
+                        .Where(x => x.RecordDate.Year == currentYear)
+                        .Select(x => new
+                        {
+                            x.EquipId,
+                            x.RecordDate,
+                            x.RunningSeconds
+                        })
+                        .ToListAsync();
+
+                    // 按设备和日期分组，取每天的最大秒数（因为RunningSeconds是累积值）
+                    var groupedData = runtimeData
+                        .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                        .Select(g => new
+                        {
+                            g.Key.EquipId,
+                            g.Key.Date,
+                            MaxSeconds = g.Max(x => x.RunningSeconds)
+                        })
+                        .ToList();
+
+                    foreach (var data in groupedData)
+                    {
+                        string key = $"{data.EquipId}_{data.Date:yyyy-MM-dd}";
+                        if (!equipmentRuntimeCache.ContainsKey(key))
+                        {
+                            equipmentRuntimeCache[key] = new Dictionary<DateTime, uint>();
+                        }
+                        equipmentRuntimeCache[key][data.Date] = data.MaxSeconds;
+                    }
+                }
+                // ========== 性能优化结束 ==========
+
+                // 初始化月度统计（不再使用去重的日期集合）
+                Dictionary<NaturalMonth, int> monthlyTypeDays = new Dictionary<NaturalMonth, int>();
                 for (int month = 1; month <= 12; month++)
                 {
-                    monthlyAllTypeWorkingDates[(NaturalMonth)month] = new HashSet<DateTime>();
+                    monthlyTypeDays[(NaturalMonth)month] = 0;
                 }
 
                 // 按型号分组统计
@@ -1018,31 +1154,44 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         if (roomId == Guid.Empty)
                             continue;
 
-                        // 获取该系统下的所有设备
-                        List<EquipLedger> systemEquips = await _sqlSugarClient.Queryable<EquipLedger>()
-                            .Where(x => x.RoomId == roomId && !x.SoftDeleted)
-                            .ToListAsync();
+                        // 从缓存获取该系统下的所有设备
+                        if (!roomEquipCache.TryGetValue(roomId, out List<EquipLedger> systemEquips))
+                            systemEquips = new List<EquipLedger>();
 
-                        // 查询该任务期间的真实运行数据
+                        // 从缓存查询该任务期间的真实运行数据
                         uint taskSeconds = 0;
                         if (systemEquips.Any())
                         {
-                            taskSeconds = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
-                                .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                                .Where(x => x.RecordDate >= start.Date && x.RecordDate <= end.Date)
-                                .SumAsync(x => x.RunningSeconds);
+                            foreach (var equipId in systemEquips.Select(e => e.Id))
+                            {
+                                for (DateTime date = start.Date; date <= end.Date; date = date.AddDays(1))
+                                {
+                                    string key = $"{equipId}_{date:yyyy-MM-dd}";
+                                    if (equipmentRuntimeCache.TryGetValue(key, out var dateMap) &&
+                                        dateMap.TryGetValue(date, out uint seconds))
+                                    {
+                                        taskSeconds += seconds;
+                                    }
+                                }
+                            }
                         }
 
                         if (taskSeconds > 0)
                         {
-                            // 有真实运行数据，按实际运行日期计算
-                            var actualWorkingDates = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
-                                .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                                .Where(x => x.RecordDate >= start.Date && x.RecordDate <= end.Date)
-                                .Where(x => x.RunningSeconds > 0)
-                                .Select(x => x.RecordDate.Date)
-                                .Distinct()
-                                .ToListAsync();
+                            // 有真实运行数据，从缓存中获取实际运行日期
+                            HashSet<DateTime> actualWorkingDates = new HashSet<DateTime>();
+                            foreach (var equipId in systemEquips.Select(e => e.Id))
+                            {
+                                for (DateTime date = start.Date; date <= end.Date; date = date.AddDays(1))
+                                {
+                                    string key = $"{equipId}_{date:yyyy-MM-dd}";
+                                    if (equipmentRuntimeCache.TryGetValue(key, out var dateMap) &&
+                                        dateMap.TryGetValue(date, out uint seconds) && seconds > 0)
+                                    {
+                                        actualWorkingDates.Add(date);
+                                    }
+                                }
+                            }
                             typeWorkingDates.AddRange(actualWorkingDates);
                         }
                         else
@@ -1077,27 +1226,38 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         {
                             NaturalMonth month = (NaturalMonth)date.Month;
                             typeTestTimes.TypeMonthlyWorkDays[projectName][month]++;
-
-                            // 累计所有型号的工作日期（去重）
-                            allWorkingDates.Add(date);
-                            monthlyAllTypeWorkingDates[month].Add(date);
-
-                            if (date.Month == currentMonth)
-                            {
-                                currentMonthWorkingDates.Add(date);
-                            }
                         }
                     }
                 }
 
-                // 计算每月所有型号的总工作天数（去重后的）
-                foreach (var kvp in monthlyAllTypeWorkingDates)
+                // 计算每月所有型号的总工作天数（每个型号的天数相加）
+                foreach (var projectName in typeTestTimes.TypeMonthlyWorkDays.Keys)
                 {
-                    typeTestTimes.TimePerMonth[kvp.Key] = kvp.Value.Count;
+                    foreach (var month in typeTestTimes.TypeMonthlyWorkDays[projectName].Keys)
+                    {
+                        monthlyTypeDays[month] += typeTestTimes.TypeMonthlyWorkDays[projectName][month];
+                    }
                 }
+                typeTestTimes.TimePerMonth = monthlyTypeDays;
 
-                typeTestTimes.CurrentMonthTotalTypeTestDays = currentMonthWorkingDates.Count;
-                typeTestTimes.CurrentYearTotalTypeTestDays = allWorkingDates.Count;
+                // 计算当前月总试验天数（每个型号的天数相加）
+                int currentMonthTotalDays = 0;
+                foreach (var projectName in typeTestTimes.TypeMonthlyWorkDays.Keys)
+                {
+                    currentMonthTotalDays += typeTestTimes.TypeMonthlyWorkDays[projectName][(NaturalMonth)currentMonth];
+                }
+                typeTestTimes.CurrentMonthTotalTypeTestDays = currentMonthTotalDays;
+
+                // 计算年度总试验天数（每个型号的天数相加）
+                int currentYearTotalDays = 0;
+                foreach (var projectName in typeTestTimes.TypeMonthlyWorkDays.Keys)
+                {
+                    foreach (var month in typeTestTimes.TypeMonthlyWorkDays[projectName].Keys)
+                    {
+                        currentYearTotalDays += typeTestTimes.TypeMonthlyWorkDays[projectName][month];
+                    }
+                }
+                typeTestTimes.CurrentYearTotalTypeTestDays = currentYearTotalDays;
 
                 return typeTestTimes;
             }
@@ -1135,6 +1295,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 List<TestDataReadDto> allTasks = new List<TestDataReadDto>();
                 allTasks.AddRange(currentTasks);
                 allTasks.AddRange(historyTasks);
+
+                // 筛选出当前年度的试验任务
+                allTasks = allTasks.Where(x =>
+                {
+                    if (DateTime.TryParse(x.TaskStartTime, out DateTime start) &&
+                        DateTime.TryParse(x.TaskEndTime, out DateTime end))
+                    {
+                        return start.Year == currentYear || end.Year == currentYear;
+                    }
+                    return false;
+                }).ToList();
 
                 // 批量加载缓存
                 var cache = await LoadCostCalculationCacheAsync(allTasks);
@@ -1252,6 +1423,75 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     })
                     .ToList();
 
+                // ========== 性能优化：批量预加载数据 ==========
+                // 1. 批量加载所有资产数据
+                Dictionary<string, AssetData> assetDataCache = (await _sqlSugarClient.Queryable<AssetData>()
+                    .Includes(x => x.Projects)
+                    .ToListAsync())
+                    .ToDictionary(x => x.SystemName, x => x);
+
+                // 2. 批量加载所有房间的设备映射
+                Dictionary<Guid, List<EquipLedger>> roomEquipCache = new Dictionary<Guid, List<EquipLedger>>();
+                var allRoomIds = new List<Guid>();
+                for (int systemId = 1; systemId <= 10; systemId++)
+                {
+                    var roomIdStr = TestEquipData.GetRoomId(systemId);
+                    if (Guid.TryParse(roomIdStr, out Guid roomId))
+                    {
+                        allRoomIds.Add(roomId);
+                    }
+                }
+                if (allRoomIds.Any())
+                {
+                    var allEquips = await _sqlSugarClient.Queryable<EquipLedger>()
+                        .Where(x => allRoomIds.Contains(x.RoomId.Value) && !x.SoftDeleted)
+                        .ToListAsync();
+                    
+                    foreach (var roomId in allRoomIds.Distinct())
+                    {
+                        roomEquipCache[roomId] = allEquips.Where(e => e.RoomId == roomId).ToList();
+                    }
+                }
+
+                // 3. 批量加载所有设备的运行时间数据（只加载当年的数据）
+                var allEquipIds = roomEquipCache.Values.SelectMany(e => e.Select(x => x.Id)).Distinct().ToList();
+                Dictionary<string, Dictionary<DateTime, uint>> equipmentRuntimeCache = new Dictionary<string, Dictionary<DateTime, uint>>();
+                if (allEquipIds.Any())
+                {
+                    var runtimeData = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
+                        .Where(x => allEquipIds.Contains(x.EquipId))
+                        .Where(x => x.RecordDate.Year == currentYear)
+                        .Select(x => new
+                        {
+                            x.EquipId,
+                            x.RecordDate,
+                            x.RunningSeconds
+                        })
+                        .ToListAsync();
+
+                    // 按设备和日期分组，取每天的最大秒数（因为RunningSeconds是累积值）
+                    var groupedData = runtimeData
+                        .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                        .Select(g => new
+                        {
+                            g.Key.EquipId,
+                            g.Key.Date,
+                            MaxSeconds = g.Max(x => x.RunningSeconds)
+                        })
+                        .ToList();
+
+                    foreach (var data in groupedData)
+                    {
+                        string key = $"{data.EquipId}_{data.Date:yyyy-MM-dd}";
+                        if (!equipmentRuntimeCache.ContainsKey(key))
+                        {
+                            equipmentRuntimeCache[key] = new Dictionary<DateTime, uint>();
+                        }
+                        equipmentRuntimeCache[key][data.Date] = data.MaxSeconds;
+                    }
+                }
+                // ========== 性能优化结束 ==========
+
                 decimal currentMonthTotalCost = 0;
                 decimal currentYearTotalCost = 0;
                 Dictionary<NaturalMonth, decimal> monthlyTotalCosts = new Dictionary<NaturalMonth, decimal>();
@@ -1280,7 +1520,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     // 计算每个月的成本
                     for (int month = 1; month <= 12; month++)
                     {
-                        CostBreakdown monthCost = await CalculateMonthlyTypeCost(typeGroup, currentYear, month, allTasks);
+                        CostBreakdown monthCost = await CalculateMonthlyTypeCostWithCache(typeGroup, currentYear, month, allTasks, assetDataCache, roomEquipCache, equipmentRuntimeCache);
                         typeCosts.Add(monthCost);
 
                         // 计算该型号该月的总成本
@@ -1579,6 +1819,226 @@ namespace Hgzn.Mes.Application.Main.Services.App
         }
 
         /// <summary>
+        /// 计算型号某个月的成本分解（使用缓存，避免重复查询）
+        /// </summary>
+        private Task<CostBreakdown> CalculateMonthlyTypeCostWithCache(
+            IGrouping<string, TestData> typeGroup, 
+            int year, 
+            int month, 
+            List<TestDataReadDto> allTasks,
+            Dictionary<string, AssetData> assetDataCache,
+            Dictionary<Guid, List<EquipLedger>> roomEquipCache,
+            Dictionary<string, Dictionary<DateTime, uint>> equipmentRuntimeCache)
+        {
+            try
+            {
+                const decimal ELECTRICITY_UNIT_PRICE = 1m;
+
+                CostBreakdown costBreakdown = new CostBreakdown
+                {
+                    NaturalMonth = (NaturalMonth)month
+                };
+
+                // 获取该型号在该月涉及的所有系统（去重）
+                HashSet<string> involvedSystems = new HashSet<string>();
+                foreach (TestData testData in typeGroup)
+                {
+                    if (!string.IsNullOrEmpty(testData.SysName))
+                    {
+                        involvedSystems.Add(testData.SysName);
+                    }
+                }
+
+                DateTime monthStart = new DateTime(year, month, 1);
+                DateTime monthEnd = monthStart.AddMonths(1).AddDays(-1);
+                
+                if (monthStart > DateTime.Now.Date)
+                {
+                    return Task.FromResult(costBreakdown);
+                }
+                
+                if (monthEnd > DateTime.Now.Date)
+                    monthEnd = DateTime.Now.Date;
+
+                DateTime actualMonthEnd = monthEnd;
+                if (month == DateTime.Now.Month && year == DateTime.Now.Year)
+                {
+                    actualMonthEnd = DateTime.Now.Date;
+                }
+
+                decimal totalFactoryUsageFee = 0;
+                decimal totalEquipmentUsageFee = 0;
+                decimal totalLaborCost = 0;
+                decimal totalElectricityCost = 0;
+                decimal totalFuelPowerCost = 0;
+                decimal totalEquipmentMaintenanceCost = 0;
+                decimal totalSystemIdleCost = 0;
+
+                // 遍历该型号涉及的每个系统
+                foreach (string systemName in involvedSystems)
+                {
+                    // 从缓存获取资产数据
+                    if (!assetDataCache.TryGetValue(systemName, out AssetData assetData) || assetData == null)
+                        continue;
+
+                    // 获取该系统的房间ID和设备
+                    Guid roomId = GetRoomIdBySystemName(systemName);
+                    if (roomId == Guid.Empty)
+                        continue;
+
+                    if (!roomEquipCache.TryGetValue(roomId, out List<EquipLedger> systemEquips))
+                        systemEquips = new List<EquipLedger>();
+
+                    // 从传入的试验任务中筛选该系统且该型号的任务
+                    string projectName = typeGroup.Key;
+                    List<TestDataReadDto> typeSystemTasks = allTasks
+                        .Where(t => SystemNameEquals(t.SysName, systemName) && t.ProjectName == projectName)
+                        .ToList();
+
+                    if (!typeSystemTasks.Any())
+                        continue;
+
+                    int workingDays = 0;
+                    decimal totalWorkingHours = 0;
+                    HashSet<DateTime> workingDates = new HashSet<DateTime>();
+                    int staffCount = 0;
+
+                    // 遍历该型号在该系统的所有试验任务，计算该月的工作天数和工作时长
+                    foreach (var task in typeSystemTasks)
+                    {
+                        if (!DateTime.TryParse(task.TaskStartTime, out DateTime taskStart) ||
+                            !DateTime.TryParse(task.TaskEndTime, out DateTime taskEnd))
+                        {
+                            continue;
+                        }
+
+                        if (taskStart.Date > DateTime.Now.Date) continue;
+
+                        DateTime start = taskStart.Date > monthStart ? taskStart.Date : monthStart;
+                        DateTime end = taskEnd.Date < monthEnd ? taskEnd.Date : monthEnd;
+
+                        if (start > end) continue;
+
+                        // 计算人员岗位数量
+                        int taskStaffCount = 0;
+                        if (!string.IsNullOrEmpty(task.SimuResp)) taskStaffCount += 1;
+                        if (!string.IsNullOrEmpty(task.SimuStaff))
+                        {
+                            var staffNames = task.SimuStaff.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            taskStaffCount += staffNames.Length;
+                        }
+                        staffCount += taskStaffCount;
+
+                        // 从缓存查询该任务在该月期间的真实运行数据
+                        uint taskSeconds = 0;
+                        foreach (var equipId in systemEquips.Select(e => e.Id))
+                        {
+                            for (DateTime date = start.Date; date <= end.Date; date = date.AddDays(1))
+                            {
+                                string key = $"{equipId}_{date:yyyy-MM-dd}";
+                                if (equipmentRuntimeCache.TryGetValue(key, out var dateMap) &&
+                                    dateMap.TryGetValue(date, out uint seconds))
+                                {
+                                    taskSeconds += seconds;
+                                }
+                            }
+                        }
+
+                        if (taskSeconds > 0)
+                        {
+                            // 有真实运行数据，从缓存中获取实际运行日期
+                            HashSet<DateTime> actualWorkingDates = new HashSet<DateTime>();
+                            foreach (var equipId in systemEquips.Select(e => e.Id))
+                            {
+                                for (DateTime date = start.Date; date <= end.Date; date = date.AddDays(1))
+                                {
+                                    string key = $"{equipId}_{date:yyyy-MM-dd}";
+                                    if (equipmentRuntimeCache.TryGetValue(key, out var dateMap) &&
+                                        dateMap.TryGetValue(date, out uint seconds) && seconds > 0)
+                                    {
+                                        actualWorkingDates.Add(date);
+                                    }
+                                }
+                            }
+
+                            foreach (var date in actualWorkingDates)
+                            {
+                                workingDates.Add(date);
+                            }
+                            totalWorkingHours += Math.Round((decimal)taskSeconds / 3600, 2);
+                        }
+                        else
+                        {
+                            // 无真实运行数据，按任务期间每天8小时计算
+                            for (DateTime date = start; date <= end; date = date.AddDays(1))
+                            {
+                                workingDates.Add(date);
+                            }
+                            int days = (int)(end - start).TotalDays + 1;
+                            totalWorkingHours += days * 8;
+                        }
+                    }
+
+                    workingDays = workingDates.Count;
+                    int actualDaysInMonth = (int)(actualMonthEnd - monthStart).TotalDays + 1;
+                    int idleDays = actualDaysInMonth - workingDays;
+
+                    DateTime yearStart = new DateTime(year, 1, 1);
+                    DateTime yearEnd = year == DateTime.Now.Year ? DateTime.Now.Date : new DateTime(year, 12, 31);
+                    int daysPassedInYear = (int)(yearEnd - yearStart).TotalDays + 1;
+
+                    decimal dailyFactoryFee = (assetData.FactoryUsageFee ?? 0) / daysPassedInYear;
+                    decimal dailyEquipmentFee = (assetData.EquipmentUsageFee ?? 0) / daysPassedInYear;
+                    decimal dailyMaintenanceFee = (assetData.EquipmentMaintenanceCost ?? 0) / daysPassedInYear;
+
+                    int naturalMonthDays = DateTime.DaysInMonth(year, month);
+                    int daysForCostAllocation = (month == DateTime.Now.Month && year == DateTime.Now.Year) 
+                        ? actualDaysInMonth 
+                        : naturalMonthDays;
+
+                    totalFactoryUsageFee += Math.Round(dailyFactoryFee * daysForCostAllocation, 2);
+                    totalEquipmentUsageFee += Math.Round(dailyEquipmentFee * daysForCostAllocation, 2);
+                    totalEquipmentMaintenanceCost += Math.Round(dailyMaintenanceFee * daysForCostAllocation, 2);
+
+                    if (assetData.LaborCostPerHour.HasValue && assetData.LaborCostPerHour.Value > 0 && staffCount > 0 && totalWorkingHours > 0)
+                    {
+                        totalLaborCost += Math.Round(staffCount * totalWorkingHours * assetData.LaborCostPerHour.Value, 2);
+                    }
+
+                    if (assetData.SystemEnergyConsumption.HasValue && totalWorkingHours > 0)
+                    {
+                        totalElectricityCost += Math.Round(totalWorkingHours * assetData.SystemEnergyConsumption.Value * ELECTRICITY_UNIT_PRICE, 2);
+                    }
+
+                    if (assetData.FuelPowerCostPerHour.HasValue && assetData.FuelPowerCostPerHour.Value > 0 && totalWorkingHours > 0)
+                    {
+                        totalFuelPowerCost += Math.Round(assetData.FuelPowerCostPerHour.Value * totalWorkingHours, 2);
+                    }
+
+                    if (idleDays > 0)
+                    {
+                        totalSystemIdleCost += Math.Round(idleDays * (dailyFactoryFee + dailyEquipmentFee + dailyMaintenanceFee), 2);
+                    }
+                }
+
+                costBreakdown.FactoryUsageFee = Math.Round(totalFactoryUsageFee, 2);
+                costBreakdown.EquipmentUsageFee = Math.Round(totalEquipmentUsageFee, 2);
+                costBreakdown.LaborCost = Math.Round(totalLaborCost, 2);
+                costBreakdown.ElectricityCost = Math.Round(totalElectricityCost, 2);
+                costBreakdown.FuelPowerCost = Math.Round(totalFuelPowerCost, 2);
+                costBreakdown.EquipmentMaintenanceCost = Math.Round(totalEquipmentMaintenanceCost, 2);
+                costBreakdown.SystemIdleCost = Math.Round(totalSystemIdleCost, 2);
+
+                return Task.FromResult(costBreakdown);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "计算型号月度成本失败(缓存版): {ProjectName}, {Year}-{Month}", typeGroup.Key, year, month);
+                return Task.FromResult(new CostBreakdown { NaturalMonth = (NaturalMonth)month });
+            }
+        }
+
+        /// <summary>
         /// 计算型号某个月的成本分解（按新算法：基于试验计划周期）
         /// </summary>
         /// <param name="typeGroup">型号试验数据组</param>
@@ -1702,30 +2162,39 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         uint taskSeconds = 0;
                         if (systemEquips.Any())
                         {
-                            taskSeconds = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
+                            // 先获取所有数据，然后按设备和日期分组取最大值（因为RunningSeconds是累积值）
+                            var runtimeData = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
                                 .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
                                 .Where(x => x.RecordDate >= start && x.RecordDate <= end)
-                                .SumAsync(x => x.RunningSeconds);
-                        }
-
-                        if (taskSeconds > 0)
-                        {
-                            // 有真实运行数据，按实际运行日期计算
-                            var actualWorkingDates = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
-                                .Where(x => systemEquips.Select(e => e.Id).Contains(x.EquipId))
-                                .Where(x => x.RecordDate >= start && x.RecordDate <= end)
-                                .Where(x => x.RunningSeconds > 0)
-                                .Select(x => x.RecordDate.Date)
-                                .Distinct()
+                                .Select(x => new { x.EquipId, x.RecordDate, x.RunningSeconds })
                                 .ToListAsync();
 
-                            foreach (var date in actualWorkingDates)
+                            // 按设备和日期分组，取每天的最大秒数
+                            var groupedData = runtimeData
+                                .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                                .Select(g => new { g.Key.Date, MaxSeconds = g.Max(x => x.RunningSeconds) })
+                                .ToList();
+
+                            taskSeconds = (uint)groupedData.Sum(x => x.MaxSeconds);
+
+                            if (taskSeconds > 0)
                             {
-                                workingDates.Add(date);
+                                // 有真实运行数据，使用已分组的数据收集有运行的日期
+                                var actualWorkingDates = groupedData
+                                    .Where(g => g.MaxSeconds > 0)
+                                    .Select(g => g.Date)
+                                    .Distinct()
+                                    .ToList();
+
+                                foreach (var date in actualWorkingDates)
+                                {
+                                    workingDates.Add(date);
+                                }
+                                totalWorkingHours += Math.Round((decimal)taskSeconds / 3600, 2);
                             }
-                            totalWorkingHours += Math.Round((decimal)taskSeconds / 3600, 2);
                         }
-                        else
+
+                        if (taskSeconds == 0)
                         {
                             // 无真实运行数据，按任务期间每天8小时计算
                             for (DateTime date = start; date <= end; date = date.AddDays(1))
@@ -1921,14 +2390,25 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         })
                         .ToListAsync();
 
-                    foreach (var data in runtimeData)
+                    // 按设备和日期分组，取每天的最大秒数（因为RunningSeconds是累积值）
+                    var groupedData = runtimeData
+                        .GroupBy(x => new { x.EquipId, x.RecordDate.Date })
+                        .Select(g => new
+                        {
+                            g.Key.EquipId,
+                            g.Key.Date,
+                            MaxSeconds = g.Max(x => x.RunningSeconds)
+                        })
+                        .ToList();
+
+                    foreach (var data in groupedData)
                     {
-                        string key = $"{data.EquipId}_{data.RecordDate:yyyy-MM-dd}";
+                        string key = $"{data.EquipId}_{data.Date:yyyy-MM-dd}";
                         if (!cache.EquipmentRuntimeCache.ContainsKey(key))
                         {
                             cache.EquipmentRuntimeCache[key] = new Dictionary<DateTime, uint>();
                         }
-                        cache.EquipmentRuntimeCache[key][data.RecordDate] = data.RunningSeconds;
+                        cache.EquipmentRuntimeCache[key][data.Date] = data.MaxSeconds;
                     }
                 }
             }
