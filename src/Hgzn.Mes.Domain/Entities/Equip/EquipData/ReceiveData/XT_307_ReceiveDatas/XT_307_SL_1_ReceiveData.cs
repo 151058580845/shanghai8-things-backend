@@ -11,13 +11,11 @@ namespace Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_307_ReceiveDat
 /// 307_阵列馈电
 /// </summary>
 [Description("接收的数据")]
-public class XT_307_SL_1_ReceiveData : UniversalEntity
+public class XT_307_SL_1_ReceiveData : UniversalEntity, IAudited
 {
-    public XT_307_SL_1_ReceiveData()
-    {
-        
-    }
-    public string CreationTime { get; set; }
+    public Guid? CreatorId { get; set; }
+
+    public DateTime CreationTime { get; set; }
 
     [Description("仿真试验系统识别编码")]
     [TableNotShow]
@@ -1925,4 +1923,11 @@ public class XT_307_SL_1_ReceiveData : UniversalEntity
     [Description("运行时间")]
     [TableNotShow]
     public uint? RunTime { get; set; }
+
+    [TableNotShow]
+    public Guid? LastModifierId { get; set; }
+    [TableNotShow]
+    public DateTime? LastModificationTime { get; set; }
+    [TableNotShow]
+    public int CreatorLevel { get; set; } = 0;
 }

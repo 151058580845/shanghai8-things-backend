@@ -25,6 +25,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
 {
     public class XT_307_SL_1_OnlineReceive : XT_307_SL_1_ReceiveBase, IOnlineReceive
     {
+        private const int _WORKSTYLEANALYSISLENGTH = 10;
+        private const int _STATETYPEANALYSISLENGTH = 9;
         public XT_307_SL_1_OnlineReceive(Guid equipId,
             ISqlSugarClient _client,
             IConnectionMultiplexer connectionMultiplexer,
@@ -86,11 +88,9 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
 
 
             // *** 物理量数量
-            byte[] physicalQuantityCount = new byte[4];
-            Buffer.BlockCopy(buffer, 41, physicalQuantityCount, 0, 4);
-            uint ulPhysicalQuantityCount = BitConverter.ToUInt32(physicalQuantityCount, 0);
-            ulPhysicalQuantityCount -= 1; // 减去1是因为最后一个物理量是运行时间,这个是后加的,且属性类型是uint,不好转成float一起赋值,在赋值完普通物理量后我会单独赋值
-            LoggerAdapter.LogInformation($"AG - 远程解析 - 物理量数量(不包含运行时长):{ulPhysicalQuantityCount}");
+            uint ulPhysicalQuantityCount;
+            float[] floatData = GetPhysicalQuantity(buffer, 22 + _WORKSTYLEANALYSISLENGTH + _STATETYPEANALYSISLENGTH, out ulPhysicalQuantityCount);
+            LoggerAdapter.LogInformation($"AG - 本地解析 - 物理量数量(不包含运行时长):{ulPhysicalQuantityCount}");
 
             // 剩余的都给物理量
             byte[] acquData = new byte[ulPhysicalQuantityCount * 4];
@@ -109,18 +109,10 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             }
             LoggerAdapter.LogInformation($"AG - 远程解析 - 运行时间:{ulRunTime}");
 
-            // 将 byte[] 转换为 float[] , 每个 float 占用 4 字节
-            int floatCount = acquData.Length / 4;
-            float[] floatData = new float[floatCount];
-            for (int i = 0; i < floatCount; i++)
-            {
-                floatData[i] = BitConverter.ToSingle(acquData, i * 4);
-            }
-
             XT_307_SL_1_ReceiveData entity = new XT_307_SL_1_ReceiveData()
             {
                 // Id 由 UniversalEntity 自动生成唯一的 GUID，不应该手动设置为 _equipId
-                CreationTime = sendTime.ToString("yyyy-MM-dd hh:mm:ss"),
+                CreationTime = sendTime,
                 SimuTestSysld = simuTestSysId,
                 DevTypeld = devTypeId,
                 Compld = compNumber,
@@ -137,8 +129,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
                 StateType = stateType,
                 SelfTest = ulDevHealthState,
                 SupplyVoltageState = ulSupplyVoltageState,
-                PhysicalQuantityCount = ulPhysicalQuantityCount,
-                RunTime = ulRunTime,
+                PhysicalQuantityCount = ulPhysicalQuantityCount
             };
 
             // 使用反射将后面指定数量个物理量数据进行填充
@@ -147,9 +138,11 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             // 使用循环将数组值赋给类属性
             for (int i = 0; i < floatData.Length; i++)
             {
-                // 跳过前面19个属性,索引20开始设置---------------------------------------------这里可能有问题但是314已经对过了,我暂时不改,应该是+20才对吧
                 properties[i + 19].SetValue(entity, floatData[i]);
             }
+
+            // 填充运行时间
+            properties[19 + floatData.Length].SetValue(entity, ulRunTime);
 
             // 这里根据设备的不同有些设备只有电源电压参数,所以去获取电源电压异常,有些设备只有自检状态参数,所以去获取自检状态异常
             // 这里定义如果该设备的值是0,则检查自检状态异常,如果是1则检查电源电压异常

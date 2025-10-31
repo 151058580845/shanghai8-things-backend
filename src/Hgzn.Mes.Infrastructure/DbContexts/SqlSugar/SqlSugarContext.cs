@@ -746,7 +746,7 @@ public sealed class SqlSugarContext
             b.SupplyVoltageState = 1;
             b.PhysicalQuantityCount = 462;
             b.RunTime = (uint?)new DateTimeOffset(now.AddSeconds(a)).ToUnixTimeSeconds();
-            b.CreationTime = now.AddSeconds(a).ToString("yyyy-MM-dd hh:mm:ss");
+            b.CreationTime = now.AddSeconds(a);
             foreach (var dic in properties)
             {
                 dic.Key.SetValue(b, dic.Value);

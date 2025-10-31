@@ -13,7 +13,6 @@ namespace Hgzn.Mes.WebApi.Worker
 {
     public class ConnCollectWorker : BackgroundService
     {
-        private readonly ISqlSugarClient _sqlClient;
         private readonly IConfiguration _configuration;
         private readonly IServiceProvider _serviceProvider;
         private readonly IDatabase _redis;
@@ -22,12 +21,10 @@ namespace Hgzn.Mes.WebApi.Worker
         private const int DEFAULT_CHECK_INTERVAL = 5;
         
         public ConnCollectWorker(
-            ISqlSugarClient sqlClient,
             IConfiguration configuration,
             IConnectionMultiplexer connectionMultiplexer,
             IServiceProvider serviceProvider)
         {
-            _sqlClient = sqlClient;
             _configuration = configuration;
             _serviceProvider = serviceProvider;
             _redis = connectionMultiplexer.GetDatabase();
@@ -77,9 +74,10 @@ namespace Hgzn.Mes.WebApi.Worker
         /// </summary>
         private async Task CheckAndReconnectEquipmentsAsync(CancellationToken stoppingToken)
         {
-            // 创建作用域来获取IEquipConnService
+            // 创建作用域来获取服务
             using var scope = _serviceProvider.CreateScope();
             var equipConnectService = scope.ServiceProvider.GetRequiredService<IEquipConnService>();
+            var sqlClient = scope.ServiceProvider.GetRequiredService<ISqlSugarClient>();
             
             // 查询所有应该保持连接的设备连接配置
             // 1. State为true(启用状态)
@@ -87,7 +85,7 @@ namespace Hgzn.Mes.WebApi.Worker
             // 3. 协议类型为TcpServer(8)或UdpServer(9) - 采集适配器使用这两种协议
             // 4. 未被软删除
             // 注意：只选择需要的字段，避免自动加载导航属性导致列数异常
-            EquipConnect[] connections = await _sqlClient.Queryable<EquipConnect>()
+            EquipConnect[] connections = await sqlClient.Queryable<EquipConnect>()
                 .Where(ec => ec.State && ec.ConnectStr != null)
                 .Where(ec => ec.ProtocolEnum == ConnType.TcpServer || ec.ProtocolEnum == ConnType.UdpServer)
                 .Where(ec => !ec.SoftDeleted)

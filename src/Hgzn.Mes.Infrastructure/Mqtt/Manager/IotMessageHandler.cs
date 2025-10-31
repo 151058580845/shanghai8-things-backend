@@ -13,6 +13,7 @@ using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL_1;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MySqlX.XDevAPI;
@@ -33,19 +34,19 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
     {
         public IotMessageHandler(
             ILogger<IotMessageHandler> logger,
-            SqlSugarContext context,
+            IServiceProvider serviceProvider,
             IConnectionMultiplexer connectionMultiplexer,
             IConfiguration configuration
         )
         {
             _logger = logger;
-            _client = context.DbContext;
+            _serviceProvider = serviceProvider;
             _connectionMultiplexer = connectionMultiplexer;
             _pos_interval = configuration.GetValue<int?>("PosInterval") ?? 3;
         }
 
         private readonly ILogger<IotMessageHandler> _logger;
-        private readonly ISqlSugarClient _client;
+        private readonly IServiceProvider _serviceProvider;
         private IMqttExplorer _mqttExplorer = null!;
         private static ConcurrentDictionary<string, List<(int heart, int breath)>> _rawDataPackage = new();
         private readonly IConnectionMultiplexer _connectionMultiplexer;
@@ -59,6 +60,26 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         public void Initialize(IMqttExplorer mqttExplorer)
         {
             _mqttExplorer = mqttExplorer;
+        }
+
+        /// <summary>
+        /// 使用作用域执行数据库操作，确保每个操作使用独立的 SqlSugarClient 实例
+        /// </summary>
+        private async Task<T> ExecuteWithScopeAsync<T>(Func<ISqlSugarClient, Task<T>> action)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var client = scope.ServiceProvider.GetRequiredService<ISqlSugarClient>();
+            return await action(client);
+        }
+
+        /// <summary>
+        /// 使用作用域执行数据库操作（无返回值）
+        /// </summary>
+        private async Task ExecuteWithScopeAsync(Func<ISqlSugarClient, Task> action)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var client = scope.ServiceProvider.GetRequiredService<ISqlSugarClient>();
+            await action(client);
         }
 
         public async Task HandleAsync(MqttApplicationMessage message)
@@ -100,24 +121,28 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         private async Task HandleStateAsync(IotTopic topic, DeviceStateMsg message)
         {
-            var connId = Guid.Parse(topic.ConnUri!);
-            var equipId = (await _client.Queryable<EquipConnect>().FirstAsync(t => t.Id == connId)).EquipId;
-            _client.Insertable(new EquipNotice()
+            await ExecuteWithScopeAsync(async (client) =>
             {
-                Id = Guid.NewGuid(),
-                EquipId = equipId,
-                SendTime = DateTime.Now.ToLocalTime(),
-                Title = "设备连接操作",
-                Content = "",
-                Description = "",
-                NoticeType = message.State
+                var connId = Guid.Parse(topic.ConnUri!);
+                var equipId = (await client.Queryable<EquipConnect>().FirstAsync(t => t.Id == connId)).EquipId;
+                await client.Insertable(new EquipNotice()
+                {
+                    Id = Guid.NewGuid(),
+                    EquipId = equipId,
+                    SendTime = DateTime.Now.ToLocalTime(),
+                    Title = "设备连接操作",
+                    Content = "",
+                    Description = "",
+                    NoticeType = message.State
+                }).ExecuteCommandAsync();
+                
+                switch (topic.EquipType)
+                {
+                    case "rfidReader":
+                        //await EquipControlHelp.AddDeviceManagerAsync(Guid.Parse(topic.DeviceUri),new RfidReaderManages(message.ToString(), _redisService));
+                        break;
+                }
             });
-            switch (topic.EquipType)
-            {
-                case "rfidReader":
-                    //await EquipControlHelp.AddDeviceManagerAsync(Guid.Parse(topic.DeviceUri),new RfidReaderManages(message.ToString(), _redisService));
-                    break;
-            }
         }
 
         private async Task HandleDataAsync(IotTopic topic, byte[] msg)
@@ -137,12 +162,15 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                     await HandleRfidMsgAsync(uri, rfid);
                     break;
                 case EquipConnType.IotServer:
-                    // 根据连接ID查询设备ID
-                    EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
-                    Guid equipId = con.EquipId;
-                    OnlineReceiveDispatch dispatch =
-                        new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
-                    await dispatch.Handle(msg);
+                    // 根据连接ID查询设备ID，使用独立作用域
+                    await ExecuteWithScopeAsync(async (client) =>
+                    {
+                        EquipConnect con = await client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
+                        Guid equipId = con.EquipId;
+                        OnlineReceiveDispatch dispatch =
+                            new OnlineReceiveDispatch(equipId, client, _connectionMultiplexer, _mqttExplorer);
+                        await dispatch.Handle(msg);
+                    });
                     break;
                 case EquipConnType.RKServer:
                     // 处理RKServer设备数据
@@ -199,23 +227,27 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
             try
             {
-                // 创建温湿度记录
-                var record = new TemperatureHumidityRecord
+                // 使用独立作用域保存到数据库
+                await ExecuteWithScopeAsync(async (client) =>
                 {
-                    Id = Guid.NewGuid(),
-                    EquipCode = rkData.EquipCode,
-                    EquipId = rkData.EquipId,
-                    IpAddress = rkData.IpAddress,
-                    RoomId = rkData.RoomId,
-                    RoomName = rkData.RoomName,
-                    Temperature = rkData.Temperature,
-                    Humidness = rkData.Humidness,
-                    RecordTime = currentTime,
-                    CreationTime = currentTime
-                };
+                    // 创建温湿度记录
+                    var record = new TemperatureHumidityRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        EquipCode = rkData.EquipCode,
+                        EquipId = rkData.EquipId,
+                        IpAddress = rkData.IpAddress,
+                        RoomId = rkData.RoomId,
+                        RoomName = rkData.RoomName,
+                        Temperature = rkData.Temperature,
+                        Humidness = rkData.Humidness,
+                        RecordTime = currentTime,
+                        CreationTime = currentTime
+                    };
 
-                // 保存到数据库
-                await _client.Insertable(record).ExecuteCommandAsync();
+                    // 保存到数据库
+                    await client.Insertable(record).ExecuteCommandAsync();
+                });
             }
             catch (Exception ex)
             {
@@ -237,12 +269,15 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
             
             if (connType == EquipConnType.IotServer)
             {
-                // 根据连接ID查询设备ID
-                EquipConnect con = await _client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
-                Guid equipId = con.EquipId;
-                OnlineReceiveDispatch dispatch =
-                    new OnlineReceiveDispatch(equipId, _client, _connectionMultiplexer, _mqttExplorer);
-                await dispatch.Handle(msg);
+                // 使用独立作用域查询设备ID
+                await ExecuteWithScopeAsync(async (client) =>
+                {
+                    EquipConnect con = await client.Queryable<EquipConnect>().FirstAsync(x => x.Id == uri);
+                    Guid equipId = con.EquipId;
+                    OnlineReceiveDispatch dispatch =
+                        new OnlineReceiveDispatch(equipId, client, _connectionMultiplexer, _mqttExplorer);
+                    await dispatch.Handle(msg);
+                });
             }
         }
 
@@ -280,25 +315,29 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         {
             try
             {
-                // 创建氧浓度记录
-                var oxygenRecord = new OxygenConcentrationRecord
+                // 使用独立作用域保存到数据库
+                await ExecuteWithScopeAsync(async (client) =>
                 {
-                    Id = Guid.NewGuid(),
-                    RoomNumber = data.RoomNumber,
-                    Concentration = data.Concentration,
-                    RecordTime = data.Timestamp,
-                    DeviceId = data.DeviceId,
-                    LocalIp = data.LocalIp,
-                    IsAbnormal = data.IsAbnormal,
-                    AbnormalType = data.AbnormalType,
-                    CreationTime = DateTime.Now,
-                    CreatorId = User.DevUser.CreatorId
-                };
+                    // 创建氧浓度记录
+                    var oxygenRecord = new OxygenConcentrationRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        RoomNumber = data.RoomNumber,
+                        Concentration = data.Concentration,
+                        RecordTime = data.Timestamp,
+                        DeviceId = data.DeviceId,
+                        LocalIp = data.LocalIp,
+                        IsAbnormal = data.IsAbnormal,
+                        AbnormalType = data.AbnormalType,
+                        CreationTime = DateTime.Now,
+                        CreatorId = User.DevUser.CreatorId
+                    };
 
-                // 保存到数据库
-                await _client.Insertable(oxygenRecord).ExecuteCommandAsync();
-                
-                _logger.LogDebug($"氧浓度数据已保存到数据库: 房间号={data.RoomNumber}, 浓度={data.Concentration:F2}%, 时间={data.Timestamp}");
+                    // 保存到数据库
+                    await client.Insertable(oxygenRecord).ExecuteCommandAsync();
+                    
+                    _logger.LogDebug($"氧浓度数据已保存到数据库: 房间号={data.RoomNumber}, 浓度={data.Concentration:F2}%, 时间={data.Timestamp}");
+                });
             }
             catch (Exception ex)
             {
@@ -346,8 +385,11 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
                         NoticeType = EquipNoticeType.Alarm
                     };
 
-                    // 保存告警记录到数据库
-                    await _client.Insertable(alarmNotice).ExecuteCommandAsync();
+                    // 使用独立作用域保存告警记录到数据库
+                    await ExecuteWithScopeAsync(async (client) =>
+                    {
+                        await client.Insertable(alarmNotice).ExecuteCommandAsync();
+                    });
 
                     // 推送到Redis（按照其他试验数据的处理流程）
                     await SendOxygenAlarmToRedisAsync(data, alarmNotice, data.AbnormalType);
@@ -399,60 +441,62 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         public async Task HandleRfidMsgAsync(Guid uri, RfidMsg msg)
         {
-            //var targetId = Guid.Parse(msg.Userdata ?? throw new ArgumentNullException("userdata not exist"));
-            var label = await _client.Queryable<LocationLabel>()
-                .Where(x => x.TagId == msg.Tid)
-                .FirstAsync();
-            if (label is null)
+            await ExecuteWithScopeAsync(async (client) =>
             {
-                _logger.LogTrace("new label found");
-                return;
-            }
-
-            if (label.EquipLedgerId is null)
-            {
-                _logger.LogInformation("label not binding to equip");
-                return;
-            }
-
-            // 读写器所在房间
-            var rfidReader = (await _client.Queryable<EquipConnect>()
-                .Includes(ec => ec.EquipLedger, el => el!.Room)
-                .Where(ec => ec.Id == uri)
-                .Select(ec => new
+                //var targetId = Guid.Parse(msg.Userdata ?? throw new ArgumentNullException("userdata not exist"));
+                var label = await client.Queryable<LocationLabel>()
+                    .Where(x => x.TagId == msg.Tid)
+                    .FirstAsync();
+                if (label is null)
                 {
-                    RfidId = ec.EquipLedger!.Id,
-                    RfidName = ec.EquipLedger.EquipName,
-                    ec.EquipLedger!.RoomId,
-                    RoomName = ec.EquipLedger!.Room!.Name,
-                    IsCustoms = ec.EquipLedger!.IsCustoms
-                })
-                .FirstAsync());
-            if (rfidReader is null)
-            {
-                _logger.LogError("rfid device not bind to room");
-                return;
-            }
+                    _logger.LogTrace("new label found");
+                    return;
+                }
 
-            // 查找标签所在设备
-            var equip = await _client.Queryable<EquipLedger>()
-                .Where(x => x!.Id == label!.EquipLedgerId)
-                .Includes(eq => eq.Room)
-                .FirstAsync();
+                if (label.EquipLedgerId is null)
+                {
+                    _logger.LogInformation("label not binding to equip");
+                    return;
+                }
 
-            #region 判定设备之前所在位置，如果是当前房间，就不处理,留存时间为1天
+                // 读写器所在房间
+                var rfidReader = (await client.Queryable<EquipConnect>()
+                    .Includes(ec => ec.EquipLedger, el => el!.Room)
+                    .Where(ec => ec.Id == uri)
+                    .Select(ec => new
+                    {
+                        RfidId = ec.EquipLedger!.Id,
+                        RfidName = ec.EquipLedger.EquipName,
+                        ec.EquipLedger!.RoomId,
+                        RoomName = ec.EquipLedger!.Room!.Name,
+                        IsCustoms = ec.EquipLedger!.IsCustoms
+                    })
+                    .FirstAsync());
+                if (rfidReader is null)
+                {
+                    _logger.LogError("rfid device not bind to room");
+                    return;
+                }
 
-            // 记录到redis
-            IDatabase redisDb = _connectionMultiplexer.GetDatabase();
-            var key = string.Format(CacheKeyFormatter.EquipRoom, equip.Id);
-            var value = redisDb.StringGet(key: key);
-            if (value == rfidReader.RoomId.ToString())
-            {
-                return;
-            }
-            // 将时间戳存入Redis并设置1天过期时间
-            await redisDb.StringSetAsync(key: key, value: rfidReader.RoomId.ToString(), expiry: TimeSpan.FromDays(1));
-            #endregion
+                // 查找标签所在设备
+                var equip = await client.Queryable<EquipLedger>()
+                    .Where(x => x!.Id == label!.EquipLedgerId)
+                    .Includes(eq => eq.Room)
+                    .FirstAsync();
+
+                #region 判定设备之前所在位置，如果是当前房间，就不处理,留存时间为1天
+
+                // 记录到redis
+                IDatabase redisDb = _connectionMultiplexer.GetDatabase();
+                var key = string.Format(CacheKeyFormatter.EquipRoom, equip.Id);
+                var value = redisDb.StringGet(key: key);
+                if (value == rfidReader.RoomId.ToString())
+                {
+                    return;
+                }
+                // 将时间戳存入Redis并设置1天过期时间
+                await redisDb.StringSetAsync(key: key, value: rfidReader.RoomId.ToString(), expiry: TimeSpan.FromDays(1));
+                #endregion
 
             // #region 判定设备之前所在位置，如果是当前房间，就不处理,留存时间为1天
             //
@@ -519,90 +563,91 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
 
 
-            #region 判断是否是关卡读写器,超过5分钟报警
+                #region 判断是否是关卡读写器,超过5分钟报警
 
-            var jobKey = string.Format(CacheKeyFormatter.EquipAlarmJob, equip.Id);
-            //获取到对应设备的JobId
-            var job = redisDb.StringGet(key: jobKey);
-            if ((job.HasValue && BackgroundJob.Delete(jobKey)) || !job.HasValue)
-            {
-                if (rfidReader.IsCustoms != null && rfidReader.IsCustoms.Value)
+                var jobKey = string.Format(CacheKeyFormatter.EquipAlarmJob, equip.Id);
+                //获取到对应设备的JobId
+                var job = redisDb.StringGet(key: jobKey);
+                if ((job.HasValue && BackgroundJob.Delete(jobKey)) || !job.HasValue)
                 {
-                    // 处理关卡读写器逻辑
-                    // 这里可以添加关卡读写器的处理逻辑
-                    // 添加定时任务
-                    var jobId = BackgroundJob.Schedule(() => SentAlarmAsync(new EquipNotice
+                    if (rfidReader.IsCustoms != null && rfidReader.IsCustoms.Value)
                     {
-                        Id = Guid.NewGuid(),
-                        EquipId = equip.Id,
-                        SendTime = DateTime.Now,
-                        Title = "关卡读写器读取",
-                        Content = $"设备 {equip.EquipName} 在关卡读写器 {rfidReader.RfidName} 被读取",
-                        Description = $"设备 {equip.EquipName} 在关卡读写器 {rfidReader.RfidName} 被读取",
-                        NoticeType = EquipNoticeType.Alarm
-                    }, MsgType.Error), TimeSpan.FromMinutes(2));
-                    await redisDb.StringSetAsync(key: jobKey, value: jobId, expiry: TimeSpan.FromMinutes(10));
+                        // 处理关卡读写器逻辑
+                        // 这里可以添加关卡读写器的处理逻辑
+                        // 添加定时任务
+                        var jobId = BackgroundJob.Schedule(() => SentAlarmAsync(new EquipNotice
+                        {
+                            Id = Guid.NewGuid(),
+                            EquipId = equip.Id,
+                            SendTime = DateTime.Now,
+                            Title = "关卡读写器读取",
+                            Content = $"设备 {equip.EquipName} 在关卡读写器 {rfidReader.RfidName} 被读取",
+                            Description = $"设备 {equip.EquipName} 在关卡读写器 {rfidReader.RfidName} 被读取",
+                            NoticeType = EquipNoticeType.Alarm
+                        }, MsgType.Error), TimeSpan.FromMinutes(2));
+                        await redisDb.StringSetAsync(key: jobKey, value: jobId, expiry: TimeSpan.FromMinutes(10));
+                    }
                 }
-            }
-            #endregion
+                #endregion
 
-            var time = DateTime.Now;
-            var record = new EquipLocationRecord
-            {
-                DateTime = time,
-                Tid = msg.Tid,
-                Userdata = msg.Userdata,
-                EquipId = equip.Id,
-                EquipName = equip.EquipName,
-                CreatorId = User.DevUser.CreatorId,
-                ConnectId = uri,
-                RfidEquipId = rfidReader.RfidId,
-                RfidEquipName = rfidReader.RfidName,
-            };
-
-            string? roomName = equip?.Room?.Name;
-            //原先设备已绑定则解绑
-            // 需求变更,现在没有搬出房间警告,只更新设备的房间状态
-            if (false && equip?.RoomId is not null && equip.RoomId == rfidReader.RoomId)
-            {
-                if ((equip.LastMoveTime is null ||
-                     (time - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
+                var time = DateTime.Now;
+                var record = new EquipLocationRecord
                 {
-                    equip.RoomId = null;
-                    roomName = null;
-                    equip.IsMoving = true;
-                    equip.LastMoveTime = time;
+                    DateTime = time,
+                    Tid = msg.Tid,
+                    Userdata = msg.Userdata,
+                    EquipId = equip.Id,
+                    EquipName = equip.EquipName,
+                    CreatorId = User.DevUser.CreatorId,
+                    ConnectId = uri,
+                    RfidEquipId = rfidReader.RfidId,
+                    RfidEquipName = rfidReader.RfidName,
+                };
+
+                string? roomName = equip?.Room?.Name;
+                //原先设备已绑定则解绑
+                // 需求变更,现在没有搬出房间警告,只更新设备的房间状态
+                if (false && equip?.RoomId is not null && equip.RoomId == rfidReader.RoomId)
+                {
+                    if ((equip.LastMoveTime is null ||
+                         (time - equip.LastMoveTime.Value).TotalSeconds > _pos_interval * 60))
+                    {
+                        equip.RoomId = null;
+                        roomName = null;
+                        equip.IsMoving = true;
+                        equip.LastMoveTime = time;
+                    }
                 }
-            }
-            else //未绑定设备绑定至新房间
-            {
+                else //未绑定设备绑定至新房间
+                {
+                    if (rfidReader.RoomId != null)
+                    {
+                        equip!.RoomId = rfidReader.RoomId;
+                        equip.RoomIdSourceType = 2;
+                        roomName = rfidReader.RoomName;
+                        equip.LastMoveTime = time;
+                    }
+                    else
+                    {
+                        _logger.LogInformation("roomID 为空");
+                    }
+                }
+
                 if (rfidReader.RoomId != null)
                 {
-                    equip!.RoomId = rfidReader.RoomId;
-                    equip.RoomIdSourceType = 2;
-                    roomName = rfidReader.RoomName;
-                    equip.LastMoveTime = time;
+                    record.RoomId = equip?.RoomId;
+                    record.RoomName = roomName;
+                    await _mqttExplorer.PublishAsync(UserTopicBuilder
+                        .CreateUserBuilder()
+                        .WithPrefix(TopicType.App)
+                        .WithDirection(MqttDirection.Up)
+                        .WithTag(MqttTag.Notice)
+                        .WithUri(label!.EquipLedgerId.ToString()!)
+                        .Build(), Encoding.UTF8.GetBytes(roomName ?? ""));
+                    await client.Updateable(equip).ExecuteCommandAsync();
+                    await client.Insertable(record).ExecuteCommandAsync();
                 }
-                else
-                {
-                    _logger.LogInformation("roomID 为空");
-                }
-            }
-
-            if (rfidReader.RoomId != null)
-            {
-                record.RoomId = equip?.RoomId;
-                record.RoomName = roomName;
-                await _mqttExplorer.PublishAsync(UserTopicBuilder
-                    .CreateUserBuilder()
-                    .WithPrefix(TopicType.App)
-                    .WithDirection(MqttDirection.Up)
-                    .WithTag(MqttTag.Notice)
-                    .WithUri(label!.EquipLedgerId.ToString()!)
-                    .Build(), Encoding.UTF8.GetBytes(roomName ?? ""));
-                await _client.Updateable(equip).ExecuteCommandAsync();
-                await _client.Insertable(record).ExecuteCommandAsync();
-            }
+            });
         }
 
         private void HandleHealthAsync(IotTopic topic,
@@ -622,12 +667,19 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
         private async Task HandleAlarmAsync(IotTopic topic, byte[] msg)
         {
             EquipNotice? notice = JsonSerializer.Deserialize<EquipNotice>(msg);
-            await _client.Insertable(notice).ExecuteCommandAsync();
+            await ExecuteWithScopeAsync(async (client) =>
+            {
+                await client.Insertable(notice).ExecuteCommandAsync();
+            });
         }
 
         public async Task SentAlarmAsync(EquipNotice notice, MsgType msgType = MsgType.Error)
         {
-            await _client.Insertable(notice).ExecuteCommandAsync();
+            await ExecuteWithScopeAsync(async (client) =>
+            {
+                await client.Insertable(notice).ExecuteCommandAsync();
+            });
+            
             // 发送报警消息到MQTT
             var alarmTopic = UserTopicBuilder
                 .CreateUserBuilder()
