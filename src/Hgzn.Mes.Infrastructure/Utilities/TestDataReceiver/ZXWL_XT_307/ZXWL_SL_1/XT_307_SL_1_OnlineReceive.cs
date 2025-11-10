@@ -80,11 +80,13 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             byte[] devHealthState = new byte[4];
             Buffer.BlockCopy(buffer, 33, devHealthState, 0, 4);
             uint ulDevHealthState = BitConverter.ToUInt32(devHealthState, 0);
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 自检状态:{ulDevHealthState}");
 
             // 电源电压状态1个uint,表中是4位的ulong,在C#中,直接用uint代替
             byte[] supplyVoltageState = new byte[4];
-            Buffer.BlockCopy(buffer, 37, devHealthState, 0, 4);
+            Buffer.BlockCopy(buffer, 37, supplyVoltageState, 0, 4);
             uint ulSupplyVoltageState = BitConverter.ToUInt32(supplyVoltageState, 0);
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 电压电源状态:{ulSupplyVoltageState}");
 
 
             // *** 物理量数量
@@ -142,7 +144,27 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             }
 
             // 填充运行时间
-            properties[19 + floatData.Length].SetValue(entity, ulRunTime);
+            // 验证运行时间：如果超过 24 小时（86400 秒），则认为数据错误，填充 0
+            const uint MAX_RUNTIME_SECONDS = 24 * 60 * 60; // 24小时 = 86400秒
+            uint validatedRunTime = ulRunTime;
+            
+            if (ulRunTime > MAX_RUNTIME_SECONDS)
+            {
+                LoggerAdapter.LogWarning($"AG - 远程解析 - 运行时间异常：{ulRunTime}秒（超过24小时），已重置为0");
+                validatedRunTime = 0;
+            }
+            
+            // 使用属性名获取 RunTime 属性，避免因物理量数量变化导致索引错误
+            PropertyInfo? runTimeProperty = typeof(XT_307_SL_1_ReceiveData).GetProperty("RunTime");
+            if (runTimeProperty != null)
+            {
+                runTimeProperty.SetValue(entity, validatedRunTime);
+            }
+            else
+            {
+                LoggerAdapter.LogWarning($"AG - 远程解析 - 未找到 RunTime 属性，使用索引方式赋值");
+                properties[19 + floatData.Length].SetValue(entity, validatedRunTime);
+            }
 
             // 这里根据设备的不同有些设备只有电源电压参数,所以去获取电源电压异常,有些设备只有自检状态参数,所以去获取自检状态异常
             // 这里定义如果该设备的值是0,则检查自检状态异常,如果是1则检查电源电压异常
@@ -174,7 +196,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             // await TestDataPublishToMQTT(receive);
             // 将异常和运行时长记录到redis
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, _sqlSugarClient, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
+            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, _sqlSugarClient, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, validatedRunTime);
 
             if (exception.Count > 0)
             {

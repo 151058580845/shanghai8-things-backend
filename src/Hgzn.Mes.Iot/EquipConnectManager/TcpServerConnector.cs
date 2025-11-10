@@ -27,7 +27,11 @@ namespace Hgzn.Mes.Iot.EquipConnectManager
             base(connectionMultiplexer, mqttExplorer, sqlSugarClient, uri, connType)
         {
             DbConnOptions localdbconfig = configuration.GetSection("DbConnIotOptions").Get<DbConnOptions>()!;
-            _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(localdbconfig));
+            try
+            {
+                _localsqlSugarClinet = new SqlSugarClient(SqlSugarContext.Build(localdbconfig));
+            }
+            catch (Exception e) { }
         }
 
         public override async Task CloseConnectionAsync()

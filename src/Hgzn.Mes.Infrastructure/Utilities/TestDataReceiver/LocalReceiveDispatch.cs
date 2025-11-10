@@ -46,13 +46,14 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                     byte[] compId = new byte[20];
                     Buffer.BlockCopy(buffer, 2, compId, 0, 20);
                     string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
-                    await _sqlSugarClient.Insertable(new TestEquipData()
-                    {
-                        TestEquip = systemAndDeviceType,
-                        SimuTestSysld = simuTestSysId,
-                        DevTypeld = devTypeId,
-                        Compld = compNumber,
-                    }).ExecuteCommandAsync();
+                    // 最新需求,本地数据库只在无法连接服务器的时候进行保存数据
+                    //await _sqlSugarClient.Insertable(new TestEquipData()
+                    //{
+                    //    TestEquip = systemAndDeviceType,
+                    //    SimuTestSysld = simuTestSysId,
+                    //    DevTypeld = devTypeId,
+                    //    Compld = compNumber,
+                    //}).ExecuteCommandAsync();
                 }
                 // 根据仿真试验系统与设备类型,通过工厂创建各自的解析类
                 // 以上所有系统固定占2个字节

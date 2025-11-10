@@ -80,11 +80,13 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
             byte[] devHealthState = new byte[4];
             Buffer.BlockCopy(buffer, 33, devHealthState, 0, 4);
             uint ulDevHealthState = BitConverter.ToUInt32(devHealthState, 0);
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 自检状态:{ulDevHealthState}");
 
             // 电源电压状态1个uint,表中是4位的ulong,在C#中,直接用uint代替
             byte[] supplyVoltageState = new byte[4];
-            Buffer.BlockCopy(buffer, 37, devHealthState, 0, 4);
+            Buffer.BlockCopy(buffer, 37, supplyVoltageState, 0, 4);
             uint ulSupplyVoltageState = BitConverter.ToUInt32(supplyVoltageState, 0);
+            LoggerAdapter.LogInformation($"AG - 远程解析 - 电压电源状态:{ulSupplyVoltageState}");
 
             // *** 物理量数量
             byte[] physicalQuantityCount = new byte[4];
@@ -109,6 +111,15 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
                 ulRunTime = BitConverter.ToUInt32(runTime, 0);
             }
             LoggerAdapter.LogInformation($"AG - 远程解析 - 运行时间:{ulRunTime}");
+            // 验证运行时间：如果超过 24 小时（86400 秒），则认为数据错误，填充 0
+            const uint MAX_RUNTIME_SECONDS = 24 * 60 * 60; // 24小时 = 86400秒
+            uint validatedRunTime = ulRunTime;
+            
+            if (ulRunTime > MAX_RUNTIME_SECONDS)
+            {
+                LoggerAdapter.LogWarning($"AG - 远程解析 - 运行时间异常：{ulRunTime}秒（超过24小时），已重置为0");
+                validatedRunTime = 0;
+            }
 
             // 将 byte[] 转换为 float[] , 每个 float 占用 4 字节
             int floatCount = acquData.Length / 4;
@@ -139,7 +150,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
                 SelfTest = ulDevHealthState,
                 SupplyVoltageState = ulSupplyVoltageState,
                 PhysicalQuantityCount = ulPhysicalQuantityCount,
-                RunTime = ulRunTime,
+                RunTime = validatedRunTime,
             };
 
             // 使用反射将后面指定数量个物理量数据进行填充
@@ -182,7 +193,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_314.ZXWL_SL
             // 将试验数据的数据部分推送到mqtt给前端进行展示
             // await TestDataPublishToMQTT(receive);
             // 将异常和运行时长记录到redis
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, _sqlSugarClient, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
+            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, _sqlSugarClient, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, validatedRunTime);
 
             if (exception.Count > 0)
             {

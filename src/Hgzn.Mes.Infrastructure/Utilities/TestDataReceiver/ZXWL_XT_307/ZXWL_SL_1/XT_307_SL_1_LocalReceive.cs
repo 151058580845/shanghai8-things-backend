@@ -79,7 +79,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
 
             // 电源电压状态1个uint,表中是4位的ulong,在C#中,直接用uint代替
             byte[] supplyVoltageState = new byte[4];
-            Buffer.BlockCopy(buffer, 37, devHealthState, 0, 4);
+            Buffer.BlockCopy(buffer, 37, supplyVoltageState, 0, 4);
             uint ulSupplyVoltageState = BitConverter.ToUInt32(supplyVoltageState, 0);
 
             // 这里根据设备的不同有些设备只有电源电压参数,所以去获取电源电压异常,有些设备只有自检状态参数,所以去获取自检状态异常
@@ -108,9 +108,9 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_307.ZXWL_SL
                     Description = "",
                 };
 
-                // 将异常记录到数据库
-                equipNotice.Id = Guid.NewGuid();
-                EquipNotice sequipNotice = await _sqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
+                //// 将异常记录到数据库
+                //equipNotice.Id = Guid.NewGuid();
+                //EquipNotice sequipNotice = await _sqlSugarClient.Insertable(equipNotice).ExecuteReturnEntityAsync();
 
             }
             LoggerAdapter.LogInformation($"AG - 本地解析 - 完毕");

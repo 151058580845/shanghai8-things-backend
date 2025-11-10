@@ -109,17 +109,17 @@ public class XT_109_SL_7_ReceiveData : UniversalEntity, IAudited
     [Description("控制电源电流")]
     public float CtrlCurrent { get; set; }
 
-    [Description("控制电源逻辑电压")]
-    public float LogicVoltage { get; set; }
+    //[Description("控制电源逻辑电压")]
+    //public float LogicVoltage { get; set; }
 
-    [Description("控制电源逻辑电流")]
-    public float LogicCurrent { get; set; }
+    //[Description("控制电源逻辑电流")]
+    //public float LogicCurrent { get; set; }
 
-    [Description("液体温度")]
-    public float LiquidTemp { get; set; }
+    //[Description("液体温度")]
+    //public float LiquidTemp { get; set; }
 
-    [Description("冷却液流量")]
-    public float CoolantFlow { get; set; }
+    //[Description("冷却液流量")]
+    //public float CoolantFlow { get; set; }
 
     #endregion
 
@@ -286,10 +286,10 @@ public class XT_109_SL_7_ReceiveData : UniversalEntity, IAudited
                     PowerCurrent = 4.5f,
                     CtrlVoltage = 12,
                     CtrlCurrent = (float)(rand.NextDouble() * 1.9 + 0.1),
-                    LogicVoltage = 1.2f,
-                    LogicCurrent = (float)rand.NextDouble(),
-                    LiquidTemp = (float)(rand.NextDouble() * 10 + 15),
-                    CoolantFlow = (float)(rand.NextDouble() * 2 + 1),
+                    //LogicVoltage = 1.2f,
+                    //LogicCurrent = (float)rand.NextDouble(),
+                    //LiquidTemp = (float)(rand.NextDouble() * 10 + 15),
+                    //CoolantFlow = (float)(rand.NextDouble() * 2 + 1),
                     RunTime = (uint?)new DateTimeOffset(now.AddSeconds(a)).ToUnixTimeSeconds(),
                     CreationTime = now.AddSeconds(a)
                 });

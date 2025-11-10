@@ -67,8 +67,8 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
 
             // 健康状态信息第0为为1表示获取到了健康状态
             List<string> exception = _getHealthException(stateType);
-            if (exception.Count > 0)
-                await ReceiveHelper.ExceptionRecordToLocalDB(_sqlSugarClient, _equipId, exception);
+            //if (exception.Count > 0)
+            //    await ReceiveHelper.ExceptionRecordToLocalDB(_sqlSugarClient, _equipId, exception);
             LoggerAdapter.LogInformation($"AG - 本地解析 - 健康检查异常列表（共 {exception.Count} 条）:\n{string.Join("\n", exception)}");
             // 本地解析不记录物理量
 

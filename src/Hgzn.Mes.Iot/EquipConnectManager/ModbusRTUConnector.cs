@@ -42,6 +42,10 @@ public class ModbusRTUConnector : EquipConnectorBase
     private readonly Dictionary<string, string> _ipToRoomMapping;
     private readonly IConfiguration _configuration;
 
+    // 线程同步锁，防止并发访问串口
+    private readonly SemaphoreSlim _modbusLock = new SemaphoreSlim(1, 1);
+    private bool _isReading = false; // 标记是否正在读取
+
     /// <summary>
     /// 构造函数
     /// </summary>
@@ -55,7 +59,7 @@ public class ModbusRTUConnector : EquipConnectorBase
     {
         _equipConnect = sqlSugarClient.Queryable<EquipConnect>().First(x => x.Id == Guid.Parse(uri));
         _configuration = configuration;
-        
+
         // 初始化IP到房间号的映射表
         _ipToRoomMapping = new Dictionary<string, string>
         {
@@ -73,7 +77,11 @@ public class ModbusRTUConnector : EquipConnectorBase
             { "10.125.157.162", "119" },  // 12机器
             { "10.125.157.163", "109" },  // 13机器
             { "10.125.157.164", "302" },  // 14机器（未安装，但预留）
-            { "10.125.157.165", "103" }   // 15机器
+            { "10.125.157.165", "103" },   // 15机器
+            // 下面3个ip用于测试
+            { "192.168.100.100", "301" },   // 测试
+            { "192.168.100.101", "301" },   // 测试
+            { "192.168.100.102", "301" }   // 测试
         };
     }
 
@@ -83,13 +91,20 @@ public class ModbusRTUConnector : EquipConnectorBase
     public override async Task CloseConnectionAsync()
     {
         LoggerAdapter.LogInformation($"AG - ModbusRTU开始关闭连接");
-        
+
         // 停止定时器
         if (_oxygenReadingTimer != null)
         {
             LoggerAdapter.LogInformation($"AG - ModbusRTU停止氧浓度读取定时器");
             _oxygenReadingTimer.Dispose();
             _oxygenReadingTimer = null!;
+        }
+
+        // 等待正在进行的读取操作完成
+        if (_isReading)
+        {
+            LoggerAdapter.LogInformation($"AG - ModbusRTU等待正在进行的读取操作完成");
+            await Task.Delay(100); // 等待最多100ms
         }
 
         if (_modbusMaster != null)
@@ -110,7 +125,7 @@ public class ModbusRTUConnector : EquipConnectorBase
         _isRunning = false;
         await UpdateStateAsync(ConnStateType.Stop);
         await UpdateOperationAsync(ConnStateType.Stop);
-        
+
         LoggerAdapter.LogInformation($"AG - ModbusRTU连接关闭完成");
     }
 
@@ -151,11 +166,11 @@ public class ModbusRTUConnector : EquipConnectorBase
             _connInfo = JsonSerializer.Deserialize<ModbusRtuConnInfo>(
                 connInfo.ConnString, Options.CustomJsonSerializerOptions)
                 ?? throw new ArgumentNullException("conn");
-            
+
             LoggerAdapter.LogInformation($"AG - ModbusRTU配置解析成功,串口:COM{_connInfo.PortName},波特率:{_connInfo.BaudRate},从站地址:{_connInfo.slaveAddress}");
         }
-        catch (Exception e) 
-        { 
+        catch (Exception e)
+        {
             LoggerAdapter.LogInformation($"AG - ModbusRTU配置解析失败: {e.Message}");
         }
 
@@ -181,21 +196,31 @@ public class ModbusRTUConnector : EquipConnectorBase
             };
 
             // 创建并配置串口对象
+            // 跨平台串口名称处理：
+            // Windows: COM1, COM5 等
+            // Linux: /dev/ttyUSB0, /dev/ttyS0 等
+            string portName = GetPlatformSerialPortName(_connInfo.PortName.ToString());
+            
             _serialPort = new SerialPort(
-                "COM" + _connInfo.PortName,      // 串口号
+                portName,                        // 串口号（跨平台）
                 int.Parse(_connInfo.BaudRate),      // 波特率
                 parity,                 // 校验位
                 _connInfo.DataBits,     // 数据位
                 stopBits);             // 停止位
 
-            // 设置超时时间
-            _serialPort.ReadTimeout = _connInfo.ReadTimeout;
-            _serialPort.WriteTimeout = _connInfo.WriteTimeout;
+            // 设置超时时间（增加超时时间以避免写入超时）
+            _serialPort.ReadTimeout = Math.Max(_connInfo.ReadTimeout, 3000);  // 至少3秒
+            _serialPort.WriteTimeout = Math.Max(_connInfo.WriteTimeout, 3000); // 至少3秒
 
             // 打开串口
             LoggerAdapter.LogInformation($"AG - ModbusRTU尝试打开串口:COM{_connInfo.PortName}");
             _serialPort.Open();
             LoggerAdapter.LogInformation($"AG - ModbusRTU串口打开成功");
+
+            // 清空串口缓冲区，避免旧数据干扰
+            _serialPort.DiscardInBuffer();
+            _serialPort.DiscardOutBuffer();
+            LoggerAdapter.LogInformation($"AG - ModbusRTU已清空串口缓冲区");
 
             // 创建Modbus RTU主站
             LoggerAdapter.LogInformation($"AG - ModbusRTU创建主站对象");
@@ -260,19 +285,35 @@ public class ModbusRTUConnector : EquipConnectorBase
     /// </summary>
     private async void ReadOxygenConcentration(object? state)
     {
+        // 防止重入：如果上一次读取还在进行中，跳过本次
+        if (_isReading)
+        {
+            LoggerAdapter.LogWarning($"AG - ModbusRTU上一次读取尚未完成，跳过本次读取");
+            return;
+        }
+
         if (!_isRunning || _modbusMaster == null)
         {
             LoggerAdapter.LogInformation($"AG - ModbusRTU氧浓度读取跳过,运行状态:{_isRunning},主站对象:{_modbusMaster != null}");
             return;
         }
 
+        // 尝试获取锁，如果获取失败则跳过本次读取
+        if (!await _modbusLock.WaitAsync(0))
+        {
+            LoggerAdapter.LogWarning($"AG - ModbusRTU无法获取锁，跳过本次读取");
+            return;
+        }
+
+        _isReading = true;
+
         try
         {
             LoggerAdapter.LogInformation($"AG - ModbusRTU开始读取氧浓度,寄存器地址:0x0006,读取次数:{_readCount + 1}");
-            
+
             // 读取氧浓度寄存器（根据文档，从地址0x0006开始读取通道1的浓度值）
             var oxygenValues = await ReadHoldingRegistersAsync(0x0006, 1); // 读取通道1的16位整数浓度值
-            
+
             if (oxygenValues.Length > 0)
             {
                 ushort rawValue = oxygenValues[0];
@@ -283,7 +324,7 @@ public class ModbusRTUConnector : EquipConnectorBase
 
                 _readCount++;
                 LoggerAdapter.LogInformation($"AG - ModbusRTU氧浓度读取计数:{_readCount}/{FORWARD_RATE}");
-                
+
                 // 根据转发率决定是否转发数据
                 if (_readCount >= FORWARD_RATE)
                 {
@@ -298,10 +339,20 @@ public class ModbusRTUConnector : EquipConnectorBase
                 LoggerAdapter.LogInformation($"AG - ModbusRTU氧浓度读取返回空数据,数组长度:{oxygenValues.Length}");
             }
         }
+        catch (TimeoutException tex)
+        {
+            LoggerAdapter.LogError($"读取氧浓度超时: {tex.Message}");
+            LoggerAdapter.LogInformation($"AG - ModbusRTU氧浓度读取超时，可能是设备无响应或串口通信问题");
+        }
         catch (Exception ex)
         {
             LoggerAdapter.LogError($"读取氧浓度失败: {ex.Message}");
             LoggerAdapter.LogInformation($"AG - ModbusRTU氧浓度读取异常详情:{ex}");
+        }
+        finally
+        {
+            _isReading = false;
+            _modbusLock.Release();
         }
     }
 
@@ -313,7 +364,7 @@ public class ModbusRTUConnector : EquipConnectorBase
         try
         {
             LoggerAdapter.LogInformation($"AG - ModbusRTU开始转发氧浓度数据,浓度值:{concentration:F2}%");
-            
+
             // 根据配置获取本地IP地址，然后映射到房间号
             var localIp = GetLocalIpAddress();
             var roomNumber = GetRoomNumberByIp(localIp);
@@ -326,7 +377,7 @@ public class ModbusRTUConnector : EquipConnectorBase
             int abnormalType = 0;
             if (concentration < NORMAL_MIN) abnormalType = 1; // 过低
             else if (concentration > NORMAL_MAX) abnormalType = 2; // 过高
-            
+
             LoggerAdapter.LogInformation($"AG - ModbusRTU氧浓度异常检查,正常范围:{NORMAL_MIN}-{NORMAL_MAX}%,当前值:{concentration:F2}%,异常:{isAbnormal},异常类型:{abnormalType}");
 
             // 构建氧浓度数据
@@ -353,7 +404,7 @@ public class ModbusRTUConnector : EquipConnectorBase
                             .WithTag(MqttTag.Transmit)
                             .WithDeviceType("OxygenConcentration") // 特殊的氧浓度设备类型
                             .WithUri(_equipConnect.Id.ToString()).Build();
-            
+
             LoggerAdapter.LogInformation($"AG - ModbusRTU构建MQTT主题:{topic}");
 
             // 使用支持断点续传的发布方法
@@ -392,33 +443,114 @@ public class ModbusRTUConnector : EquipConnectorBase
     /// </summary>
     private string GetRoomNumberByIp(string ipAddress)
     {
-        return _ipToRoomMapping.TryGetValue(ipAddress, out var roomNumber) 
-            ? roomNumber 
+        return _ipToRoomMapping.TryGetValue(ipAddress, out var roomNumber)
+            ? roomNumber
             : "未知";
+    }
+
+    /* ========== 跨平台串口处理方法 ========== */
+
+    /// <summary>
+    /// 获取跨平台的串口名称
+    /// Windows: COM1, COM5 等
+    /// Linux: /dev/ttyUSB0, /dev/ttyS0 等
+    /// </summary>
+    /// <param name="portName">配置中的端口名称（可能是数字如"5"，或完整路径如"/dev/ttyUSB0"）</param>
+    /// <returns>平台对应的串口名称</returns>
+    private string GetPlatformSerialPortName(string portName)
+    {
+        // 如果已经是完整的设备路径（Linux格式），直接返回
+        if (portName.StartsWith("/dev/"))
+        {
+            LoggerAdapter.LogInformation($"AG - ModbusRTU使用完整设备路径: {portName}");
+            return portName;
+        }
+
+        // 判断当前操作系统
+        if (OperatingSystem.IsWindows())
+        {
+            // Windows 平台：添加 COM 前缀
+            string windowsPort = $"COM{portName}";
+            LoggerAdapter.LogInformation($"AG - ModbusRTU Windows平台，串口名称: {windowsPort}");
+            return windowsPort;
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            // Linux 平台：根据端口号映射到设备路径
+            // 优先检查 USB 串口
+            string usbPort = $"/dev/ttyUSB{portName}";
+            if (File.Exists(usbPort))
+            {
+                LoggerAdapter.LogInformation($"AG - ModbusRTU Linux平台，找到USB串口: {usbPort}");
+                return usbPort;
+            }
+
+            // 检查标准串口
+            string standardPort = $"/dev/ttyS{portName}";
+            if (File.Exists(standardPort))
+            {
+                LoggerAdapter.LogInformation($"AG - ModbusRTU Linux平台，找到标准串口: {standardPort}");
+                return standardPort;
+            }
+
+            // 检查 ACM 设备（Arduino/CH340等）
+            string acmPort = $"/dev/ttyACM{portName}";
+            if (File.Exists(acmPort))
+            {
+                LoggerAdapter.LogInformation($"AG - ModbusRTU Linux平台，找到ACM设备: {acmPort}");
+                return acmPort;
+            }
+
+            // 如果都找不到，尝试使用 ttyUSB0 作为默认值
+            LoggerAdapter.LogWarning($"AG - ModbusRTU Linux平台未找到设备，尝试使用: {usbPort}");
+            return usbPort;
+        }
+        else
+        {
+            // 其他平台（macOS等）
+            LoggerAdapter.LogWarning($"AG - ModbusRTU 未知平台，使用原始端口名: {portName}");
+            return portName;
+        }
     }
 
     /* ========== Modbus寄存器操作方法 ========== */
 
     /// <summary>
-    /// 读取保持寄存器
+    /// 读取保持寄存器（内部方法，调用者需确保已获取锁）
     /// </summary>
     /// <param name="startAddress">起始地址</param>
     /// <param name="numberOfPoints">读取数量</param>
     /// <returns>寄存器值数组</returns>
-    public async Task<ushort[]> ReadHoldingRegistersAsync(ushort startAddress, ushort numberOfPoints)
+    private async Task<ushort[]> ReadHoldingRegistersAsync(ushort startAddress, ushort numberOfPoints)
     {
         if (!_isRunning)
             throw new InvalidOperationException("Modbus RTU未连接");
 
         LoggerAdapter.LogInformation($"AG - ModbusRTU读取保持寄存器,从站地址:{_connInfo.slaveAddress},起始地址:0x{startAddress:X4},数量:{numberOfPoints}");
-        
+
         var result = await _modbusMaster.ReadHoldingRegistersAsync(
             _connInfo.slaveAddress,      // 使用配置中的从站地址
             startAddress,
             numberOfPoints);
-            
+
         LoggerAdapter.LogInformation($"AG - ModbusRTU保持寄存器读取完成,返回数据长度:{result.Length}");
         return result;
+    }
+
+    /// <summary>
+    /// 读取保持寄存器（公共方法，带锁保护）
+    /// </summary>
+    public async Task<ushort[]> ReadHoldingRegistersWithLockAsync(ushort startAddress, ushort numberOfPoints)
+    {
+        await _modbusLock.WaitAsync();
+        try
+        {
+            return await ReadHoldingRegistersAsync(startAddress, numberOfPoints);
+        }
+        finally
+        {
+            _modbusLock.Release();
+        }
     }
 
     /// <summary>

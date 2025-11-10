@@ -76,7 +76,8 @@ namespace Hgzn.Mes.Iot.EquipManager
                     LoggerAdapter.LogDebug($"AG - 解析连接字符串中的地址是:{ip}");
                     string localIp = _configuration.GetValue<string>("LocalIpAddress");
                     LoggerAdapter.LogDebug($"AG - 本机配置的IP地址是:{localIp}");
-                    if (localIp != null && ip != null && ip.ToString() == localIp)
+                    // ModbusRTU是串口通信,不需要IP地址验证
+                    if (connectInfo.ConnType == ConnType.ModbusRtu || (localIp != null && ip != null && ip.ToString() == localIp))
                     {
                         switch (connectInfo.ConnType)
                         {

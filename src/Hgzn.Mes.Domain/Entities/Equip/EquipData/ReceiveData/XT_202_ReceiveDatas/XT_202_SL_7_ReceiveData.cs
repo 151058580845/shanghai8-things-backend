@@ -71,6 +71,10 @@ public class XT_202_SL_7_ReceiveData : UniversalEntity, IAudited
     [TableNotShow]
     public byte ControlPowerStatus { get; set; }
 
+    [Description("逻辑电源状态")]
+    [TableNotShow]
+    public byte LogicPowerStatus { get; set; }
+
     #endregion
 
     #region 物理量

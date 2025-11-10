@@ -66,6 +66,16 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
             uint ulRunTime = BitConverter.ToUInt32(runTime, 0);
             LoggerAdapter.LogInformation($"AG - 远程解析 - 运行时间:{ulRunTime}");
 
+            // 验证运行时间：如果超过 24 小时（86400 秒），则认为数据错误，填充 0
+            const uint MAX_RUNTIME_SECONDS = 24 * 60 * 60; // 24小时 = 86400秒
+            uint validatedRunTime = ulRunTime;
+            
+            if (ulRunTime > MAX_RUNTIME_SECONDS)
+            {
+                LoggerAdapter.LogWarning($"AG - 远程解析 - 运行时间异常：{ulRunTime}秒（超过24小时），已重置为0");
+                validatedRunTime = 0;
+            }
+
             // *** 构建entity
             XT_0_SL_6_ReceiveData entity = new XT_0_SL_6_ReceiveData()
             {
@@ -108,7 +118,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
                 Backup6 = BitConverter.ToSingle(buffer, 93),
                 Backup7 = BitConverter.ToSingle(buffer, 97),
                 Backup8 = BitConverter.ToSingle(buffer, 101),
-                RunTime = ulRunTime,
+                RunTime = validatedRunTime,
             };
 
             // *** 处理异常信息
@@ -130,7 +140,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.ZXWL_XT_0.ZXWL_SL_6
             // 将试验数据的数据部分推送到mqtt给前端进行展示(暂时不进行数据展示)
             // await TestDataPublishToMQTT(receive);
             // 将异常和运行时长记录到redis
-            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, _sqlSugarClient, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, ulRunTime);
+            await ReceiveHelper.ExceptionRecordToRedis(_connectionMultiplexer, _sqlSugarClient, simuTestSysId, devTypeId, compId, _equipId, exception, sendTime, validatedRunTime);
 
             if (exception.Count > 0)
             {

@@ -839,7 +839,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private async Task<Tuple<TableDto, TableDto>> CreateTable_109_7(SystemInfo systemInfo)
         {
             int indexStart = GetPropertyIndex(typeof(XT_109_SL_7_ReceiveData), "Vacuum");
-            int indexEnd = GetPropertyIndex(typeof(XT_109_SL_7_ReceiveData), "CoolantFlow");
+            int indexEnd = GetPropertyIndex(typeof(XT_109_SL_7_ReceiveData), "CtrlCurrent");
             string typeName = "红外源";
             TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", "离线"),
@@ -858,13 +858,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
-                ("露点温度状态", GetTurntableStatus(data.DewPointTemperatureStatus)),
-                ("真空度状态", GetTurntableStatus(data.VacuumStatus)),
-                ("冷水机流量状态", GetTurntableStatus(data.ChillerFlowStatus)),
-                ("环境箱温度状态", GetTurntableStatus(data.EnvironmentalChamberTemperatureStatus)),
-                ("衬底温度状态", GetTurntableStatus(data.SubstrateTemperatureStatus)),
-                ("功率电源状态", GetTurntableStatus(data.PowerSupplyStatus)),
-                ("控制电源状态", GetTurntableStatus(data.ControlPowerStatus)));
+                ("露点温度状态", GetInfraredRadiationSourceStatus(data.DewPointTemperatureStatus)),
+                ("真空度状态", GetInfraredRadiationSourceStatus(data.VacuumStatus)),
+                ("冷水机流量状态", GetInfraredRadiationSourceStatus(data.ChillerFlowStatus)),
+                ("环境箱温度状态", GetInfraredRadiationSourceStatus(data.EnvironmentalChamberTemperatureStatus)),
+                ("衬底温度状态", GetInfraredRadiationSourceStatus(data.SubstrateTemperatureStatus)),
+                ("功率电源状态", GetInfraredRadiationSourceStatus(data.PowerSupplyStatus)),
+                ("控制电源状态", GetInfraredRadiationSourceStatus(data.ControlPowerStatus)));
             TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外源物理量", indexStart, indexEnd);
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
@@ -913,7 +913,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private async Task<Tuple<TableDto, TableDto>> CreateTable_108_7(SystemInfo systemInfo)
         {
             int indexStart = GetPropertyIndex(typeof(XT_108_SL_7_ReceiveData), "Vacuum");
-            int indexEnd = GetPropertyIndex(typeof(XT_108_SL_7_ReceiveData), "CoolantFlow");
+            int indexEnd = GetPropertyIndex(typeof(XT_108_SL_7_ReceiveData), "CtrlCurrent");
             string typeName = "红外源";
             TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", "离线"),
@@ -932,13 +932,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
-                ("露点温度状态", GetTurntableStatus(data.DewPointTemperatureStatus)),
-                ("真空度状态", GetTurntableStatus(data.VacuumStatus)),
-                ("冷水机流量状态", GetTurntableStatus(data.ChillerFlowStatus)),
-                ("环境箱温度状态", GetTurntableStatus(data.EnvironmentalChamberTemperatureStatus)),
-                ("衬底温度状态", GetTurntableStatus(data.SubstrateTemperatureStatus)),
-                ("功率电源状态", GetTurntableStatus(data.PowerSupplyStatus)),
-                ("控制电源状态", GetTurntableStatus(data.ControlPowerStatus)));
+                ("露点温度状态", GetInfraredRadiationSourceStatus(data.DewPointTemperatureStatus)),
+                ("真空度状态", GetInfraredRadiationSourceStatus(data.VacuumStatus)),
+                ("冷水机流量状态", GetInfraredRadiationSourceStatus(data.ChillerFlowStatus)),
+                ("环境箱温度状态", GetInfraredRadiationSourceStatus(data.EnvironmentalChamberTemperatureStatus)),
+                ("衬底温度状态", GetInfraredRadiationSourceStatus(data.SubstrateTemperatureStatus)),
+                ("功率电源状态", GetInfraredRadiationSourceStatus(data.PowerSupplyStatus)),
+                ("控制电源状态", GetInfraredRadiationSourceStatus(data.ControlPowerStatus)));
             TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外源物理量", indexStart, indexEnd);
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
@@ -979,7 +979,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
         private async Task<Tuple<TableDto, TableDto>> CreateTable_121_7(SystemInfo systemInfo)
         {
             int indexStart = GetPropertyIndex(typeof(XT_121_SL_7_ReceiveData), "Vacuum");
-            int indexEnd = GetPropertyIndex(typeof(XT_121_SL_7_ReceiveData), "CoolantFlow");
+            int indexEnd = GetPropertyIndex(typeof(XT_121_SL_7_ReceiveData), "CtrlCurrent");
             string typeName = "红外源";
             TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", "离线"),
@@ -998,13 +998,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
-                ("露点温度状态", GetTurntableStatus(data.DewPointTemperatureStatus)),
-                ("真空度状态", GetTurntableStatus(data.VacuumStatus)),
-                ("冷水机流量状态", GetTurntableStatus(data.ChillerFlowStatus)),
-                ("环境箱温度状态", GetTurntableStatus(data.EnvironmentalChamberTemperatureStatus)),
-                ("衬底温度状态", GetTurntableStatus(data.SubstrateTemperatureStatus)),
-                ("功率电源状态", GetTurntableStatus(data.PowerSupplyStatus)),
-                ("控制电源状态", GetTurntableStatus(data.ControlPowerStatus)));
+                ("露点温度状态", GetInfraredRadiationSourceStatus(data.DewPointTemperatureStatus)),
+                ("真空度状态", GetInfraredRadiationSourceStatus(data.VacuumStatus)),
+                ("冷水机流量状态", GetInfraredRadiationSourceStatus(data.ChillerFlowStatus)),
+                ("环境箱温度状态", GetInfraredRadiationSourceStatus(data.EnvironmentalChamberTemperatureStatus)),
+                ("衬底温度状态", GetInfraredRadiationSourceStatus(data.SubstrateTemperatureStatus)),
+                ("功率电源状态", GetInfraredRadiationSourceStatus(data.PowerSupplyStatus)),
+                ("控制电源状态", GetInfraredRadiationSourceStatus(data.ControlPowerStatus)));
             TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外源物理量", indexStart, indexEnd);
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
@@ -1063,7 +1063,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("环境箱温度状态", "离线"),
                 ("衬底温度状态", "离线"),
                 ("功率电源状态", "离线"),
-                ("控制电源状态", "离线"));
+                ("控制电源状态", "离线"),
+                ("逻辑电源状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_202_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
             XT_202_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_202_SL_7_ReceiveData>()
                 .OrderByDescending(x => x.CreationTime)
@@ -1072,13 +1073,14 @@ namespace Hgzn.Mes.Application.Main.Services.App
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
-                ("露点温度状态", GetTurntableStatus(data.DewPointTemperatureStatus)),
-                ("真空度状态", GetTurntableStatus(data.VacuumStatus)),
-                ("冷水机流量状态", GetTurntableStatus(data.ChillerFlowStatus)),
-                ("环境箱温度状态", GetTurntableStatus(data.EnvironmentalChamberTemperatureStatus)),
-                ("衬底温度状态", GetTurntableStatus(data.SubstrateTemperatureStatus)),
-                ("功率电源状态", GetTurntableStatus(data.PowerSupplyStatus)),
-                ("控制电源状态", GetTurntableStatus(data.ControlPowerStatus)));
+                ("露点温度状态", GetInfraredRadiationSourceStatus(data.DewPointTemperatureStatus)),
+                ("真空度状态", GetInfraredRadiationSourceStatus(data.VacuumStatus)),
+                ("冷水机流量状态", GetInfraredRadiationSourceStatus(data.ChillerFlowStatus)),
+                ("环境箱温度状态", GetInfraredRadiationSourceStatus(data.EnvironmentalChamberTemperatureStatus)),
+                ("衬底温度状态", GetInfraredRadiationSourceStatus(data.SubstrateTemperatureStatus)),
+                ("功率电源状态", GetInfraredRadiationSourceStatus(data.PowerSupplyStatus)),
+                ("控制电源状态", GetInfraredRadiationSourceStatus(data.ControlPowerStatus)),
+                ("逻辑电源状态", GetInfraredRadiationSourceStatus(data.LogicPowerStatus)));
             TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "红外源物理量", indexStart, indexEnd);
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
@@ -1296,7 +1298,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
             return where() ? "正常" : "异常";
         }
 
-        private string GetTurntableStatus(byte status)
+        private string GetInfraredRadiationSourceStatus(byte status)
         {
             if (status == 0) return "异常";
             if (status == 1) return "预警";
