@@ -50,6 +50,9 @@ public class UdpServerConnector : EquipConnectorBase
         {
             try
             {
+                var port = _localEndPoint?.Port ?? 0;
+                LoggerAdapter.LogInformation($"正在关闭UDP连接，端口: {port}");
+                
                 // 先停止接收循环
                 _isRunning = false;
                 
@@ -61,6 +64,8 @@ public class UdpServerConnector : EquipConnectorBase
                 
                 // 等待一小段时间让接收任务有机会处理 ObjectDisposedException 并退出
                 await Task.Delay(100);
+                
+                LoggerAdapter.LogInformation($"UDP连接已关闭，端口: {port}");
             }
             catch (Exception ex)
             {
@@ -97,13 +102,20 @@ public class UdpServerConnector : EquipConnectorBase
 
         try
         {
-            // 先关闭旧连接（如果存在）
+            // 检查当前连接是否已经在运行且配置相同
+            if (_udpServer != null && _isRunning && _localEndPoint != null && _localEndPoint.Port == conn.Port)
+            {
+                LoggerAdapter.LogInformation($"UDP连接已存在且正常运行，端口 {conn.Port}，无需重新连接");
+                return true;
+            }
+
+            // 如果存在旧连接但配置不同，或连接已停止，则关闭旧连接
             if (_udpServer != null)
             {
-                LoggerAdapter.LogInformation($"关闭旧UDP连接以释放端口 {conn.Port}");
+                LoggerAdapter.LogInformation($"关闭旧UDP连接以释放端口 {_localEndPoint?.Port ?? 0}，准备连接新端口 {conn.Port}");
                 await CloseConnectionAsync();
                 // 等待端口完全释放
-                await Task.Delay(200);
+                await Task.Delay(300);
             }
 
             // 创建UDP服务端
@@ -154,6 +166,8 @@ public class UdpServerConnector : EquipConnectorBase
     // UDP数据接收方法
     private async Task ReceiveDataAsync()
     {
+        LoggerAdapter.LogInformation($"UDP接收循环已启动，端口: {_localEndPoint?.Port}");
+        
         while (_isRunning && _udpServer != null)
         {
             try
@@ -179,18 +193,36 @@ public class UdpServerConnector : EquipConnectorBase
                     await ProcessDataAsync(buffer);
                 }
             }
+            catch (ObjectDisposedException)
+            {
+                // UDP客户端已被释放，这是正常的关闭流程
+                LoggerAdapter.LogInformation("UDP连接已正常关闭");
+                break;
+            }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.Interrupted || 
+                                             ex.SocketErrorCode == SocketError.OperationAborted)
+            {
+                // 接收操作被中断或取消，这是正常的关闭流程
+                LoggerAdapter.LogInformation("UDP接收操作被取消");
+                break;
+            }
             catch (Exception ex)
             {
-                LoggerAdapter.LogError($"UDP receive error: {ex.Message}");
+                // 其他异常才记录为错误
+                LoggerAdapter.LogError($"UDP receive error: {ex.GetType().Name} - {ex.Message}");
+                
                 // 如果 socket 已被关闭，退出循环
                 if (_udpServer == null || !_isRunning)
                 {
                     break;
                 }
-                await Task.Delay(1000); // 避免错误循环
+                
+                // 短暂延迟后继续，避免错误循环占用过多CPU
+                await Task.Delay(1000);
             }
         }
-        LoggerAdapter.LogInformation("UDP receive loop exited");
+        
+        LoggerAdapter.LogInformation($"UDP接收循环已退出，端口: {_localEndPoint?.Port}");
     }
 
     private async Task ProcessDataAsync(byte[] buffer)
