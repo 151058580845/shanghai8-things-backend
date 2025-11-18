@@ -14,6 +14,7 @@ using Hgzn.Mes.Infrastructure.Utilities;
 using Microsoft.Extensions.Logging;
 using NPOI.HSSF.Record;
 using StackExchange.Redis;
+using SqlSugar;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -34,15 +35,51 @@ public class TestEquipDataService
 
     public async Task<List<AssetNumberObj>> GetAssetNumbersAsync(int systemId, int equipTypeId)
     {
-        IDatabase database = _connectionMultiplexer.GetDatabase();
-        List<AssetNumberObj> list = await DbContext.Queryable<TestEquipData>()
-            .Where(x => x.SimuTestSysld == systemId && x.DevTypeld == equipTypeId)
-            .LeftJoin<EquipLedger>((testequipdate, equipledger) => testequipdate.Compld == equipledger.AssetNumber)
-            .Select((testequipdate, equipledger) => new AssetNumberObj
+        // 优化：先获取去重后的资产编号列表
+        var distinctAssetNumbers = await DbContext.Queryable<TestEquipData>()
+            .Where(x => x.SimuTestSysld == systemId && x.DevTypeld == equipTypeId && !string.IsNullOrEmpty(x.Compld))
+            .GroupBy(x => x.Compld)
+            .Select(x => x.Compld)
+            .ToListAsync();
+        
+        if (distinctAssetNumbers == null || distinctAssetNumbers.Count == 0)
+        {
+            return new List<AssetNumberObj>();
+        }
+        
+        // 过滤掉 null 值
+        var validAssetNumbers = distinctAssetNumbers.Where(x => !string.IsNullOrEmpty(x)).ToList();
+        if (validAssetNumbers.Count == 0)
+        {
+            return new List<AssetNumberObj>();
+        }
+        
+        // 批量查询 EquipLedger 数据，避免 N+1 查询问题
+        var equipLedgers = await DbContext.Queryable<EquipLedger>()
+            .Where(x => x.AssetNumber != null && validAssetNumbers.Contains(x.AssetNumber) && !x.SoftDeleted)
+            .Select(x => new { x.AssetNumber, x.EquipName })
+            .ToListAsync();
+        
+        // 构建字典以提高查找效率（AssetNumber 已经过滤了 null，所以可以安全使用）
+        Dictionary<string, string?> equipLedgerDict = new Dictionary<string, string?>();
+        if (equipLedgers != null)
+        {
+            foreach (var item in equipLedgers.Where(x => !string.IsNullOrEmpty(x.AssetNumber)))
             {
-                EquipName = equipledger.EquipName,
-                AssetNumber = testequipdate.Compld
-            }).ToListAsync();
+                if (!equipLedgerDict.ContainsKey(item.AssetNumber!))
+                {
+                    equipLedgerDict[item.AssetNumber!] = item.EquipName;
+                }
+            }
+        }
+        
+        // 组装结果，保持 EquipName 可能为 null，由前端处理显示逻辑
+        var list = validAssetNumbers.Select(assetNumber => new AssetNumberObj
+        {
+            AssetNumber = assetNumber,
+            EquipName = equipLedgerDict.TryGetValue(assetNumber, out var equipName) ? equipName : null
+        }).ToList();
+        
         return list;
     }
 
@@ -81,27 +118,75 @@ public class TestEquipDataService
             $"Hgzn.Mes.Domain.Entities.Equip.EquipData.ReceiveData.XT_{room}_ReceiveDatas.XT_{room}_SL_{query.EquipTypeId}_ReceiveData");
         if (type is null)
         {
-            return null;
+            LoggerAdapter.LogWarning($"GetDatasAsync - Type not found for SystemId: {query.SystemId}, EquipTypeId: {query.EquipTypeId}, Room: {room}");
+            return new PaginatedList<object>(new List<object>(), 0, query.PageIndex, query.PageSize);
         }
 
-        var text = new Receive()
-        {
-            SimuTestSysld = query.SystemId,
-            DevTypeld = query.EquipTypeId,
-            Compld = null
-        };
-        var tableName = _splitTableService.GetFieldValuesTableName(text);
+        // 直接查询 equip_x_t_{room}_s_l_{equipTypeId}_receive_data 表
+        var tableName = $"equip_x_t_{room}_s_l_{query.EquipTypeId}_receive_data";
+        
+        LoggerAdapter.LogInformation($"GetDatasAsync - SystemId: {query.SystemId}, EquipTypeId: {query.EquipTypeId}, Room: {room}, TableName: {tableName}, AssetNumbers: {(query.AssetNumbers == null || query.AssetNumbers.Count == 0 ? "null/empty" : string.Join(",", query.AssetNumbers))}");
 
-        var rawData = await DbContext.Queryable<Receive>()
-            .WhereIF(query.StartDateTime != null, it => it.CreateTime >= query.StartDateTime)
-            .WhereIF(query.EndDateTime != null, it => it.CreateTime <= query.EndDateTime)
-            .SplitTable(tas => tas.Where(y => y.TableName.Contains(tableName)
-                                              && query.AssetNumbers != null
-                                              && query.AssetNumbers.Any(t => y.TableName.Contains(t, StringComparison.CurrentCultureIgnoreCase)))
-                .ToList())
-            .Select(t => t.Content)
-            .ToPaginatedListAsync(query.PageIndex, query.PageSize);
-        return rawData;
+        // 构建 WHERE 条件和参数
+        var whereConditions = new List<string> { "simu_test_sysld = @SystemId", "dev_typeld = @EquipTypeId" };
+        var parameters = new List<SugarParameter>
+        {
+            new SugarParameter("@SystemId", query.SystemId),
+            new SugarParameter("@EquipTypeId", query.EquipTypeId)
+        };
+        
+        // 资产编号过滤
+        if (query.AssetNumbers != null && query.AssetNumbers.Count > 0)
+        {
+            var assetNumberParams = new List<string>();
+            for (int i = 0; i < query.AssetNumbers.Count; i++)
+            {
+                var paramName = $"@AssetNumber{i}";
+                assetNumberParams.Add(paramName);
+                parameters.Add(new SugarParameter(paramName, query.AssetNumbers[i]));
+            }
+            whereConditions.Add($"compld IN ({string.Join(", ", assetNumberParams)})");
+        }
+        
+        // 时间范围过滤
+        if (query.StartDateTime != null)
+        {
+            whereConditions.Add("creation_time >= @StartDateTime");
+            parameters.Add(new SugarParameter("@StartDateTime", query.StartDateTime.Value));
+        }
+        if (query.EndDateTime != null)
+        {
+            whereConditions.Add("creation_time <= @EndDateTime");
+            parameters.Add(new SugarParameter("@EndDateTime", query.EndDateTime.Value));
+        }
+        
+        var whereClause = string.Join(" AND ", whereConditions);
+        
+        // 获取总数
+        var countSql = $"SELECT COUNT(*) FROM {tableName} WHERE {whereClause}";
+        var totalCount = await DbContext.Ado.GetIntAsync(countSql, parameters.ToArray());
+        
+        // 分页查询
+        // 如果 pageSize 为 0，表示导出所有数据，不使用 LIMIT
+        string pageSql;
+        var queryParameters = new List<SugarParameter>(parameters);
+        if (query.PageSize > 0)
+        {
+            pageSql = $"SELECT * FROM {tableName} WHERE {whereClause} ORDER BY creation_time DESC LIMIT @PageSize OFFSET @Offset";
+            queryParameters.Add(new SugarParameter("@PageSize", query.PageSize));
+            queryParameters.Add(new SugarParameter("@Offset", (query.PageIndex - 1) * query.PageSize));
+        }
+        else
+        {
+            // 导出所有数据，不使用分页
+            pageSql = $"SELECT * FROM {tableName} WHERE {whereClause} ORDER BY creation_time DESC";
+        }
+        
+        var items = await DbContext.Ado.SqlQueryAsync<dynamic>(pageSql, queryParameters.ToArray());
+        
+        LoggerAdapter.LogInformation($"GetDatasAsync - Returned {items?.Count ?? 0} items, TotalCount: {totalCount}, PageSize: {query.PageSize}");
+        
+        return new PaginatedList<object>(items?.Cast<object>().ToList() ?? new List<object>(), totalCount, query.PageIndex, query.PageSize);
         // var dd = rawData.Items.Select(t => JsonSerializer.Deserialize(t.ToString(), type));
         // return new PaginatedList<object>(dd!, rawData.TotalCount, query.PageIndex, query.PageSize);
         // return rawData;

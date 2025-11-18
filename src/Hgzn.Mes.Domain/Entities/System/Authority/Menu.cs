@@ -1069,11 +1069,11 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "equip_rk_server"
         };
 
-        // 试验数据
+        // 物联设备运行数据
         public static Menu EquipTestAnalyse = new()
         {
             Id = Guid.Parse("372A3414-DCC0-2AAB-E54D-5F26AA3CDB7F"),
-            Name = "试验数据",
+            Name = "物联设备运行数据",
             Code = "equipTestAnalyse",
             ScopeCode = "equip:testanalyse:list",
             Type = MenuType.Menu,
