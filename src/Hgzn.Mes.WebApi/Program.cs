@@ -285,12 +285,12 @@ builder.Services.AddHttpClient(); // 注册 IHttpClientFactory
 
 // 注册后台服务
 // 周期导入试验计划
-builder.Services.AddHostedService<TestDataImport>();
+// builder.Services.AddHostedService<TestDataImport>();
 // 自动连接采集适配器
 #if DEBUG
 // builder.Services.AddHostedService<ConnCollectWorker>();
 #else
-builder.Services.AddHostedService<ConnCollectWorker>();
+// builder.Services.AddHostedService<ConnCollectWorker>();
 #endif
 
 var app = builder.Build();

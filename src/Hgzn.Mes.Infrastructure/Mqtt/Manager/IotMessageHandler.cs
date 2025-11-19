@@ -55,7 +55,7 @@ namespace Hgzn.Mes.Infrastructure.Mqtt.Manager
 
         // 温湿度数据限流：记录每个房间的最后保存时间
         private static readonly ConcurrentDictionary<Guid, DateTime> _lastSaveTime = new();
-        private static readonly TimeSpan _saveInterval = TimeSpan.FromSeconds(10); // 10秒间隔
+        private static readonly TimeSpan _saveInterval = TimeSpan.FromSeconds(3600); // 1小时间隔
 
         public void Initialize(IMqttExplorer mqttExplorer)
         {

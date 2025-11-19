@@ -31,6 +31,7 @@ using StackExchange.Redis;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Text.RegularExpressions;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -205,6 +206,19 @@ public class EquipLedgerService : SugarCrudAppService<
                 .WhereIF(query.StartTime != null, m => m.CreationTime >= query.StartTime)
                 .WhereIF(query.EndTime != null, m => m.CreationTime <= query.EndTime)
                 .WhereIF(query.State != null, m => m.State == query.State);
+
+        // 处理是否绑定标签筛选（与 GetPaginatedListAsync 保持一致）
+        if (query != null && query.BindingTagCount is not null)
+        {
+            queryable = queryable.Includes(eq => eq.Labels);
+            queryable = query.BindingTagCount == -1
+                ? queryable.Where(eq => SqlFunc.Subqueryable<LocationLabel>()
+                    .Where(l => l.EquipLedgerId == eq.Id)
+                    .Count() > 0)
+                : queryable.Where(eq => SqlFunc.Subqueryable<LocationLabel>()
+                    .Where(l => l.EquipLedgerId == eq.Id)
+                    .Count() == 0);
+        }
 
         var entities = await queryable
             .Includes(t => t.Room)
@@ -914,9 +928,9 @@ public class EquipLedgerService : SugarCrudAppService<
                 // 获取该房间的温湿度数据
                 var recordData = await GetTemperatureHumidityRecordDataAsync(roomId.Value, startDate, endDate);
                 
-                // 获取系统名称和房间号
+                // 获取系统名称和房间号（直接使用温湿度计真实所在的房间）
                 var systemName = GetSystemNameByRoomId(roomId.Value);
-                var roomNumber = GetRoomNumberByRoomId(roomId.Value);
+                var roomNumber = await GetRoomNumberByRoomId(roomId.Value);
 
                 // 生成该设备的温湿度记录表页面
                 AppendTemperatureHumidityRecordPage(body, systemName, roomNumber, equipName, recordData);
@@ -1122,7 +1136,7 @@ public class EquipLedgerService : SugarCrudAppService<
         
         var room = rooms.First();
         var systemName = GetSystemNameByRoomId(request.RoomId);
-        var roomNumber = GetRoomNumberByRoomId(request.RoomId);
+        var roomNumber = await GetRoomNumberByRoomId(request.RoomId);
 
         // 获取指定日期范围内的温湿度数据
         var recordData = await GetTemperatureHumidityRecordDataAsync(request.RoomId, request.StartDate, request.EndDate);
@@ -1161,28 +1175,31 @@ public class EquipLedgerService : SugarCrudAppService<
     }
 
     /// <summary>
-    /// 根据房间ID获取房间号
+    /// 根据房间ID获取房间号（直接使用温湿度计真实所在的房间，不转换为系统房间）
     /// </summary>
-    /// <param name="roomId">房间ID</param>
+    /// <param name="roomId">房间ID（温湿度计真实所在的房间ID）</param>
     /// <returns>房间号</returns>
-    private string GetRoomNumberByRoomId(Guid roomId)
+    private async Task<string> GetRoomNumberByRoomId(Guid roomId)
     {
-        // 首先检查是否是温湿度计实际安装的房间，如果是，则反向查找对应的系统房间
-        // 例如：306房间的温湿度计实际属于310系统
-        var systemRoomId = TestEquipData.HygrothermographRoom
-            .FirstOrDefault(kvp => kvp.Value == roomId)
-            .Key;
+        // 直接从数据库查询房间编号，使用温湿度计真实所在的房间
+        var room = await DbContext.Queryable<Room>()
+            .Where(r => r.Id == roomId)
+            .Select(r => new { r.Code, r.Name })
+            .FirstAsync();
 
-        // 如果找到了对应的系统房间，使用系统房间ID；否则使用原始房间ID
-        var targetRoomId = systemRoomId != Guid.Empty ? systemRoomId : roomId;
-        var roomIdString = targetRoomId.ToString().ToUpper();
-
-        for (int systemId = 1; systemId <= 10; systemId++)
+        if (room != null && !string.IsNullOrEmpty(room.Code))
         {
-            var mappedRoomId = TestEquipData.GetRoomId(systemId);
-            if (string.Equals(mappedRoomId, roomIdString, StringComparison.OrdinalIgnoreCase))
+            return room.Code;
+        }
+
+        // 如果查询不到房间编号，尝试从房间名称中提取数字
+        if (room != null && !string.IsNullOrEmpty(room.Name))
+        {
+            // 尝试从房间名称中提取数字（例如："306房间" -> "306"）
+            var match = Regex.Match(room.Name, @"\d+");
+            if (match.Success)
             {
-                return TestEquipData.GetRoom(systemId).ToString();
+                return match.Value;
             }
         }
 

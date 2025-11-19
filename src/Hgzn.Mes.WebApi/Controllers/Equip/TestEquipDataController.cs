@@ -35,4 +35,32 @@ public class TestEquipDataController(ITestEquipDataService _service) : Controlle
     [Authorize(Policy = $"equip:testequipdata:{ScopeMethodType.Query}")]
     public async Task<ResponseWrapper<object>> GetDatasAsync(TestEquipDataQueryDto query)
         => (await _service.GetDatasAsync(query)).Wrap();
+    
+    /// <summary>
+    /// 导出Excel文件（流式处理，支持大量数据）
+    /// 注意：前端已设置10分钟超时，后端处理时间应在此范围内完成
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Route("export")]
+    [Authorize(Policy = $"equip:testequipdata:{ScopeMethodType.Query}")]
+    public async Task<IActionResult> ExportToExcelAsync([FromBody] TestEquipDataQueryDto query)
+    {
+        try
+        {
+            var excelData = await _service.ExportToExcelAsync(query);
+            var fileName = $"试验数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            
+            return File(
+                excelData,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName
+            );
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = $"导出Excel失败: {ex.Message}" });
+        }
+    }
 }
