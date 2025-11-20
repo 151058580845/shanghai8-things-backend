@@ -47,9 +47,13 @@ namespace Hgzn.Mes.Application.Main.Dtos.Audit
     public class LoginLogQueryDto : PaginatedTimeQueryDto
     {
         /// <summary>
-        /// 操作模块    
+        /// 登录用户    
         ///</summary>
         public string? LoginUser { get; set; }
+        /// <summary>
+        /// 登录状态（true=成功，false=失败）
+        ///</summary>
+        public bool? State { get; set; }
     }
 
     public class LoginLogCreateDto : CreateDto

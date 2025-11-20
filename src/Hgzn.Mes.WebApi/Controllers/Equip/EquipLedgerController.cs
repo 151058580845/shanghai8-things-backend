@@ -330,9 +330,12 @@ namespace Hgzn.Mes.WebApi.Controllers.Equip
         {
             try
             {
+                // 🔥 现在返回单个Word文档（前端会循环调用，每次请求一个设备）
                 var wordData = await _equipLedgerService.ExportTemperatureHumidityAsync(request);
                 
-                var fileName = $"温湿度记录表_{DateTime.Now:yyyyMMdd_HHmmss}.docx";
+                // 获取设备信息用于文件名
+                var equipCode = request.EquipCodes?.FirstOrDefault() ?? "未知设备";
+                var fileName = $"温湿度记录表_{equipCode}_{DateTime.Now:yyyyMMdd_HHmmss}.docx";
                 
                 return File(
                     wordData,

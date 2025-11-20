@@ -32,6 +32,7 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Text.RegularExpressions;
+using System.IO.Compression;
 
 namespace Hgzn.Mes.Application.Main.Services.Equip;
 
@@ -815,43 +816,53 @@ public class EquipLedgerService : SugarCrudAppService<
     }
 
     /// <summary>
-    /// 导出温湿度记录表到Word文档
+    /// 导出温湿度记录表到Word文档（单个设备，返回单个Word文档）
     /// </summary>
-    /// <param name="request">导出请求参数</param>
+    /// <param name="request">导出请求参数（应只包含一个设备编码）</param>
     /// <returns>Word文档字节数组</returns>
     public async Task<byte[]> ExportTemperatureHumidityAsync(TemperatureHumidityExportRequestDto request)
     {
-        // 获取所有设备的房间信息
-        var equipRooms = await DbContext.Queryable<EquipLedger>()
-            .Where(e => request.EquipCodes.Contains(e.EquipCode))
+        if (request.EquipCodes == null || !request.EquipCodes.Any())
+        {
+            throw new ArgumentException("设备编码列表不能为空");
+        }
+
+        // 🔥 只处理第一个设备编码（前端会循环调用，每次请求一个设备）
+        var equipCode = request.EquipCodes.First();
+
+        // 获取设备的房间信息
+        var equipRoom = await DbContext.Queryable<EquipLedger>()
+            .Where(e => e.EquipCode == equipCode)
             .Select(e => new { e.EquipCode, e.RoomId, e.EquipName })
-            .ToListAsync();
+            .FirstAsync();
 
-        if (!equipRooms.Any())
+        if (equipRoom == null)
         {
-            throw new ArgumentException("未找到指定的设备");
+            throw new ArgumentException($"未找到设备编码为 {equipCode} 的设备");
         }
 
-        // 过滤掉没有房间信息的设备
-        var validEquips = equipRooms
-            .Where(e => e.RoomId.HasValue)
-            .ToList();
-
-        if (!validEquips.Any())
+        if (!equipRoom.RoomId.HasValue)
         {
-            throw new ArgumentException("所有设备都没有关联的房间信息");
+            throw new ArgumentException($"设备 {equipCode} ({equipRoom.EquipName}) 没有关联的房间信息");
         }
 
-        // 解析日期
+        // 解析日期（使用本地日期，避免时区问题）
         var startDate = !string.IsNullOrEmpty(request.StartDate) && DateTime.TryParse(request.StartDate, out var start)
-            ? start
-            : DateTime.Now.AddDays(-30);
+            ? start.Date  // 只取日期部分，忽略时间
+            : DateTime.Now.Date.AddDays(-30);
         var endDate = !string.IsNullOrEmpty(request.EndDate) && DateTime.TryParse(request.EndDate, out var end)
-            ? end
-            : DateTime.Now;
+            ? end.Date  // 只取日期部分，忽略时间
+            : DateTime.Now.Date;
 
-        // 为每个设备生成一页Word文档，合并到一个文档中
-        return await GenerateMultiDeviceTemperatureHumidityWordAsync(validEquips.Cast<object>().ToList(), startDate, endDate);
+        // 获取该房间的温湿度数据
+        var recordData = await GetTemperatureHumidityRecordDataAsync(equipRoom.RoomId.Value, startDate, endDate);
+        
+        // 获取系统名称和房间号（直接使用温湿度计真实所在的房间）
+        var systemName = GetSystemNameByRoomId(equipRoom.RoomId.Value);
+        var roomNumber = await GetRoomNumberByRoomId(equipRoom.RoomId.Value);
+
+        // 生成该设备的Word文档
+        return GenerateTemperatureHumidityRecordWord(systemName, roomNumber, recordData);
     }
 
     /// <summary>
@@ -961,7 +972,6 @@ public class EquipLedgerService : SugarCrudAppService<
         document.Save();
         return stream.ToArray();
     }
-
 
     /// <summary>
     /// 导出关键设备工作时长数据

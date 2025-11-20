@@ -57,4 +57,8 @@ public class OperatorLogQueryDto : PaginatedTimeQueryDto
     /// 操作模块    
     ///</summary>
     public string? Title { get; set; }
+    /// <summary>
+    /// 操作状态（true=成功，false=失败）
+    ///</summary>
+    public bool? State { get; set; }
 }

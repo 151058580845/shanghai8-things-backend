@@ -3,6 +3,7 @@ using Hgzn.Mes.Application.Main.Dtos.System;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Domain.Entities.Equip;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
+using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enum;
 using Hgzn.Mes.Domain.Shared.Exceptions;
@@ -80,20 +81,61 @@ namespace Hgzn.Mes.Application.Main.Services.Equip
         public override async Task<PaginatedList<LocationLabelReadDto>> GetPaginatedListAsync(
             LocationLabelQueryDto queryDto)
         {
-            var entities = await Queryable
+            // 先使用子查询获取符合条件的 LocationLabel ID
+            var labelIdsQuery = DbContext.Queryable<LocationLabel>()
                 .Where(ll => ll.Type == queryDto.LabelType)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId)
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.TagId), ll => queryDto!.TagId == ll.TagId);
+            
+            // 根据标签类型决定搜索字段
+            if (!string.IsNullOrEmpty(queryDto?.Query))
+            {
+                if (queryDto.LabelType == LabelType.Room)
+                {
+                    // 房间标签：搜索房间名称和房间编号
+                    var roomIds = await DbContext.Queryable<Room>()
+                        .Where(r => (r.Name != null && r.Name.Contains(queryDto.Query!)) ||
+                                   (r.Code != null && r.Code.Contains(queryDto.Query!)))
+                        .Select(r => r.Id)
+                        .ToListAsync();
+                    labelIdsQuery = labelIdsQuery.Where(ll => ll.RoomId != null && roomIds.Contains(ll.RoomId.Value));
+                }
+                else
+                {
+                    // 设备标签：搜索设备名称和型号
+                    var equipIds = await DbContext.Queryable<EquipLedger>()
+                        .Where(e => (e.EquipName != null && e.EquipName.Contains(queryDto.Query!)) ||
+                                   (e.Model != null && e.Model.Contains(queryDto.Query!)))
+                        .Select(e => e.Id)
+                        .ToListAsync();
+                    labelIdsQuery = labelIdsQuery.Where(ll => ll.EquipLedgerId != null && equipIds.Contains(ll.EquipLedgerId.Value));
+                }
+            }
+            
+            // 获取符合条件的 ID 列表
+            var labelIds = await labelIdsQuery.Select(ll => ll.Id).ToListAsync();
+            
+            // 根据其他条件进一步过滤
+            if (queryDto?.FilterEquipType == true || !string.IsNullOrEmpty(queryDto?.AssetNumber))
+            {
+                var equipFilterIds = await DbContext.Queryable<LocationLabel>()
+                    .LeftJoin<EquipLedger>((ll, equip) => ll.EquipLedgerId == equip.Id)
+                    .Where((ll, equip) => labelIds.Contains(ll.Id))
+                    .WhereIF(queryDto?.FilterEquipType == true,
+                        (ll, equip) => equip.TypeId == null ||
+                              (equip.TypeId != EquipType.RfidIssuerType.Id &&
+                               equip.TypeId != EquipType.RfidReaderType.Id))
+                    .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber),
+                        (ll, equip) => equip.AssetNumber == queryDto!.AssetNumber)
+                    .Select((ll, equip) => ll.Id)
+                    .ToListAsync();
+                labelIds = labelIds.Where(id => equipFilterIds.Contains(id)).ToList();
+            }
+            
+            // 使用 ID 列表查询完整数据，包含关联数据
+            var entities = await Queryable
+                .Where(ll => labelIds.Contains(ll.Id))
                 .Includes(ll => ll.EquipLedger)
                 .Includes(ll => ll.Room)
-                .WhereIF(queryDto?.FilterEquipType == true,
-                    ll => ll.EquipLedger!.TypeId == null ||
-                          (ll.EquipLedger!.TypeId != EquipType.RfidIssuerType.Id &&
-                           ll.EquipLedger!.TypeId != EquipType.RfidReaderType.Id))
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.AssetNumber),
-                    ll => ll.EquipLedger!.AssetNumber == queryDto!.AssetNumber)
-                .WhereIF(!string.IsNullOrEmpty(queryDto?.Query),
-                    ll => ll.EquipLedger!.EquipName.Contains(queryDto!.Query!) ||
-                          ll.EquipLedger!.Model!.Contains(queryDto!.Query!))
                 .OrderByDescending(m => m.CreationTime)
                 .ToPaginatedListAsync(queryDto!.PageIndex, queryDto.PageSize);
             return Mapper.Map<PaginatedList<LocationLabelReadDto>>(entities);

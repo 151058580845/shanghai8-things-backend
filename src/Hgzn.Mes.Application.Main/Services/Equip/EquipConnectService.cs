@@ -134,6 +134,8 @@ public class EquipConnectService : SugarCrudAppService<
                     .SetColumns(t => new EquipConnect { State = true })
                     .ExecuteCommandAsync();
                 break;
+            case ConnType.Http:
+
             default:
                 // TcpServer
                 await Publish(connect, CmdType.Conn, ConnStateType.On, TopicType.Iot, MqttDirection.Down, MqttTag.Cmd);

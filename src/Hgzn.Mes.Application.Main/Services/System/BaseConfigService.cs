@@ -34,8 +34,10 @@ namespace Hgzn.Mes.Application.Main.Services.System
 
         public async Task<string?> GetValueByKeyAsync(string key)
         {
-            var entity = await Queryable.FirstAsync(t => t.ConfigKey == key);
-            return entity?.ConfigValue;
+            var entities = await Queryable
+                .Where(t => t.ConfigKey == key)
+                .ToListAsync();
+            return entities.FirstOrDefault()?.ConfigValue;
         }
     }
 }

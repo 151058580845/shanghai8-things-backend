@@ -115,7 +115,7 @@ public class FloorQueryDto : PaginatedQueryDto
     public Guid? ParentId { get; set; }
 
     /// <summary>
-    /// 楼层编号
+    /// 楼层名称
     /// </summary>
     public string? Name { get; set; }
     /// <summary>

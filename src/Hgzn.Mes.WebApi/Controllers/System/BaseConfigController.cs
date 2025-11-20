@@ -92,6 +92,19 @@ namespace Hgzn.Mes.WebApi.Controllers.System
         public async Task<ResponseWrapper<BaseConfigReadDto>> PostCreateAsync(BaseConfigCreateDto dto) =>
         (await _baseConfig.CreateAsync(dto)).Wrap();
 
+        /// <summary>
+        /// 根据配置Key获取配置值
+        /// </summary>
+        /// <param name="key">配置Key</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("value/{key}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = $"system:baseConfig:{ScopeMethodType.Query}")]
+        public async Task<ResponseWrapper<string?>> GetValueByKeyAsync(string key) =>
+            (await _baseConfig.GetValueByKeyAsync(key)).Wrap();
+
         #endregion
 
 

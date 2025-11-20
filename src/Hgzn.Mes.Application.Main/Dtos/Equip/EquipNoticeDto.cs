@@ -66,6 +66,12 @@ public class EquipNoticeQueryDto : PaginatedQueryDto
     [Description("设备主键")]
     public Guid? EquipId { get; set; }
     
+    [Description("设备名称")]
+    public string? EquipName { get; set; }
+    
+    [Description("设备编号")]
+    public string? EquipCode { get; set; }
+    
     [Description("设备通知类型")]
     public EquipNoticeEnum? NoticeType { get; set; }
     

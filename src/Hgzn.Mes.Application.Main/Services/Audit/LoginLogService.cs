@@ -19,19 +19,69 @@ namespace Hgzn.Mes.Application.Main.Services.Audit
     {
         public async override Task<IEnumerable<LoginLogReadDto>> GetListAsync(LoginLogQueryDto? queryDto = null)
         {
-            var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(queryDto?.LoginUser), x => x.LoginUser.Contains(queryDto.LoginUser))
-            .ToListAsync();
+            var queryable = Queryable
+                .WhereIF(!string.IsNullOrEmpty(queryDto?.LoginUser), x => x.LoginUser.Contains(queryDto!.LoginUser!))
+                .WhereIF(queryDto?.StartTime != null, x => x.CreationTime >= queryDto!.StartTime)
+                .WhereIF(queryDto?.EndTime != null, x => x.CreationTime <= queryDto!.EndTime);
+
+            // 处理状态筛选（与前端显示逻辑保持一致）
+            if (queryDto?.State != null)
+            {
+                if (queryDto.State == true)
+                {
+                    // 筛选成功的记录：LogMsg 为空（默认成功）或包含成功标识，或不包含失败标识
+                    queryable = queryable.Where(x => string.IsNullOrEmpty(x.LogMsg) || (
+                        x.LogMsg.Contains("成功") ||
+                        x.LogMsg.ToLower().Contains("success") ||
+                        (!x.LogMsg.Contains("失败") &&
+                         !x.LogMsg.ToLower().Contains("fail") &&
+                         !x.LogMsg.ToLower().Contains("error"))));
+                }
+                else
+                {
+                    // 筛选失败的记录：LogMsg 不为空且包含失败标识
+                    queryable = queryable.Where(x => !string.IsNullOrEmpty(x.LogMsg) && (
+                        x.LogMsg.Contains("失败") ||
+                        x.LogMsg.ToLower().Contains("fail") ||
+                        x.LogMsg.ToLower().Contains("error")));
+                }
+            }
+
+            var entities = await queryable.ToListAsync();
             return Mapper.Map<IEnumerable<LoginLogReadDto>>(entities);
         }
 
         public async override Task<PaginatedList<LoginLogReadDto>> GetPaginatedListAsync(LoginLogQueryDto queryDto)
         {
-            var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(queryDto.LoginUser), x => x.LoginUser.Contains(queryDto.LoginUser))
-            .WhereIF(queryDto.StartTime.HasValue, x=>x.CreationTime >= queryDto.StartTime)
-            .WhereIF(queryDto.EndTime.HasValue, x => x.CreationTime <= queryDto.EndTime)
-            .ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
+            var queryable = Queryable
+                .WhereIF(!string.IsNullOrEmpty(queryDto.LoginUser), x => x.LoginUser.Contains(queryDto.LoginUser!))
+                .WhereIF(queryDto.StartTime.HasValue, x => x.CreationTime >= queryDto.StartTime)
+                .WhereIF(queryDto.EndTime.HasValue, x => x.CreationTime <= queryDto.EndTime);
+
+            // 处理状态筛选（与前端显示逻辑保持一致）
+            if (queryDto.State != null)
+            {
+                if (queryDto.State == true)
+                {
+                    // 筛选成功的记录：LogMsg 为空（默认成功）或包含成功标识，或不包含失败标识
+                    queryable = queryable.Where(x => string.IsNullOrEmpty(x.LogMsg) || (
+                        x.LogMsg.Contains("成功") ||
+                        x.LogMsg.ToLower().Contains("success") ||
+                        (!x.LogMsg.Contains("失败") &&
+                         !x.LogMsg.ToLower().Contains("fail") &&
+                         !x.LogMsg.ToLower().Contains("error"))));
+                }
+                else
+                {
+                    // 筛选失败的记录：LogMsg 不为空且包含失败标识
+                    queryable = queryable.Where(x => !string.IsNullOrEmpty(x.LogMsg) && (
+                        x.LogMsg.Contains("失败") ||
+                        x.LogMsg.ToLower().Contains("fail") ||
+                        x.LogMsg.ToLower().Contains("error")));
+                }
+            }
+
+            var entities = await queryable.ToPaginatedListAsync(queryDto.PageIndex, queryDto.PageSize);
             return Mapper.Map<PaginatedList<LoginLogReadDto>>(entities);
         }
 
