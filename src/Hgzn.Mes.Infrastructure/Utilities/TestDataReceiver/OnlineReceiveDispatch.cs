@@ -37,8 +37,14 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 // 设备类型识别编码
                 byte devTypeId = buffer[1];
 
+                // 本机识别编码
+                byte[] compId = new byte[20];
+                Buffer.BlockCopy(buffer, 2, compId, 0, 20);
+                string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
+                compNumber = compNumber.Trim('"');
+
                 // 如果我收到了某个系统的某个类型,那么我标记它在30秒内在线,我会在Redis中创建一个寿命为30秒的心跳
-                await ReceiveHelper.LiveRecordToRedis(_connectionMultiplexer, simuTestSysId, devTypeId, _equipId, time);
+                await ReceiveHelper.LiveRecordToRedis(_connectionMultiplexer, _sqlSugarClient, simuTestSysId, devTypeId, compNumber, time);
 
                 //增加试验设备记录，后期根据这个获取对应系统的对应设备的数据
                 byte[] systemAndDeviceType = new byte[22];
@@ -46,9 +52,6 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver
                 if (!ReceiveHelper.ReceiveTestSystem.Contains(systemAndDeviceType))
                 {
                     ReceiveHelper.ReceiveTestSystem.Enqueue(systemAndDeviceType);
-                    byte[] compId = new byte[20];
-                    Buffer.BlockCopy(buffer, 2, compId, 0, 20);
-                    string compNumber = Encoding.ASCII.GetString(compId).Trim('\0');
                     await _sqlSugarClient.Insertable(new TestEquipData()
                     {
                         TestEquip = systemAndDeviceType,

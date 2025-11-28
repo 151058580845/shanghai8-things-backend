@@ -99,14 +99,20 @@ public class TestEquipData : UniversalEntity
     /// </summary>
     public static Dictionary<string, List<string>> EquivalentRoom { get; set; } = new Dictionary<string, List<string>>()
     {
-        { "4c246470-da66-4408-b287-09fd82ffa3d4",new List<string>{ "4c246470-da66-4408-b287-09fd82ffa3d4" } }, // 310
-        { "83168845-ef46-4aed-9187-de2024488230",new List<string>{ "83168845-ef46-4aed-9187-de2024488230" } }, // 307
-        { "7412dda2-5413-43ab-9976-255df60c3e14",new List<string>{ "7412dda2-5413-43ab-9976-255df60c3e14" } }, // 314
+        { "4c246470-da66-4408-b287-09fd82ffa3d4",new List<string>{ "4c246470-da66-4408-b287-09fd82ffa3d4", 
+            "7bf3052d-2747-4939-bf98-421868ede2f5", "576901c4-ffe3-426c-92f2-99667f958ddc", "d235887e-ac0d-4c9f-ae8e-0d749f751bd8" } }, // 310 - 303,203,306
+        { "83168845-ef46-4aed-9187-de2024488230",new List<string>{ "83168845-ef46-4aed-9187-de2024488230", 
+            "db697f54-0de4-42d0-9c8a-34db59343e4a", "6c26b99f-d112-465b-919f-758a8b366d59" } }, // 307 - 209,206
+        { "7412dda2-5413-43ab-9976-255df60c3e14",new List<string>{ "7412dda2-5413-43ab-9976-255df60c3e14",
+            "198f64a9-c9e5-4c71-9b2c-cf7e6f7fdd77", "e184cde4-fe85-4ddb-9bf4-fdc7f33636e1" } }, // 314 - 213,215
         { "09b374e8-4e7f-4146-9fe0-375edc7b9d7a",new List<string>{ "09b374e8-4e7f-4146-9fe0-375edc7b9d7a" } }, // 109
         { "0ac9885d-da23-4c0f-a66c-2ba467b8086c",new List<string>{ "0ac9885d-da23-4c0f-a66c-2ba467b8086c" } }, // 108
-        { "24be4856-d95f-4ba0-b2aa-7049fedc3e39",new List<string>{ "24be4856-d95f-4ba0-b2aa-7049fedc3e39" } }, // 121
-        { "00860af7-1e65-4085-ab2f-7af2396fd13d",new List<string>{ "00860af7-1e65-4085-ab2f-7af2396fd13d" } }, // 202-1
-        { "916edd0e-df70-4137-806c-41817587e438",new List<string>{ "916edd0e-df70-4137-806c-41817587e438" } }, // 202-2(因为我也不知道协议的202是202-1还是202-2)
+        { "24be4856-d95f-4ba0-b2aa-7049fedc3e39",new List<string>{ "24be4856-d95f-4ba0-b2aa-7049fedc3e39", 
+          "d902c47b-b178-49ca-8cb2-904a4c08dda6" } }, // 121 - 122
+        { "00860af7-1e65-4085-ab2f-7af2396fd13d",new List<string>{ "00860af7-1e65-4085-ab2f-7af2396fd13d", 
+          "916edd0e-df70-4137-806c-41817587e438", "a8bd6cc6-29b0-4e96-8eb1-e444df27de2d" } }, // 202-1 - 202-2,111
+        { "916edd0e-df70-4137-806c-41817587e438",new List<string>{ "916edd0e-df70-4137-806c-41817587e438" ,
+          "00860af7-1e65-4085-ab2f-7af2396fd13d", "a8bd6cc6-29b0-4e96-8eb1-e444df27de2d" } }, // 202-2(因为我也不知道协议的202是202-1还是202-2) - 202-1,111
         { "7d6b322d-bf48-4963-bfe6-579560e84530",new List<string>{ "7d6b322d-bf48-4963-bfe6-579560e84530" } }, // 103
         { "ddd64e08-5f2a-4578-84cb-2f90caa898e9",new List<string>{ "ddd64e08-5f2a-4578-84cb-2f90caa898e9" } }, // 112
         { "a6ce46f1-d51f-45c8-a22e-2db3126da6cf",new List<string>{ "a6ce46f1-d51f-45c8-a22e-2db3126da6cf" } }, // 119

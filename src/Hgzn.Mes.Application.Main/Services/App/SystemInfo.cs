@@ -382,21 +382,30 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     {
                         foreach (RedisTreeNode type in sysLive.Children)
                         {
-                            string sEquipId = await _redisHelper.GetTreeNodeValueAsync(type);
-                            Guid equipId = Guid.Empty;
-                            if (Guid.TryParse(sEquipId, out Guid gEquipId))
-                                equipId = gEquipId;
-                            byte equipTypeNum = 0;
-                            if (byte.TryParse(type.Name, out byte bEquipTypeNum))
-                                equipTypeNum = bEquipTypeNum;
-                            si.LiveDevices.Add(new LDevice()
+                            if (type.Children.Any())
                             {
-                                EquipId = equipId,
-                                EquipTypeNum = equipTypeNum,
-                            });
+                                foreach (RedisTreeNode equip in type.Children)
+                                {
+                                    // 设备ID是叶子节点的Name，而不是Value（Value是时间戳）
+                                    string sEquipId = equip.Name;
+                                    Guid equipId = Guid.Empty;
+                                    if (Guid.TryParse(sEquipId, out Guid gEquipId))
+                                        equipId = gEquipId;
+                                    byte equipTypeNum = 0;
+                                    if (byte.TryParse(type.Name, out byte bEquipTypeNum))
+                                        equipTypeNum = bEquipTypeNum;
+                                    
+                                    LoggerAdapter.LogInformation($"AG - SystemInfoManager - 从Redis获取活跃设备ID: {equipId}, 设备ID字符串: [{sEquipId}], 类型编号: {equipTypeNum}, 系统: {si.Name}(SystemNum: {si.SystemNum})");
+                                    
+                                    si.LiveDevices.Add(new LDevice()
+                                    {
+                                        EquipId = equipId,
+                                        EquipTypeNum = equipTypeNum,
+                                    });
+                                }
+                            }
                         }
                     }
-
                 }
                 // 记录所有设备
                 List<EquipLedger> allEquip = await _sqlSugarClient.Queryable<EquipLedger>().Where(x => x.RoomId == si.RoomId).ToListAsync();
@@ -458,12 +467,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
         public async Task<List<CameraDto>> GetCameraData(string? systemName = null)
         {
             List<CameraDto> cameraData = new List<CameraDto>();
-            
+
             // 根据系统名称获取房间号，然后构建对应的摄像头配置key
             string cameraIpKey = "camera_ip"; // 默认key
             string cameraUserKey = "camera_user"; // 共用用户名，不需要加房间号
             string cameraPasswordKey = "camera_password"; // 共用密码，不需要加房间号
-            
+
             if (!string.IsNullOrEmpty(systemName))
             {
                 if (systemName.Equals("home", StringComparison.OrdinalIgnoreCase))
@@ -482,7 +491,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     }
                 }
             }
-            
+
             string? url = await _baseConfigService.GetValueByKeyAsync(cameraIpKey);
             if (url == null) return cameraData;
 
@@ -526,7 +535,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     return TestEquipData.GetRoom(systemId);
                 }
             }
-            
+
             return 0; // 未找到对应的房间号
         }
 

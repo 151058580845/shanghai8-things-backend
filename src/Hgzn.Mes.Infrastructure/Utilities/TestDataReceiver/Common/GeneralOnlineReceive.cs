@@ -152,7 +152,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             //    CreateTime = sendTime,
             //    Content = entity,
             //};
-            //_sqlSugarClient.Insertable(new List<Receive>() { receive }).SplitTable().ExecuteCommand();
+            // _sqlSugarClient.Insertable(new List<Receive>() { receive }).SplitTable().ExecuteCommand();
             LoggerAdapter.LogInformation($"AG - 远程解析 - 写入数据库完成");
             // 将试验数据的数据部分推送到mqtt给前端进行展示(暂时不进行数据展示)
             // await TestDataPublishToMQTT(receive);

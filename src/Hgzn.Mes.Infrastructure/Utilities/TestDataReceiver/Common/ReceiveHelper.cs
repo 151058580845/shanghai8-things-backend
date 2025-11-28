@@ -22,7 +22,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
 {
     public static class ReceiveHelper
     {
-        public static  readonly ConcurrentQueue<byte[]> ReceiveTestSystem = new();
+        public static readonly ConcurrentQueue<byte[]> ReceiveTestSystem = new();
 
         private const int BodyStartIndex = 13;
         public static bool GetMessage(byte[] buffer, out uint bufferLength, out DateTime time, out byte[] message)
@@ -103,12 +103,27 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
         /// <param name="sendTime"></param>
         /// <param name="runTime"></param>
         /// <returns></returns>
-        public static async Task LiveRecordToRedis(IConnectionMultiplexer connectionMultiplexer, byte simuTestSysId, byte devTypeId, Guid equipId, DateTime sendTime)
+        public static async Task LiveRecordToRedis(IConnectionMultiplexer connectionMultiplexer, ISqlSugarClient sqlSugarClient, byte simuTestSysId, byte devTypeId, string compNumber, DateTime sendTime)
         {
             // 记录到redis
             IDatabase redisDb = connectionMultiplexer.GetDatabase();
+            Guid equipIdToUse = Guid.Empty;
+            try
+            {
+                // 使用 ToListAsync().FirstOrDefault() 而不是 FirstAsync，避免未找到记录时抛异常
+                var ledgers = await sqlSugarClient.Queryable<EquipLedger>()
+                    .Where(x => x.AssetNumber == compNumber && !x.SoftDeleted)
+                    .ToListAsync();
+                var ledger = ledgers.FirstOrDefault();
+                if (ledger != null)
+                    equipIdToUse = ledger.Id;
+            }
+            catch (Exception ex)
+            {
+                LoggerAdapter.LogWarning($"AG - 异常记录 - 通过compId映射equipId失败，回退使用传入的equipId。原因: {ex.Message}, StackTrace: {ex.StackTrace}");
+            }
             // 记录异常信息
-            var key = string.Format(CacheKeyFormatter.EquipLive, simuTestSysId, devTypeId, equipId);
+            var key = string.Format(CacheKeyFormatter.EquipLive, simuTestSysId, devTypeId, equipIdToUse);
             // 记录心跳时间（使用Unix时间戳格式）
             long timestamp = new DateTimeOffset(sendTime).ToUnixTimeSeconds();
             // 将时间戳存入Redis并设置30秒过期时间
@@ -136,19 +151,33 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             try
             {
                 string compNumber = Encoding.ASCII.GetString(compId).Trim('\0').Trim('"');
-                var ledger = await sqlSugarClient.Queryable<EquipLedger>()
+                LoggerAdapter.LogInformation($"AG - 异常记录 - 尝试通过compId映射equipId，compNumber: [{compNumber}], 原始equipId: {equipId}");
+
+                // 使用 ToListAsync().FirstOrDefault() 而不是 FirstAsync，避免未找到记录时抛异常
+                var ledgers = await sqlSugarClient.Queryable<EquipLedger>()
                     .Where(x => x.AssetNumber == compNumber && !x.SoftDeleted)
-                    .FirstAsync();
+                    .ToListAsync();
+                var ledger = ledgers.FirstOrDefault();
+
                 if (ledger != null)
+                {
                     equipIdToUse = ledger.Id;
+                    LoggerAdapter.LogInformation($"AG - 异常记录 - 成功通过compId映射equipId，compNumber: [{compNumber}], 原始equipId: {equipId}, 映射后equipIdToUse: {equipIdToUse}, 台账设备名称: {ledger.EquipName}, 台账设备ID: {ledger.Id}");
+
+                }
+                else
+                {
+                    LoggerAdapter.LogWarning($"AG - 异常记录 - 未找到匹配的台账记录，compNumber: [{compNumber}], 查询结果数量: {ledgers?.Count ?? 0}, 使用原始equipId: {equipId}");
+                }
             }
             catch (Exception ex)
             {
-                LoggerAdapter.LogWarning($"AG - 异常记录 - 通过compId映射equipId失败，回退使用传入的equipId。原因: {ex.Message}");
+                LoggerAdapter.LogWarning($"AG - 异常记录 - 通过compId映射equipId失败，回退使用传入的equipId。原因: {ex.Message}, StackTrace: {ex.StackTrace}");
             }
 
             // 记录异常信息
             var key = string.Format(CacheKeyFormatter.EquipHealthStatus, simuTestSysId, devTypeId, equipIdToUse);
+            LoggerAdapter.LogInformation($"AG - 异常记录 - 准备写入Redis，最终使用的equipIdToUse: {equipIdToUse}, Redis Key: {key}");
             await redisDb.KeyDeleteAsync(key);
             foreach (string item in exception)
             {
@@ -156,6 +185,7 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
             }
             // 记录运行时长
             var runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, simuTestSysId, devTypeId, equipIdToUse);
+            LoggerAdapter.LogInformation($"AG - 异常记录 - 准备写入运行时长，最终使用的equipIdToUse: {equipIdToUse}, Redis Key: {runTimeKey}");
             await ReportRunningTimeAsync(redisDb, runTimeKey, sendTime, runTime);
             await CleanupOldDataAsync(redisDb, runTimeKey);
         }
@@ -249,9 +279,9 @@ namespace Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common
                 .WithDeviceType(EquipConnType.IotServer.ToString())
                 .WithUri(equipId.ToString()!)
                 .Build();
-            
+
             var payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(equipNotice));
-            
+
             // 使用支持断点续传的发布方法，异常消息优先级较高
             if (mqttExplorer is Hgzn.Mes.Infrastructure.Mqtt.Manager.OfflineSupport.IMqttExplorerWithOffline mqttWithOffline)
             {

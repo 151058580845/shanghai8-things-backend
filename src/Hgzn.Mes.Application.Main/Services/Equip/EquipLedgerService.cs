@@ -307,10 +307,9 @@ public class EquipLedgerService : SugarCrudAppService<
                             }
                         }
 
-                        // 状态与级别兜底
+                        // 状态与级别：接口导入时不设置默认值，保持原有值
                         equipLedgerDto.State = equipLedgerDto.State;
-                        equipLedgerDto.DeviceStatus ??= DeviceStatus.Normal.ToString();
-                        equipLedgerDto.DeviceLevel ??= EquipLevelEnum.Basic.ToString();
+                        // DeviceStatus 和 DeviceLevel 保持为 null，不设置默认值
                     }
                     catch (Exception ex)
                     {
@@ -335,16 +334,23 @@ public class EquipLedgerService : SugarCrudAppService<
                         // 仅当新数据提供值时才覆盖；否则保留旧值
                         static bool HasText(string? s) => !string.IsNullOrWhiteSpace(s);
 
+                        // 字符串类型字段：只有导入数据有值才更新
                         if (HasText(equipLedgerDto.EquipName)) existingEquip.EquipName = equipLedgerDto.EquipName!;
                         if (HasText(equipLedgerDto.AssetNumber)) existingEquip.AssetNumber = equipLedgerDto.AssetNumber!;
                         if (HasText(equipLedgerDto.Model)) existingEquip.Model = equipLedgerDto.Model!;
                         if (HasText(equipLedgerDto.Sn)) existingEquip.Sn = equipLedgerDto.Sn!;
                         if (HasText(equipLedgerDto.IpAddress)) existingEquip.IpAddress = equipLedgerDto.IpAddress!;
+                        if (HasText(equipLedgerDto.Remark)) existingEquip.Remark = equipLedgerDto.Remark!;
+                        if (HasText(equipLedgerDto.ResponsibleUserName)) existingEquip.ResponsibleUserName = equipLedgerDto.ResponsibleUserName!;
 
+                        // 日期类型字段：只有导入数据有值才更新
                         if (equipLedgerDto.PurchaseDate.HasValue) existingEquip.PurchaseDate = equipLedgerDto.PurchaseDate;
                         if (equipLedgerDto.ValidityDate.HasValue) existingEquip.ValidityDate = equipLedgerDto.ValidityDate;
+
+                        // 可空布尔类型字段：只有导入数据有值才更新
                         if (equipLedgerDto.IsMeasurementDevice.HasValue) existingEquip.IsMeasurementDevice = equipLedgerDto.IsMeasurementDevice;
 
+                        // 枚举类型字段：只有导入数据有值才更新
                         if (HasText(equipLedgerDto.DeviceStatus))
                         {
                             // 允许字符串到枚举的安全转换；失败则忽略
@@ -357,10 +363,20 @@ public class EquipLedgerService : SugarCrudAppService<
                                 existingEquip.EquipLevel = dl;
                         }
 
+                        // Guid类型字段：只有导入数据有值才更新
                         if (equipLedgerDto.ResponsibleUserId.HasValue) existingEquip.ResponsibleUserId = equipLedgerDto.ResponsibleUserId;
-                        if (HasText(equipLedgerDto.ResponsibleUserName)) existingEquip.ResponsibleUserName = equipLedgerDto.ResponsibleUserName!;
+                        if (equipLedgerDto.TypeId.HasValue) existingEquip.TypeId = equipLedgerDto.TypeId;
+                        if (equipLedgerDto.RoomId.HasValue) existingEquip.RoomId = equipLedgerDto.RoomId;
 
-                        existingEquip.State = equipLedgerDto.State; // State 为 bool，维持新值（若需要保留旧值请告知）
+                        // 可空布尔类型字段：只有导入数据有值才更新
+                        if (equipLedgerDto.IsCustoms.HasValue) existingEquip.IsCustoms = equipLedgerDto.IsCustoms;
+
+                        // 可空整型字段：只有导入数据有值才更新
+                        if (equipLedgerDto.RoomIdSourceType.HasValue) existingEquip.RoomIdSourceType = equipLedgerDto.RoomIdSourceType;
+
+                        // State 字段：接口导入时不更新，保持原值（因为接口没有传这个字段）
+                        // existingEquip.State 保持不变
+
                         existingEquip.LastModificationTime = DateTime.Now;
 
                         // 如果已存在设备没有设备编码,那么就分配一个
@@ -382,6 +398,11 @@ public class EquipLedgerService : SugarCrudAppService<
                         EquipLedger info = Mapper.Map<EquipLedger>(equipLedgerDto);
                         // 新增设备自动分配一个设备编码
                         info.EquipCode = await _codeRuleService.GenerateCodeByCodeAsync("SBTZ");
+                        // 新增设备时设置默认值（接口导入时这些字段为null，需要设置默认值）
+                        if (info.DeviceStatus == null)
+                            info.DeviceStatus = DeviceStatus.Normal;
+                        if (info.EquipLevel == null)
+                            info.EquipLevel = EquipLevelEnum.Basic;
                         var insertResult = DbContext.Insertable<EquipLedger>(info).ExecuteCommand();
 
                         LoggerAdapter.LogInformation($"AG - 设备导入 - 新增操作完成, 影响行数: {insertResult}");
@@ -423,9 +444,18 @@ public class EquipLedgerService : SugarCrudAppService<
             PurchaseDate = ParseDate(importDto.Factorydate),
             ValidityDate = ParseDate(importDto.ValidPeriod),
             Sn = importDto.Sn,
-            State = true,
-            DeviceStatus = "Normal", // 默认设备状态为正常
-            DeviceLevel = "Basic"    // 默认设备重要度为普通设备
+            // 接口导入时，只设置接口传过来的字段，其他字段保持为null
+            // 新增设备时会设置默认值，更新设备时会保持原值
+            State = true, // 新增设备时默认启用
+            DeviceStatus = null, // 接口没有传，新增时会设置默认值
+            DeviceLevel = null,  // 接口没有传，新增时会设置默认值
+            TypeId = null,        // 接口没有传，保持原值
+            RoomId = null,        // 接口没有传，保持原值
+            Remark = null,        // 接口没有传，保持原值
+            IsCustoms = null,     // 接口没有传，保持原值
+            RoomIdSourceType = null, // 接口没有传，保持原值
+            IpAddress = null,     // 接口没有传，保持原值
+            ResponsibleUserId = null // 接口没有传，保持原值（会在后续处理中根据姓名查找）
         };
     }
 

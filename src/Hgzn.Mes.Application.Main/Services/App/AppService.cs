@@ -425,7 +425,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
             
             // 4. 批量获取关键设备的运行时间（避免嵌套循环中重复查询 Redis）
             Dictionary<(byte systemNum, Guid equipId), uint> keyDeviceRunTimeCache = new Dictionary<(byte, Guid), uint>();
+            Dictionary<(byte systemNum, Guid equipId), uint> keyDeviceTodayRunTimeCache = new Dictionary<(byte, Guid), uint>();
             HashSet<Guid> keyDeviceIds = new HashSet<Guid>();
+            DateTime todayForCache = DateTime.Now.Date;
+            string todayStr = todayForCache.ToString("yyyy-MM-dd");
+            IDatabase redisDatabase = _connectionMultiplexer.GetDatabase();
             foreach (var sysInfo in _systemInfoList)
             {
                 foreach (var kd in sysInfo.keyDevices)
@@ -434,6 +438,13 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     string runTimeKey = string.Format(CacheKeyFormatter.EquipRunTime, sysInfo.SystemNum, kd.EquipTypeNum, kd.EquipId);
                     uint runTime = await ReceiveHelper.GetLast30DaysRunningTimeAsync(_connectionMultiplexer, runTimeKey);
                     keyDeviceRunTimeCache[(sysInfo.SystemNum, kd.EquipId)] = runTime;
+                    
+                    // 同时获取今天的运行时间，供关键设备利用率计算使用
+                    var todayRunningSeconds = await redisDatabase.HashGetAsync($"{runTimeKey}:days", todayStr);
+                    if (todayRunningSeconds.HasValue && uint.TryParse(todayRunningSeconds, out uint todaySeconds))
+                    {
+                        keyDeviceTodayRunTimeCache[(sysInfo.SystemNum, kd.EquipId)] = todaySeconds;
+                    }
                 }
             }
             _logger.LogInformation("[GetTestListAsync] 批量获取关键设备运行时间完成，耗时: {ElapsedMs}ms", batchLoadStopwatch.ElapsedMilliseconds);
@@ -527,46 +538,6 @@ namespace Hgzn.Mes.Application.Main.Services.App
             }
             testRead.SystemDeviceList = list;
             _logger.LogInformation("[GetTestListAsync] 试验系统列表数据完成，耗时: {ElapsedMs}ms", systemListStopwatch.ElapsedMilliseconds);
-
-            #endregion
-
-            #region 设备状态统计详细数据 (已关联数据库)
-
-            var equipmentStateStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
-            // *** 设备状态统计详细数据
-            // 获取设备信息
-            List<EquipmentData> equipDatas = new List<EquipmentData>();
-            for (int i = 0; i < connectEquips.Count; i++)
-            {
-                Guid equipId = connectEquips[i].EquipLedger!.Id;
-                // 使用缓存的状态，避免循环中重复查询 Redis
-                bool isOnline = equipOnlineStatus.TryGetValue(equipId, out bool online) ? online : false;
-                string state = isOnline ? "在线" : "离线";
-                equipDatas.Add(new EquipmentData()
-                {
-                    Index = i + 1,
-                    Code = connectEquips[i].EquipLedger!.EquipCode,
-                    Name = connectEquips[i].EquipLedger!.EquipName,
-                    Location = connectEquips[i].EquipLedger?.Room?.Name ?? "",
-                    State = state,
-                    Health = _abnormalEquipDic.ContainsKey(equipId.ToString()) ? "异常" : "健康"
-                });
-            }
-
-            testRead.EquipmentState = new EquipmentState()
-            {
-                Headers = new List<string[]>()
-            {
-                new string[] { "index", "序号" },
-                new string[] { "code", "设备编号" },
-                new string[] { "name", "设备名称" },
-                new string[] { "location", "设备所在位置" },
-                new string[] { "state", "设备在线状态" },
-                new string[] { "health", "设备健康" },
-            },
-                Data = equipDatas
-            };
-            _logger.LogInformation("[GetTestListAsync] 设备状态统计详细数据完成，耗时: {ElapsedMs}ms", equipmentStateStopwatch.ElapsedMilliseconds);
 
             #endregion
 
@@ -701,20 +672,42 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             var rateDataStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             // *** 在线设备状态统计（在线率）
-            // 使用 Redis 中的实际在线状态计算在线率（而不是数据库中的 State 字段）
-            int onlineCount = 0;
-            foreach (var connectEquip in connectEquips)
+            // 从所有系统的 LiveDevices 中获取活跃设备
+            HashSet<Guid> liveDeviceIds = new HashSet<Guid>();
+            foreach (SystemInfo item in _systemInfoList)
             {
-                if (connectEquip.EquipLedger != null)
+                foreach (LDevice liveDevice in item.LiveDevices)
                 {
-                    bool isOnline = equipOnlineStatus.TryGetValue(connectEquip.EquipLedger.Id, out bool online) ? online : false;
-                    if (isOnline)
-                        onlineCount++;
+                    liveDeviceIds.Add(liveDevice.EquipId);
                 }
             }
-            int workingRateData = connectEquips.Count == 0 ? 0 : (int)((double)onlineCount / connectEquips.Count() * 100);
+            int liveDeviceCount = liveDeviceIds.Count;
+            
+            // 从 EquipDailyRuntime 表格中统计曾经活跃过的设备（去重设备ID）
+            var allActiveDeviceIds = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
+                .Select(x => x.EquipId)
+                .Distinct()
+                .ToListAsync();
+            
+            // 计算所有活跃设备的并集（曾经活跃过的设备 + 当前活跃设备）去重
+            HashSet<Guid> allDeviceIdsForRate = new HashSet<Guid>(liveDeviceIds);
+            var deviceIdsList = allDeviceIdsForRate.Take(20).Select(id => id.ToString()).ToList();
+            _logger.LogInformation("[GetTestListAsync] 在线设备 前20个设备ID: {DeviceIds}", string.Join(", ", deviceIdsList));
+            foreach (var deviceId in allActiveDeviceIds)
+            {
+                allDeviceIdsForRate.Add(deviceId);
+            }
+            deviceIdsList = allDeviceIdsForRate.Take(20).Select(id => id.ToString()).ToList();
+            _logger.LogInformation("[GetTestListAsync] 合并历史设备后 前20个设备ID: {DeviceIds}", string.Join(", ", allDeviceIdsForRate));
+            int totalActiveDeviceCount = allDeviceIdsForRate.Count;
+            
+            // 计算在线率：活跃设备数 / ((曾经活跃过的设备数 + 活跃设备数) 的去重)
+            int workingRateData = totalActiveDeviceCount == 0 ? 0 : (int)((double)liveDeviceCount / totalActiveDeviceCount * 100);
             int offlineRateData = 100 - workingRateData;
             testRead.OnlineRateData = new OnlineRateData() { WorkingRateData = workingRateData, FreeRateData = 0, OfflineRateData = offlineRateData };
+            
+            // 保存这些数据供设备状态统计详细数据使用
+            // liveDeviceIds 和 allActiveDeviceIds 将在下面的设备状态统计详细数据部分使用
             // *** 在线设备状态统计（故障率）
             // 统计有异常的系统（包括运行异常和计量到期）
             int abnormalSysCount = testRead.AbnormalDeviceList.Where(x => x.AbnormalCount > 0).Count();
@@ -726,19 +719,110 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
             #endregion
 
+            #region 设备状态统计详细数据 (已关联数据库)
+
+            var equipmentStateStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+            // *** 设备状态统计详细数据
+            // Redis 里的数据是每天凌晨用另一个线程更新到数据库的，也就是说今天的数据还不会更新上去
+            // 所以获取全部设备应该是 liveDeviceIds（今天的活跃设备，来自 Redis）加上已经存在数据库里的 allActiveDeviceIds（历史活跃设备）
+            // 合并并去重
+            // 根据设备ID查询台账信息
+            List<EquipmentData> equipDatas = new List<EquipmentData>();
+            if (allDeviceIdsForRate.Any())
+            {
+                // 先查询完整的 EquipLedger 实体（包括 Room），然后在内存中处理
+                var equipLedgers = await _sqlSugarClient.Queryable<EquipLedger>()
+                    .Where(x => allDeviceIdsForRate.Contains(x.Id))
+                    .Includes(x => x.Room)
+                    .ToListAsync();
+                
+                int index = 1;
+                foreach (var equipId in allDeviceIdsForRate)
+                {
+                    var ledger = equipLedgers.FirstOrDefault(x => x.Id == equipId);
+                    if (ledger != null)
+                    {
+                        // 判断设备是否在线：在 LiveDevices 中就是在线
+                        bool isOnline = liveDeviceIds.Contains(equipId);
+                        string state = isOnline ? "在线" : "离线";
+                        
+                        equipDatas.Add(new EquipmentData()
+                        {
+                            Index = index++,
+                            Code = ledger.AssetNumber ?? "",
+                            Name = ledger.EquipName ?? "",
+                            Location = ledger.Room?.Name ?? "",
+                            State = state,
+                            Health = _abnormalEquipDic.ContainsKey(equipId.ToString()) ? "异常" : "健康"
+                        });
+                    }
+                }
+            }
+
+            testRead.EquipmentState = new EquipmentState()
+            {
+                Headers = new List<string[]>()
+            {
+                new string[] { "index", "序号" },
+                new string[] { "code", "设备编号" },
+                new string[] { "name", "设备名称" },
+                new string[] { "location", "设备所在位置" },
+                new string[] { "state", "设备在线状态" },
+                new string[] { "health", "设备健康" },
+            },
+                Data = equipDatas
+            };
+            _logger.LogInformation("[GetTestListAsync] 设备状态统计详细数据完成，耗时: {ElapsedMs}ms", equipmentStateStopwatch.ElapsedMilliseconds);
+
+            #endregion
+
             #region 关键设备利用率 (已关联数据库)
 
             var keyDeviceStopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             // 关键设备利用率数据
             testRead.KeyDeviceList = new List<KeyDeviceData>();
+            
+            DateTime now = DateTime.Now;
+            DateTime currentMonthStart = new DateTime(now.Year, now.Month, 1);
+            DateTime today = now.Date;
+            // 计算这个月的天数
+            int daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+            // 这个月的总时间 = 天数 * 8 * 60 * 60秒
+            uint totalSecondsInMonth = (uint)(daysInMonth * 8 * 60 * 60);
+            
             foreach (SystemInfo item in _systemInfoList)
             {
                 foreach (SDevice kd in item.keyDevices)
                 {
-                    // 使用缓存的运行时间，避免嵌套循环中重复查询 Redis
+                    uint totalRunTime = 0;
+                    
+                    // 1. 从 EquipDailyRuntime 获取这个月（今天以前）的运行时间
+                    var dbRuntimeData = await _sqlSugarClient.Queryable<EquipDailyRuntime>()
+                        .Where(x => x.EquipId == kd.EquipId)
+                        .Where(x => x.RecordDate >= currentMonthStart && x.RecordDate < today)
+                        .Select(x => new { x.RecordDate, x.RunningSeconds })
+                        .ToListAsync();
+                    
+                    if (dbRuntimeData.Any())
+                    {
+                        // 按日期分组，取每天的最大秒数（因为RunningSeconds是累积值）
+                        var groupedData = dbRuntimeData
+                            .GroupBy(x => x.RecordDate.Date)
+                            .Select(g => new { g.Key.Date, MaxSeconds = g.Max(x => x.RunningSeconds) })
+                            .ToList();
+                        
+                        totalRunTime += (uint)groupedData.Sum(x => x.MaxSeconds);
+                    }
+                    
+                    // 2. 从 Redis 获取今天的运行时间（复用已缓存的 keyDeviceTodayRunTimeCache）
                     var cacheKey = (item.SystemNum, kd.EquipId);
-                    uint runTime = keyDeviceRunTimeCache.TryGetValue(cacheKey, out uint cachedRunTime) ? cachedRunTime : 0;
-                    int utilization = (int)Math.Round((double)((double)runTime * 100 / NumberOfSecondsPerMonth), 0);
+                    if (keyDeviceTodayRunTimeCache.TryGetValue(cacheKey, out uint todaySeconds))
+                    {
+                        totalRunTime += todaySeconds;
+                    }
+                    
+                    // 3. 计算利用率：总运行时间 / 这个月的总时间
+                    int utilization = totalSecondsInMonth == 0 ? 0 : (int)Math.Round((double)((double)totalRunTime * 100 / totalSecondsInMonth), 0);
                     int idle = 100 - utilization;
 
                     // 使用缓存的台账信息，避免重复查询数据库
