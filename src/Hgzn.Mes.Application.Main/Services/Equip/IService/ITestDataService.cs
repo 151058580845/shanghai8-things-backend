@@ -31,6 +31,20 @@ public interface ITestDataService : ICrudAppService<
     Task<IEnumerable<TestDataReadDto>> GetFeatureListByTestAsync();
 
     /// <summary>
+    /// 获取特定系统的当前最新试验数据（优化版本，只返回最新一条）
+    /// </summary>
+    /// <param name="systemName">系统名称</param>
+    /// <returns></returns>
+    Task<TestDataReadDto?> GetCurrentLatestBySystemNameAsync(string? systemName);
+
+    /// <summary>
+    /// 获取特定系统的未来最新试验数据（优化版本，只返回最新一条）
+    /// </summary>
+    /// <param name="systemName">系统名称</param>
+    /// <returns></returns>
+    Task<TestDataReadDto?> GetFeatureLatestBySystemNameAsync(string? systemName);
+
+    /// <summary>
     /// 批量api导入功能
     /// </summary>
     /// <param name="url"></param>

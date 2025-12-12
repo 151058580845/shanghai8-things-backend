@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Hgzn.Mes.Application.Main.Dtos.App;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
@@ -84,7 +84,9 @@ public class TestDataService : SugarCrudAppService<
     public async Task<int> CreateAsync(IEnumerable<TestDataCreateDto> data)
     {
         var entities = Mapper.Map<IEnumerable<TestData>>(data);
-        return await DbContext.Insertable<List<TestData>>(entities).ExecuteCommandAsync();
+        // 将 IEnumerable 转换为数组，因为 SqlSugar 的 Insertable 需要数组参数
+        var entitiesArray = entities.ToArray();
+        return await DbContext.Insertable(entitiesArray).ExecuteCommandAsync();
     }
 
     public async Task<IEnumerable<TestDataListReadDto>> GetListByTestAsync(string testName)
@@ -370,5 +372,138 @@ public class TestDataService : SugarCrudAppService<
         }).ToList();
 
         return Mapper.Map<IEnumerable<TestDataReadDto>>(filteredEntities);
+    }
+
+    /// <summary>
+    /// 获取特定系统的当前最新试验数据（优化版本，只返回最新一条）
+    /// </summary>
+    public async Task<TestDataReadDto?> GetCurrentLatestBySystemNameAsync(string? systemName)
+    {
+        if (string.IsNullOrEmpty(systemName))
+            return null;
+
+        DateTime today = DateTime.Now.ToLocalTime();
+        
+        // 规范化系统名称用于匹配
+        string normalizedSystemName = systemName
+            .Replace("\n", "")
+            .Replace("\r", "")
+            .Replace("\t", "")
+            .Trim();
+
+        // 优化查询：限制查询数量，并使用系统名称进行初步过滤
+        // 由于系统名称可能包含换行符，使用 Contains 进行模糊匹配
+        // 限制查询前200条数据，然后在内存中进行精确匹配和日期筛选
+        List<TestData> entities = await Queryable
+            .Where(x => x.TaskEndTime != null && x.TaskStartTime != null && x.SysName != null)
+            .Where(x => x.SysName.Contains(normalizedSystemName) || normalizedSystemName.Contains(x.SysName))
+            .Includes(x => x.UUT)
+            .Includes(x => x.UST)
+            .OrderByDescending(x => x.TaskStartTime)
+            .Take(200) // 限制查询数量，避免加载过多数据
+            .ToListAsync();
+
+        // 规范化日期并筛选，同时进行精确的系统名匹配
+        var filteredEntity = entities.FirstOrDefault(x =>
+        {
+            try
+            {
+                // 精确的系统名匹配
+                string xNormalizedSysName = (x.SysName ?? "")
+                    .Replace("\n", "")
+                    .Replace("\r", "")
+                    .Replace("\t", "")
+                    .Trim();
+                
+                if (!string.Equals(xNormalizedSysName, normalizedSystemName, StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                // 日期筛选
+                DateTime parsedStartTime = DateTime.Parse(x.TaskStartTime!).Date;
+                DateTime parsedEndTime = DateTime.Parse(x.TaskEndTime!).Date;
+                
+                DateTime startTime = parsedStartTime;
+                
+                DateTime endTime;
+                if (parsedEndTime >= DateTime.MaxValue.Date || parsedEndTime <= DateTime.MinValue.Date)
+                {
+                    endTime = parsedEndTime;
+                }
+                else
+                {
+                    endTime = parsedEndTime.AddDays(1).AddSeconds(-1);
+                }
+                
+                return startTime <= today && endTime > today;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
+        if (filteredEntity == null)
+            return null;
+
+        return Mapper.Map<TestDataReadDto>(filteredEntity);
+    }
+
+    /// <summary>
+    /// 获取特定系统的未来最新试验数据（优化版本，只返回最新一条）
+    /// </summary>
+    public async Task<TestDataReadDto?> GetFeatureLatestBySystemNameAsync(string? systemName)
+    {
+        if (string.IsNullOrEmpty(systemName))
+            return null;
+
+        DateTime todayEnd = DateTime.Now.Date.AddDays(1).AddSeconds(-1); // 今天23:59:59
+        
+        // 规范化系统名称用于匹配
+        string normalizedSystemName = systemName
+            .Replace("\n", "")
+            .Replace("\r", "")
+            .Replace("\t", "")
+            .Trim();
+
+        // 优化查询：限制查询数量，并使用系统名称进行初步过滤
+        // 限制查询前200条数据，然后在内存中进行精确匹配和日期筛选
+        List<TestData> entities = await Queryable
+            .Where(x => x.TaskStartTime != null && x.SysName != null)
+            .Where(x => x.SysName.Contains(normalizedSystemName) || normalizedSystemName.Contains(x.SysName))
+            .Includes(x => x.UUT)
+            .Includes(x => x.UST)
+            .OrderByDescending(x => x.TaskStartTime)
+            .Take(200) // 限制查询数量，避免加载过多数据
+            .ToListAsync();
+
+        // 规范化日期并筛选，同时进行精确的系统名匹配
+        var filteredEntity = entities.FirstOrDefault(x =>
+        {
+            try
+            {
+                // 精确的系统名匹配
+                string xNormalizedSysName = (x.SysName ?? "")
+                    .Replace("\n", "")
+                    .Replace("\r", "")
+                    .Replace("\t", "")
+                    .Trim();
+                
+                if (!string.Equals(xNormalizedSysName, normalizedSystemName, StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                // 日期筛选
+                DateTime startTime = DateTime.Parse(x.TaskStartTime!).Date;
+                return startTime > todayEnd;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
+        if (filteredEntity == null)
+            return null;
+
+        return Mapper.Map<TestDataReadDto>(filteredEntity);
     }
 }

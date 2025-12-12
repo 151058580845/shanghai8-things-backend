@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
 using Hgzn.Mes.Application.Main.Services.System.IService;
@@ -61,7 +61,7 @@ public class TestDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = $"equip:testdata:{ScopeMethodType.Add}")]
-    public async Task<ResponseWrapper<int>> CreateAsync(IEnumerable<TestDataCreateDto> inputs)
+    public async Task<ResponseWrapper<int>> CreateAsync([FromBody] IEnumerable<TestDataCreateDto> inputs)
     {
         var addCount = await _testDataService.CreateAsync(inputs);
         return addCount.Wrap();

@@ -68,10 +68,9 @@ namespace Hgzn.Mes.Application.Main.Services.App
             await _sysMgr.SnapshootHomeData();
 
             ShowSystemDetailDto read = new ShowSystemDetailDto();
-            IEnumerable<TestDataReadDto> current = await _testDataService.GetCurrentListByTestAsync();
-            TestDataReadDto currentTestInSystem = current.FirstOrDefault(x => showSystemDetailQueryDto.systemName != null &&
-                                                                         SystemNameEquals(x.SysName, showSystemDetailQueryDto.systemName))!;
-            IEnumerable<TestDataReadDto> feature = await _testDataService.GetFeatureListByTestAsync();
+            // 优化：直接获取特定系统的最新试验数据，避免加载所有数据
+            TestDataReadDto? currentTestInSystem = await _testDataService.GetCurrentLatestBySystemNameAsync(showSystemDetailQueryDto.systemName);
+            TestDataReadDto? featureTestInSystem = await _testDataService.GetFeatureLatestBySystemNameAsync(showSystemDetailQueryDto.systemName);
 
             #region 人员展示 (已关联数据库)
 
@@ -172,9 +171,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 currentTestTaskEndTime = DateTime.Parse(currentTestInSystem.TaskEndTime!).Date.ToString("yyyy-MM-dd");
                 finishingRate = Math.Round((double)currentTestActivatedDay / (DateTime.Parse(currentTestInSystem.TaskEndTime) - DateTime.Parse(currentTestInSystem.TaskStartTime)).Days, 2) * 100;
             }
-            // 在本系统中的后续试验计划
-            TestDataReadDto featureTestInSystem = feature.FirstOrDefault(x => showSystemDetailQueryDto.systemName != null &&
-                                                                         SystemNameEquals(x.SysName, showSystemDetailQueryDto.systemName))!;
+            // 在本系统中的后续试验计划（已在上面优化获取）
             string featureTestName = "无";
             int leftUntilToday = 0;
             if (featureTestInSystem != null)
@@ -785,10 +782,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
             DateTime now = DateTime.Now;
             DateTime currentMonthStart = new DateTime(now.Year, now.Month, 1);
             DateTime today = now.Date;
-            // 计算这个月的天数
-            int daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
-            // 这个月的总时间 = 天数 * 8 * 60 * 60秒
-            uint totalSecondsInMonth = (uint)(daysInMonth * 8 * 60 * 60);
+            // 计算这个月已经过去的天数（今天是这个月的第几天）
+            int daysPassedInMonth = now.Day;
+            // 这个月已经过去的总时间 = 已过去天数 * 8 * 60 * 60秒
+            uint totalSecondsInMonth = (uint)(daysPassedInMonth * 8 * 60 * 60);
             
             foreach (SystemInfo item in _systemInfoList)
             {
