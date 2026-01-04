@@ -1130,7 +1130,7 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         private async Task<List<Tuple<TableDto, TableDto>>> HandleSystem8(SystemInfo systemInfo)
         {
-            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_103_6(systemInfo), await CreateTable_103_2(systemInfo)];
+            List<Tuple<TableDto, TableDto>> tables = [await CreateTable_103_1(systemInfo), await CreateTable_103_2(systemInfo)];
             return tables;
         }
 
@@ -1159,25 +1159,32 @@ namespace Hgzn.Mes.Application.Main.Services.App
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
 
-        // 雷达源
-        private async Task<Tuple<TableDto, TableDto>> CreateTable_103_6(SystemInfo systemInfo)
+        // 移动平台
+        private async Task<Tuple<TableDto, TableDto>> CreateTable_103_1(SystemInfo systemInfo)
         {
-            int indexStart = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "MainCtrlDrfm1NetStatus");
-            int indexEnd = GetPropertyIndex(typeof(XT_0_SL_6_ReceiveData), "IfOutputPower");
-            string typeName = "雷达源";
-            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("状态类型", "离线"), ("自检状态", "离线"));
-            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_0_SL_6_ReceiveData>("雷达源物理量", indexStart, indexEnd);
-            XT_0_SL_6_ReceiveData data = (await _sqlSugarClient.Queryable<XT_0_SL_6_ReceiveData>()
-                .Where(x => x.SimuTestSysld == 8) // 雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统
+            int indexStart = GetPropertyIndex(typeof(XT_103_SL_1_ReceiveData), "TraverseAxisPosition");
+            int indexEnd = GetPropertyIndex(typeof(XT_103_SL_1_ReceiveData), "MechanicalArrayElevationOffset");
+            string typeName = "机械阵";
+            TableDto defaultTable = CreateTable(typeName, CreateStandardHeader,
+                ("状态类型", "离线"),
+                ("横移轴状态", "离线"),
+                ("升降轴状态", "离线"),
+                ("前进轴状态", "离线"),
+                ("云台状态", "离线"));
+            TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_103_SL_1_ReceiveData>("移动平台物理量", indexStart, indexEnd);
+            XT_103_SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT_103_SL_1_ReceiveData>()
                 .OrderByDescending(x => x.CreationTime)
                 .Take(1)
                 .ToListAsync()).FirstOrDefault()!;
             // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
-            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 6)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 1)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
-                ("自检状态", GetStatus(() => data.SelfTestStatus == 0)));
-            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "雷达源物理量", indexStart, indexEnd);
+                ("横移轴状态", GetStatus(() => data.TraverseAxisStatus == 1)),
+                ("升降轴状态", GetStatus(() => data.LiftAxisStatus == 1)),
+                ("前进轴状态", GetStatus(() => data.AdvanceAxisStatus == 1)),
+                ("云台状态", GetStatus(() => data.PanTiltStatus == 1)));
+            TableDto detailTable = _detailGenerator.GenerateTableFromInstance(data, "移动平台物理量", indexStart, indexEnd);
             return new Tuple<TableDto, TableDto>(table, detailTable);
         }
 

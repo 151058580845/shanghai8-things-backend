@@ -83,91 +83,35 @@ public class TestDataService : SugarCrudAppService<
 
     public async Task<int> CreateAsync(IEnumerable<TestDataCreateDto> data)
     {
-        var entities = Mapper.Map<IEnumerable<TestData>>(data);
-        // 将 IEnumerable 转换为数组，因为 SqlSugar 的 Insertable 需要数组参数
-        var entitiesArray = entities.ToArray();
-        return await DbContext.Insertable(entitiesArray).ExecuteCommandAsync();
-    }
-
-    public async Task<IEnumerable<TestDataListReadDto>> GetListByTestAsync(string testName)
-    {
-        var entities = await Queryable
-            .WhereIF(!string.IsNullOrEmpty(testName), t => t.SysName == testName)
-            .ToListAsync();
-        return Mapper.Map<IEnumerable<TestDataListReadDto>>(entities);
-    }
-
-    public static string ObjectToJson(object obj)
-    {
-        DataContractJsonSerializer serializer = new DataContractJsonSerializer(obj.GetType());
-        using (MemoryStream stream = new MemoryStream())
-        {
-            serializer.WriteObject(stream, obj);
-            return global::System.Text.Encoding.UTF8.GetString(stream.ToArray());
-        }
+        // 复用接口导入的逻辑，因为JSON导入的数据格式与接口导入相同
+        return await ImportTestDataAsync(data);
     }
 
     /// <summary>
-    /// 批量api导入
+    /// 导入试验计划数据的核心逻辑（复用接口导入的处理方式）
     /// </summary>
-    /// <param name="url"></param>
-    /// <returns></returns>
-    public async Task<int> GetDataFromThirdPartyAsync()
+    /// <param name="data">试验计划数据列表</param>
+    /// <returns>处理的记录数</returns>
+    private async Task<int> ImportTestDataAsync(IEnumerable<TestDataCreateDto> data)
     {
         try
         {
-            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始执行API批量导入");
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始执行批量导入");
 
-            var url = await _baseConfigService.GetValueByKeyAsync("import_plan_url");
-            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 获取到导入URL: {url}");
-
-            // 发送 GET 请求
-            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 正在发送HTTP GET请求...");
-            var response = await _httpClient.GetAsync(url);
-
-            // 确保请求成功
-            LoggerAdapter.LogInformation($"AG - 试验计划导入 - HTTP响应状态码: {response.StatusCode}");
-            response.EnsureSuccessStatusCode();
-
-            // 读取响应内容
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 接收到JSON响应, 长度: {jsonResponse?.Length ?? 0} 字符");
-            LoggerAdapter.LogInformation($"AG - 试验计划导入 - JSON内容前500字符: {(jsonResponse?.Length > 500 ? jsonResponse.Substring(0, 500) : jsonResponse)}");
-
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true, // 忽略大小写
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull // 忽略 null 值
-            };
-
-            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始反序列化JSON数据...");
-            var result = JsonSerializer.Deserialize<List<TestDataCreateDto>>(jsonResponse, options);
-            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 反序列化完成, 共解析到 {result?.Count ?? 0} 条数据");
+            var dataList = data.ToList();
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 接收到 {dataList.Count} 条数据");
 
             var changeCount = 0;
-            if (result.Any())
+            if (dataList.Any())
             {
-                LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始处理 {result.Count} 条试验计划数据...");
+                LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始处理 {dataList.Count} 条试验计划数据...");
 
                 var processedCount = 0;
-                foreach (var item in result)
+                foreach (var item in dataList)
                 {
                     processedCount++;
-                    LoggerAdapter.LogInformation($"AG - 试验计划导入 - 处理第 {processedCount}/{result.Count} 条: TestDataId={item.TestDataId}, 试验名称={item.TaskName}");
+                    LoggerAdapter.LogInformation($"AG - 试验计划导入 - 处理第 {processedCount}/{dataList.Count} 条: TestDataId={item.TestDataId}, 试验名称={item.TaskName}");
                     LoggerAdapter.LogInformation($"AG - 试验计划导入 - 该计划包含 UUT数量: {item.UUT?.Count ?? 0}, UST数量: {item.UST?.Count ?? 0}");
-
-                    // 记录UST详细信息
-                    if (item.UST != null && item.UST.Any())
-                    {
-                        foreach (var ust in item.UST)
-                        {
-                            LoggerAdapter.LogInformation($"AG - 试验计划导入 - UST设备: 编号={ust.Code}, 名称={ust.Name}, 型号={ust.ModelSpecification}, 有效期={ust.ValidityPeriod}");
-                        }
-                    }
-                    else
-                    {
-                        LoggerAdapter.LogInformation($"AG - 试验计划导入 - 该计划未包含UST数据");
-                    }
 
                     var info = Mapper.Map<TestData>(item);
                     LoggerAdapter.LogInformation($"AG - 试验计划导入 - Mapper映射完成, UUT映射后数量: {info.UUT?.Count ?? 0}, UST映射后数量: {info.UST?.Count ?? 0}");
@@ -237,11 +181,79 @@ public class TestDataService : SugarCrudAppService<
             }
             else
             {
-                LoggerAdapter.LogInformation($"AG - 试验计划导入 - 未解析到任何数据或数据为空");
+                LoggerAdapter.LogInformation($"AG - 试验计划导入 - 未接收到任何数据或数据为空");
             }
 
             LoggerAdapter.LogInformation($"AG - 试验计划导入 - 导入完成, 总共处理 {changeCount} 条记录");
             return changeCount;
+        }
+        catch (Exception ex)
+        {
+            // 处理异常
+            LoggerAdapter.LogError($"AG - 试验计划导入 - 发生未知错误: {ex.Message}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - 异常类型: {ex.GetType().Name}");
+            LoggerAdapter.LogError($"AG - 试验计划导入 - 异常堆栈: {ex.StackTrace}");
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<TestDataListReadDto>> GetListByTestAsync(string testName)
+    {
+        var entities = await Queryable
+            .WhereIF(!string.IsNullOrEmpty(testName), t => t.SysName == testName)
+            .ToListAsync();
+        return Mapper.Map<IEnumerable<TestDataListReadDto>>(entities);
+    }
+
+    public static string ObjectToJson(object obj)
+    {
+        DataContractJsonSerializer serializer = new DataContractJsonSerializer(obj.GetType());
+        using (MemoryStream stream = new MemoryStream())
+        {
+            serializer.WriteObject(stream, obj);
+            return global::System.Text.Encoding.UTF8.GetString(stream.ToArray());
+        }
+    }
+
+    /// <summary>
+    /// 批量api导入
+    /// </summary>
+    /// <param name="url"></param>
+    /// <returns></returns>
+    public async Task<int> GetDataFromThirdPartyAsync()
+    {
+        try
+        {
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始执行API批量导入");
+
+            var url = await _baseConfigService.GetValueByKeyAsync("import_plan_url");
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 获取到导入URL: {url}");
+
+            // 发送 GET 请求
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 正在发送HTTP GET请求...");
+            var response = await _httpClient.GetAsync(url);
+
+            // 确保请求成功
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - HTTP响应状态码: {response.StatusCode}");
+            response.EnsureSuccessStatusCode();
+
+            // 读取响应内容
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 接收到JSON响应, 长度: {jsonResponse?.Length ?? 0} 字符");
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - JSON内容前500字符: {(jsonResponse?.Length > 500 ? jsonResponse.Substring(0, 500) : jsonResponse)}");
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true, // 忽略大小写
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull // 忽略 null 值
+            };
+
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 开始反序列化JSON数据...");
+            var result = JsonSerializer.Deserialize<List<TestDataCreateDto>>(jsonResponse, options);
+            LoggerAdapter.LogInformation($"AG - 试验计划导入 - 反序列化完成, 共解析到 {result?.Count ?? 0} 条数据");
+
+            // 复用统一的导入逻辑
+            return await ImportTestDataAsync(result);
         }
         catch (HttpRequestException ex)
         {

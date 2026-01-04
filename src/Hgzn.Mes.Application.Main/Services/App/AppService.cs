@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Application.Main.Dtos.App;
+using Hgzn.Mes.Application.Main.Dtos.App;
 using Hgzn.Mes.Application.Main.Dtos.Equip;
 using Hgzn.Mes.Application.Main.Services.App.IService;
 using Hgzn.Mes.Application.Main.Services.Equip.IService;
@@ -905,6 +905,11 @@ namespace Hgzn.Mes.Application.Main.Services.App
             {
                 int currentYear = DateTime.Now.Year;
                 int currentMonth = DateTime.Now.Month;
+                
+                // 用于记录每个系统的任务明细（系统名 -> 月份 -> 任务列表）
+                Dictionary<string, Dictionary<int, List<(string taskName, int days)>>> systemTaskDetails = 
+                    new Dictionary<string, Dictionary<int, List<(string, int)>>>();
+
                 SystemTestTimes systemTestTimes = new SystemTestTimes
                 {
                     Times = new Dictionary<string, List<DateTimeRange>>(),
@@ -923,8 +928,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
                 // 合并当前和历史试验任务
                 List<TestDataReadDto> allTasks = new List<TestDataReadDto>();
-                allTasks.AddRange(currentTasks);
-                allTasks.AddRange(historyTasks);
+                allTasks.AddRange(currentTasks ?? new List<TestDataReadDto>());
+                allTasks.AddRange(historyTasks ?? new List<TestDataReadDto>());
 
                 // 筛选出当前年度的试验任务
                 allTasks = allTasks.Where(x =>
@@ -945,6 +950,16 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
                     if (!Guid.TryParse(roomIdStr, out Guid roomId))
                         continue;
+
+                    // 初始化该系统的任务明细记录
+                    if (!systemTaskDetails.ContainsKey(systemName))
+                    {
+                        systemTaskDetails[systemName] = new Dictionary<int, List<(string, int)>>();
+                        for (int month = 1; month <= 12; month++)
+                        {
+                            systemTaskDetails[systemName][month] = new List<(string, int)>();
+                        }
+                    }
 
                     // 获取该系统下的所有设备
                     List<EquipLedger> systemEquips = await _sqlSugarClient.Queryable<EquipLedger>()
@@ -984,13 +999,17 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         }
 
                         // 只统计过去或当前正在进行的计划周期
-                        if (start.Date > DateTime.Now.Date) continue;
+                        if (start.Date > DateTime.Now.Date)
+                            continue;
 
                         // 限制结束时间不早于开始时间
-                        if (end < start) continue;
+                        if (end < start)
+                            continue;
 
                         // 查询该任务期间的真实运行数据
                         uint taskSeconds = 0;
+                        List<DateTime> taskWorkingDates = new List<DateTime>();
+                        
                         if (systemEquips.Any())
                         {
                             // 先获取所有数据，然后按设备和日期分组取最大值（因为RunningSeconds是累积值）
@@ -1011,13 +1030,12 @@ namespace Hgzn.Mes.Application.Main.Services.App
                             if (taskSeconds > 0)
                             {
                                 // 有真实运行数据，使用已分组的数据收集有运行的日期
-                                var actualWorkingDates = groupedData
+                                taskWorkingDates = groupedData
                                     .Where(g => g.MaxSeconds > 0)
                                     .Select(g => g.Date)
                                     .Distinct()
                                     .ToList();
-
-                                workingDates.AddRange(actualWorkingDates);
+                                workingDates.AddRange(taskWorkingDates);
                             }
                         }
 
@@ -1034,13 +1052,35 @@ namespace Hgzn.Mes.Application.Main.Services.App
                             // 历史计划按整个计划周期算，当前计划截止到今天
                             for (DateTime date = start.Date; date <= planEndDate; date = date.AddDays(1))
                             {
+                                taskWorkingDates.Add(date);
                                 workingDates.Add(date);
+                            }
+                        }
+
+                        // 记录该任务在每个月的天数（只统计当前年度的日期）
+                        if (taskWorkingDates.Any())
+                        {
+                            var taskName = task.TaskName ?? "未知任务";
+                            // 只统计当前年度的日期
+                            var currentYearDates = taskWorkingDates.Where(d => d.Year == currentYear).ToList();
+                            var taskDaysByMonth = currentYearDates
+                                .GroupBy(d => d.Month)
+                                .Select(g => new { Month = g.Key, Days = g.Count() })
+                                .ToList();
+                            
+                            foreach (var monthData in taskDaysByMonth)
+                            {
+                                systemTaskDetails[systemName][monthData.Month].Add((taskName, monthData.Days));
                             }
                         }
                     }
 
-                    // 去重并排序
-                    workingDates = workingDates.Distinct().OrderBy(d => d).ToList();
+                    // 去重并排序，只保留当前年度的日期
+                    workingDates = workingDates
+                        .Where(d => d.Year == currentYear)  // 只统计当前年度的日期
+                        .Distinct()
+                        .OrderBy(d => d)
+                        .ToList();
 
                     if (workingDates.Any())
                     {
@@ -1048,11 +1088,14 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         List<DateTimeRange> timeRanges = GenerateContinuousTimeRanges(workingDates);
                         systemTestTimes.Times[systemName] = timeRanges;
 
-                        // 按月统计该系统的工作天数
+                        // 按月统计该系统的工作天数（只统计当前年度的日期）
                         foreach (DateTime date in workingDates)
                         {
-                            NaturalMonth month = (NaturalMonth)date.Month;
-                            systemTestTimes.SystemMonthlyWorkDays[systemName][month]++;
+                            if (date.Year == currentYear)  // 双重保险，确保只统计当前年度
+                            {
+                                NaturalMonth month = (NaturalMonth)date.Month;
+                                systemTestTimes.SystemMonthlyWorkDays[systemName][month]++;
+                            }
                         }
                     }
                 }
@@ -1085,6 +1128,24 @@ namespace Hgzn.Mes.Application.Main.Services.App
                     }
                 }
                 systemTestTimes.CurrentYearTotalSystemTestDays = currentYearTotalDays;
+
+                // 输出每个系统的月试验计划汇总信息
+                _logger.LogInformation("[CalculateSystemTestTimes] ========== 月试验计划汇总 ({CurrentYear}年{CurrentMonth}月) ==========", currentYear, currentMonth);
+                foreach (var systemName in systemTaskDetails.Keys.OrderBy(x => x))
+                {
+                    var monthTasks = systemTaskDetails[systemName][currentMonth];
+                    if (monthTasks.Any())
+                    {
+                        int totalDays = systemTestTimes.SystemMonthlyWorkDays[systemName][(NaturalMonth)currentMonth];
+                        _logger.LogInformation("[CalculateSystemTestTimes] 系统: {SystemName}, {CurrentMonth}月总天数: {TotalDays}", systemName, currentMonth, totalDays);
+                        foreach (var (taskName, days) in monthTasks)
+                        {
+                            _logger.LogInformation("[CalculateSystemTestTimes]   - 任务: {TaskName}, 天数: {Days}", taskName, days);
+                        }
+                    }
+                }
+                _logger.LogInformation("[CalculateSystemTestTimes] 当前月({CurrentMonth}月)所有系统总试验天数: {TotalDays}", currentMonth, currentMonthTotalDays);
+                _logger.LogInformation("[CalculateSystemTestTimes] =================================================");
 
                 return systemTestTimes;
             }
@@ -1302,11 +1363,15 @@ namespace Hgzn.Mes.Application.Main.Services.App
                         List<DateTimeRange> timeRanges = GenerateContinuousTimeRanges(typeWorkingDates);
                         typeTestTimes.Times[projectName] = timeRanges;
 
-                        // 按月统计该型号的工作天数
+                        // 按月统计该型号的工作天数（只统计当年的数据）
                         foreach (DateTime date in typeWorkingDates)
                         {
-                            NaturalMonth month = (NaturalMonth)date.Month;
-                            typeTestTimes.TypeMonthlyWorkDays[projectName][month]++;
+                            // 只统计当前年度的日期
+                            if (date.Year == currentYear)
+                            {
+                                NaturalMonth month = (NaturalMonth)date.Month;
+                                typeTestTimes.TypeMonthlyWorkDays[projectName][month]++;
+                            }
                         }
                     }
                 }
