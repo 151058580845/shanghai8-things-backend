@@ -24,9 +24,12 @@ using Hgzn.Mes.Domain.Entities.Equip.EquipMeasurementManager;
 using Hgzn.Mes.Domain.Entities.System.Location;
 using Hgzn.Mes.Domain.Shared;
 using Hgzn.Mes.Domain.Shared.Enums;
+using Hgzn.Mes.Domain.Services;
+using Hgzn.Mes.Infrastructure.DomainServices;
 using Hgzn.Mes.Infrastructure.Utilities;
 using Hgzn.Mes.Infrastructure.Utilities.TestDataReceiver.Common;
 using MathNet.Numerics.Distributions;
+using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 using MySqlX.XDevAPI;
 using NetCoreServer;
@@ -160,6 +163,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
         // 移除 IEquipLedgerService 依赖以避免循环依赖
         private readonly IBaseConfigService _baseConfigService;
         private IndexBasedTableGenerator _detailGenerator;
+        private readonly SplitTableService _splitTableService;
+        private readonly ISplitTableQueryService _splitTableQueryService;
 
         public RedisTreeNode EquipHealthStatusRedisTree;
         public RedisTreeNode EquipLiveRedisTree;
@@ -175,6 +180,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
             _sqlSugarClient = client;
             _baseConfigService = baseConfigService;
             _detailGenerator = new IndexBasedTableGenerator();
+            _splitTableService = new SplitTableService();
+            _splitTableQueryService = new SplitTableQueryService(client, _splitTableService);
             // 初始化数据
             SystemInfos = new List<SystemInfo>
             {
@@ -556,7 +563,54 @@ namespace Hgzn.Mes.Application.Main.Services.App
 
         #region ====== 获取展示数据的Table ======
 
+        /// <summary>
+        /// 辅助方法：从 Receive 表查询最后一条数据并反序列化
+        /// </summary>
+        private async Task<T?> GetLatestReceiveDataAsync<T>(byte simuTestSysId, byte devTypeId, string? compld = null) where T : class
+        {
+            var tempReceive = new Receive
+            {
+                SimuTestSysld = simuTestSysId,
+                DevTypeld = devTypeId,
+                Compld = compld
+            };
+            
+            var receive = await _splitTableQueryService.GetLatestDataAsync(tempReceive);
+            if (receive == null || receive.Content == null)
+                return null;
+            
+            return JsonConvert.DeserializeObject<T>(receive.Content.ToString());
+        }
 
+        /// <summary>
+        /// 辅助方法：从 Receive 表查询指定时间范围内的数据并反序列化
+        /// </summary>
+        private async Task<List<T>> GetReceiveDataByTimeRangeAsync<T>(byte simuTestSysId, byte devTypeId, DateTime startTime, DateTime endTime, string? compld = null) where T : class
+        {
+            var tempReceive = new Receive
+            {
+                SimuTestSysld = simuTestSysId,
+                DevTypeld = devTypeId,
+                Compld = compld
+            };
+            
+            var receiveList = await _splitTableQueryService.QueryByTimeRangeAsync(startTime, endTime, tempReceive);
+            if (receiveList == null || !receiveList.Any())
+                return new List<T>();
+            
+            var result = new List<T>();
+            foreach (var receive in receiveList)
+            {
+                if (receive.Content != null)
+                {
+                    var data = JsonConvert.DeserializeObject<T>(receive.Content.ToString());
+                    if (data != null)
+                        result.Add(data);
+                }
+            }
+            
+            return result;
+        }
 
         /// <summary>
         /// 根据系统信息和类型获取表格数据DTO列表
@@ -601,11 +655,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
             string typeName = "雷达源";
             TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("状态类型", "离线"), ("自检状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_0_SL_6_ReceiveData>("雷达源物理量", indexStart, indexEnd);
-            XT_0_SL_6_ReceiveData data = (await _sqlSugarClient.Queryable<XT_0_SL_6_ReceiveData>()
-                .Where(x => x.SimuTestSysld == 1) // 雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统1对应 SimuTestSysld = 1，设备类型6对应 DevTypeld = 6
+            XT_0_SL_6_ReceiveData data = await GetLatestReceiveDataAsync<XT_0_SL_6_ReceiveData>(1, 6) ?? null!;
             // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 6)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -626,10 +677,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("自检状态", "离线"),
                 ("运行状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_310_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
-            XT_310_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_310_SL_2_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统1对应 SimuTestSysld = 1，设备类型2对应 DevTypeld = 2
+            XT_310_SL_2_ReceiveData data = await GetLatestReceiveDataAsync<XT_310_SL_2_ReceiveData>(1, 2) ?? null!;
             // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -661,10 +710,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("自检状态", "离线"),
                 ("电源电压状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_307_SL_1_ReceiveData>("阵列馈电物理量", indexStart, indexEnd);
-            XT_307_SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT_307_SL_1_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统2对应 SimuTestSysld = 2，设备类型1对应 DevTypeld = 1
+            XT_307_SL_1_ReceiveData data = await GetLatestReceiveDataAsync<XT_307_SL_1_ReceiveData>(2, 1) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 1)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StateType == 1)),
@@ -685,10 +732,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("自检状态", "离线"),
                 ("运行状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_307_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
-            XT_307_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_307_SL_2_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统2对应 SimuTestSysld = 2，设备类型2对应 DevTypeld = 2
+            XT_307_SL_2_ReceiveData data = await GetLatestReceiveDataAsync<XT_307_SL_2_ReceiveData>(2, 2) ?? null!;
             // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -707,11 +752,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
             string typeName = "雷达源";
             TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("状态类型", "离线"), ("自检状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_0_SL_6_ReceiveData>("雷达源物理量", indexStart, indexEnd);
-            XT_0_SL_6_ReceiveData data = (await _sqlSugarClient.Queryable<XT_0_SL_6_ReceiveData>()
-                .Where(x => x.SimuTestSysld == 2) // 雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统2对应 SimuTestSysld = 2，设备类型6对应 DevTypeld = 6（雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统）
+            XT_0_SL_6_ReceiveData data = await GetLatestReceiveDataAsync<XT_0_SL_6_ReceiveData>(2, 6) ?? null!;
             // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 6)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -742,11 +784,34 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("自检状态", "离线"),
                 ("电源电压状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_314_SL_1_ReceiveData>("阵列馈电物理量", indexStart, indexEnd);
-            XT_314_SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT_314_SL_1_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
-            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 1)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            
+            // 系统314对应 SimuTestSysld = 3，设备类型1对应 DevTypeld = 1
+            byte simuTestSysId = 3;
+            byte devTypeId = 1;
+            
+            // 使用优化后的服务查询最后一条数据
+            var tempReceive = new Receive
+            {
+                SimuTestSysld = simuTestSysId,
+                DevTypeld = devTypeId,
+                Compld = null  // 如果不指定设备编号，查询所有该类型设备
+            };
+            
+            // 使用 GetLatestDataAsync 方法，自动优化查询最近两个月的表
+            var receive = await _splitTableQueryService.GetLatestDataAsync(tempReceive);
+            
+            // 反序列化 Content 字段
+            XT_314_SL_1_ReceiveData data = null;
+            if (receive != null && receive.Content != null)
+            {
+                data = JsonConvert.DeserializeObject<XT_314_SL_1_ReceiveData>(
+                    receive.Content.ToString()
+                );
+            }
+            
+            if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 1)) 
+                return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
+            
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StateType == 1)),
                 ("自检状态", GetStatus(() => data.SelfTest == 0)),
@@ -777,14 +842,10 @@ namespace Hgzn.Mes.Application.Main.Services.App
             TableDto defaultDetailTable1 = _detailGenerator.GenerateTableFromInstance<XT_314_SL_2_ReceiveData>("雷达转台物理量", indexStart1, indexEnd1);
             TableDto defaultDetailTable2 = _detailGenerator.GenerateTableFromInstance<XT_314_SL_2_ReceiveData>("红外转台物理量", indexStart2, indexEnd2);
             TableDto defaultDetailTableRet = Combine("物理量", defaultDetailTable1, defaultDetailTable2);
-            XT_314_SL_2_ReceiveData data1 = (await _sqlSugarClient.Queryable<XT_314_SL_2_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
-            XT_314_SL_3_ReceiveData data2 = (await _sqlSugarClient.Queryable<XT_314_SL_3_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统3对应 SimuTestSysld = 3，设备类型2对应 DevTypeld = 2（雷达转台）
+            XT_314_SL_2_ReceiveData data1 = await GetLatestReceiveDataAsync<XT_314_SL_2_ReceiveData>(3, 2) ?? null!;
+            // 系统3对应 SimuTestSysld = 3，设备类型3对应 DevTypeld = 3（红外转台）
+            XT_314_SL_3_ReceiveData data2 = await GetLatestReceiveDataAsync<XT_314_SL_3_ReceiveData>(3, 3) ?? null!;
             if ((data2 == null && data1 == null) || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTableRet, defaultDetailTableRet);
             TableDto table1 = defaultTable1;
             TableDto table2 = defaultTable2;
@@ -820,11 +881,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
             string typeName = "雷达源";
             TableDto defaultTable = CreateTable(typeName, CreateStandardHeader, ("状态类型", "离线"), ("自检状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_0_SL_6_ReceiveData>("雷达源物理量", indexStart, indexEnd);
-            XT_0_SL_6_ReceiveData data = (await _sqlSugarClient.Queryable<XT_0_SL_6_ReceiveData>()
-                .Where(x => x.SimuTestSysld == 3) // 雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统3对应 SimuTestSysld = 3，设备类型6对应 DevTypeld = 6（雷达源是个移动设备,它可能给任何系统使用,所以要过滤一下当前系统）
+            XT_0_SL_6_ReceiveData data = await GetLatestReceiveDataAsync<XT_0_SL_6_ReceiveData>(3, 6) ?? null!;
             // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 6)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -860,10 +918,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("功率电源状态", "离线"),
                 ("控制电源状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_109_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
-            XT_109_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_109_SL_7_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统4对应 SimuTestSysld = 4，设备类型7对应 DevTypeld = 7
+            XT_109_SL_7_ReceiveData data = await GetLatestReceiveDataAsync<XT_109_SL_7_ReceiveData>(4, 7) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
@@ -892,10 +948,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("高低轴工作状态", "离线"),
                 ("方位轴工作状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_109_SL_3_ReceiveData>("转台物理量", indexStart, indexEnd);
-            XT_109_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_109_SL_3_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统4对应 SimuTestSysld = 4，设备类型3对应 DevTypeld = 3
+            XT_109_SL_3_ReceiveData data = await GetLatestReceiveDataAsync<XT_109_SL_3_ReceiveData>(4, 3) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
@@ -934,10 +988,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("功率电源状态", "离线"),
                 ("控制电源状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_108_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
-            XT_108_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_108_SL_7_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统5对应 SimuTestSysld = 5，设备类型7对应 DevTypeld = 7
+            XT_108_SL_7_ReceiveData data = await GetLatestReceiveDataAsync<XT_108_SL_7_ReceiveData>(5, 7) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
@@ -962,10 +1014,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("状态类型", "离线"),
                 ("工作状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_108_SL_3_ReceiveData>("转台物理量", indexStart, indexEnd);
-            XT_108_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_108_SL_3_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统5对应 SimuTestSysld = 5，设备类型3对应 DevTypeld = 3
+            XT_108_SL_3_ReceiveData data = await GetLatestReceiveDataAsync<XT_108_SL_3_ReceiveData>(5, 3) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
@@ -1000,10 +1050,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("功率电源状态", "离线"),
                 ("控制电源状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_121_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
-            XT_121_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_7_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统6对应 SimuTestSysld = 6，设备类型7对应 DevTypeld = 7
+            XT_121_SL_7_ReceiveData data = await GetLatestReceiveDataAsync<XT_121_SL_7_ReceiveData>(6, 7) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
@@ -1032,10 +1080,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("高低轴工作状态", "离线"),
                 ("方位轴工作状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_121_SL_3_ReceiveData>("红外转台物理量", indexStart, indexEnd);
-            XT_121_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_121_SL_3_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统6对应 SimuTestSysld = 6，设备类型3对应 DevTypeld = 3
+            XT_121_SL_3_ReceiveData data = await GetLatestReceiveDataAsync<XT_121_SL_3_ReceiveData>(6, 3) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
@@ -1075,10 +1121,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("控制电源状态", "离线"),
                 ("逻辑电源状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_202_SL_7_ReceiveData>("红外源", indexStart, indexEnd);
-            XT_202_SL_7_ReceiveData data = (await _sqlSugarClient.Queryable<XT_202_SL_7_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统7对应 SimuTestSysld = 7，设备类型7对应 DevTypeld = 7
+            XT_202_SL_7_ReceiveData data = await GetLatestReceiveDataAsync<XT_202_SL_7_ReceiveData>(7, 7) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 7)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 ("状态类型", GetStatus(() => data.StatusType == 1)),
@@ -1108,10 +1152,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("两轴转台高低轴状态", "离线"),
                 ("两轴转台方位轴状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_202_SL_3_ReceiveData>("转台物理量", indexStart, indexEnd);
-            XT_202_SL_3_ReceiveData data = (await _sqlSugarClient.Queryable<XT_202_SL_3_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统7对应 SimuTestSysld = 7，设备类型3对应 DevTypeld = 3
+            XT_202_SL_3_ReceiveData data = await GetLatestReceiveDataAsync<XT_202_SL_3_ReceiveData>(7, 3) ?? null!;
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 3)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
                 // 最新一次协议对接,去掉了状态类型 ("状态类型", GetStatus(() => data.StatusType == 1)),
@@ -1145,10 +1187,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("自检状态", "离线"),
                 ("运行状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_103_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
-            XT_103_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_103_SL_2_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统8对应 SimuTestSysld = 8，设备类型2对应 DevTypeld = 2
+            XT_103_SL_2_ReceiveData data = await GetLatestReceiveDataAsync<XT_103_SL_2_ReceiveData>(8, 2) ?? null!;
             // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -1172,10 +1212,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("前进轴状态", "离线"),
                 ("云台状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_103_SL_1_ReceiveData>("移动平台物理量", indexStart, indexEnd);
-            XT_103_SL_1_ReceiveData data = (await _sqlSugarClient.Queryable<XT_103_SL_1_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统8对应 SimuTestSysld = 8，设备类型1对应 DevTypeld = 1
+            XT_103_SL_1_ReceiveData data = await GetLatestReceiveDataAsync<XT_103_SL_1_ReceiveData>(8, 1) ?? null!;
             // 检查是否有数据,以及类型设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 1)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -1210,10 +1248,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("俯仰轴工作状态", "离线"),
                 ("偏航轴工作状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_112_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
-            XT_112_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_112_SL_2_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统9对应 SimuTestSysld = 9，设备类型2对应 DevTypeld = 2
+            XT_112_SL_2_ReceiveData data = await GetLatestReceiveDataAsync<XT_112_SL_2_ReceiveData>(9, 2) ?? null!;
             // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -1246,10 +1282,8 @@ namespace Hgzn.Mes.Application.Main.Services.App
                 ("自检状态", "离线"),
                 ("运行状态", "离线"));
             TableDto defaultDetailTableDto = _detailGenerator.GenerateTableFromInstance<XT_119_SL_2_ReceiveData>("转台物理量", indexStart, indexEnd);
-            XT_119_SL_2_ReceiveData data = (await _sqlSugarClient.Queryable<XT_119_SL_2_ReceiveData>()
-                .OrderByDescending(x => x.CreationTime)
-                .Take(1)
-                .ToListAsync()).FirstOrDefault()!;
+            // 系统10对应 SimuTestSysld = 10，设备类型2对应 DevTypeld = 2
+            XT_119_SL_2_ReceiveData data = await GetLatestReceiveDataAsync<XT_119_SL_2_ReceiveData>(10, 2) ?? null!;
             // 检查是否有数据,以及设备是否有心跳,要是没有数据或没有心跳,则返回默认数据
             if (data == null || !systemInfo.LiveDevices.Any(x => x.EquipTypeNum == 2)) return new Tuple<TableDto, TableDto>(defaultTable, defaultDetailTableDto);
             TableDto table = CreateTable(typeName, CreateStandardHeader,
@@ -1412,12 +1446,22 @@ namespace Hgzn.Mes.Application.Main.Services.App
         {
             // 获取今天的日期（时间部分为 00:00:00）
             DateTime today = DateTime.Today;
-            // 查询今天的所有数据，并按 CreationTime 降序排列
-            List<XT_0_SL_5_ReceiveData> todayData = await _sqlSugarClient
-                .Queryable<XT_0_SL_5_ReceiveData>()
-                .Where(x => x.CreationTime >= today && x.CreationTime < today.AddDays(1)) // 今天 00:00:00 ~ 23:59:59
-                .OrderBy(x => x.CreationTime)
-                .ToListAsync();
+            DateTime tomorrow = today.AddDays(1);
+            
+            // 移动电源：系统0对应 SimuTestSysld = 0，设备类型5对应 DevTypeld = 5
+            byte simuTestSysId = 0;
+            byte devTypeId = 5; // 移动电源
+            
+            // 从分表查询今天的数据
+            var todayData = await GetReceiveDataByTimeRangeAsync<XT_0_SL_5_ReceiveData>(
+                simuTestSysId, 
+                devTypeId, 
+                today, 
+                tomorrow);
+            
+            // 按 CreationTime 排序
+            todayData = todayData.OrderBy(x => x.CreationTime).ToList();
+            
             // 获取采集电压
             List<ChartDataPointDto> cdps = new List<ChartDataPointDto>();
             foreach (XT_0_SL_5_ReceiveData item in todayData)
@@ -1442,12 +1486,21 @@ namespace Hgzn.Mes.Application.Main.Services.App
             var ret = new List<ChartDataDto>();
 
             DateTime today = DateTime.Today;
-
-            // 查询今天的所有数据
-            var todayData = await _sqlSugarClient.Queryable<T>()
-                .Where(x => x.CreationTime >= today && x.CreationTime < today.AddDays(1))
-                .OrderBy(x => x.CreationTime)
-                .ToListAsync();
+            DateTime tomorrow = today.AddDays(1);
+            
+            // 根据系统编号获取 SimuTestSysld，固定电源设备类型4对应 DevTypeld = 4
+            byte simuTestSysId = systemInfo.SystemNum;
+            byte devTypeId = 4; // 固定电源
+            
+            // 从分表查询今天的数据
+            var todayData = await GetReceiveDataByTimeRangeAsync<T>(
+                simuTestSysId, 
+                devTypeId, 
+                today, 
+                tomorrow);
+            
+            // 按 CreationTime 排序
+            todayData = todayData.OrderBy(x => x.CreationTime).ToList();
 
             var latestData = todayData.LastOrDefault();
             if (latestData == null) return ret;

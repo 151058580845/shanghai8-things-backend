@@ -19,4 +19,11 @@ public interface ISplitTableQueryService : IDomainService
         DateTime? startTime,
         DateTime? endTime,
         object otherSplitFieldValues);
+
+    /// <summary>
+    /// 查询最后一条数据（优化：只查询最近两个月的表）
+    /// </summary>
+    /// <param name="otherSplitFieldValues">分表字段值（Receive对象）</param>
+    /// <returns>最后一条数据，如果没有则返回null</returns>
+    Task<Receive?> GetLatestDataAsync(object otherSplitFieldValues);
 }

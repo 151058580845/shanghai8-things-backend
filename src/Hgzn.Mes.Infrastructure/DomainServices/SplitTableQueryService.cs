@@ -85,4 +85,41 @@ public class SplitTableQueryService : ISplitTableQueryService
             
             return data;
         }
+
+        /// <summary>
+        /// 查询最后一条数据（优化：只查询最近两个月的表）
+        /// </summary>
+        public async Task<Receive?> GetLatestDataAsync(object otherSplitFieldValues)
+        {
+            // 优化：只查询当前月份和上个月的数据（确保能获取到最新数据）
+            var currentMonth = DateTime.Now.ToString("yyyyMM");
+            var lastMonth = DateTime.Now.AddMonths(-1).ToString("yyyyMM");
+            
+            // 获取表名前缀（不包含月份部分）
+            string baseTableName = _splitTableService.GetFieldValuesTableName(otherSplitFieldValues);
+            
+            // 如果传入的是 Receive 对象，提取过滤条件
+            var query = DbContext.Queryable<Receive>();
+            if (otherSplitFieldValues is Receive receiveFilter)
+            {
+                if (receiveFilter.SimuTestSysld.HasValue)
+                    query = query.Where(it => it.SimuTestSysld == receiveFilter.SimuTestSysld);
+                if (receiveFilter.DevTypeld.HasValue)
+                    query = query.Where(it => it.DevTypeld == receiveFilter.DevTypeld);
+                if (!string.IsNullOrEmpty(receiveFilter.Compld))
+                    query = query.Where(it => it.Compld == receiveFilter.Compld);
+            }
+            
+            // 查询最后一条数据 - 只查询当前月份和上个月的表
+            var data = await query
+                .SplitTable(tas => tas.Where(y => 
+                    y.TableName.Contains(baseTableName) && 
+                    (y.TableName.Contains($"_{currentMonth}") || y.TableName.Contains($"_{lastMonth}")))
+                    .ToList())
+                .OrderByDescending(x => x.CreateTime)
+                .Take(1)
+                .FirstAsync();
+            
+            return data;
+        }
     }
