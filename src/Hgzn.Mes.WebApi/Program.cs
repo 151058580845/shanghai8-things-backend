@@ -75,6 +75,21 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<OperLogFilterAttribute>();
 });
+
+// 配置表单选项（文件上传大小限制）
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = long.MaxValue; // 设置为最大值，允许大文件上传
+    options.ValueLengthLimit = int.MaxValue; // 无限制
+    options.MultipartHeadersLengthLimit = int.MaxValue; // 无限制
+    options.KeyLengthLimit = int.MaxValue; // 无限制
+});
+
+// 配置 Kestrel 请求大小限制
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = null; // 无限制，允许大文件上传
+});
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
