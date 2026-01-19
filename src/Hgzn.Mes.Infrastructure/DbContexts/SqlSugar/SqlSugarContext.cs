@@ -1,4 +1,4 @@
-﻿using CaseExtensions;
+using CaseExtensions;
 using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.Equip.EquipManager;
 using Hgzn.Mes.Domain.Entities.System.Notice;
@@ -549,6 +549,10 @@ public sealed class SqlSugarContext
         if (_dbOptions.EnabledDbSeed)
         {
             SeedData();
+            
+            // 初始化模拟分表数据（用于演示）
+            InitMockSplitTableData();
+            
             // foreach (var allReceiveDataTest in GetAllReceiveDataTests())
             // {
             //     Console.WriteLine(allReceiveDataTest.ToString());
@@ -557,6 +561,125 @@ public sealed class SqlSugarContext
         }
 
 
+    }
+
+    /// <summary>
+    /// 初始化模拟分表数据（用于演示）
+    /// 创建类似 equip_receive_sysj_6_3_308120000201300003_202508 的分表并填充模拟数据
+    /// </summary>
+    private void InitMockSplitTableData()
+    {
+        try
+        {
+            // 模拟5个不同设备的分表配置
+            var mockTableConfigs = new[]
+            {
+                new { SimuTestSysld = 6, DevTypeld = 3, Compld = "308120000201300003", YearMonth = "202508" },
+                new { SimuTestSysld = 6, DevTypeld = 3, Compld = "308120000201300004", YearMonth = "202509" },
+                new { SimuTestSysld = 7, DevTypeld = 2, Compld = "307120000201200001", YearMonth = "202510" },
+                new { SimuTestSysld = 8, DevTypeld = 1, Compld = "308220000301100005", YearMonth = "202511" },
+                new { SimuTestSysld = 6, DevTypeld = 4, Compld = "306120000401400002", YearMonth = "202512" },
+            };
+
+            foreach (var config in mockTableConfigs)
+            {
+                var tableName = $"equip_receive_sysj_{config.SimuTestSysld}_{config.DevTypeld}_{config.Compld}_{config.YearMonth}";
+                
+                // 检查表是否已存在
+                if (DbContext.DbMaintenance.IsAnyTable(tableName, false))
+                {
+                    _logger.LogInformation($"模拟分表 {tableName} 已存在，跳过创建");
+                    continue;
+                }
+
+                // 创建分表（使用原始SQL）
+                var createTableSql = $@"
+                    CREATE TABLE ""{tableName}"" (
+                        ""id"" UUID PRIMARY KEY,
+                        ""creator_id"" UUID,
+                        ""creation_time"" TIMESTAMP,
+                        ""simu_test_sysld"" SMALLINT,
+                        ""dev_typeld"" SMALLINT,
+                        ""compld"" VARCHAR(50),
+                        ""local_or_remote"" SMALLINT,
+                        ""work_pattern"" SMALLINT,
+                        ""reserved"" SMALLINT,
+                        ""status_type"" SMALLINT,
+                        ""rolling_axis_operation_status"" SMALLINT,
+                        ""yaw_axis_operation_status"" SMALLINT,
+                        ""pitch_axis_operation_status"" SMALLINT,
+                        ""elevation_axis_operation_status"" SMALLINT,
+                        ""azimuth_axis_operation_status"" SMALLINT,
+                        ""physical_quantity_count"" SMALLINT,
+                        ""three_axis_roll_given"" DOUBLE PRECISION,
+                        ""three_axis_yaw_given"" DOUBLE PRECISION,
+                        ""three_axis_pitch_given"" DOUBLE PRECISION,
+                        ""two_axis_elevation_given"" DOUBLE PRECISION,
+                        ""two_axis_pitch_given"" DOUBLE PRECISION,
+                        ""three_axis_roll_feedback"" DOUBLE PRECISION,
+                        ""three_axis_yaw_feedback"" DOUBLE PRECISION,
+                        ""three_axis_pitch_feedback"" DOUBLE PRECISION,
+                        ""two_axis_elevation_feedback"" DOUBLE PRECISION,
+                        ""two_axis_pitch_feedback"" DOUBLE PRECISION,
+                        ""period"" DOUBLE PRECISION,
+                        ""run_time"" INTEGER,
+                        ""last_modifier_id"" UUID,
+                        ""last_modification_time"" TIMESTAMP,
+                        ""creator_level"" INTEGER
+                    )";
+
+                try
+                {
+                    DbContext.Ado.ExecuteCommand(createTableSql);
+                    _logger.LogInformation($"创建模拟分表: {tableName}");
+
+                    // 为每个表插入10条模拟数据
+                    var random = new Random();
+                    var baseTime = DateTime.Parse($"{config.YearMonth.Substring(0, 4)}-{config.YearMonth.Substring(4, 2)}-01");
+                    
+                    for (int i = 0; i < 10; i++)
+                    {
+                        var insertSql = $@"
+                            INSERT INTO ""{tableName}"" (
+                                ""id"", ""creation_time"", ""simu_test_sysld"", ""dev_typeld"", ""compld"",
+                                ""local_or_remote"", ""work_pattern"", ""reserved"", ""status_type"",
+                                ""rolling_axis_operation_status"", ""yaw_axis_operation_status"",
+                                ""pitch_axis_operation_status"", ""elevation_axis_operation_status"",
+                                ""azimuth_axis_operation_status"", ""physical_quantity_count"",
+                                ""three_axis_roll_given"", ""three_axis_yaw_given"", ""three_axis_pitch_given"",
+                                ""two_axis_elevation_given"", ""two_axis_pitch_given"",
+                                ""three_axis_roll_feedback"", ""three_axis_yaw_feedback"", ""three_axis_pitch_feedback"",
+                                ""two_axis_elevation_feedback"", ""two_axis_pitch_feedback"",
+                                ""period"", ""run_time"", ""creator_level""
+                            ) VALUES (
+                                '{Guid.NewGuid()}', 
+                                '{baseTime.AddDays(i).AddHours(random.Next(0, 24)).AddMinutes(random.Next(0, 60)):yyyy-MM-dd HH:mm:ss}',
+                                {config.SimuTestSysld}, {config.DevTypeld}, '{config.Compld}',
+                                0, 0, 0, 1,
+                                {random.Next(0, 2)}, {random.Next(0, 2)},
+                                {random.Next(0, 2)}, {random.Next(0, 2)},
+                                {random.Next(0, 2)}, 10,
+                                {Math.Round(random.NextDouble() * 10, 2)}, {Math.Round(random.NextDouble() * 10, 2)}, {Math.Round(random.NextDouble() * 10, 2)},
+                                {Math.Round(random.NextDouble() * 90, 6)}, {Math.Round(random.NextDouble() * 90, 6)},
+                                {Math.Round(random.NextDouble() * 0.001 - 0.0005, 10)}, {Math.Round(random.NextDouble() * 0.001 - 0.0005, 10)}, {Math.Round(random.NextDouble() * 0.01 - 0.005, 6)},
+                                {Math.Round(random.NextDouble() * 90, 6)}, {Math.Round(random.NextDouble() * 90, 6)},
+                                0.0, {random.Next(0, 1000)}, 0
+                            )";
+                        DbContext.Ado.ExecuteCommand(insertSql);
+                    }
+                    
+                    _logger.LogInformation($"已为分表 {tableName} 插入 10 条模拟数据");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"创建模拟分表 {tableName} 失败: {ex.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "初始化模拟分表数据时发生错误");
+        }
     }
 
     //测试自动分页，获取数据
