@@ -1986,35 +1986,35 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             RouteName = "EquipLocationRecord"
         };
 
-        // 设备定位
-        public static Menu EquipOrientation = new()
-        {
-            Id = Guid.Parse("6e0801e3-e866-436e-b0ff-f47845a3ff8d"),
-            Name = "设备定位",
-            Code = "equipOrientation",
-            ScopeCode = "equip:equipledgerhistory:list",
-            Type = MenuType.Menu,
-            IconUrl = "fa-solid:history",
-            Route = "/equip/history/index",
-            OrderNum = 1001,
-            ParentId = OrientationManagement.Id,
-            RouteName = "equiporientation"
-        };
+        //// 设备定位
+        //public static Menu EquipOrientation = new()
+        //{
+        //    Id = Guid.Parse("6e0801e3-e866-436e-b0ff-f47845a3ff8d"),
+        //    Name = "设备定位",
+        //    Code = "equipOrientation",
+        //    ScopeCode = "equip:equipledgerhistory:list",
+        //    Type = MenuType.Menu,
+        //    IconUrl = "fa-solid:history",
+        //    Route = "/equip/history/index",
+        //    OrderNum = 1001,
+        //    ParentId = OrientationManagement.Id,
+        //    RouteName = "equiporientation"
+        //};
 
-        // 设备资源可视化
-        public static Menu EquipVisualization = new()
-        {
-            Id = Guid.Parse("769332a0-16ba-47a6-9d1a-b36d14093863"),
-            Name = "设备资源可视化",
-            Code = "equipvisualization",
-            ScopeCode = "equip:equipledgerhistory:list",
-            Type = MenuType.Menu,
-            IconUrl = "fa-solid:history",
-            Route = "/equip/history/index",
-            OrderNum = 1002,
-            ParentId = OrientationManagement.Id,
-            RouteName = "equipvisualization"
-        };
+        //// 设备资源可视化
+        //public static Menu EquipVisualization = new()
+        //{
+        //    Id = Guid.Parse("769332a0-16ba-47a6-9d1a-b36d14093863"),
+        //    Name = "设备资源可视化",
+        //    Code = "equipvisualization",
+        //    ScopeCode = "equip:equipledgerhistory:list",
+        //    Type = MenuType.Menu,
+        //    IconUrl = "fa-solid:history",
+        //    Route = "/equip/history/index",
+        //    OrderNum = 1002,
+        //    ParentId = OrientationManagement.Id,
+        //    RouteName = "equipvisualization"
+        //};
 
         #endregion
 
@@ -2040,7 +2040,7 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
             //Warehouse, WarehouseSet, WarehouseStock, ProcureWarehouse, SupplierReturn,
             //ProductRequire, ProductReturn, ProductWarehouse, SalesOut, SalesReturn,
             Equip, EquipType, EquipLedger, EquipAdd, EquipEdit, EquipQuery, EquipRemove, EquipLabelManage, EquipNotice,EquipTestAnalyse, TestData, AssetData, AssetDataAdd, AssetDataEdit, AssetDataQuery, AssetDataRemove,
-            OrientationManagement, EquipLedgerHistory, EquipLocationRecord, EquipOrientation, EquipVisualization,
+            OrientationManagement, EquipLedgerHistory, EquipLocationRecord, // EquipOrientation, EquipVisualization,
             LabelManagement, EquipLabel,
             DataManagement,EquipRkServer,
             //EquipItems, EquipPlan, EquipPlanDone,EquipRepair, EquipPlanRecord,

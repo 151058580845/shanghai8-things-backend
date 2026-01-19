@@ -1928,4 +1928,201 @@ public class XT_314_SL_1_ReceiveData : UniversalEntity, IAudited
     public DateTime? LastModificationTime { get; set; }
     [TableNotShow]
     public int CreatorLevel { get; set; } = 0;
+
+#if DEBUG
+    public static XT_314_SL_1_ReceiveData[] Seeds
+    {
+        get
+        {
+            List<XT_314_SL_1_ReceiveData> list = [];
+            List<string> uuids = [
+                "0198C030-F4D5-737D-B231-0A37E0D13FD3",
+                "0198C030-F4D5-737D-B231-0D317C8A74DF",
+                "0198C030-F4D5-737D-B231-1396E080FFB5",
+                "0198C030-F4D5-737D-B231-178F63931858",
+                "0198C030-F4D5-737D-B231-1BAE43265B11",
+                "0198C030-F4D5-737D-B231-1D60D54E7E20",
+                "0198C030-F4D5-737D-B231-22AA38B6A0E4",
+                "0198C030-F4D5-737D-B231-24F9E3B37DBD",
+                "0198C030-F4D5-737D-B231-2AC44863F563",
+                "0198C030-F4D5-737D-B231-2F18CE108244",
+                "0198C030-F4D5-737D-B231-310A2141BDE9",
+                "0198C030-F4D5-737D-B231-3520470D9378",
+                "0198C030-F4D5-737D-B231-3B161CF34E6A",
+                "0198C030-F4D5-737D-B231-3EAB45E6C1E8",
+                "0198C030-F4D5-737D-B231-4233686A7EE3",
+                "0198C030-F4D5-737D-B231-445F6B0CBB85",
+                "0198C030-F4D5-737D-B231-480E73409E09",
+                "0198C030-F4D5-737D-B231-4CA6FB519AA2",
+                "0198C030-F4D5-737D-B231-51AD30FC9715",
+                "0198C030-F4D5-737D-B231-54C40A2C4762",
+                "0198C030-F4D5-737D-B231-581CA4A38BB7",
+                "0198C030-F4D5-737D-B231-5D13BBC35D6E",
+                "0198C030-F4D5-737D-B231-631F3F023569",
+                "0198C030-F4D5-737D-B231-66C8F11AE987",
+                "0198C030-F4D5-737D-B231-693DD7F2BDC2",
+                "0198C030-F4D5-737D-B231-6FCEA1C95130",
+                "0198C030-F4D5-737D-B231-70ADADCDBB9D",
+                "0198C030-F4D5-737D-B231-74BD861CC1B1",
+                "0198C030-F4D5-737D-B231-7B7195A43C98",
+                "0198C030-F4D5-737D-B231-7E7566D1F5EC",
+                "0198C030-F4D5-737D-B231-83CC24687BC8",
+                "0198C030-F4D5-737D-B231-871AE972C79B",
+                "0198C030-F4D5-737D-B231-8ADC4321D3CF",
+                "0198C030-F4D5-737D-B231-8E8FCBC9BEE9",
+                "0198C030-F4D5-737D-B231-935CE8CC3174",
+                "0198C030-F4D5-737D-B231-95F1500ACA03",
+                "0198C030-F4D5-737D-B231-9BFF30A9DAF6",
+                "0198C030-F4D5-737D-B231-9C0ED6639B09",
+                "0198C030-F4D5-737D-B231-A30242CFB11F",
+                "0198C030-F4D5-737D-B231-A7AECEEE0EC1",
+                "0198C030-F4D5-737D-B231-AB0257B003FB",
+                "0198C030-F4D5-737D-B231-AC4C7A9D6E4E",
+                "0198C030-F4D5-737D-B231-B2F7F9122A0D",
+                "0198C030-F4D5-737D-B231-B45377309CA3",
+                "0198C030-F4D5-737D-B231-B97BD4B23FB2",
+                "0198C030-F4D5-737D-B231-BE889D25718D",
+                "0198C030-F4D5-737D-B231-C08A8E72DE2D",
+                "0198C030-F4D5-737D-B231-C6101DDA1E8B",
+                "0198C030-F4D5-737D-B231-C9CB903A5DA3",
+                "0198C030-F4D5-737D-B231-CFABB096B4CD",
+                "0198C030-F4D5-737D-B231-D21A49AFA5BF",
+                "0198C030-F4D5-737D-B231-D5A833669B4D",
+                "0198C030-F4D5-737D-B231-D8862DD6CC6C",
+                "0198C030-F4D5-737D-B231-DF8699D29B4D",
+                "0198C030-F4D5-737D-B231-E387C9B3B797",
+                "0198C030-F4D5-737D-B231-E51B63BC1DB5",
+                "0198C030-F4D5-737D-B231-EBDB678FCF97",
+                "0198C030-F4D5-737D-B231-EEC2E2F1288A",
+                "0198C030-F4D5-737D-B231-F310DEBDADFD",
+                "0198C030-F4D5-737D-B231-F6888B2BE627",
+                "0198C030-F4D5-737D-B231-F8460560E4CE",
+                "0198C030-F4D5-737D-B231-FC7D6EB7804A",
+                "0198C030-F4D5-737D-B232-03B03AFEA989",
+                "0198C030-F4D5-737D-B232-06B665FF43C3",
+                "0198C030-F4D5-737D-B232-0BB161B59D1D",
+                "0198C030-F4D5-737D-B232-0E68F03B6944",
+                "0198C030-F4D5-737D-B232-13405B08FF06",
+                "0198C030-F4D5-737D-B232-164644862208",
+                "0198C030-F4D5-737D-B232-18FDEF9C1321",
+                "0198C030-F4D5-737D-B232-1C26C535396E",
+                "0198C030-F4D5-737D-B232-21F1F6DB64B2",
+                "0198C030-F4D5-737D-B232-2779371296BD",
+                "0198C030-F4D5-737D-B232-2805773D8987",
+                "0198C030-F4D5-737D-B232-2F6EE6B808E5",
+                "0198C030-F4D5-737D-B232-33B050B27B48",
+                "0198C030-F4D5-737D-B232-344F79380B7E",
+                "0198C030-F4D5-737D-B232-3853126A32DE",
+                "0198C030-F4D5-737D-B232-3C73D836BD62",
+                "0198C030-F4D5-737D-B232-42DF47F7D83D",
+                "0198C030-F4D5-737D-B232-47E1653ED586",
+                "0198C030-F4D5-737D-B232-4876D3025135",
+                "0198C030-F4D5-737D-B232-4CF3ABF1C892",
+                "0198C030-F4D5-737D-B232-530085AF5E8F",
+                "0198C030-F4D5-737D-B232-546E2B4FF520",
+                "0198C030-F4D5-737D-B232-58CE00FCDECF",
+                "0198C030-F4D5-737D-B232-5EAD645D0CB1",
+                "0198C030-F4D5-737D-B232-61FD2672C09E",
+                "0198C030-F4D5-737D-B232-64F0083AB02C",
+                "0198C030-F4D5-737D-B232-68E26F824553",
+                "0198C030-F4D5-737D-B232-6DAC684C1FA2",
+                "0198C030-F4D5-737D-B232-729268179817",
+                "0198C030-F4D5-737D-B232-76002C884315",
+                "0198C030-F4D5-737D-B232-79ED12083ECC",
+                "0198C030-F4D5-737D-B232-7F20ADFDA587",
+                "0198C030-F4D5-737D-B232-80F562FA4F2E",
+                "0198C030-F4D5-737D-B232-8751A6F1ABA8",
+                "0198C030-F4D5-737D-B232-884AB50CD5B0",
+                "0198C030-F4D5-737D-B232-8E2475E31CB7",
+                "0198C030-F4D5-737D-B232-92208CC4AD1E",
+                "0198C030-F4D5-737D-B232-963CA30D81D8"
+            ];
+            List<string> equipUuids = [
+                "0198BBB27F42727EB6F5180CA97F4987",
+                "0198BBB27F42727EB6F51E4F2BF67E0D",
+                "0198BBB27F42727EB6F52282456494D4",
+                "0198BBB27F42727EB6F5264FA2A3F8C6",
+                "0198BBB27F42727EB6F5285E94B1E1A4",
+                "0198BBB27F42727EB6F52D9D7CB085D1",
+                "0198BBB27F42727EB6F5308190A269EE",
+                "0198BBB27F42727EB6F5377B83C914D0",
+                "0198BBB27F42727EB6F53A51433E3856",
+                "0198BBB27F42727EB6F53DFB78DD0054"
+            ];
+            var rand = new Random();
+            var now = DateTime.Now;
+            int a = 0;
+            List<Attribute> attributes = [];
+            Type? type = null;
+            Dictionary<PropertyInfo, int> properties = [];
+            foreach (var uuid in uuids)
+            {
+                var b = Activator.CreateInstance<XT_314_SL_1_ReceiveData>();
+                type ??= b.GetType();
+                if (!properties.Any())
+                {
+                    var tempProperties = type.GetProperties();
+                    foreach (var property in tempProperties)
+                    {
+                        var attrs = property.GetCustomAttributes();
+                        foreach (var attr in attrs)
+                        {
+                            if (attr is DescriptionAttribute descattr)
+                            {
+                                if (descattr.Description.Contains("-5V"))
+                                {
+                                    properties.Add(property, -5);
+                                    break;
+                                }
+                                else if (descattr.Description.Contains("-12V"))
+                                {
+                                    properties.Add(property, -12);
+                                    break;
+                                }
+                                else if (descattr.Description.Contains("5V"))
+                                {
+                                    properties.Add(property, 5);
+                                    break;
+                                }
+                                else if (descattr.Description.Contains("12V"))
+                                {
+                                    properties.Add(property, 12);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                b.Id = Guid.Parse(uuid);
+                b.SimuTestSysld = 3;
+                b.DevTypeld = 1;
+                b.Compld = equipUuids[rand.Next(equipUuids.Count - 1)];
+                b.MicroWare = 1;
+                b.Channel = 1;
+                b.ModelValid = 1;
+                b.ArrayEndPolarizationMode = 1;
+                b.ArrayEndPowerMode = 1;
+                b.ArrayChannelMultiplexing = 1;
+                b.ChannelPolarizationMode1 = 1;
+                b.ChannelPolarizationMode2 = 1;
+                b.ChannelPowerMode = 1;
+                b.Reserved = 1;
+                b.StateType = 1;
+                b.SelfTest = 1;
+                b.SupplyVoltageState = 1;
+                b.PhysicalQuantityCount = 462;
+                b.RunTime = (uint?)new DateTimeOffset(now.AddSeconds(a)).ToUnixTimeSeconds();
+                b.CreationTime = now.AddSeconds(a);
+                foreach (var dic in properties)
+                {
+                    dic.Key.SetValue(b, dic.Value);
+                }
+                list.Add(b);
+                a++;
+            }
+            return [.. list];
+        }
+    }
+#endif
 }
