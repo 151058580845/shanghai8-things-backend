@@ -98,8 +98,26 @@ namespace Hgzn.Mes.Domain.Entities.System.Config
             Remark = ""
         };
 
+        public static BaseConfig CameraConfig1 = new BaseConfig()
+        {
+            Id = Guid.Parse("dccb1a8f-d084-45fc-9541-74baf06fe3a1"),
+            ConfigName = "310摄像头IP",
+            ConfigKey = "310_camera_Ip",
+            ConfigValue = "10.125.157.200:18081:20555",
+            Remark = ""
+        };
+
+        public static BaseConfig CameraConfig2 = new BaseConfig()
+        {
+            Id = Guid.Parse("dccb1a9f-d084-45fc-9541-74baf06fe3a1"),
+            ConfigName = "307摄像头IP",
+            ConfigKey = "307_camera_Ip",
+            ConfigValue = "10.125.157.200:18082:20556,10.125.157.200:18083:20557",
+            Remark = ""
+        };
+
         #endregion
 
-        public static BaseConfig[] Seeds { get; } = [ImportUrl, DefaultPassword, CameraIp, CameraUser, CameraPassword];
+        public static BaseConfig[] Seeds { get; } = [ImportUrl, DefaultPassword, CameraIp, CameraUser, CameraPassword, CameraConfig1, CameraConfig2];
     }
 }
