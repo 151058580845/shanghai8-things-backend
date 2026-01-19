@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base;
 using System.ComponentModel;
 
 namespace Hgzn.Mes.Domain.Entities.System.Code;
@@ -40,6 +40,13 @@ public class CodeRuleDefine : UniversalEntity, IOrder
 
     [Description("元素属性")]
     public string? SourceValue { get; set; }
+
+    #region audit
+
+    public Guid? CreatorId { get; set; }
+    public DateTime? CreationTime { get; set; }
+
+    #endregion audit
 
     #region static CodeRuleDefine
 

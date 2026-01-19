@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base;
 using Hgzn.Mes.Domain.Entities.System.Account;
 
 namespace Hgzn.Mes.Domain.Entities.System.Authority
@@ -11,6 +11,13 @@ namespace Hgzn.Mes.Domain.Entities.System.Authority
         public Guid MenuId { get; set; }
 
         public Guid RoleId { get; set; }
+
+        #region audit
+
+        public Guid? CreatorId { get; set; }
+        public DateTime? CreationTime { get; set; }
+
+        #endregion audit
 
         public static RoleMenu[] Seeds { get; set; } =
         [

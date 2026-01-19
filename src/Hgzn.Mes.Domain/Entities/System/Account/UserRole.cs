@@ -1,4 +1,4 @@
-﻿using Hgzn.Mes.Domain.Entities.Base;
+using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.System.Account
 {
@@ -10,6 +10,13 @@ namespace Hgzn.Mes.Domain.Entities.System.Account
         public Guid UserId { get; set; }
 
         public Guid RoleId { get; set; }
+
+        #region audit
+
+        public Guid? CreatorId { get; set; }
+        public DateTime? CreationTime { get; set; }
+
+        #endregion audit
 
         public static UserRole[] Seeds { get; set; } =
         [

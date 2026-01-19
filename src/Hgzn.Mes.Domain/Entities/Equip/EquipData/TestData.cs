@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
@@ -44,6 +44,13 @@ public class TestData : UniversalEntity
     public List<TestDataProduct>? UUT { get; set; }
 
     public List<TestDataUST>? UST { get; set; }
+
+    #region audit
+
+    public Guid? CreatorId { get; set; }
+    public DateTime? CreationTime { get; set; }
+
+    #endregion audit
 
 #if DEBUG
     public static TestData[] Seeds { get; } = new TestData[]

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
@@ -19,6 +19,13 @@ public class TestEquipData : UniversalEntity
 
     [Description("本机识别编码")]
     public string Compld { get; set; }
+
+    #region audit
+
+    public Guid? CreatorId { get; set; }
+    public DateTime? CreationTime { get; set; }
+
+    #endregion audit
 
     /// <summary>
     /// 根据仿真试验系统识别编码获取设备类型识别编码

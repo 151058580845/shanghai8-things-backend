@@ -610,3 +610,6 @@ HGZNTest.db
 /src/Hgzn.Mes.WebApi/HGZNTest.db
 RoomImgFolder/
 packages/
+
+# 数据库导出备份文件夹
+ExportDatabaseBackup/

@@ -3,11 +3,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Dynamic;
 using Hgzn.Mes.Application.Main.Dtos.Audit;
 using Hgzn.Mes.Application.Main.Services.Audit.IService;
 using Hgzn.Mes.Domain.Shared;
+using Hgzn.Mes.Domain.Entities.Audit;
 using Hgzn.Mes.Infrastructure.DbContexts.SqlSugar;
 using StackExchange.Redis;
 using SqlSugar;
@@ -23,12 +25,45 @@ public class IncrementalBackupService : IIncrementalBackupService
     private readonly IConnectionMultiplexer _connectionMultiplexer;
     private const string BackupTimestampKeyPrefix = "incremental_backup:timestamp:";
 
+    private static bool _tableInitialized = false;
+    private static readonly object _tableInitLock = new object();
+
     public IncrementalBackupService(
         SqlSugarContext dbContext,
         IConnectionMultiplexer connectionMultiplexer)
     {
         _dbContext = dbContext;
         _connectionMultiplexer = connectionMultiplexer;
+    }
+
+    /// <summary>
+    /// 确保时间戳表存在（线程安全）
+    /// </summary>
+    private void EnsureTimestampTableExists()
+    {
+        if (_tableInitialized)
+        {
+            return;
+        }
+
+        lock (_tableInitLock)
+        {
+            if (_tableInitialized)
+            {
+                return;
+            }
+
+            try
+            {
+                _dbContext.DbContext.CodeFirst.InitTables(typeof(IncrementalBackupTimestamp));
+                _tableInitialized = true;
+                LoggerAdapter.LogInformation("增量备份时间戳表初始化完成");
+            }
+            catch (Exception ex)
+            {
+                LoggerAdapter.LogWarning($"初始化增量备份时间戳表失败: {ex.Message}");
+            }
+        }
     }
 
     /// <summary>
@@ -55,6 +90,7 @@ public class IncrementalBackupService : IIncrementalBackupService
 
             // 3. 查询增量数据（只查询新增/修改的数据，不处理删除）
             var allData = new Dictionary<string, List<Dictionary<string, object>>>();
+            var currentExportTime = DateTime.Now; // 记录导出时间，用于填充null的时间戳字段
 
             foreach (var table in tables)
             {
@@ -67,6 +103,19 @@ public class IncrementalBackupService : IIncrementalBackupService
                     // 获取表的UUID列信息，用于规范化UUID值
                     var uuidColumns = await GetUuidColumnsAsync(table);
                     
+                    // 获取表的时间戳字段信息
+                    var timestampColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var hasCreationTime = await HasColumnAsync(table, "creation_time");
+                    var hasModificationTime = await HasColumnAsync(table, "last_modification_time");
+                    if (hasCreationTime)
+                    {
+                        timestampColumns.Add("creation_time");
+                    }
+                    if (hasModificationTime)
+                    {
+                        timestampColumns.Add("last_modification_time");
+                    }
+                    
                     // #region agent log
                     try
                     {
@@ -74,6 +123,7 @@ public class IncrementalBackupService : IIncrementalBackupService
                         {
                             tableName = table,
                             uuidColumns = uuidColumns.ToList(),
+                            timestampColumns = timestampColumns.ToList(),
                             recordCount = tableData.Count
                         };
                         var logJson = JsonSerializer.Serialize(new
@@ -82,7 +132,7 @@ public class IncrementalBackupService : IIncrementalBackupService
                             runId = "run1",
                             hypothesisId = "EXPORT",
                             location = $"{nameof(IncrementalBackupService)}.cs:{new StackTrace().GetFrame(0)?.GetFileLineNumber()}",
-                            message = "导出前：获取表的UUID列信息",
+                            message = "导出前：获取表的UUID列和时间戳列信息",
                             data = logData,
                             timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                         });
@@ -95,7 +145,7 @@ public class IncrementalBackupService : IIncrementalBackupService
                     var normalizedRecords = new List<Dictionary<string, object>>();
                     foreach (var record in tableData)
                     {
-                        var normalizedRecord = NormalizeRecordForExport(record, uuidColumns);
+                        var normalizedRecord = NormalizeRecordForExport(record, uuidColumns, timestampColumns, currentExportTime);
                         normalizedRecords.Add(normalizedRecord);
                         
                         // #region agent log - 只记录前3条
@@ -147,7 +197,7 @@ public class IncrementalBackupService : IIncrementalBackupService
             var result = new
             {
                 version = "2.0",
-                exportTime = DateTime.Now.ToString("O"),
+                exportTime = currentExportTime.ToString("O"),
                 lastExportTime = lastExportTime?.ToString("O"),
                 clientId = request.ClientId,
                 database = request.DatabaseName ?? _dbContext.DbContext.Ado.Connection.Database,
@@ -183,16 +233,87 @@ public class IncrementalBackupService : IIncrementalBackupService
                 exportData = CompressData(exportData);
             }
 
-            // 6. 更新导出时间戳
-            if (request.UpdateTimestamp)
+            // 6. 保存到本地文件（在返回前）
+            try
             {
-                await SaveExportTimestampAsync(request.ClientId, DateTime.Now);
+                // 获取项目根目录（shanghai8-things-backend）
+                // 方法1: 从当前程序集位置向上查找包含 .sln 文件的目录
+                var assemblyLocation = global::System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var projectRoot = Path.GetDirectoryName(assemblyLocation);
+                
+                // 向上查找项目根目录（包含 .sln 文件或 src 目录的目录）
+                while (!string.IsNullOrEmpty(projectRoot))
+                {
+                    var slnFile = Directory.GetFiles(projectRoot, "*.sln").FirstOrDefault();
+                    var srcDir = Path.Combine(projectRoot, "src");
+                    
+                    if (slnFile != null || Directory.Exists(srcDir))
+                    {
+                        // 找到项目根目录
+                        break;
+                    }
+                    
+                    var parent = Directory.GetParent(projectRoot);
+                    if (parent == null || parent.FullName == projectRoot)
+                    {
+                        // 如果找不到，尝试使用当前工作目录
+                        projectRoot = Directory.GetCurrentDirectory();
+                        break;
+                    }
+                    projectRoot = parent.FullName;
+                }
+                
+                // 构建保存路径
+                var saveDirectory = Path.Combine(projectRoot, "ExportDatabaseBackup");
+                
+                // 确保目录存在
+                if (!Directory.Exists(saveDirectory))
+                {
+                    Directory.CreateDirectory(saveDirectory);
+                    LoggerAdapter.LogInformation($"创建导出目录: {saveDirectory}");
+                }
+                
+                // 生成文件名：增量备份_ClientId_yyyyMMdd_HHmmss.json[.gz]
+                var fileName = $"增量备份_{request.ClientId}_{currentExportTime:yyyyMMdd_HHmmss}.json";
+                if (request.Compress)
+                {
+                    fileName += ".gz";
+                }
+                
+                var filePath = Path.Combine(saveDirectory, fileName);
+                
+                // 保存文件
+                await File.WriteAllBytesAsync(filePath, exportData);
+                
+                LoggerAdapter.LogInformation($"已保存导出文件到本地: {filePath}, 大小: {exportData.Length} 字节");
+            }
+            catch (Exception ex)
+            {
+                // 如果保存失败，记录错误但不中断导出流程
+                LoggerAdapter.LogWarning($"保存导出文件到本地失败: {ex.Message}");
+                LoggerAdapter.LogWarning($"堆栈跟踪: {ex.StackTrace}");
+            }
+
+            // 7. 更新导出时间戳（增量备份必须更新时间戳，否则无法实现增量效果）
+            // 强制更新时间戳，确保增量备份功能正常工作
+            var totalRecordCount = allData.Sum(t => t.Value.Count);
+            try
+            {
+                await SaveExportTimestampAsync(request.ClientId, currentExportTime, totalRecordCount);
+                LoggerAdapter.LogInformation($"已更新导出时间戳 - ClientId: {request.ClientId}, 时间: {currentExportTime:O}, 记录数: {totalRecordCount}");
+            }
+            catch (Exception ex)
+            {
+                // 如果更新失败，记录错误但不中断导出流程
+                LoggerAdapter.LogError($"更新导出时间戳失败 - ClientId: {request.ClientId}, 错误: {ex.Message}");
+                LoggerAdapter.LogWarning($"警告：导出时间戳更新失败，这可能导致下次导出时无法正确获取增量数据");
             }
 
             LoggerAdapter.LogInformation(
                 $"增量备份导出完成 - ClientId: {request.ClientId}, " +
                 $"表数: {allData.Count}, " +
-                $"总记录数: {allData.Sum(t => t.Value.Count)}");
+                $"总记录数: {allData.Sum(t => t.Value.Count)}, " +
+                $"导出时间: {currentExportTime:O}");
 
             return exportData;
         }
@@ -208,18 +329,52 @@ public class IncrementalBackupService : IIncrementalBackupService
     /// </summary>
     public async Task<IncrementalBackupStatusDto> GetBackupStatusAsync(string clientId)
     {
-        var timestamp = await GetLastExportTimestampAsync(clientId);
-        var key = $"{BackupTimestampKeyPrefix}{clientId}:count";
-        var db = _connectionMultiplexer.GetDatabase();
-        var countStr = await db.StringGetAsync(key);
-
-        return new IncrementalBackupStatusDto
+        try
         {
-            ClientId = clientId,
-            LastExportTime = timestamp,
-            HasExportHistory = timestamp.HasValue,
-            LastExportRecordCount = countStr.HasValue && int.TryParse(countStr, out var count) ? count : null
-        };
+            // 确保表存在
+            EnsureTimestampTableExists();
+            
+            // 从数据库读取时间戳和记录数（使用 ToListAsync().FirstOrDefault() 避免没有记录时抛出异常）
+            var records = await _dbContext.DbContext.Queryable<IncrementalBackupTimestamp>()
+                .Where(t => t.ClientId == clientId)
+                .ToListAsync();
+            
+            var record = records.FirstOrDefault();
+
+            if (record != null)
+            {
+                return new IncrementalBackupStatusDto
+                {
+                    ClientId = clientId,
+                    LastExportTime = record.LastExportTime,
+                    HasExportHistory = true,
+                    LastExportRecordCount = record.LastExportRecordCount
+                };
+            }
+            else
+            {
+                return new IncrementalBackupStatusDto
+                {
+                    ClientId = clientId,
+                    LastExportTime = null,
+                    HasExportHistory = false,
+                    LastExportRecordCount = null
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerAdapter.LogWarning($"获取备份状态失败 - ClientId: {clientId}, 错误: {ex.Message}");
+            // 如果查询失败，尝试使用旧方法（兼容性）
+            var timestamp = await GetLastExportTimestampAsync(clientId);
+            return new IncrementalBackupStatusDto
+            {
+                ClientId = clientId,
+                LastExportTime = timestamp,
+                HasExportHistory = timestamp.HasValue,
+                LastExportRecordCount = null
+            };
+        }
     }
 
     /// <summary>
@@ -437,7 +592,11 @@ public class IncrementalBackupService : IIncrementalBackupService
     /// <summary>
     /// 规范化记录以便导出（确保UUID列的值是标准格式的字符串）
     /// </summary>
-    private Dictionary<string, object> NormalizeRecordForExport(dynamic record, HashSet<string> uuidColumns)
+    private Dictionary<string, object> NormalizeRecordForExport(
+        dynamic record, 
+        HashSet<string> uuidColumns, 
+        HashSet<string> timestampColumns, 
+        DateTime exportTime)
     {
         var normalizedRecord = new Dictionary<string, object>();
         
@@ -481,8 +640,23 @@ public class IncrementalBackupService : IIncrementalBackupService
             var columnName = kvp.Key;
             var value = kvp.Value;
             
+            // 如果是时间戳列且值为null，使用导出时间填充
+            if (timestampColumns.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            {
+                if (value == null || value == DBNull.Value)
+                {
+                    // 时间戳字段为null，使用导出时间填充
+                    normalizedRecord[columnName] = exportTime;
+                    LoggerAdapter.LogInformation($"导出时发现时间戳字段 {columnName} 为null，已填充为导出时间: {exportTime:O}");
+                }
+                else
+                {
+                    // 时间戳字段有值，直接使用
+                    normalizedRecord[columnName] = value;
+                }
+            }
             // 如果是UUID列，确保值是标准格式的字符串
-            if (uuidColumns.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            else if (uuidColumns.Contains(columnName, StringComparer.OrdinalIgnoreCase))
             {
                 if (value == null || value == DBNull.Value)
                 {
@@ -648,16 +822,26 @@ public class IncrementalBackupService : IIncrementalBackupService
     {
         try
         {
-            var db = _connectionMultiplexer.GetDatabase();
-            var key = $"{BackupTimestampKeyPrefix}{clientId}";
-            var value = await db.StringGetAsync(key);
+            // 确保表存在
+            EnsureTimestampTableExists();
+            
+            // 从数据库读取时间戳（使用 ToListAsync().FirstOrDefault() 避免没有记录时抛出异常）
+            var records = await _dbContext.DbContext.Queryable<IncrementalBackupTimestamp>()
+                .Where(t => t.ClientId == clientId)
+                .ToListAsync();
+            
+            var record = records.FirstOrDefault();
 
-            if (value.HasValue && DateTime.TryParse(value, out var timestamp))
+            if (record != null)
             {
-                return timestamp;
+                LoggerAdapter.LogInformation($"获取到导出时间戳 - ClientId: {clientId}, 时间: {record.LastExportTime:O}");
+                return record.LastExportTime;
             }
-
-            return null;
+            else
+            {
+                LoggerAdapter.LogInformation($"未找到导出时间戳记录 - ClientId: {clientId}，将进行全量导出");
+                return null;
+            }
         }
         catch (Exception ex)
         {
@@ -669,17 +853,66 @@ public class IncrementalBackupService : IIncrementalBackupService
     /// <summary>
     /// 保存导出时间戳
     /// </summary>
-    private async Task SaveExportTimestampAsync(string clientId, DateTime timestamp)
+    private async Task SaveExportTimestampAsync(string clientId, DateTime timestamp, int? recordCount = null)
     {
         try
         {
-            var db = _connectionMultiplexer.GetDatabase();
-            var key = $"{BackupTimestampKeyPrefix}{clientId}";
-            await db.StringSetAsync(key, timestamp.ToString("O")); // ISO 8601格式
+            // 确保表存在
+            EnsureTimestampTableExists();
+            
+            // 先尝试查询是否存在（使用 ToListAsync().FirstOrDefault() 避免没有记录时抛出异常）
+            var records = await _dbContext.DbContext.Queryable<IncrementalBackupTimestamp>()
+                .Where(t => t.ClientId == clientId)
+                .ToListAsync();
+            
+            var existing = records.FirstOrDefault();
+
+            if (existing != null)
+            {
+                // 更新现有记录
+                existing.LastExportTime = timestamp;
+                existing.LastModificationTime = DateTime.Now;
+                if (recordCount.HasValue)
+                {
+                    existing.LastExportRecordCount = recordCount.Value;
+                }
+                var count = await _dbContext.DbContext.Updateable(existing)
+                    .Where(t => t.ClientId == clientId)
+                    .ExecuteCommandAsync();
+                
+                if (count == 0)
+                {
+                    throw new Exception($"更新导出时间戳失败，影响行数为0");
+                }
+                
+                LoggerAdapter.LogInformation($"导出时间戳更新成功 - ClientId: {clientId}, 时间: {timestamp:O}, 记录数: {recordCount}");
+            }
+            else
+            {
+                // 插入新记录
+                var newRecord = new IncrementalBackupTimestamp
+                {
+                    ClientId = clientId,
+                    LastExportTime = timestamp,
+                    LastExportRecordCount = recordCount,
+                    CreationTime = DateTime.Now,
+                    LastModificationTime = DateTime.Now
+                };
+                
+                var count = await _dbContext.DbContext.Insertable(newRecord).ExecuteCommandAsync();
+                
+                if (count == 0)
+                {
+                    throw new Exception($"插入导出时间戳失败，影响行数为0");
+                }
+                
+                LoggerAdapter.LogInformation($"导出时间戳创建成功 - ClientId: {clientId}, 时间: {timestamp:O}, 记录数: {recordCount}");
+            }
         }
         catch (Exception ex)
         {
-            LoggerAdapter.LogWarning($"保存导出时间戳失败 - ClientId: {clientId}, 错误: {ex.Message}");
+            LoggerAdapter.LogError($"保存导出时间戳失败 - ClientId: {clientId}, 时间: {timestamp:O}, 记录数: {recordCount}, 错误: {ex.Message}");
+            throw; // 重新抛出异常，让调用者知道更新失败
         }
     }
 

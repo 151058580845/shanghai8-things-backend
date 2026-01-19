@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Hgzn.Mes.Domain.Entities.Base;
 
 namespace Hgzn.Mes.Domain.Entities.Equip.EquipData;
@@ -15,6 +15,13 @@ public class TestDataProduct : UniversalEntity
     public string? Code { get; set; }
     [Description("技术状")]
     public string? TechnicalStatus { get; set; }
+
+    #region audit
+
+    public Guid? CreatorId { get; set; }
+    public DateTime? CreationTime { get; set; }
+
+    #endregion audit
 
     public static TestDataProduct[] Seeds { get; } = new TestDataProduct[]
     {

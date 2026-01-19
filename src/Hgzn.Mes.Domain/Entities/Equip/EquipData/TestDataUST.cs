@@ -21,6 +21,13 @@ public class TestDataUST : UniversalEntity
     [Description("有效期")]
     public string? ValidityPeriod { get; set; }
 
+    #region audit
+
+    public Guid? CreatorId { get; set; }
+    public DateTime? CreationTime { get; set; }
+
+    #endregion audit
+
 #if DEBUG
     public static TestDataUST[] Seeds { get; } = new TestDataUST[]
     {
